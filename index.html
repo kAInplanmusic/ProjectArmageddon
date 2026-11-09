@@ -979,7 +979,7 @@
             <img id="hud-figur-bild" width="64" height="64" alt="">
             <div class="hud-figur-text">
               <strong id="hud-figur-name"></strong>
-              <span class="hud-figur-chips"><b id="hud-figur-rolle" class="chip"></b><b id="hud-figur-klasse" class="chip"></b></span>
+              <span class="hud-figur-chips"><b id="hud-figur-team" class="chip hud-figur-team"></b><b id="hud-figur-rolle" class="chip"></b><b id="hud-figur-klasse" class="chip"></b><img id="hud-figur-emblem" class="hud-figur-emblem" width="18" height="18" alt="" hidden></span>
               <span class="hud-figur-zeile">
                 <span class="hud-figur-leben"><span id="hud-figur-balken"><i></i></span><span id="hud-figur-hp"></span></span>
                 <span class="hud-figur-waffe"><img id="hud-figur-waffe-icon" width="16" height="16" alt="" hidden><span id="hud-figur-waffe"></span></span>
@@ -1496,6 +1496,8 @@
             <path d="M32 36l-4 8h8z" fill="#0d0f12"/>
           </svg>
           <p id="winner-text">—</p>
+          <!-- Fraktionszeichen des Siegers (Audit A11): Emblem und Name der Fraktion. -->
+          <div id="end-fraktion" class="end-fraktion" aria-live="polite"></div>
           <p id="end-summary">—</p>
           <!--
             Kennzahlen der eben gespielten Partie. Bewusst hier UND im Profil:

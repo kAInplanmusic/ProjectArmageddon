@@ -13,6 +13,9 @@ import { klassenKennung } from '../shared/config/classes.js';
 import { istKlassenfassungNeu, KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { WEAPONS_BY_ID, iconUrlFor } from '../shared/config/weapons.js';
 import { spriteUrl, hdUrl } from './roster.js';
+import { fraktionsMerkmale, teamFarbe as teamFarbeFuer, teamMarke } from './teamFarben.js';
+import { fraktionsIdentitaet } from './fraktionsIdentitaet.js';
+import { klassenSvg } from './klassenZeichen.js';
 
 const KLASSEN_NAME = Object.freeze({
   heavy: 'Schwer', scout: 'Späher', artillery: 'Artillerie',
@@ -30,7 +33,9 @@ export class FigurenKarte {
     this.balken = doc.querySelector('#hud-figur-balken i');
     this.waffe = doc.getElementById('hud-figur-waffe');
     this.waffeIcon = doc.getElementById('hud-figur-waffe-icon');
-    this.zuletzt = { charakter: null, hp: -1, max: -1, waffe: null, team: -1 };
+    this.emblem = doc.getElementById('hud-figur-emblem');
+    this.team = doc.getElementById('hud-figur-team');
+    this.zuletzt = { charakter: null, hp: -1, max: -1, waffe: null, team: -1, fraktion: null, klasse: null };
   }
 
   /**
@@ -67,10 +72,51 @@ export class FigurenKarte {
       this.rolle.textContent = COMBAT_ROLES[charakter.role]?.label ?? '';
       this.rolle.dataset.rolle = charakter.role;
       const klasse = klassenKennung(entity.classId, umgebung.klassen ?? KLASSEN_STANDARD);
-      this.klasse.textContent = KLASSEN_NAME[klasse] ?? klasse ?? '';
+      /*
+       * Klassenzeichen vor dem Klassennamen (Audit A16). Die Kennung steht
+       * daneben, weil ein Zeichen allein beim ersten Kontakt gelernt werden
+       * müsste; die Haltung der Figur ist Sache der Bildproduktion.
+       */
+      const zeichen = klassenSvg(klasse, { groesse: 13 });
+      if (zeichen) this.klasse.innerHTML = `${zeichen} <span>${KLASSEN_NAME[klasse] ?? klasse ?? ''}</span>`;
+      else this.klasse.textContent = KLASSEN_NAME[klasse] ?? klasse ?? '';
+      /*
+       * In Klassenfassung 3 sind Rollen- und Klassenname identisch („Nahkampf“
+       * stand zweimal nebeneinander). Der Rollen-Chip entfällt dann; in den
+       * alten Fassungen (Nahkampf gegen heavy/scout/artillery) bleiben beide,
+       * weil sie dort Verschiedenes sagen.
+       */
+      this.rolle.hidden = (COMBAT_ROLES[charakter.role]?.label ?? '') === (KLASSEN_NAME[klasse] ?? klasse);
       z.hp = -1; z.waffe = null;
     }
-    if (z.team !== entity.teamId) { z.team = entity.teamId; this.wurzel.style.borderLeftColor = teamFarbe; }
+    /*
+     * Zwei Farbrollen (Audit A09):
+     *  - Rahmen links und Team-Chip = EIGENTÜMER (Teamfarbe, Marke „T1“).
+     *  - Emblem daneben = FRAKTION (Fraktionfarbe, Fraktionsname als Titel).
+     */
+    if (z.fraktion !== fraktionId) {
+      z.fraktion = fraktionId;
+      const merkmal = fraktionsMerkmale(fraktionId);
+      if (this.emblem) {
+        const url = fraktionId ? fraktionsIdentitaet(fraktionId)?.emblem : null;
+        this.emblem.hidden = !url;
+        if (url) {
+          this.emblem.src = url;
+          this.emblem.alt = `Emblem ${merkmal?.name ?? ''}`.trim();
+          this.emblem.title = merkmal?.name ?? '';
+        }
+      }
+    }
+    if (z.team !== entity.teamId) {
+      z.team = entity.teamId;
+      const farbe = teamFarbeFuer(entity.teamId);
+      this.wurzel.style.borderLeftColor = farbe || teamFarbe;
+      this.wurzel.title = `Eigentümer: Team ${Number(entity.teamId) + 1}`;
+      if (this.team) {
+        this.team.textContent = teamMarke(entity.teamId);
+        this.team.style.background = farbe;
+      }
+    }
     const hp = Math.max(0, Math.round(entity.health));
     const max = Math.round(entity.maxHealth);
     if (hp !== z.hp || max !== z.max) {

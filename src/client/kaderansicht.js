@@ -16,7 +16,7 @@ import { NEUE_BIOME } from '../shared/config/biome-neu.js';
 import { PLANET_BIOM_IDS } from '../shared/config/biome-planet.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { uebersichtFuerHilfe, classCounterplay, combatProfile } from '../shared/config/classes.js';
-import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
+import { COMBAT_ROLES, classOf, CHARAKTER_PROFIL_HINWEIS } from '../shared/config/factions.js';
 import { KISTEN_STUFEN_GEWICHT, KISTEN_MUNITION_STUFE } from '../shared/config/kisten.js';
 import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js';
 import { LOOT_DROP_RULES } from '../shared/config/loot.js';
@@ -28,6 +28,8 @@ import { zeichneWirkungen } from './hilfeWirkungen.js';
 import { zeichneZerstoerungsTabelle, zeichneFeuerRegeln } from './hilfeZerstoerung.js';
 import { factionsWithSprites, spriteCount, hdUrl } from './roster.js';
 import { fraktionsIdentitaet } from './fraktionsIdentitaet.js';
+import { FARBTRENNUNG_HINWEIS } from './teamFarben.js';
+import { klassenSvg } from './klassenZeichen.js';
 import './styles/fraktionen.css';
 
 // ------------------------------------------------------------------ Kaderansicht
@@ -109,10 +111,20 @@ export function buildRosterView() {
     const beschreibung = document.createElement('div');
     beschreibung.className = 'fraktions-bio';
     beschreibung.textContent = fraktion.description;
+    /*
+     * Zwei Hinweise statt einer Zeile (Audit A08/A09):
+     *  - A08: Biografie/Stärken/Schwächen sind Geschichte; wirksam sind Klasse
+     *    und Ausrüstung. Der Satz steht in `factions.js` und wird hier nur
+     *    gesetzt, damit Anzeige und Prüfung dieselbe Quelle lesen.
+     *  - A09: Teamfarbe zeigt den Eigentümer, Fraktionsfarbe das Aussehen.
+     */
     const legende = document.createElement('p');
     legende.className = 'fraktions-legende';
-    legende.textContent = 'Die Biografien erzählen die Geschichte der Figuren. Die Spielwerte bestimmt ihre Klasse; die Ausrüstung wählst du im Match.';
-    info.append(kopf, beschreibung, legende);
+    legende.textContent = CHARAKTER_PROFIL_HINWEIS;
+    const farbLegende = document.createElement('p');
+    farbLegende.className = 'fraktions-legende fraktions-legende--farben';
+    farbLegende.textContent = FARBTRENNUNG_HINWEIS;
+    info.append(kopf, beschreibung, legende, farbLegende);
 
     liste.replaceChildren(...fraktion.characters.map(c => {
       const li = document.createElement('li');
@@ -148,7 +160,16 @@ export function buildRosterView() {
       starkName.textContent = c.name;
       const klein = document.createElement('span');
       klein.className = 'r-role';
-      klein.textContent = ` · ${{ nahkampf: 'Nahkampf', fernkampf: 'Fernkampf', okkultist: 'Okkultist' }[classOf(c)] ?? COMBAT_ROLES[c.role]?.label ?? c.role}`;
+      /*
+       * Klassenzeichen + Text (Audit A16): Die Klasse ist am Zeichen
+       * (Klinge / Projektilvisier / Ritualzeichen) zu erkennen, nicht an einer
+       * Farbe — die gehört der Fraktion. Der Text bleibt daneben stehen, damit
+       * die Zuordnung nicht nur über die Form gelernt werden muss.
+       */
+      const klasseDesCharakters = classOf(c);
+      klein.innerHTML = `${klassenSvg(klasseDesCharakters, { groesse: 13 })} <span>`
+        + `${{ nahkampf: 'Nahkampf', fernkampf: 'Fernkampf', okkultist: 'Okkultist' }[klasseDesCharakters] ?? COMBAT_ROLES[c.role]?.label ?? c.role}`
+        + '</span>';
       name.append(starkName, klein);
 
       const waffe = document.createElement('div');
@@ -161,7 +182,12 @@ export function buildRosterView() {
 
       const profil = document.createElement('div');
       profil.className = 'r-prof';
-      profil.textContent = `Charakterprofil: + ${c.strengths.join(' · ')}  |  − ${c.weaknesses.join(' · ')}`;
+      /*
+       * Label als GESCHICHTE, nicht als Spielwert (Audit A08): Der Block stand
+       * vorher als „Charakterprofil“ da und las sich wie ein Regelkasten. Die
+       * Einzelwerte sind erzählt; wirksam sind nur Klasse und Ausrüstung.
+       */
+      profil.textContent = `Erzähltes Profil (Geschichte, keine Spielwerte): + ${c.strengths.join(' · ')}  |  − ${c.weaknesses.join(' · ')}`;
 
       text.append(name, waffe, bio, profil);
 
@@ -175,7 +201,6 @@ export function buildRosterView() {
        * hat heute keine): Eine erfundene Zuordnung wäre eine Anzeige, die eine
        * Balance behauptet, die es nicht gibt.
        */
-      const klasseDesCharakters = classOf(c);
       const beziehung = classCounterplay(KLASSEN_STANDARD)[klasseDesCharakters];
       if (beziehung) {
         const cpHinweis = document.createElement('div');
@@ -396,7 +421,17 @@ function zeichneKlassen(container) {
   for (const klasse of u.klassen) {
     const karte = document.createElement('div');
     karte.className = 'h-karte';
-    karte.append(textEl('h3', klasse.label));
+    /*
+     * Klassenzeichen vor dem Namen (Audit A16): Klinge, Projektilvisier,
+     * Ritualzeichen. Ältere Klassenfassungen (heavy/scout/artillery) haben kein
+     * Zeichen; dann steht nur der Name, statt ein falsches Symbol zu erfinden.
+     */
+    const kopf = document.createElement('h3');
+    kopf.className = 'h-klasse';
+    const zeichen = klassenSvg(klasse.id, { groesse: 18 });
+    if (zeichen) kopf.innerHTML = `${zeichen} <span>${klasse.label}</span>`;
+    else kopf.textContent = klasse.label;
+    karte.append(kopf);
     karte.append(textEl('p', klasse.erklaerung, 'h-erklaerung'));
 
     balken(karte, 'Leben', klasse.wirksam.leben, maxLeben);
