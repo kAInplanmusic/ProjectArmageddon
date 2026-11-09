@@ -17,6 +17,8 @@ export default defineConfig({
   },
   plugins: [{
     name: 'pa-bauinfo',
+    // Entwicklungsbelege bleiben im Quelltext, nicht in jeder HTML-Auslieferung.
+    transformIndexHtml: html => html.replace(/<!--[\s\S]*?-->/g, ''),
     apply: 'build',
     generateBundle() {
       this.emitFile({ type: 'asset', fileName: 'version.json', source: `${JSON.stringify(BAUINFO, null, 2)}\n` });
@@ -37,6 +39,8 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     target: 'es2022',
+    // Kleine Bilddateien bleiben URLs: Base64 würde den Start-JavaScript-Block aufblähen.
+    assetsInlineLimit: 0,
     // Auftragswarteschlange 3.4: Die Sourcemap ist ein Entwicklungs-Artefakt
     // (~2 MB im dist/) und gehört nicht in die Auslieferung.
     sourcemap: false,

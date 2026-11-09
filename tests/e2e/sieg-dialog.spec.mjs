@@ -20,6 +20,8 @@ async function bisSieg(page) {
 test('Der Sieg-Dialog zeigt Sieger, Zeichen und beide Knöpfe; „Zum Menü“ führt ins Menü', async ({ page }) => {
   await bisSieg(page);
   await expect(page.locator('#winner-text')).toContainText('gewinnt');
+  await expect(page.locator('#winner-text')).toBeFocused();
+  await expect(page.getByRole('columnheader', { name: 'Trefferquote' })).toBeVisible();
   await expect(page.locator('#end-overlay .sieg-schaedel')).toBeVisible();
   await expect(page.locator('#rematch-button')).toBeVisible();
   await page.click('#end-menu-button');

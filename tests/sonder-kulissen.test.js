@@ -35,3 +35,37 @@ test('Die Wahl folgt dem Seed und nutzt über viele Seeds alle Bilder eines Biom
     assert.equal(gesehen.size, liste.length, `${biom}: nicht alle Bilder kommen vor`);
   }
 });
+
+test('Beide Höhlenformen haben für jedes gemalte Sonderbiom einen gültigen Höhlenblick', () => {
+  const katalog = new Set([...ALL_BACKDROPS, ...BACKDROPS_NEU].map(b => b.key));
+  for (const biom of Object.keys(SONDER_KULISSEN)) {
+    for (const art of ['hoehle', 'hoehleInsel']) {
+      const key = sonderKulisseFuer(biom, 42, art);
+      assert.ok(key.endsWith('hoehle') && katalog.has(key), biom);
+    }
+  }
+  assert.equal(sonderKulisseFuer('vulkan', 42, 'insel'), 'island/volcano');
+  assert.equal(sonderKulisseFuer('planet', 42, 'hoehle'), null);
+});
+
+import { FOTOS, panorama, fotoFuerBiom, findeKulisse } from '../src/client/panoramen.js';
+import { existsSync } from 'node:fs';
+
+test('Panoramafotos haben beide SDR-Stufen und behalten eine gültige Motivbasis', () => {
+  for (const id of Object.keys(FOTOS)) {
+    const foto = panorama(id);
+    assert.equal(foto.key, 'foto/' + id);
+    assert.ok(ALL_BACKDROPS.some(b => b.file === foto.file));
+    assert.deepEqual(findeKulisse(foto.key), foto);
+    for (const ende of ['', '-1280']) {
+      assert.ok(existsSync(new URL('../src/client/assets/panoramen/' + id + ende + '.webp', import.meta.url)));
+    }
+  }
+  assert.equal(panorama('toString'), null);
+  assert.equal(findeKulisse('foto/unbekannt'), null);
+  assert.equal(findeKulisse('alpine/winter_snow').key, 'alpine/winter_snow');
+  assert.equal(fotoFuerBiom('eiswueste', 'insel'), 'snow_field');
+  assert.equal(fotoFuerBiom('eiswueste', 'hoehle'), null);
+  assert.equal(fotoFuerBiom('kristallhoehle', 'hoehle'), 'small_cave');
+  assert.equal(fotoFuerBiom('planet', 'hoehle'), null);
+});

@@ -54,3 +54,27 @@ test('Am Desktop sind die Touch-Tasten unsichtbar; das Menü ist ein Dialog und 
   await expect(page.locator('#touch-aktionen')).toBeHidden();
   await expect(page.locator('#touch-laufen')).toBeHidden();
 });
+
+test('Nur der ladende Finger schießt, eine unterbrochene Geste bricht ab', async ({ page }) => {
+  await page.goto('/');
+  const ergebnis = await page.evaluate(async () => {
+    const { InputController } = await import('/src/client/input.js');
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 100;
+    canvas.getBoundingClientRect = () => ({ left: 10, top: 10, width: 100, height: 50 });
+    let schuesse = 0;
+    const input = new InputController(canvas, { getOrigin: () => ({ x: 0, y: 0 }), onFire: () => schuesse++ });
+    const sende = (ziel, typ, id) => ziel.dispatchEvent(new PointerEvent(typ, { pointerId: id, button: 0, clientX: 40, clientY: 20 }));
+    sende(canvas, 'pointerdown', 1);
+    sende(window, 'pointerup', 2);
+    const laedt = input.isCharging;
+    sende(window, 'pointercancel', 1);
+    sende(window, 'pointerup', 1);
+    const nachAbbruch = schuesse;
+    sende(canvas, 'pointerdown', 3);
+    sende(window, 'pointerup', 3);
+    return { zeiger: input.pointer, laedt, nachAbbruch, schuesse };
+  });
+  expect(ergebnis).toEqual({ zeiger: { x: 60, y: 20 }, laedt: true, nachAbbruch: 0, schuesse: 1 });
+});

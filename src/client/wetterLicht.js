@@ -245,7 +245,7 @@ export function zeichneWetterVorn(r, dichte = 1) {
 
 function zeichneVorn(r, w, dichte) {
   const ctx = r.ctx;
-  if (!(w.regen > 0 || w.schnee > 0 || w.gewitter)) return;
+  if (!(w.regen > 0 || w.schnee > 0 || w.hagel || w.gewitter)) return;
   const b = r.width;
   const h = r.height;
   const t = sekunden(r);
@@ -272,6 +272,16 @@ function zeichneVorn(r, w, dichte) {
     ctx.restore();
   }
 
+  if (w.hagel) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(221,242,255,0.85)';
+    for (let i = 0; i < 95 * dichte; i += 1) {
+      const y = (hash2(i, 2, 11) * h + (still ? 0 : t * h * 0.75)) % h;
+      const x = (hash2(i, 4, 11) * b + b - y * 0.18) % b;
+      ctx.fillRect(x, y, 3 * m, 4 * m);
+    }
+    ctx.restore();
+  }
   if (w.schnee > 0) {
     const n = Math.round(150 * w.schnee * dichte);
     ctx.save();

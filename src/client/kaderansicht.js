@@ -23,8 +23,6 @@ import { LOOT_DROP_RULES } from '../shared/config/loot.js';
 import { sidegradesForClass } from '../shared/config/sidegrades.js';
 import { getWeapon, WEAPONS } from '../shared/config/weapons.js';
 import { TERRAIN_PRESETS, TERRAIN_AFFINITY } from '../shared/terrainGen.js';
-import { zeichneTiere } from './hilfeTiere.js';
-import { zeichneWirkungen } from './hilfeWirkungen.js';
 import { zeichneZerstoerungsTabelle, zeichneFeuerRegeln } from './hilfeZerstoerung.js';
 import { factionsWithSprites, spriteCount, hdUrl } from './roster.js';
 import { fraktionsIdentitaet } from './fraktionsIdentitaet.js';
@@ -262,21 +260,31 @@ export function buildHilfeView() {
     { id: 'loot', label: 'Loot und Seltenheiten', zeichne: zeichneLoot },
     { id: 'karte', label: 'Karte und Gelände', zeichne: zeichneKarte },
     { id: 'ton', label: 'Ton und Musik', zeichne: zeichneTon },
-    { id: 'tiere', label: 'Günther und Cookie', zeichne: zeichneTiere },
-    { id: 'wirkungen', label: 'Schaden und Wirkungen', zeichne: zeichneWirkungen },
+    { id: 'tiere', label: 'Günther und Cookie', lade: () => import('./hilfeTiere.js'), export: 'zeichneTiere' },
+    { id: 'wirkungen', label: 'Schaden und Wirkungen', lade: () => import('./hilfeWirkungen.js'), export: 'zeichneWirkungen' },
   ];
 
   let gewaehlt = seiten[0].id;
   let gezeichnet = false;
 
-  const zeichnen = () => {
+  let zeichenvorgang = 0;
+  const zeichnen = async () => {
+    const vorgang = ++zeichenvorgang;
     const seite = seiten.find(s => s.id === gewaehlt) ?? seiten[0];
     inhalt.replaceChildren();
-    seite.zeichne(inhalt);
     for (const knopf of reiter.querySelectorAll('button')) {
       knopf.setAttribute('aria-selected', String(knopf.dataset.hilfe === gewaehlt));
     }
     gezeichnet = true;
+    try {
+      // Selten besuchte Detailtabellen belasten den Spielstart nicht.
+      const zeichne = seite.lade ? (await seite.lade())[seite.export] : seite.zeichne;
+      if (vorgang === zeichenvorgang) zeichne(inhalt);
+    } catch {
+      if (vorgang !== zeichenvorgang) return;
+      inhalt.textContent = 'Hilfe konnte nicht geladen werden. Bitte erneut öffnen.';
+      gezeichnet = false;
+    }
   };
 
   for (const seite of seiten) {

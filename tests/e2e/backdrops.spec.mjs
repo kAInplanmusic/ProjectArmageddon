@@ -387,3 +387,34 @@ test('Stimmungsbilder werden in Quer- und Quadratformat unverzerrt gezeichnet', 
     }
   }
 });
+
+for (const breite of [1024, 1600]) {
+  test(`Panoramafotos laden als SDR mit passender Auflösung bei ${breite}px`, async ({ page }) => {
+    await page.setViewportSize({ width: breite, height: 900 });
+    for (const id of ['snow_field', 'factory_yard', 'small_cave']) {
+      await startMitKulisse(page, { backdropKey: 'foto/' + id });
+      const bild = await page.evaluate(() => {
+        const r = window.__PA__.game.renderer;
+        return { key: r.backdropKey, quelle: r.backdropImage.src, breite: r.backdropImage.naturalWidth };
+      });
+      expect(bild.key).toBe('foto/' + id);
+      expect(bild.quelle).toContain(breite <= 1280 ? id + '-1280.webp' : id + '-sdr.avif');
+      expect(bild.breite).toBe(breite <= 1280 ? 1280 : 3840);
+    }
+  });
+}
+
+test('Menü reicht Kartenformat, Größenstufe und Hagel bis in die Partie durch', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(() => Boolean(window.__PA__));
+  await page.selectOption('#cfg-kartengroesse', 'kompakt');
+  await page.selectOption('#cfg-kartenformat', '9:16');
+  await page.selectOption('#cfg-wetter', 'hagel');
+  await page.fill('#cfg-seed', '4242');
+  await page.click('#start-button');
+  const werte = await page.evaluate(() => {
+    const g = window.__PA__.game;
+    return { breite: g.match.width, hoehe: g.match.height, zeit: g.match.turnDurationMs, wetter: g.renderer.stimmung.wetter };
+  });
+  expect(werte).toEqual({ breite: 1080, hoehe: 1920, zeit: 35000, wetter: 'hagel' });
+});

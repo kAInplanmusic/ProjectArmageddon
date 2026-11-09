@@ -34,3 +34,16 @@ export function kulissenUrlNeu(datei) {
 }
 
 export default BACKDROP_URLS;
+
+// SDR bleibt SDR, auch im AVIF-Container. Die alten HDR-Vorarbeiten sind nicht im Glob.
+const PANORAMEN = import.meta.glob(['./assets/panoramen/*-sdr.avif', './assets/panoramen/*-1280.webp'], {
+  eager: true, query: '?url', import: 'default',
+});
+
+export function panoramaUrls(id) {
+  const klein = globalThis.matchMedia?.('(max-width: 1280px)').matches;
+  const pfad = './assets/panoramen/' + id;
+  return (klein
+    ? [PANORAMEN[pfad + '-1280.webp'], PANORAMEN[pfad + '-sdr.avif']]
+    : [PANORAMEN[pfad + '-sdr.avif'], PANORAMEN[pfad + '-1280.webp']]).filter(Boolean);
+}

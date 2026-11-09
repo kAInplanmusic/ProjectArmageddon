@@ -1,8 +1,19 @@
 # TODO-SSOT — die einzige Aufgabenliste von ProjectARMAGEDDON
 
-*Stand: 2026-10-30. Diese Datei ersetzt alle früheren Berichte, Todo-Listen, Fahrpläne und Audits (gelöscht; Inhalt steht hier, die Historie steht in Git). Neue offene Punkte kommen NUR hier hinein. Erledigtes wird hier gestrichen, nicht abgehakt gesammelt.*
+*Stand: 2026-11-09. Diese Datei ersetzt alle früheren Berichte, Todo-Listen, Fahrpläne und Audits (gelöscht; Inhalt steht hier, die Historie steht in Git). Neue offene Punkte kommen NUR hier hinein. Erledigtes wird hier gestrichen, nicht abgehakt gesammelt.*
 
 Regeln: Nichts erfinden. „Status ungeprüft“ heißt: aus einem älteren Bericht übernommen, noch nicht gegen den Code belegt. Entscheidungen des Auftraggebers stehen in Abschnitt 0.
+
+## INT-2026-11-09 — Abnahmen des Integrationsbranches
+
+| ID | Arbeit | Konkrete Abnahme |
+|---|---|---|
+| INT-E2E | Browserabnahme auf CI/Linux mit startfähigem Chromium | Vollständiges `npx playwright test`; besonders Backdrops (SDR-Stufen, Kartenwahl/Hagel), Touch, Lobby, Replay und Siegdialog. Lokaler Start mit EPERM am Unix-Socket blockiert; 18 Fälle erreichten die Anwendung nicht. |
+| INT-BILD | iPhone/Desktop-Sichtprüfung der drei Fotos, Hagel und Biomobjekte | Ränder, Zoom, Kontrast, reduzierte Bewegung und Hochformat prüfen; keine HDR-Freigabe behaupten. |
+| INT-QUELLE | Exakte Foto-Erzeugung reproduzierbar machen | 8K-Quellen, Crop-Koordinaten, Tonemapping und Encoderparameter zu den vorhandenen SHA-256-Dateien dokumentieren. Quellen/Lizenzen stehen bereits beim Assetbestand. |
+| INT-WEGE | Diagnose niedriger Oberflächen-Erreichbarkeit bewerten | `scripts/pruefe-kistenwege.mjs`; Messung berücksichtigt weder Sprünge noch Seil/Flug. Daher kein Beweis unspielbarer Karten. Betroffene Seeds mit echten Spielwegen prüfen. |
+
+Herkunft, Startbefehle und Grenzen: [Agentenübergabe](agenten-uebergabe-2026-11-09.md).
 
 ## 0. Entscheidungen des Auftraggebers (2026-10-29/30, verbindlich)
 

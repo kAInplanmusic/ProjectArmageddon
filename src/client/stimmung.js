@@ -5,7 +5,7 @@
  * Spieler beides überschreiben:
  *
  *   Zeit    automatisch · Tag · Morgen · Abend · Nacht · Herbstgold   (Farbstimmung über dem ganzen Bild, Sterne, Laub)
- *   Wetter  automatisch · klar · Sonne · Regen · Sturm · Schnee · Nebel · Laubfall
+ *   Wetter  automatisch · klar · Sonne · Regen · Sturm · Schnee · Hagel · Nebel · Laubfall
  *
  * Alles folgt Zeit und Position (`hash2`), nichts würfelt; „reduzierte Bewegung" zeigt stehende Bilder. Kein Einfluss auf Maske,
  * Hash, Replay oder Netz.
@@ -32,6 +32,7 @@ export const WETTER_WAHL = Object.freeze({
   regen: 'Regen',
   sturm: 'Sturm',
   schnee: 'Schnee',
+  hagel: 'Hagel',
   nebel: 'Nebel',
   laub: 'Laubfall',
 });
@@ -49,14 +50,15 @@ export function normalisiereWahl(wert, liste) {
  * @returns {{regen:number, schnee:number, gewitter:boolean, nebel:number, lichter:boolean, sonne:number, laub:number, wind:number}}
  */
 export function wetterMit(basis, wetter = 'auto', zeit = 'auto') {
-  const aus = { ...basis, sonne: 0, laub: 0, wind: 0 };
+  const aus = { ...basis, sonne: 0, laub: 0, wind: 0, hagel: basis.hagel ?? 0 };
   const w = normalisiereWahl(wetter, WETTER_WAHL);
   const z = normalisiereWahl(zeit, ZEITEN);
   if (w !== 'auto') {
-    Object.assign(aus, { regen: 0, schnee: 0, gewitter: false, nebel: 0 });
+    Object.assign(aus, { regen: 0, schnee: 0, hagel: 0, gewitter: false, nebel: 0 });
     if (w === 'sonne') aus.sonne = 1;
     if (w === 'regen') aus.regen = 0.7;
     if (w === 'sturm') Object.assign(aus, { regen: 1, gewitter: true, wind: 1 });
+    if (w === 'hagel') Object.assign(aus, { hagel: 1, wind: 0.6 });
     if (w === 'schnee') aus.schnee = 0.8;
     if (w === 'nebel') aus.nebel = 0.8;
     if (w === 'laub') aus.laub = 0.8;

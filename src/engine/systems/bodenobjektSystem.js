@@ -24,7 +24,7 @@
  * @module BodenobjektSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { MINEN, FAESSER, MINEN_AUSGANG, minenAusgang } from '../../shared/config/bodenobjekte.js';
+import { MINEN, FAESSER, BIOMOBJEKTE, MINEN_AUSGANG, minenAusgang } from '../../shared/config/bodenobjekte.js';
 import { damageTypeId } from '../damageTypes.js';
 import { wendeExplosionAn } from '../explosion.js';
 import { freierPlatz } from '../turret.js';
@@ -41,6 +41,7 @@ export class BodenobjektSystem {
   #events;
   #q;
   #faesser;
+  #biom;
   #abwurf;
   #minen = new Map();
   #naechsteId = 1;
@@ -55,8 +56,9 @@ export class BodenobjektSystem {
    * @param {object} optionen.q - Abfragen: `breite`, `surfaceYAt(x)`, `bodenNahe(x, y)`, `waterLevelAt(x, y)`,
    *   `startplaetze()` → [{x, y}] (Mindestabstand zu liegenden Minen)
    */
-  constructor({ rng, world, events, q, faesser = false, abwurf = false }) {
+  constructor({ rng, world, events, q, faesser = false, abwurf = false, biom = null }) {
     this.#faesser = faesser;
+    this.#biom = Object.hasOwn(BIOMOBJEKTE, biom) ? biom : null;
     this.#abwurf = abwurf;
     this.#rng = rng;
     this.#world = world;
@@ -98,6 +100,7 @@ export class BodenobjektSystem {
     return [...this.#minen.values()]
       .sort((a, b) => a.id - b.id)
       .map(m => ({
+        ...(m.biomobjekt ? { biomobjekt: m.biomobjekt } : {}),
         id: m.id, typ: m.typ, x: m.x, y: m.y, ownerId: m.ownerId, teamId: m.teamId, art: m.art,
         blindgaenger: m.blindgaenger, ausgeloest: m.ausgeloest, fallend: Boolean(m.fallend),
       }));
@@ -114,12 +117,13 @@ export class BodenobjektSystem {
       id: this.#naechsteId, typ, x: Math.round(x), y: Math.round(y), ownerId, teamId, art,
       blindgaenger: false, ausgeloest: false, fallend: landetBeiTick !== null, landetBeiTick,
     };
+    if (typ === OBJEKT_TYP.FASS && this.#biom) mine.biomobjekt = this.#biom;
     this.#naechsteId += 1;
     this.#minen.set(mine.id, mine);
     if (typ === OBJEKT_TYP.FASS && landetBeiTick !== null) {
-      this.#events.emit('fass_abgeworfen', { fassId: mine.id, x: mine.x, y: mine.y, flugTicks: FAESSER.flugTicks });
+      this.#events.emit('fass_abgeworfen', { ...(mine.biomobjekt ? { biomobjekt: mine.biomobjekt } : {}), fassId: mine.id, x: mine.x, y: mine.y, flugTicks: FAESSER.flugTicks });
     } else if (typ === OBJEKT_TYP.FASS) {
-      this.#events.emit('fass_placed', { fassId: mine.id, x: mine.x, y: mine.y });
+      this.#events.emit('fass_placed', { ...(mine.biomobjekt ? { biomobjekt: mine.biomobjekt } : {}), fassId: mine.id, x: mine.x, y: mine.y });
     } else {
       this.#events.emit('mine_placed', {
         mineId: mine.id, x: mine.x, y: mine.y, ownerId, teamId, art,
@@ -176,7 +180,7 @@ export class BodenobjektSystem {
 
   /** Liegende Fässer (Bodenobjektfassung 3): wie die liegenden Minen, mit eigener Anzahl und denselben Abständen. */
   #setzeFaesser(start) {
-    const anzahl = FAESSER.liegendMin + this.#rng.nextIntBelow(FAESSER.liegendMax - FAESSER.liegendMin + 1);
+    const anzahl = (this.#biom ? 1 : FAESSER.liegendMin) + this.#rng.nextIntBelow(FAESSER.liegendMax - FAESSER.liegendMin + 1);
     const VERSUCHE = 12;
     for (let i = 0; i < anzahl; i += 1) {
       let gesetzt = false;
@@ -299,14 +303,15 @@ export class BodenobjektSystem {
   /** Ein Fass explodiert: immer, ohne Zufall; löst Nachbarn über `explosionBei` aus. */
   #sprengeFass(fass) {
     this.#minen.delete(fass.id);
-    const damageType = damageTypeId(FAESSER.schadensart);
+    const profil = BIOMOBJEKTE[fass.biomobjekt] ?? FAESSER;
+    const damageType = damageTypeId(profil.schadensart);
     const material = wendeExplosionAn(this.#world, {
-      x: fass.x, y: fass.y, damage: FAESSER.schaden, blastRadius: FAESSER.radius, knockback: FAESSER.rueckstoss,
-      terrainDamage: FAESSER.gelaendeSchaden, owner: null, damageType, weaponId: 'sprengung',
+      x: fass.x, y: fass.y, damage: profil.schaden, blastRadius: profil.radius, knockback: profil.rueckstoss,
+      terrainDamage: profil.gelaendeSchaden, owner: null, damageType, weaponId: 'sprengung',
     });
-    this.#events.emit('fass_exploded', { fassId: fass.id, x: fass.x, y: fass.y });
+    this.#events.emit('fass_exploded', { ...(fass.biomobjekt ? { biomobjekt: fass.biomobjekt } : {}), fassId: fass.id, x: fass.x, y: fass.y });
     this.#events.emit('explosion', {
-      x: fass.x, y: fass.y, radius: FAESSER.radius, damage: FAESSER.schaden, owner: null, projectile: null, damageType, material,
+      x: fass.x, y: fass.y, radius: profil.radius, damage: profil.schaden, owner: null, projectile: null, damageType, material,
     });
   }
 }
