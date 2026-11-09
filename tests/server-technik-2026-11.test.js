@@ -15,8 +15,25 @@ import { fileURLToPath } from 'node:url';
 import { GameServer, LobbySession } from '../src/server/gameServer.js';
 import { LobbyManager } from '../src/server/lobby.js';
 import { INPUT_LIMITS, isTickInWindow } from '../src/shared/validation.js';
-import { CONTROL, SNAPSHOT_FLAG, controlMessage } from '../src/shared/protocol.js';
-import { WebSocket } from 'ws';
+import {
+  CONTROL,
+  MAGIC,
+  SNAPSHOT_FLAG,
+  PROTOCOL_VERSION,
+  HEADER_SIZE,
+  PLAYER_STRIDE,
+  PROJECTILE_STRIDE,
+  CRATE_STRIDE,
+  TURRET_STRIDE,
+  GUENTHER_STRIDE,
+  COOKIE_STRIDE,
+  controlMessage,
+  encodeSnapshot,
+  decodeSnapshot,
+  pruefeProtokollversion,
+} from '../src/shared/protocol.js';
+import { NetworkClient } from '../src/client/networkClient.js';
+import { WebSocket, WebSocketServer } from 'ws';
 import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, REPLAY_FORMAT_VERSION } from '../src/engine/replay.js';
 import { MATCH_RULES } from '../src/shared/config/match.js';
@@ -281,10 +298,10 @@ test('REPLAY-1: Recorder-Vorgabe für maxRounds folgt dem Motor, Altdateien ohne
 // ------------------------------------------------------------------ WERKZEUG-1
 
 test('WERKZEUG-1: audit_bericht überschreibt keine getrackte Datei ohne ausdrückliche Freigabe', () => {
-  const ziel = path.join(ROOT, 'docs', 'audit-tief.md');
-  assert.equal(istGetrackt(ziel), true, 'Testaufbau: docs/audit-tief.md ist getrackt');
+  const ziel = path.join(ROOT, 'docs', 'TODO.md');
+  assert.equal(istGetrackt(ziel), true, 'Testaufbau: docs/TODO.md ist getrackt');
   const vorher = fs.readFileSync(ziel, 'utf8');
-  assert.throws(() => schreibeBericht('docs/audit-tief.md', {}), /getrackte Datei/);
+  assert.throws(() => schreibeBericht('docs/TODO.md', {}), /getrackte Datei/);
   assert.equal(fs.readFileSync(ziel, 'utf8'), vorher, 'die Datei ist unverändert');
 
   assert.equal(BERICHT_STANDARDPFAD.startsWith('artifacts/'), true, 'Vorgabe liegt unter artifacts/ (gitignored)');
@@ -355,5 +372,280 @@ test('SRV-3: Der Auto-Start beim letzten Beitritt setzt die Lobby auf „running
   } finally {
     for (const socket of sockets) socket.close();
     await server.close();
+  }
+});
+
+// ------------------------------------------------------------------ SRV-10
+
+/** Vollständiger Beispielzustand mit je einem Eintrag pro Snapshot-Abschnitt. */
+function protokollZustand() {
+  return {
+    tick: 4711,
+    round: 2,
+    wind: 0.5,
+    activePlayerId: 7,
+    entities: [
+      { entityId: 7, teamId: 0, alive: true, x: 12.25, y: 34.5, health: 88.5, isActiveTurn: true },
+      { entityId: 8, teamId: 1, alive: true, x: 56, y: 78, health: 100, isActiveTurn: false },
+    ],
+    projectiles: [
+      { entityId: 31, x: 1.25, y: 2.5, fuseSeconds: 1.4 },
+      { entityId: 32, x: 3.75, y: 4, fuseSeconds: 0.2 },
+    ],
+    crates: [{ entityId: 41, x: 5.5, y: 6.25, crateType: 2, rarity: 3 }],
+    turrets: [{ entityId: 51, x: 7, y: 8, teamId: 1, roundsLeft: 4 }],
+    guenther: { aktiv: true, x: 9, y: 10, richtung: -1, haufen: [] },
+  };
+}
+
+test('SRV-10: isActiveTurn, Projektil-entityId, crateType und Geschützfelder kommen beim Leser an', () => {
+  /*
+   * Vorher (Datenfluss-Audit B1/B3/B4): Die Bytes wurden gesendet, aber
+   * `isActiveTurn` und die Projektilkennung tauchten im Ergebnis nicht auf —
+   * der Client konnte sie nicht nutzen. `crateType` wird inzwischen im Renderer
+   * gelesen; hier steht der Draht-Gegenbeweis für alle vier Felder.
+   */
+  const gelesen = decodeSnapshot(encodeSnapshot(protokollZustand()));
+  assert.ok(gelesen);
+
+  assert.equal(gelesen.activePlayerId, 7);
+  assert.equal(gelesen.entities[0].isActiveTurn, true, 'Byte [10] je Spieler wird gelesen');
+  assert.equal(gelesen.entities[1].isActiveTurn, false);
+
+  assert.deepEqual(gelesen.projectiles.map(p => p.entityId), [31, 32],
+    'Projektilkennungen sind eindeutig und kommen an');
+  assert.equal(gelesen.crates[0].crateType, 2);
+  assert.equal(gelesen.crates[0].rarity, 3);
+  assert.equal(gelesen.turrets[0].teamId, 1);
+  assert.equal(gelesen.turrets[0].roundsLeft, 4);
+  assert.equal(gelesen.guenther.aktiv, true);
+  assert.equal(gelesen.truncated, false, 'ein vollständiger Takt ist nicht als abgeschnitten markiert');
+});
+
+test('SRV-10: Ein Delta spart keine Bytes — der Gewinn ist Feldgenauigkeit, nicht Größe', () => {
+  /*
+   * Vorher: Die Doku behauptete „spart bei ruhigen Ticks einen Großteil der
+   * Nutzlast". Tatsächlich belegt jeder Spieler immer PLAYER_STRIDE Bytes. Der
+   * Test hält beides fest: gleiche Größe UND dass die Feldübernahme (nicht
+   * übertragene Felder behalten ihren Wert) funktioniert. Ein echtes
+   * Byte-Sparen bräuchte ein neues Zählfeld und damit eine neue
+   * Protokollversion — v9-Aufzeichnungen dürfen nicht brechen.
+   */
+  const zustand = protokollZustand();
+  const voll = encodeSnapshot(zustand);
+  const erst = decodeSnapshot(voll);
+  const delta = encodeSnapshot(zustand, { previous: erst.previous });
+
+  assert.equal(delta.length, voll.length, 'Delta und Vollsnapshot sind gleich groß');
+  const zweit = decodeSnapshot(delta, erst.previous);
+  assert.equal(zweit.isFull, false, 'ohne Voll-Flag');
+  assert.deepEqual(zweit.entities.map(e => [e.x, e.y, e.health]),
+    erst.entities.map(e => [e.x, e.y, e.health]), 'unveränderte Felder bleiben erhalten');
+  assert.equal(zweit.projectiles.length, 2, 'Projektile stehen in jedem Takt vollständig im Puffer');
+  assert.equal(zweit.truncated, false);
+});
+
+// ------------------------------------------------------------------ SRV-11
+
+test('SRV-11: Ein abgeschnittener Projektilabschnitt wird gezählt, nicht als Kiste gedeutet', () => {
+  /*
+   * Vorher: `break` ohne Vermerk. Die Restbytes eines halben Projektils konnten
+   * anschließend als Anfang der Kisten gelesen werden — Kisten an falschen
+   * Stellen, ohne dass irgendwo stand, dass der Takt unvollständig war.
+   */
+  const voll = encodeSnapshot(protokollZustand());
+  const bis = HEADER_SIZE + 2 * PLAYER_STRIDE + PROJECTILE_STRIDE + 3;
+  const teil = decodeSnapshot(voll.subarray(0, bis));
+
+  assert.ok(teil, 'die Figuren sind vollständig — der Takt bleibt brauchbar');
+  assert.equal(teil.truncated, true);
+  assert.deepEqual(teil.truncatedSections,
+    [{ section: 'projectiles', expected: 2, read: 1 }]);
+  assert.equal(teil.projectiles.length, 1);
+  assert.deepEqual(teil.crates, [], 'Restbytes werden NICHT als Kisten gelesen');
+  assert.deepEqual(teil.turrets, []);
+  assert.equal(teil.guenther.aktiv, false, 'ohne verlässliche Grenze kein Günther-Block');
+});
+
+test('SRV-11: Abgeschnittene Kisten, Geschütze, Günther-Haufen und Cookie werden benannt', () => {
+  const basis = protokollZustand();
+  const ohne = (zustand, abschnitt) => ({ ...zustand, [abschnitt]: [] });
+
+  const kistenVoll = encodeSnapshot(ohne(basis, 'projectiles'));
+  const kistenTeil = decodeSnapshot(kistenVoll.subarray(
+    0, HEADER_SIZE + 2 * PLAYER_STRIDE + Math.floor(CRATE_STRIDE / 2),
+  ));
+  assert.ok(kistenTeil);
+  assert.deepEqual(kistenTeil.truncatedSections,
+    [{ section: 'crates', expected: 1, read: 0 }]);
+  assert.deepEqual(kistenTeil.turrets, [], 'hinter einem abgeschnittenen Abschnitt wird nicht weitergelesen');
+
+  const turmVoll = encodeSnapshot(ohne(ohne(basis, 'projectiles'), 'crates'));
+  const turmTeil = decodeSnapshot(turmVoll.subarray(
+    0, HEADER_SIZE + 2 * PLAYER_STRIDE + Math.floor(TURRET_STRIDE / 2),
+  ));
+  assert.ok(turmTeil);
+  assert.deepEqual(turmTeil.truncatedSections,
+    [{ section: 'turrets', expected: 1, read: 0 }]);
+
+  const guentherVoll = encodeSnapshot(ohne(ohne(basis, 'projectiles'), 'crates'));
+  const guentherTeil = decodeSnapshot(guentherVoll.subarray(0, guentherVoll.length - 3));
+  assert.ok(guentherTeil);
+  assert.deepEqual(guentherTeil.truncatedSections,
+    [{ section: 'guenther', expected: GUENTHER_STRIDE, read: GUENTHER_STRIDE - 3 }]);
+
+  const mitCookie = { ...basis, cookie: { x: 1, y: 2, richtung: 1, aktiv: true, pose: 'schlafen', hunger: 42 } };
+  const cookieVoll = encodeSnapshot(mitCookie);
+  const cookieTeil = decodeSnapshot(cookieVoll.subarray(0, cookieVoll.length - 2));
+  assert.ok(cookieTeil);
+  assert.deepEqual(cookieTeil.truncatedSections,
+    [{ section: 'cookie', expected: COOKIE_STRIDE, read: COOKIE_STRIDE - 2 }]);
+  assert.equal(cookieTeil.cookie, undefined, 'ein halber Cookie wird nicht als ganzer ausgegeben');
+});
+
+test('SRV-11: Ein abgeschnittener Spielerabschnitt bleibt ein unbrauchbarer Takt (null)', () => {
+  /* Ohne vollständige Figurenliste wären Positionen und Teams falsch zuzuordnen. */
+  const voll = encodeSnapshot(protokollZustand());
+  const teil = decodeSnapshot(voll.subarray(0, HEADER_SIZE + PLAYER_STRIDE + 5));
+  assert.equal(teil, null);
+  /* Die volle Länge dagegen ist gültig. */
+  assert.ok(decodeSnapshot(voll));
+});
+
+test('SRV-11: decodeSnapshot wirft bei keiner Pufferlänge und markiert jede Kürzung', () => {
+  const voll = encodeSnapshot(protokollZustand());
+  for (let bis = 0; bis < voll.length; bis++) {
+    const teil = decodeSnapshot(voll.subarray(0, bis));
+    if (teil === null) continue; // Spielerabschnitt unvollständig — bewusst null
+    assert.equal(teil.truncated, true, `${bis} von ${voll.length} Byte: Kürzung muss markiert sein`);
+    assert.ok(Array.isArray(teil.truncatedSections) && teil.truncatedSections.length > 0);
+  }
+  for (const muell of [new Uint8Array(0), new Uint8Array([MAGIC[0], MAGIC[1]]), new Uint8Array(300)]) {
+    assert.doesNotThrow(() => decodeSnapshot(muell));
+  }
+  assert.equal(decodeSnapshot(voll).truncated, false);
+});
+
+test('SRV-11: pruefeProtokollversion akzeptiert fehlende Angabe und nennt beide Zahlen', () => {
+  assert.equal(pruefeProtokollversion(undefined), null, 'ältere Sender ohne v bleiben gültig');
+  assert.equal(pruefeProtokollversion(null), null);
+  assert.equal(pruefeProtokollversion(PROTOCOL_VERSION), null);
+  const abweichung = pruefeProtokollversion(PROTOCOL_VERSION - 1);
+  assert.equal(abweichung.erwartet, PROTOCOL_VERSION);
+  assert.equal(abweichung.gemeldet, PROTOCOL_VERSION - 1);
+  assert.match(abweichung.text, new RegExp(`${PROTOCOL_VERSION - 1}.*${PROTOCOL_VERSION}`));
+  assert.match(pruefeProtokollversion('alt').text, /Ungültige Protokollversion/);
+});
+
+test('SRV-11: Der Server weist Steuernachrichten mit fremder Protokollversion ab und zählt sie', async () => {
+  /*
+   * Vorher: `v` wurde gelesen, aber nie geprüft. Ein Client mit anderer Fassung
+   * bekam widersprüchliche Antworten — Snapshots abgelehnt, JSON-Befehle
+   * ausgeführt. Fehlendes `v` muss weiter gültig bleiben (Werkzeuge,
+   * Aufzeichnungen).
+   */
+  const server = new GameServer({ serveStatic: () => false });
+  const sockets = [];
+  try {
+    const { port } = await server.listen(0);
+    const gesehen = await new Promise((resolve, reject) => {
+      const socket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
+      sockets.push(socket);
+      const frist = setTimeout(() => reject(new Error('keine Antwort auf den Handshake')), 3000);
+      const liste = [];
+      socket.on('error', reject);
+      socket.on('open', () => {
+        socket.send(JSON.stringify({ v: PROTOCOL_VERSION - 1, t: CONTROL.HELLO }));
+        socket.send(JSON.stringify({ t: CONTROL.HELLO })); // ohne v: muss ankommen
+      });
+      socket.on('message', (daten, binaer) => {
+        if (binaer) return;
+        liste.push(JSON.parse(String(daten)));
+        if (liste.some(m => m.t === CONTROL.ERROR) && liste.some(m => m.t === CONTROL.WELCOME)) {
+          clearTimeout(frist);
+          resolve(liste);
+        }
+      });
+    });
+    const fehler = gesehen.find(m => m.t === CONTROL.ERROR);
+    assert.match(fehler.error, new RegExp(`Protokollversion ${PROTOCOL_VERSION - 1} statt ${PROTOCOL_VERSION}`));
+    const willkommen = gesehen.find(m => m.t === CONTROL.WELCOME);
+    assert.equal(willkommen.protocol, PROTOCOL_VERSION, 'ohne v bleibt der Handshake gültig');
+    assert.equal(server.metrics.protocolMismatches, 1);
+  } finally {
+    for (const socket of sockets) socket.close();
+    await server.close();
+  }
+});
+
+test('SRV-11: Der Client meldet WELCOME.protocol-Abweichung und zählt sie', async () => {
+  /*
+   * Vorher: `WELCOME.protocol` wurde nur im `hello`-Ereignis durchgereicht. Ein
+   * neuer Client gegen einen alten Server sah ein stehendes Bild ohne Ursache,
+   * weil nur der Binärkanal die Version ablehnte.
+   */
+  const wss = new WebSocketServer({ port: 0, host: '127.0.0.1' });
+  await new Promise(resolve => wss.once('listening', resolve));
+  const { port } = wss.address();
+  wss.on('connection', socket => {
+    socket.on('message', () => {
+      socket.send(JSON.stringify({
+        v: PROTOCOL_VERSION - 1,
+        t: CONTROL.WELCOME,
+        protocol: PROTOCOL_VERSION - 1,
+        message: 'alter Server',
+      }));
+    });
+  });
+  const client = new NetworkClient({ url: `ws://127.0.0.1:${port}/ws`, lobbyId: 'TEST' });
+  try {
+    const meldung = new Promise((resolve, reject) => {
+      const frist = setTimeout(() => reject(new Error('keine protocol_mismatch-Meldung')), 3000);
+      client.on('protocol_mismatch', info => { clearTimeout(frist); resolve(info); });
+    });
+    await client.connect();
+    const info = await meldung;
+    assert.equal(info.gemeldet, PROTOCOL_VERSION - 1);
+    assert.equal(info.erwartet, PROTOCOL_VERSION);
+    assert.equal(info.feld, 'protocol');
+    assert.equal(client.stats.protocolMismatch?.gemeldet, PROTOCOL_VERSION - 1);
+  } finally {
+    client.disconnect();
+    await new Promise(resolve => wss.close(resolve));
+  }
+});
+
+test('SRV-11: Der Client nimmt einen abgeschnittenen, aber lesbaren Takt an und zählt ihn', async () => {
+  const voll = encodeSnapshot(protokollZustand());
+  const gekuerzt = voll.subarray(0, HEADER_SIZE + 2 * PLAYER_STRIDE + PROJECTILE_STRIDE + 3);
+  const wss = new WebSocketServer({ port: 0, host: '127.0.0.1' });
+  await new Promise(resolve => wss.once('listening', resolve));
+  const { port } = wss.address();
+  wss.on('connection', socket => {
+    let gesendet = false;
+    socket.on('message', () => {
+      // Nur auf den ersten Rahmen antworten: Der Client schickt `hello` und
+      // direkt danach `join_lobby`; zwei WELCOME wären hier nur Rauschen.
+      if (gesendet) return;
+      gesendet = true;
+      socket.send(JSON.stringify({ v: PROTOCOL_VERSION, t: CONTROL.WELCOME, protocol: PROTOCOL_VERSION }));
+      socket.send(gekuerzt);
+    });
+  });
+  const client = new NetworkClient({ url: `ws://127.0.0.1:${port}/ws`, lobbyId: 'TEST' });
+  try {
+    // ZUHÖRER VOR connect(): Die erste Nachricht kann im selben Takt eintreffen.
+    const ersteMeldung = new Promise((resolve, reject) => {
+      const frist = setTimeout(() => reject(new Error('kein snapshot_truncated')), 3000);
+      client.on('snapshot_truncated', meldung => { clearTimeout(frist); resolve(meldung); });
+    });
+    await client.connect();
+    const info = await ersteMeldung;
+    assert.deepEqual(info.sections, [{ section: 'projectiles', expected: 2, read: 1 }]);
+    assert.equal(client.stats.truncatedSnapshots, 1);
+    assert.equal(client.latestSnapshot.projectiles.length, 1, 'der lesbare Teil wird angezeigt');
+  } finally {
+    client.disconnect();
+    await new Promise(resolve => wss.close(resolve));
   }
 });

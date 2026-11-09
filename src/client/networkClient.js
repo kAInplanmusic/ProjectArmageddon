@@ -16,6 +16,7 @@ import {
   controlMessage,
   parseControlMessage,
   decodeSnapshot,
+  pruefeProtokollversion,
 } from '../shared/protocol.js';
 import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
 
@@ -171,6 +172,17 @@ export class NetworkClient {
    * HUD-Meldung).
    */
   #snapshotRejects = 0;
+  /**
+   * Zuletzt gemeldete Abweichung der Protokollversion (`pruefeProtokollversion`,
+   * SRV-11) — null, solange Server und Client zusammenpassen.
+   *
+   * Vorher wurde `WELCOME.protocol` nur im `hello`-Ereignis durchgereicht und
+   * nirgends verglichen: Ein neuer Client gegen einen alten Server sah ein
+   * stehendes Bild, ohne dass die Ursache irgendwo stand.
+   */
+  #protocolMismatch = null;
+  /** Zustandstakte, die vollständig gelesen, aber als abgeschnitten gemeldet wurden. */
+  #truncatedSnapshots = 0;
   #pingTimer = null;
   #pingIntervalMs;
 
@@ -276,6 +288,10 @@ export class NetworkClient {
        * Takte verloren gingen (und die HUD-Meldung nennt den Grund).
        */
       snapshotRejects: this.#snapshotRejects,
+      /** Abgeschnittene, aber lesbare Zustandstakte (SRV-11). */
+      truncatedSnapshots: this.#truncatedSnapshots,
+      /** Abweichung aus `WELCOME.protocol` oder null (SRV-11). */
+      protocolMismatch: this.#protocolMismatch,
     };
   }
   get isConnected() { return this.#state === CONNECTION_STATE.CONNECTED; }
@@ -414,6 +430,21 @@ export class NetworkClient {
         return;
       }
       this.#lastDecoded = snapshot;
+      /*
+       * Ein abgeschnittener, aber lesbarer Takt wird ANGENOMMEN und GEZÄHLT
+       * (SRV-11): Die Figuren sind vollständig, nur ein hinterer Abschnitt
+       * (etwa Kisten) fehlt. Den ganzen Takt zu verwerfen wäre schlechter — der
+       * nächste Vollsnapshot heilt die Lücke ohnehin. Gemeldet wird er trotzdem,
+       * damit „es fehlen Kisten" nicht als Spielgeschehen durchgeht.
+       */
+      if (snapshot.truncated) {
+        this.#truncatedSnapshots += 1;
+        this.#emit('snapshot_truncated', {
+          sections: snapshot.truncatedSections,
+          bytes: view.length,
+          versuche: this.#truncatedSnapshots,
+        });
+      }
       this.#snapshots.push(snapshot);
       if (this.#snapshots.length > 30) this.#snapshots.shift();
       this.#snapshotsReceived += 1;
@@ -434,6 +465,22 @@ export class NetworkClient {
 
     switch (message.t) {
       case CONTROL.WELCOME:
+        /*
+         * Protokollversion vergleichen, BEVOR irgendetwas übernommen wird
+         * (SRV-11). `WELCOME.protocol` wurde bisher nur im `hello`-Zweig
+         * durchgereicht und nie geprüft — bei abweichender Fassung entstand ein
+         * stehendes Bild ohne Ursache, weil nur der Binärkanal die Version
+         * ablehnte. Gemeldet wird, ohne die Verbindung zu kappen: Ein älterer
+         * Server kann trotzdem noch brauchbare Karten- und Lobbydaten liefern,
+         * und ein harter Abbruch wäre eine neue Bruchstelle.
+         */
+        this.#protocolMismatch = pruefeProtokollversion(message.protocol);
+        if (this.#protocolMismatch) {
+          this.#emit('protocol_mismatch', {
+            ...this.#protocolMismatch,
+            feld: 'protocol',
+          });
+        }
         if (message.token) {
           this.#token = message.token;
           /*
@@ -485,7 +532,10 @@ export class NetworkClient {
           });
           this.#emit('state', this.#state);
         } else {
-          this.#emit('hello', { protocol: message.protocol });
+          this.#emit('hello', {
+            protocol: message.protocol,
+            kompatibel: this.#protocolMismatch === null,
+          });
         }
         break;
 
