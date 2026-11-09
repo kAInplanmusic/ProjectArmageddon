@@ -1,188 +1,468 @@
 {
- "version": 1,
- "hinweis": "8 Frames (4x2, Zelle 256), Blick rechts, Schleife; erzeugt mit Replicate flux-kontext-pro aus dem Icon der Waffe. Noch nicht in waffenAnimation.js eingebunden.",
+ "version": 2,
+ "status": "gesperrt",
+ "hinweis": "Zusatz-Sheets als Material, NICHT im Produktpfad. Jedes Blatt ist gesperrt (freigabe:false), bis Rolle und Identität abgenommen sind; Ladepfad und Abnahmekriterien siehe docs/waffen-audit-2026-11-08/ANIM-GATING.md und src/client/waffenAnim.js.",
+ "freigabe": {
+  "produktpfad": false,
+  "regel": "Ein Blatt darf nur geladen werden, wenn freigabe===true, die ID in ANIM_FREIGABE steht und ein Lader im Renderer verdrahtet ist.",
+  "bedingungen": [
+   "Motiv stimmt mit der Waffe überein (kein fremdes Tier/Humanoid)",
+   "Rolle aus rollen ist gesetzt und die Anker passen zu dieser Rolle",
+   "mindestens 6 unterscheidbare Frames, Schleife schließt, keine Formbrüche",
+   "eingebrannte Effekte (W17) sind getrennt oder als Ruhebild belegt",
+   "Browserabnahme nach W20 bestanden"
+  ],
+  "aktivierung": [
+   "hier freigabe:true setzen (nur nach Abnahme)",
+   "ID in src/client/waffenAnim.js ANIM_FREIGABE aufnehmen",
+   "Lader im Renderer verdrahten und Test tests/waffen-anim-gating.test.js bewusst anpassen"
+  ]
+ },
+ "rollen": {
+  "flug": {
+   "titel": "Projektil im Flug",
+   "beschreibung": "Geschoss, Rakete, Granate oder Meteor, das im Flug gezeichnet wird; Achse = Flugrichtung, Anker Griff entfällt.",
+   "anker": [
+    "flugStart",
+    "flugEnde"
+   ]
+  },
+  "wurf": {
+   "titel": "Geworfenes Objekt",
+   "beschreibung": "Wurfwaffe mit eigener Drehachse, optional Rückkehr; keine Mündung.",
+   "anker": [
+    "wurfHand",
+    "wurfDrehpunkt"
+   ]
+  },
+  "ruecken": {
+   "titel": "Rückenobjekt",
+   "beschreibung": "Am Rücken des Spielers getragen (Rucksack, Schirm); Renderer-Korrektur der Figur bleibt zuständig.",
+   "anker": [
+    "rueckenMitte"
+   ]
+  },
+  "hand": {
+   "titel": "Gehaltene Waffe",
+   "beschreibung": "Waffe in der Hand mit Griff und Wirkspitze (Mündung, Klinge, Kontaktfläche).",
+   "anker": [
+    "grip",
+    "muzzle"
+   ]
+  },
+  "selbst": {
+   "titel": "Wirkung am eigenen Spieler",
+   "beschreibung": "Aura/Schild/Tempo am Träger; kein Zielstrahl, keine Mündung.",
+   "anker": [
+    "traegerMitte"
+   ]
+  },
+  "welt": {
+   "titel": "Weltobjekt am Boden",
+   "beschreibung": "Abgelegtes oder aufgestelltes Objekt (Mine, Bombe, Aufbau); bleibt an Weltkoordinate.",
+   "anker": [
+    "bodenMitte"
+   ]
+  },
+  "beschwoerung": {
+   "titel": "Beschworene Figur",
+   "beschreibung": "Wächter/Kreatur, die selbstständig handelt; eigene Körperanimation, kein Waffenblatt.",
+   "anker": [
+    "figurFuss"
+   ]
+  }
+ },
  "waffen": {
   "pa_032": {
+   "id": "pa_032",
    "datei": "pa_032.webp",
    "special": "flight",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Raketenrucksack",
+   "rolle": "ruecken",
+   "freigabe": false,
+   "motiv": "blauer geflügelter Käfer/Krebs",
+   "befund": "fremdes Tier statt grünem Rucksack",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_038": {
+   "id": "pa_038",
    "datei": "pa_038.webp",
    "special": "rocket",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Rakete",
+   "rolle": "flug",
+   "freigabe": false,
+   "motiv": "orange Rakete mit Flammenmantel",
+   "befund": "Triebwerksflamme eingebrannt (W17), sonst motivnah",
+   "schwere": "nah",
+   "abnahme": "offen"
   },
   "pa_044": {
+   "id": "pa_044",
    "datei": "pa_044.webp",
    "special": "phoenix_strike",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Phönixschlag",
+   "rolle": "flug",
+   "freigabe": false,
+   "motiv": "brennender Phönix",
+   "befund": "Motiv passend, Frames nahezu identisch, Feuer eingebrannt",
+   "schwere": "statisch",
+   "abnahme": "offen"
   },
   "pa_048": {
+   "id": "pa_048",
    "datei": "pa_048.webp",
    "special": "banana_split",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Bananengranate",
+   "rolle": "flug",
+   "freigabe": false,
+   "motiv": "Bananengranate mit Zünder",
+   "befund": "motivnah, statisch, keine Rotation/Splitter",
+   "schwere": "nah",
+   "abnahme": "offen"
   },
   "pa_049": {
+   "id": "pa_049",
    "datei": "pa_049.webp",
    "special": "returning_projectile",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Bumerang",
+   "rolle": "wurf",
+   "freigabe": false,
+   "motiv": "orange Bombe mit grauen Flügeln",
+   "befund": "fremdes Flugobjekt, kein Bumerang",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_053": {
+   "id": "pa_053",
    "datei": "pa_053.webp",
    "special": "delayed_bot",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Roboterbombe",
+   "rolle": "welt",
+   "freigabe": false,
+   "motiv": "Holzwagen mit Mäusen",
+   "befund": "fremdes Motiv, keine Roboterbombe",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_061": {
+   "id": "pa_061",
    "datei": "pa_061.webp",
    "special": "fire_entity",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Feuerdämon",
+   "rolle": "beschwoerung",
+   "freigabe": false,
+   "motiv": "brennender Dämon",
+   "befund": "Motiv passend, Flammen eingebrannt, statisch",
+   "schwere": "statisch",
+   "abnahme": "offen"
   },
   "pa_065": {
+   "id": "pa_065",
    "datei": "pa_065.webp",
    "special": "meteor_impact",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Meteorbrocken",
+   "rolle": "flug",
+   "freigabe": false,
+   "motiv": "Stein mit gelbem Schweif",
+   "befund": "Schweif angeklebt/eingebrannt, Formwechsel",
+   "schwere": "statisch",
+   "abnahme": "offen"
   },
   "pa_073": {
+   "id": "pa_073",
    "datei": "pa_073.webp",
    "special": "tentacle_zone",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Tentakelgift",
+   "rolle": "welt",
+   "freigabe": false,
+   "motiv": "grüner zweibeiniger Dinosaurier",
+   "befund": "fremdes Tier, kein Tentakelgift",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_112": {
+   "id": "pa_112",
    "datei": "pa_112.webp",
    "special": "flight",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Düsenrucksack",
+   "rolle": "ruecken",
+   "freigabe": false,
+   "motiv": "blau geflügeltes Flugwesen",
+   "befund": "fremdes Tier; bytegleich mit pa_114 (W06)",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_114": {
+   "id": "pa_114",
    "datei": "pa_114.webp",
    "special": "flight",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Gleitschirm",
+   "rolle": "ruecken",
+   "freigabe": false,
+   "motiv": "blau geflügeltes Flugwesen",
+   "befund": "kein Schirm; bytegleich mit pa_112 (W06)",
+   "schwere": "fremd",
+   "abnahme": "offen",
+   "dubletteVon": "pa_112"
   },
   "pa_115": {
+   "id": "pa_115",
    "datei": "pa_115.webp",
    "special": "guardian",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Wächterstatue",
+   "rolle": "beschwoerung",
+   "freigabe": false,
+   "motiv": "Giraffenstatue",
+   "befund": "motivnah, keine Bewegung",
+   "schwere": "statisch",
+   "abnahme": "offen"
   },
   "pa_118": {
+   "id": "pa_118",
    "datei": "pa_118.webp",
    "special": "fire_minion",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Feuerwesen",
+   "rolle": "beschwoerung",
+   "freigabe": false,
+   "motiv": "grauer Humanoid mit Feuerball",
+   "befund": "Körper/Material weicht ab, Flamme eingebrannt",
+   "schwere": "identitaet",
+   "abnahme": "offen"
   },
   "pa_121": {
+   "id": "pa_121",
    "datei": "pa_121.webp",
    "special": "rocket_punch",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Raketenfaust",
+   "rolle": "hand",
+   "freigabe": false,
+   "motiv": "Clownfaust mit Raketenantrieb",
+   "befund": "motivnah, Frames fast identisch, Achse prüfen",
+   "schwere": "statisch",
+   "abnahme": "offen"
   },
   "pa_122": {
+   "id": "pa_122",
    "datei": "pa_122.webp",
    "special": "loop",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Endlosschleife",
+   "rolle": "selbst",
+   "freigabe": false,
+   "motiv": "rosa geflügeltes Wesen, Frame 7 Unendlichkeitszeichen",
+   "befund": "fremdes Tier, harter Motivsprung",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_132": {
+   "id": "pa_132",
    "datei": "pa_132.webp",
    "special": "old_lady_strike",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Alte Dame",
+   "rolle": "beschwoerung",
+   "freigabe": false,
+   "motiv": "Alte Dame (Frame 0), danach geflügeltes Wesen",
+   "befund": "Identitätsbruch ab Frame 3",
+   "schwere": "identitaet",
+   "abnahme": "offen"
   },
   "pa_133": {
+   "id": "pa_133",
    "datei": "pa_133.webp",
    "special": "guided_sheep",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Fliegendes Superschaf",
+   "rolle": "flug",
+   "freigabe": false,
+   "motiv": "geflügeltes Schaf mit Cape",
+   "befund": "motivnah, Flügelkontinuität prüfen",
+   "schwere": "nah",
+   "abnahme": "offen"
   },
   "pa_134": {
+   "id": "pa_134",
    "datei": "pa_134.webp",
    "special": "air_strike",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Luftangriff",
+   "rolle": "flug",
+   "freigabe": false,
+   "motiv": "brauner Flugkörper mit Flamme",
+   "befund": "generisch, Flamme eingebrannt, keine Luftangriffsszene",
+   "schwere": "identitaet",
+   "abnahme": "offen"
   },
   "pa_135": {
+   "id": "pa_135",
    "datei": "pa_135.webp",
    "special": "meteor_rain",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Meteorregen",
+   "rolle": "flug",
+   "freigabe": false,
+   "motiv": "Meteor mit Feuerschweif",
+   "befund": "Schweif eingebrannt, Gestalt wechselt",
+   "schwere": "statisch",
+   "abnahme": "offen"
   },
   "pa_136": {
+   "id": "pa_136",
    "datei": "pa_136.webp",
    "special": "drill_rocket",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Bohrkopfrakete",
+   "rolle": "flug",
+   "freigabe": false,
+   "motiv": "Bohrkopfrakete mit Flamme/Rauch",
+   "befund": "Schweif eingebrannt, Frames springen",
+   "schwere": "statisch",
+   "abnahme": "offen"
   },
   "pa_141": {
+   "id": "pa_141",
    "datei": "pa_141.webp",
    "special": "summon_warrior",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Astralkrieger",
+   "rolle": "beschwoerung",
+   "freigabe": false,
+   "motiv": "einfacher blauer Humanoid",
+   "befund": "fremder Humanoid statt Krieger",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_142": {
+   "id": "pa_142",
    "datei": "pa_142.webp",
    "special": "void_knight",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Leerenritter",
+   "rolle": "beschwoerung",
+   "freigabe": false,
+   "motiv": "blauer Cartoon-Zauberer",
+   "befund": "fremder Humanoid statt Leerenritter",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_143": {
+   "id": "pa_143",
    "datei": "pa_143.webp",
    "special": "summon_mount",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Astralross",
+   "rolle": "beschwoerung",
+   "freigabe": false,
+   "motiv": "ausgewaschenes gepanzertes Pferd",
+   "befund": "Kontrastverlust, statisch, weiße Reste",
+   "schwere": "identitaet",
+   "abnahme": "offen"
   },
   "pa_144": {
+   "id": "pa_144",
    "datei": "pa_144.webp",
    "special": "cosmic_banana",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Kosmische Wassermelone",
+   "rolle": "flug",
+   "freigabe": false,
+   "motiv": "geflügeltes Vogelwesen mit Melonenkopf",
+   "befund": "fremdes Tier, keine Wassermelone",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_147": {
+   "id": "pa_147",
    "datei": "pa_147.webp",
    "special": "dragon_ultimate",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Weltendrache",
+   "rolle": "beschwoerung",
+   "freigabe": false,
+   "motiv": "rosa geflügeltes Schwein",
+   "befund": "fremdes Tier statt Weltendrache",
+   "schwere": "fremd",
+   "abnahme": "offen"
   },
   "pa_148": {
+   "id": "pa_148",
    "datei": "pa_148.webp",
    "special": "guardian_ultimate",
    "frames": 8,
    "spalten": 4,
-   "zelle": 256
+   "zelle": 256,
+   "waffe": "Feuerschild",
+   "rolle": "selbst",
+   "freigabe": false,
+   "motiv": "blaues geflügeltes Tier",
+   "befund": "fremdes Tier, kein Schild",
+   "schwere": "fremd",
+   "abnahme": "offen"
   }
  }
 }

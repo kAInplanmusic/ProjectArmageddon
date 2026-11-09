@@ -15,6 +15,11 @@
  * Die Abhängigkeiten (Bild laden, Leinwand anlegen, URLs) sind einsetzbar,
  * damit die Logik ohne Browser prüfbar ist (`erzeugeWaffenSprites`).
  *
+ * Zusatzanimationen (`weapon-sprites/anim/`) werden hier absichtlich nicht
+ * geladen. Diese 26 Blätter sind bis zur Rollen- und Identitätsabnahme gesperrt
+ * (W05/W11); Rollen, Sperre und Abnahmekriterien stehen in `waffenAnim.js`,
+ * der Stand in `docs/waffen-audit-2026-11-08/ANIM-GATING.md`.
+ *
  * @module waffenSprites
  */
 

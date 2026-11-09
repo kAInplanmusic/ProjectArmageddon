@@ -1,0 +1,205 @@
+{
+ "version": 1,
+ "auftrag": "W17",
+ "hinweis": "Eingebrannte aktive Effekte in Ruhebildern. Datenstand fuer die spaetere Trennung von Koerper und Effekt; es wird nichts neu gezeichnet und nichts geladen. Der Renderer zeichnet weiterhin den unveraenderten Atlas.",
+ "regel": "Ein Ruhebild darf keinen Schusszustand zeigen. Effekt=getrennte Ebene (muendungsblitz|flamme|feuerstrahl|rauchfahne|glut|spaene), Koerper=Rest.",
+ "handbilder": [
+  {
+   "id": "pa_002",
+   "waffe": "Feuerfaust",
+   "art": "flamme",
+   "beobachtung": "Faust von Flammen umschlossen",
+   "detail": "Flamme am Körper; Ruhebild zeigt Dauerbrand",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_022",
+   "waffe": "Plasmawerfer",
+   "art": "muendungsblitz",
+   "beobachtung": "heller Blitz am Laufende",
+   "detail": "Schusszustand im Ruhebild",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_026",
+   "waffe": "Pressluftbohrer",
+   "art": "spaene",
+   "beobachtung": "Metallspäne/Splitter an der Bohrspitze",
+   "detail": "Kontakteffekt, kein Schuss; eigene Kontaktlage nötig",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_027",
+   "waffe": "Fackel",
+   "art": "flamme",
+   "beobachtung": "große Flamme plus Rauch",
+   "detail": "Fackel trägt Dauerflamme im Handbild",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_036",
+   "waffe": "Raketenhandschuh",
+   "art": "flamme",
+   "beobachtung": "Rakete mit Flamme am Handschuh",
+   "detail": "Projektil und Flamme bereits abgefeuert gezeichnet",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_037",
+   "waffe": "Raketenwerfer",
+   "art": "muendungsflamme",
+   "beobachtung": "Rakete mit Flamme im Rohr",
+   "detail": "geladener Schuss als Ruhezustand",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_038",
+   "waffe": "Rakete",
+   "art": "triebwerksflamme",
+   "beobachtung": "Rakete mit Abgasflamme",
+   "detail": "Waffe ist selbst Projektil; Flamme gehört in Flugspur",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_045",
+   "waffe": "Raketensalve",
+   "art": "flamme",
+   "beobachtung": "drei Raketen mit Abgasflammen",
+   "detail": "Salve und Flammen eingebrannt; ein Startprojektil im Motor",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_052",
+   "waffe": "Molotowcocktail",
+   "art": "flamme",
+   "beobachtung": "brennende Lunte/Flamme an der Flasche",
+   "detail": "Flamme als Dauerzustand statt Zündmoment",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_061",
+   "waffe": "Feuerdämon",
+   "art": "flamme",
+   "beobachtung": "Flammen an Händen und Körper",
+   "detail": "Feuerwesen: Flamme ist Motiv, Bewegung fehlt",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_062",
+   "waffe": "Flammenwerfer",
+   "art": "feuerstrahl",
+   "beobachtung": "Feuerstrahl aus der Düse",
+   "detail": "Strahl eingebrannt; Strahl ist Motor-/Effektaufgabe",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_118",
+   "waffe": "Feuerwesen",
+   "art": "flamme",
+   "beobachtung": "Feuerball in der Hand",
+   "detail": "Flamme plus Körperform weichen vom Icon ab",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_136",
+   "waffe": "Bohrkopfrakete",
+   "art": "rauchfahne",
+   "beobachtung": "Rauch-/Feuerfahne am Heck",
+   "detail": "Schweif gehört zur Flugspur, nicht zum Körper",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_137",
+   "waffe": "Flammenklinge",
+   "art": "flamme",
+   "beobachtung": "Flamme entlang der Klinge",
+   "detail": "Feuer als eigener Effekt über der Klinge führen",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_139",
+   "waffe": "Höllenkanone",
+   "art": "glut",
+   "beobachtung": "Glut/Mündungsfeuer im Lauf",
+   "detail": "Dauerfeuer-Optik im Ruhebild",
+   "trennung": "offen"
+  }
+ ],
+ "animationsblaetter": [
+  {
+   "id": "pa_038",
+   "waffe": "Rakete",
+   "art": "triebwerksflamme",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_044",
+   "waffe": "Phönixschlag",
+   "art": "flamme",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_061",
+   "waffe": "Feuerdämon",
+   "art": "flamme",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_065",
+   "waffe": "Meteorbrocken",
+   "art": "schweif",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_118",
+   "waffe": "Feuerwesen",
+   "art": "flamme",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_134",
+   "waffe": "Luftangriff",
+   "art": "flamme",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_135",
+   "waffe": "Meteorregen",
+   "art": "feuerschweif",
+   "trennung": "offen"
+  },
+  {
+   "id": "pa_136",
+   "waffe": "Bohrkopfrakete",
+   "art": "rauchfahne",
+   "trennung": "offen"
+  }
+ ],
+ "grenzfaelle": [
+  {
+   "id": "pa_044",
+   "waffe": "Phönixschlag",
+   "notiz": "Flammenflügel sind Teil der Phönix-Identität"
+  },
+  {
+   "id": "pa_072",
+   "waffe": "Feuerball",
+   "notiz": "Feuerball als gesamtes Motiv"
+  },
+  {
+   "id": "pa_129",
+   "waffe": "Tesla-Turm",
+   "notiz": "Funkenbogen am Turm"
+  },
+  {
+   "id": "pa_140",
+   "waffe": "Quantenkanone",
+   "notiz": "Glühen am Lauf, kein Strahl"
+  },
+  {
+   "id": "pa_148",
+   "waffe": "Feuerschild",
+   "notiz": "Glut um den Schild"
+  }
+ ]
+}

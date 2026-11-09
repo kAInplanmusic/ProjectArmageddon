@@ -65,6 +65,12 @@ Kein Produktcode lädt `weapon-sprites/anim` oder dessen Manifest. Die 26 Dateie
 
 Konkrete Beispiele: Bumerang wird zum geflügelten Tier, Tentakelgift zum zweibeinigen Dinosaurier, Alte Dame zu einem geflügelten Wesen, Astralkrieger zum einfachen blauen Humanoiden, Wassermelone zum geflügelten Vogelwesen und Weltendrache zum rosa geflügelten Schwein. Feuerschild zeigt ein blaues Tier statt des Schildes. Düsenrucksack pa_112 und Gleitschirm pa_114 sind bytegleich. Einzelne Blätter wie Rakete, Phönix, Bananengranate oder Superschaf sind näher an der Vorlage, benötigen aber weiterhin Bewegungs-/Rollenabnahme.
 
+Nachtrag 09.11.2026 (Branch `bg/waffen-anim`): Die Sperre ist jetzt technisch
+durchgesetzt und geprüft (`tests/waffen-anim-gating.test.js`, Lader in
+`src/client/waffenAnim.js`), die Blätter sind je Motiv/Befund/Rolle einzeln
+erfasst, und die eingebrannten Effekte (W17) liegen als Datenstand vor:
+[ANIM-GATING.md](ANIM-GATING.md). An Motiven und Werten wurde nichts geändert.
+
 ### W09/W10 – Darstellung darf keine fremde Mechanik suggerieren
 
 38 Waffen wirken zuerst auf den eigenen Spieler bzw. stellen etwas auf. 23 davon tragen trotzdem einen positiven Schadenswert, der als Kennzahl/ableitender Parameter im Katalog steht. Eine pauschale DMG-Zeile ist dafür unverständlich. Beispiel Heilzauber: wirkliche Heilmenge 40 plus Frostreinigung, statt nur „Schaden 35“.
