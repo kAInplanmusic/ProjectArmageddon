@@ -24,7 +24,7 @@ import {
 } from '../shared/config/weapons.js';
 import { artLabel } from '../shared/config/wirkungstexte.js';
 import { getWaffe, WAFFEN_STANDARD } from '../shared/config/waffen-fassung.js';
-import { waffeFuerAnzeige, wirkungsKennzahl } from './waffenSicht.js';
+import { waffeFuerAnzeige, wirkungsKennzahl, SEMANTISCHE_ROLLEN } from './waffenSicht.js';
 import { munitionsKlasse } from '../shared/config/munition.js';
 import { holeWaffenIcon, atlasAusschnitt } from './waffenIcons.js';
 
@@ -389,8 +389,18 @@ export class WaffenMenue {
     const rolle = b.sicht?.rolle ?? 'hand';
     const wirkung = wirkungsKennzahl(w, effekt);
     const selbstOderWelt = rolle === 'selbst' || rolle === 'weltobjekt';
+    /*
+     * BAL-11: Die dokumentierte Rolle sichtbar machen. Für Handwaffen wäre die
+     * Zeile Rauschen; Rücken, Aufstellobjekt, Beschwörung und Symbol erklären
+     * dagegen, warum die Waffe nicht als gewöhnliche Schusswaffe erscheint.
+     */
+    const semantik = b.sicht?.semantischeRolle ?? null;
+    const rollenText = semantik && semantik !== 'hand' && SEMANTISCHE_ROLLEN[semantik]
+      ? `${SEMANTISCHE_ROLLEN[semantik].label} – ${SEMANTISCHE_ROLLEN[semantik].kurz}`
+      : '';
     info.textContent = [
       w.description ? `${w.displayName}: ${w.description}` : w.displayName,
+      rollenText,
       `Art ${artLabel(w.damageType)}`,
       // W09: Heilung/Schild/Bewegung/Mine nie als „Schaden“ ausgeben. Der
       // Katalogwert positiver Selbstwirkungen ist nur ein abgeleiteter Parameter.

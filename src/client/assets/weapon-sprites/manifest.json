@@ -3,6 +3,41 @@
  "generator": "scripts/waffen-sprites.py",
  "facing": "right",
  "hinweis": "Zellen {x,y,w,h} in Atlas-Pixeln; Anker in Zellen-Pixeln der held-Zelle (0,0 = links oben). anchor.grip/muzzle sind gesetzt (scripts/waffen-anker-tabelle.json, Quelle 'semantik'): halt 'heft' = eigener Heftpunkt, 'koerper' = am Koerper gehalten (Griff = Schwerpunkt); anchor.heft = belegte Heftspanne, anchor.spiegeln = Zelle fuer das Wirkende nach rechts gespiegelt, anchor.fest = Muendung in der Tabelle gesetzt (Rohr erreicht den Zellrand nicht). rotation = Grad gegen den Uhrzeigersinn, mit der das Original gedreht wurde (nach optionaler Spiegelung, gespiegelt:true). projectile.angle = Drehung (Grad) der Zelle gegenueber der Flugrichtung (0 = Spitze rechts).",
+ "rollen": {
+  "hinweis": "rolle = wie die Waffe an der Figur hängt; wirkpfad = was die Figur beim Einsatz verlässt. Die 96 Geschosszellen sind nicht 96 Projektilpfade: 87 Waffen starten ein Geschoss, 9 Bilder sind Begleitmaterial (Abgas, Portalglanz, Turmschuss, Beschwörungsglühen). Quelle: src/shared/config/waffen-rollen.js.",
+  "definitionen": {
+   "hand": "Wird in der Hand geführt oder geworfen; das Handbild ist bei Wurfwaffen zugleich das Flugbild.",
+   "ruecken": "Wird am Körper getragen (Rucksack, Düsenantrieb, Gleitschirm), nicht in der Faust.",
+   "aufstell": "Wird als Objekt in die Welt gesetzt und wirkt dort weiter (Mine, Geschütz, Bunker, Kiste, Statue, Boot, Portal, Baum, Netz).",
+   "beschwoerung": "Ruft ein Wesen herbei, das selbst handelt (Astralkrieger, Astralross, Feuerdämon, Feuerwesen, Windkrieger).",
+   "symbol": "Zeichen oder Anwendungsobjekt am eigenen Träger (Elixier, Schriftrolle, Schild-Aura, Sanduhr, Werkzeug); kein gerichtetes Handgerät."
+  },
+  "zaehlung": {
+   "hand": 109,
+   "ruecken": 3,
+   "aufstell": 12,
+   "beschwoerung": 5,
+   "symbol": 21
+  },
+  "wirkpfade": {
+   "projektil": 87,
+   "strahl": 25,
+   "selbst": 38
+  },
+  "geschossbilder": 96,
+  "projektilpfade": 87,
+  "bilderOhnePfad": [
+   "pa_032",
+   "pa_076",
+   "pa_079",
+   "pa_105",
+   "pa_124",
+   "pa_141",
+   "pa_143",
+   "pa_148",
+   "pa_149"
+  ]
+ },
  "zellen": {
   "held": 128,
   "silhouette": 128,
@@ -118,7 +153,9 @@
     "x": 0,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eba364",
    "korrektur": true,
@@ -142,7 +179,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_002": {
    "id": "pa_002",
@@ -196,7 +235,9 @@
     "x": 32,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb7e1c",
    "korrektur": true,
@@ -220,7 +261,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_003": {
    "id": "pa_003",
@@ -274,7 +317,9 @@
     "x": 64,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eba55e",
    "korrektur": true,
@@ -298,7 +343,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_004": {
    "id": "pa_004",
@@ -352,7 +399,9 @@
     "x": 96,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb9453",
    "korrektur": true,
@@ -376,7 +425,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_005": {
    "id": "pa_005",
@@ -430,7 +481,9 @@
     "x": 128,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb894f",
    "korrektur": true,
@@ -454,7 +507,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_006": {
    "id": "pa_006",
@@ -508,7 +563,9 @@
     "x": 160,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb984f",
    "korrektur": true,
@@ -532,7 +589,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_007": {
    "id": "pa_007",
@@ -586,7 +645,9 @@
     "x": 192,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb976a",
    "korrektur": false,
@@ -610,7 +671,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_008": {
    "id": "pa_008",
@@ -624,7 +687,7 @@
     "datei": "IMG_9043.PNG",
     "aufloesung": 1024
    },
-   "rotation": -43.0,
+   "rotation": -43,
    "gespiegelt": false,
    "streckung": 2.03,
    "content": {
@@ -664,7 +727,9 @@
     "x": 224,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb7249",
    "korrektur": true,
@@ -688,7 +753,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_009": {
    "id": "pa_009",
@@ -742,7 +809,9 @@
     "x": 256,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#6ac5eb",
    "korrektur": true,
@@ -766,7 +835,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_010": {
    "id": "pa_010",
@@ -820,7 +891,9 @@
     "x": 288,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb5035",
    "korrektur": false,
@@ -844,7 +917,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_011": {
    "id": "pa_011",
@@ -858,7 +933,7 @@
     "datei": "IMG_9046.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.04,
    "content": {
@@ -898,7 +973,9 @@
     "x": 320,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb6347",
    "korrektur": true,
@@ -922,7 +999,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_012": {
    "id": "pa_012",
@@ -976,7 +1055,9 @@
     "x": 352,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eba95a",
    "korrektur": true,
@@ -1000,7 +1081,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_013": {
    "id": "pa_013",
@@ -1054,7 +1137,9 @@
     "x": 384,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#6abfeb",
    "korrektur": false,
@@ -1078,7 +1163,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_014": {
    "id": "pa_014",
@@ -1092,7 +1179,7 @@
     "datei": "IMG_9049.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 2.97,
    "content": {
@@ -1132,7 +1219,9 @@
     "x": 416,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb9951",
    "korrektur": true,
@@ -1156,7 +1245,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_015": {
    "id": "pa_015",
@@ -1210,7 +1301,9 @@
     "x": 448,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eba356",
    "korrektur": false,
@@ -1234,7 +1327,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_016": {
    "id": "pa_016",
@@ -1288,7 +1383,9 @@
     "x": 480,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#57a3eb",
    "korrektur": false,
@@ -1312,7 +1409,9 @@
     "y": 0,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_017": {
    "id": "pa_017",
@@ -1366,7 +1465,9 @@
     "x": 512,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb8e4f",
    "korrektur": true,
@@ -1390,7 +1491,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_018": {
    "id": "pa_018",
@@ -1444,7 +1547,9 @@
     "x": 544,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#3fd5ed",
    "korrektur": true,
@@ -1468,7 +1573,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_019": {
    "id": "pa_019",
@@ -1522,7 +1629,9 @@
     "x": 576,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb7f58",
    "korrektur": true,
@@ -1546,7 +1655,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_020": {
    "id": "pa_020",
@@ -1560,7 +1671,7 @@
     "datei": "IMG_9055.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.37,
    "content": {
@@ -1600,7 +1711,9 @@
     "x": 608,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#6a82eb",
    "korrektur": false,
@@ -1624,7 +1737,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_021": {
    "id": "pa_021",
@@ -1678,7 +1793,9 @@
     "x": 640,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#6abaeb",
    "korrektur": true,
@@ -1702,7 +1819,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_022": {
    "id": "pa_022",
@@ -1716,7 +1835,7 @@
     "datei": "IMG_9059.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": true,
    "streckung": 1.57,
    "content": {
@@ -1756,7 +1875,9 @@
     "x": 0,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#ebc827",
    "korrektur": false,
@@ -1780,7 +1901,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_023": {
    "id": "pa_023",
@@ -1834,7 +1957,9 @@
     "x": 32,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb4c3f",
    "korrektur": false,
@@ -1858,7 +1983,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_024": {
    "id": "pa_024",
@@ -1912,7 +2039,9 @@
     "x": 64,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#f9a770",
    "korrektur": false,
@@ -1936,7 +2065,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_025": {
    "id": "pa_025",
@@ -1990,7 +2121,9 @@
     "x": 96,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#31d0eb",
    "korrektur": false,
@@ -2014,7 +2147,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_026": {
    "id": "pa_026",
@@ -2068,7 +2203,9 @@
     "x": 128,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb6041",
    "korrektur": false,
@@ -2092,7 +2229,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_027": {
    "id": "pa_027",
@@ -2106,7 +2245,7 @@
     "datei": "IMG_9066.PNG",
     "aufloesung": 1024
    },
-   "rotation": 56.0,
+   "rotation": 56,
    "gespiegelt": false,
    "streckung": 3.27,
    "content": {
@@ -2146,7 +2285,9 @@
     "x": 160,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb7e20",
    "korrektur": true,
@@ -2170,7 +2311,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_028": {
    "id": "pa_028",
@@ -2184,7 +2327,7 @@
     "datei": "IMG_9067.PNG",
     "aufloesung": 1024
    },
-   "rotation": 47.0,
+   "rotation": 47,
    "gespiegelt": false,
    "streckung": 2.29,
    "content": {
@@ -2224,7 +2367,9 @@
     "x": 192,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#cdeb5c",
    "korrektur": true,
@@ -2248,7 +2393,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_029": {
    "id": "pa_029",
@@ -2302,7 +2449,9 @@
     "x": 224,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb5941",
    "korrektur": true,
@@ -2326,7 +2475,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_030": {
    "id": "pa_030",
@@ -2340,7 +2491,7 @@
     "datei": "IMG_9069.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.19,
    "content": {
@@ -2380,7 +2531,9 @@
     "x": 256,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#58daeb",
    "korrektur": false,
@@ -2404,7 +2557,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_031": {
    "id": "pa_031",
@@ -2418,7 +2573,7 @@
     "datei": "IMG_9070.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.16,
    "content": {
@@ -2458,7 +2613,9 @@
     "x": 288,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#60d9eb",
    "korrektur": false,
@@ -2482,7 +2639,9 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_032": {
    "id": "pa_032",
@@ -2536,7 +2695,9 @@
     "x": 320,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#eb5043",
    "korrektur": false,
@@ -2560,7 +2721,10 @@
     "y": 128,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "ruecken",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Raketenrucksack: am Rücken getragen; der Raketenstoß versetzt den Träger. Das Bild ist kein abgefeuertes Geschoss."
   },
   "pa_033": {
    "id": "pa_033",
@@ -2614,7 +2778,9 @@
     "x": 352,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb6748",
    "korrektur": true,
@@ -2638,7 +2804,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_034": {
    "id": "pa_034",
@@ -2692,7 +2860,9 @@
     "x": 384,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#a757eb",
    "korrektur": false,
@@ -2716,7 +2886,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_035": {
    "id": "pa_035",
@@ -2730,7 +2902,7 @@
     "datei": "IMG_9074.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.04,
    "content": {
@@ -2770,7 +2942,9 @@
     "x": 416,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#3794eb",
    "korrektur": false,
@@ -2794,7 +2968,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_036": {
    "id": "pa_036",
@@ -2808,7 +2984,7 @@
     "datei": "IMG_9075.PNG",
     "aufloesung": 1024
    },
-   "rotation": -21.0,
+   "rotation": -21,
    "gespiegelt": false,
    "streckung": 1.86,
    "content": {
@@ -2848,7 +3024,9 @@
     "x": 448,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eba34d",
    "korrektur": false,
@@ -2872,7 +3050,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_037": {
    "id": "pa_037",
@@ -2926,7 +3106,9 @@
     "x": 480,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb8426",
    "korrektur": false,
@@ -2950,7 +3132,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_038": {
    "id": "pa_038",
@@ -3004,7 +3188,9 @@
     "x": 512,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb8329",
    "korrektur": true,
@@ -3028,7 +3214,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_039": {
    "id": "pa_039",
@@ -3042,7 +3230,7 @@
     "datei": "IMG_9079.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.27,
    "content": {
@@ -3082,7 +3270,9 @@
     "x": 544,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb9648",
    "korrektur": false,
@@ -3106,7 +3296,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_040": {
    "id": "pa_040",
@@ -3160,7 +3352,9 @@
     "x": 576,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#ebab6a",
    "korrektur": false,
@@ -3184,7 +3378,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_041": {
    "id": "pa_041",
@@ -3198,7 +3394,7 @@
     "datei": "IMG_9082.PNG",
     "aufloesung": 1024
    },
-   "rotation": -45.0,
+   "rotation": -45,
    "gespiegelt": false,
    "streckung": 2.61,
    "content": {
@@ -3238,7 +3434,9 @@
     "x": 0,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#ebbc36",
    "korrektur": false,
@@ -3262,7 +3460,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_042": {
    "id": "pa_042",
@@ -3276,7 +3476,7 @@
     "datei": "IMG_9083.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.03,
    "content": {
@@ -3316,7 +3516,9 @@
     "x": 32,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb913d",
    "korrektur": false,
@@ -3340,7 +3542,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_043": {
    "id": "pa_043",
@@ -3354,7 +3558,7 @@
     "datei": "IMG_9085.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.19,
    "content": {
@@ -3394,7 +3598,9 @@
     "x": 64,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eba26a",
    "korrektur": true,
@@ -3418,7 +3624,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_044": {
    "id": "pa_044",
@@ -3432,7 +3640,7 @@
     "datei": "IMG_9086.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.12,
    "content": {
@@ -3472,7 +3680,9 @@
     "x": 96,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb8323",
    "korrektur": false,
@@ -3496,7 +3706,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_045": {
    "id": "pa_045",
@@ -3510,7 +3722,7 @@
     "datei": "IMG_9087.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.18,
    "content": {
@@ -3550,7 +3762,9 @@
     "x": 128,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb872a",
    "korrektur": false,
@@ -3574,7 +3788,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_046": {
    "id": "pa_046",
@@ -3588,7 +3804,7 @@
     "datei": "IMG_9088.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.5,
    "content": {
@@ -3628,7 +3844,9 @@
     "x": 160,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb872c",
    "korrektur": false,
@@ -3652,7 +3870,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_047": {
    "id": "pa_047",
@@ -3666,7 +3886,7 @@
     "datei": "IMG_9089.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.31,
    "content": {
@@ -3706,7 +3926,9 @@
     "x": 192,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb4039",
    "korrektur": false,
@@ -3730,7 +3952,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_048": {
    "id": "pa_048",
@@ -3784,7 +4008,9 @@
     "x": 224,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#ebc429",
    "korrektur": false,
@@ -3808,7 +4034,9 @@
     "y": 256,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_049": {
    "id": "pa_049",
@@ -3862,7 +4090,9 @@
     "x": 256,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb5329",
    "korrektur": false,
@@ -3886,7 +4116,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_050": {
    "id": "pa_050",
@@ -3900,7 +4132,7 @@
     "datei": "IMG_9092.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.43,
    "content": {
@@ -3940,7 +4172,9 @@
     "x": 288,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#60d1eb",
    "korrektur": false,
@@ -3964,7 +4198,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_051": {
    "id": "pa_051",
@@ -3978,7 +4214,7 @@
     "datei": "IMG_9093.PNG",
     "aufloesung": 1024
    },
-   "rotation": 39.0,
+   "rotation": 39,
    "gespiegelt": true,
    "streckung": 1.96,
    "content": {
@@ -4018,7 +4254,9 @@
     "x": 320,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#6ab0eb",
    "korrektur": true,
@@ -4042,7 +4280,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_052": {
    "id": "pa_052",
@@ -4056,7 +4296,7 @@
     "datei": "IMG_9094.PNG",
     "aufloesung": 1024
    },
-   "rotation": -47.0,
+   "rotation": -47,
    "gespiegelt": false,
    "streckung": 2.88,
    "content": {
@@ -4096,7 +4336,9 @@
     "x": 352,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb8025",
    "korrektur": false,
@@ -4120,7 +4362,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_053": {
    "id": "pa_053",
@@ -4134,7 +4378,7 @@
     "datei": "IMG_9095.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.38,
    "content": {
@@ -4174,7 +4418,9 @@
     "x": 384,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb8d2c",
    "korrektur": true,
@@ -4198,7 +4444,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_054": {
    "id": "pa_054",
@@ -4252,7 +4500,9 @@
     "x": 416,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb904f",
    "korrektur": true,
@@ -4276,7 +4526,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_055": {
    "id": "pa_055",
@@ -4330,7 +4582,9 @@
     "x": 448,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eba86a",
    "korrektur": false,
@@ -4354,7 +4608,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_056": {
    "id": "pa_056",
@@ -4408,7 +4664,9 @@
     "x": 480,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb934d",
    "korrektur": false,
@@ -4432,7 +4690,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_057": {
    "id": "pa_057",
@@ -4446,7 +4706,7 @@
     "datei": "IMG_9099.PNG",
     "aufloesung": 1024
    },
-   "rotation": 29.0,
+   "rotation": 29,
    "gespiegelt": false,
    "streckung": 2.34,
    "content": {
@@ -4486,7 +4746,9 @@
     "x": 512,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#60b1eb",
    "korrektur": true,
@@ -4510,7 +4772,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_058": {
    "id": "pa_058",
@@ -4564,7 +4828,9 @@
     "x": 544,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#62aeeb",
    "korrektur": false,
@@ -4588,7 +4854,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_059": {
    "id": "pa_059",
@@ -4602,7 +4870,7 @@
     "datei": "IMG_9101.PNG",
     "aufloesung": 1024
    },
-   "rotation": -30.0,
+   "rotation": -30,
    "gespiegelt": false,
    "streckung": 1.5,
    "content": {
@@ -4642,7 +4910,9 @@
     "x": 576,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb9246",
    "korrektur": true,
@@ -4666,7 +4936,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_060": {
    "id": "pa_060",
@@ -4680,7 +4952,7 @@
     "datei": "IMG_9102.PNG",
     "aufloesung": 1024
    },
-   "rotation": 8.0,
+   "rotation": 8,
    "gespiegelt": true,
    "streckung": 1.21,
    "content": {
@@ -4720,7 +4992,9 @@
     "x": 608,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb5e36",
    "korrektur": true,
@@ -4744,7 +5018,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_061": {
    "id": "pa_061",
@@ -4758,7 +5034,7 @@
     "datei": "IMG_9103.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.02,
    "content": {
@@ -4798,7 +5074,9 @@
     "x": 0,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb4d25",
    "korrektur": true,
@@ -4822,7 +5100,10 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "beschwoerung",
+   "wirkpfad": "projektil",
+   "rollenHinweis": "Feuerdämon: beschworenes Wesen; es fliegt selbst als Projektil (Rolle Beschwörung, Wirkpfad Projektil)."
   },
   "pa_062": {
    "id": "pa_062",
@@ -4876,7 +5157,9 @@
     "x": 32,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb8627",
    "korrektur": false,
@@ -4900,7 +5183,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_063": {
    "id": "pa_063",
@@ -4914,7 +5199,7 @@
     "datei": "IMG_9105.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": true,
    "streckung": 1.43,
    "content": {
@@ -4954,7 +5239,9 @@
     "x": 64,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#43c8eb",
    "korrektur": true,
@@ -4978,7 +5265,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_064": {
    "id": "pa_064",
@@ -4992,7 +5281,7 @@
     "datei": "IMG_9106.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.15,
    "content": {
@@ -5032,7 +5321,9 @@
     "x": 96,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eba069",
    "korrektur": false,
@@ -5056,7 +5347,9 @@
     "y": 384,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_065": {
    "id": "pa_065",
@@ -5070,7 +5363,7 @@
     "datei": "IMG_9107.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.01,
    "content": {
@@ -5110,7 +5403,9 @@
     "x": 128,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#ebe06a",
    "korrektur": false,
@@ -5134,7 +5429,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_066": {
    "id": "pa_066",
@@ -5148,7 +5445,7 @@
     "datei": "IMG_9109.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.17,
    "content": {
@@ -5188,7 +5485,9 @@
     "x": 160,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#ebd165",
    "korrektur": false,
@@ -5212,7 +5511,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_067": {
    "id": "pa_067",
@@ -5226,7 +5527,7 @@
     "datei": "IMG_9113.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.25,
    "content": {
@@ -5266,7 +5567,9 @@
     "x": 192,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb8d37",
    "korrektur": false,
@@ -5290,7 +5593,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_068": {
    "id": "pa_068",
@@ -5344,7 +5649,9 @@
     "x": 224,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#56d1eb",
    "korrektur": false,
@@ -5368,7 +5675,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_069": {
    "id": "pa_069",
@@ -5422,7 +5731,9 @@
     "x": 256,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb7153",
    "korrektur": false,
@@ -5446,7 +5757,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_070": {
    "id": "pa_070",
@@ -5460,7 +5773,7 @@
     "datei": "IMG_9121.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.06,
    "content": {
@@ -5500,7 +5813,9 @@
     "x": 288,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#48eb9b",
    "korrektur": false,
@@ -5524,7 +5839,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_071": {
    "id": "pa_071",
@@ -5538,9 +5855,9 @@
     "datei": "IMG_9122.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
-   "streckung": 1.0,
+   "streckung": 1,
    "content": {
     "x": 6,
     "y": 6,
@@ -5578,7 +5895,9 @@
     "x": 320,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#49a2eb",
    "korrektur": true,
@@ -5606,7 +5925,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_072": {
    "id": "pa_072",
@@ -5620,7 +5941,7 @@
     "datei": "IMG_9123.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.05,
    "content": {
@@ -5660,7 +5981,9 @@
     "x": 352,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb4b22",
    "korrektur": false,
@@ -5684,7 +6007,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_073": {
    "id": "pa_073",
@@ -5698,7 +6023,7 @@
     "datei": "IMG_9124.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.08,
    "content": {
@@ -5738,7 +6063,9 @@
     "x": 384,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#ae6aeb",
    "korrektur": true,
@@ -5766,7 +6093,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_074": {
    "id": "pa_074",
@@ -5780,7 +6109,7 @@
     "datei": "IMG_9125.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.03,
    "content": {
@@ -5820,7 +6149,9 @@
     "x": 416,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#5beba2",
    "korrektur": true,
@@ -5848,7 +6179,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_075": {
    "id": "pa_075",
@@ -5862,7 +6195,7 @@
     "datei": "IMG_9130.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.26,
    "content": {
@@ -5902,7 +6235,9 @@
     "x": 448,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb9b51",
    "korrektur": false,
@@ -5926,7 +6261,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_076": {
    "id": "pa_076",
@@ -5940,7 +6277,7 @@
     "datei": "IMG_9131.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.03,
    "content": {
@@ -5980,7 +6317,9 @@
     "x": 480,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#5f77eb",
    "korrektur": true,
@@ -6008,7 +6347,10 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Portalring: wird als Tor in der Welt aufgestellt; der Anwender springt hindurch."
   },
   "pa_077": {
    "id": "pa_077",
@@ -6022,7 +6364,7 @@
     "datei": "IMG_9132.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.01,
    "content": {
@@ -6062,7 +6404,9 @@
     "x": 512,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#755beb",
    "korrektur": false,
@@ -6086,7 +6430,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_078": {
    "id": "pa_078",
@@ -6100,7 +6446,7 @@
     "datei": "IMG_9133.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.89,
    "content": {
@@ -6140,7 +6486,9 @@
     "x": 544,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eba86a",
    "korrektur": true,
@@ -6164,7 +6512,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_079": {
    "id": "pa_079",
@@ -6178,7 +6528,7 @@
     "datei": "IMG_9134.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.03,
    "content": {
@@ -6218,7 +6568,9 @@
     "x": 576,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#549feb",
    "korrektur": false,
@@ -6242,7 +6594,10 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Kosmisches Portal: aufgestelltes Tor, kein Handgerät."
   },
   "pa_080": {
    "id": "pa_080",
@@ -6256,7 +6611,7 @@
     "datei": "IMG_9135.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.03,
    "content": {
@@ -6296,7 +6651,9 @@
     "x": 608,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb506d",
    "korrektur": true,
@@ -6324,7 +6681,9 @@
     "y": 512,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_081": {
    "id": "pa_081",
@@ -6338,7 +6697,7 @@
     "datei": "IMG_9136.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.08,
    "content": {
@@ -6392,7 +6751,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_082": {
    "id": "pa_082",
@@ -6406,7 +6767,7 @@
     "datei": "IMG_9137.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.22,
    "content": {
@@ -6446,7 +6807,9 @@
     "x": 0,
     "y": 1024,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#f0d252",
    "korrektur": false,
@@ -6470,7 +6833,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_083": {
    "id": "pa_083",
@@ -6484,7 +6849,7 @@
     "datei": "IMG_9138.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.11,
    "content": {
@@ -6534,7 +6899,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_084": {
    "id": "pa_084",
@@ -6548,7 +6915,7 @@
     "datei": "IMG_9139.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.45,
    "content": {
@@ -6598,7 +6965,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_085": {
    "id": "pa_085",
@@ -6612,7 +6981,7 @@
     "datei": "IMG_9140.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.33,
    "content": {
@@ -6662,7 +7031,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_086": {
    "id": "pa_086",
@@ -6676,7 +7047,7 @@
     "datei": "IMG_9150.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.41,
    "content": {
@@ -6730,7 +7101,10 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "beschwoerung",
+   "wirkpfad": "strahl",
+   "rollenHinweis": "Windkrieger: Krieger im Wirbelwind, zieht Gegner heran; kein Handbild."
   },
   "pa_087": {
    "id": "pa_087",
@@ -6744,7 +7118,7 @@
     "datei": "IMG_9151.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.04,
    "content": {
@@ -6798,7 +7172,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_088": {
    "id": "pa_088",
@@ -6812,7 +7188,7 @@
     "datei": "IMG_9152.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.02,
    "content": {
@@ -6862,7 +7238,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_089": {
    "id": "pa_089",
@@ -6876,7 +7254,7 @@
     "datei": "IMG_9154.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.2,
    "content": {
@@ -6926,7 +7304,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_090": {
    "id": "pa_090",
@@ -6940,7 +7320,7 @@
     "datei": "IMG_9155.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.03,
    "content": {
@@ -6990,7 +7370,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_091": {
    "id": "pa_091",
@@ -7004,7 +7386,7 @@
     "datei": "IMG_9156.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.03,
    "content": {
@@ -7054,7 +7436,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_092": {
    "id": "pa_092",
@@ -7068,7 +7452,7 @@
     "datei": "IMG_9157.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.01,
    "content": {
@@ -7122,7 +7506,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_093": {
    "id": "pa_093",
@@ -7136,7 +7522,7 @@
     "datei": "IMG_9323.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.09,
    "content": {
@@ -7190,7 +7576,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_094": {
    "id": "pa_094",
@@ -7254,7 +7642,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_095": {
    "id": "pa_095",
@@ -7318,7 +7708,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_096": {
    "id": "pa_096",
@@ -7382,7 +7774,9 @@
     "y": 640,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_097": {
    "id": "pa_097",
@@ -7446,7 +7840,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_098": {
    "id": "pa_098",
@@ -7510,7 +7906,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_099": {
    "id": "pa_099",
@@ -7574,7 +7972,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_100": {
    "id": "pa_100",
@@ -7588,7 +7988,7 @@
     "datei": "IMG_9330.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.02,
    "content": {
@@ -7638,7 +8038,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_101": {
    "id": "pa_101",
@@ -7652,7 +8054,7 @@
     "datei": "IMG_9331.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.23,
    "content": {
@@ -7702,7 +8104,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_102": {
    "id": "pa_102",
@@ -7716,7 +8120,7 @@
     "datei": "IMG_9332.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.14,
    "content": {
@@ -7766,7 +8170,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_103": {
    "id": "pa_103",
@@ -7780,7 +8186,7 @@
     "datei": "IMG_9333.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.29,
    "content": {
@@ -7834,7 +8240,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_104": {
    "id": "pa_104",
@@ -7888,7 +8296,9 @@
     "x": 32,
     "y": 1024,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#6aa8eb",
    "korrektur": false,
@@ -7912,7 +8322,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_105": {
    "id": "pa_105",
@@ -7926,7 +8338,7 @@
     "datei": "IMG_9335.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.14,
    "content": {
@@ -7966,7 +8378,9 @@
     "x": 64,
     "y": 1024,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#6ab1eb",
    "korrektur": true,
@@ -7994,7 +8408,10 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Frostrolle: Schriftrolle (Symbol) für einen zufälligen Schutzzauberspruch; das Zauberbild ist kein abgefeuertes Geschoss."
   },
   "pa_106": {
    "id": "pa_106",
@@ -8008,7 +8425,7 @@
     "datei": "IMG_9336.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.29,
    "content": {
@@ -8058,7 +8475,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_107": {
    "id": "pa_107",
@@ -8072,7 +8491,7 @@
     "datei": "IMG_9337.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.02,
    "content": {
@@ -8126,7 +8545,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_108": {
    "id": "pa_108",
@@ -8140,7 +8561,7 @@
     "datei": "IMG_9338.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.1,
    "content": {
@@ -8190,7 +8611,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_109": {
    "id": "pa_109",
@@ -8204,7 +8627,7 @@
     "datei": "IMG_9339.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.36,
    "content": {
@@ -8254,7 +8677,10 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Giftbaum: wird als Baum in der Welt aufgestellt (Verstärkung), kein Handbild."
   },
   "pa_110": {
    "id": "pa_110",
@@ -8268,7 +8694,7 @@
     "datei": "IMG_9340.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.32,
    "content": {
@@ -8318,7 +8744,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_111": {
    "id": "pa_111",
@@ -8332,7 +8760,7 @@
     "datei": "IMG_9341.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.44,
    "content": {
@@ -8382,7 +8810,9 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_112": {
    "id": "pa_112",
@@ -8396,7 +8826,7 @@
     "datei": "IMG_9342.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.19,
    "content": {
@@ -8446,7 +8876,10 @@
     "y": 768,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "ruecken",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Düsenrucksack: Rückenantrieb, kein Handgerät."
   },
   "pa_113": {
    "id": "pa_113",
@@ -8510,7 +8943,9 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_114": {
    "id": "pa_114",
@@ -8524,7 +8959,7 @@
     "datei": "IMG_9344.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.24,
    "content": {
@@ -8574,7 +9009,10 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "ruecken",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Gleitschirm: liegt über dem Rücken; wird nicht in der Faust geführt."
   },
   "pa_115": {
    "id": "pa_115",
@@ -8588,7 +9026,7 @@
     "datei": "IMG_9345.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 2.62,
    "content": {
@@ -8638,7 +9076,10 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Wächterstatue: wird aufgestellt und heilt den Anwender; kein Handgerät."
   },
   "pa_116": {
    "id": "pa_116",
@@ -8652,7 +9093,7 @@
     "datei": "IMG_9346.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.14,
    "content": {
@@ -8706,7 +9147,9 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_117": {
    "id": "pa_117",
@@ -8770,7 +9213,9 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_118": {
    "id": "pa_118",
@@ -8784,7 +9229,7 @@
     "datei": "IMG_9353.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.01,
    "content": {
@@ -8838,7 +9283,10 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "beschwoerung",
+   "wirkpfad": "strahl",
+   "rollenHinweis": "Feuerwesen: erscheint als Kämpfer und entzündet das Ziel; kein Handbild."
   },
   "pa_119": {
    "id": "pa_119",
@@ -8852,7 +9300,7 @@
     "datei": "IMG_9358.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.17,
    "content": {
@@ -8902,7 +9350,10 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Munitionskiste: wird abgestellt und füllt Munition auf."
   },
   "pa_120": {
    "id": "pa_120",
@@ -8916,7 +9367,7 @@
     "datei": "IMG_9359.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.25,
    "content": {
@@ -8966,7 +9417,9 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_121": {
    "id": "pa_121",
@@ -8982,7 +9435,7 @@
    },
    "rotation": 42.9,
    "gespiegelt": true,
-   "streckung": 2.0,
+   "streckung": 2,
    "content": {
     "x": 6,
     "y": 25,
@@ -9030,7 +9483,9 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_122": {
    "id": "pa_122",
@@ -9044,7 +9499,7 @@
     "datei": "IMG_9364.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.35,
    "content": {
@@ -9094,7 +9549,9 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst"
   },
   "pa_123": {
    "id": "pa_123",
@@ -9108,7 +9565,7 @@
     "datei": "IMG_9365.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.18,
    "content": {
@@ -9158,7 +9615,9 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_124": {
    "id": "pa_124",
@@ -9172,7 +9631,7 @@
     "datei": "IMG_9366.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.28,
    "content": {
@@ -9212,7 +9671,9 @@
     "x": 0,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#eb893d",
    "korrektur": false,
@@ -9236,7 +9697,10 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Wachgeschütz: wird aufgestellt und feuert selbst; das Geschossbild gehört zum Turm, nicht zur Hand."
   },
   "pa_125": {
    "id": "pa_125",
@@ -9250,7 +9714,7 @@
     "datei": "IMG_9368.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.11,
    "content": {
@@ -9300,7 +9764,10 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Nachschubkiste: Abwurf, wird in der Welt abgesetzt."
   },
   "pa_126": {
    "id": "pa_126",
@@ -9314,7 +9781,7 @@
     "datei": "IMG_9369.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.06,
    "content": {
@@ -9364,7 +9831,10 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Bunker: wird aufgestellt und mindert Schaden."
   },
   "pa_127": {
    "id": "pa_127",
@@ -9378,7 +9848,7 @@
     "datei": "IMG_9372.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.07,
    "content": {
@@ -9428,7 +9898,10 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Mine: wird abgelegt oder geworfen, bleibt liegen und ist sofort scharf; kein Projektilpfad."
   },
   "pa_128": {
    "id": "pa_128",
@@ -9442,7 +9915,7 @@
     "datei": "IMG_9373.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.09,
    "content": {
@@ -9492,7 +9965,10 @@
     "y": 896,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Hologrammportal: aufgestelltes Tor; der Anwender springt hindurch."
   },
   "pa_129": {
    "id": "pa_129",
@@ -9506,7 +9982,7 @@
     "datei": "IMG_9376.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 2.77,
    "content": {
@@ -9556,7 +10032,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_130": {
    "id": "pa_130",
@@ -9570,7 +10048,7 @@
     "datei": "IMG_9377.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.24,
    "content": {
@@ -9620,7 +10098,10 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Tarnnetz: wird über die Stellung gelegt und mindert Schaden."
   },
   "pa_131": {
    "id": "pa_131",
@@ -9684,7 +10165,10 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Schlauchboot: wird als Wasserfahrzeug eingesetzt, nicht gehalten."
   },
   "pa_132": {
    "id": "pa_132",
@@ -9698,9 +10182,9 @@
     "datei": "IMG_9380.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
-   "streckung": 2.0,
+   "streckung": 2,
    "content": {
     "x": 27,
     "y": 6,
@@ -9748,7 +10232,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_133": {
    "id": "pa_133",
@@ -9762,7 +10248,7 @@
     "datei": "IMG_9382.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.08,
    "content": {
@@ -9802,7 +10288,9 @@
     "x": 32,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb5338",
    "korrektur": false,
@@ -9826,7 +10314,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_134": {
    "id": "pa_134",
@@ -9840,7 +10330,7 @@
     "datei": "IMG_9383.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.14,
    "content": {
@@ -9894,7 +10384,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_135": {
    "id": "pa_135",
@@ -9908,7 +10400,7 @@
     "datei": "IMG_9384.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.3,
    "content": {
@@ -9962,7 +10454,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_136": {
    "id": "pa_136",
@@ -10026,7 +10520,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_137": {
    "id": "pa_137",
@@ -10040,7 +10536,7 @@
     "datei": "IMG_9386.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.33,
    "content": {
@@ -10090,7 +10586,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_138": {
    "id": "pa_138",
@@ -10104,7 +10602,7 @@
     "datei": "IMG_9388.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.25,
    "content": {
@@ -10154,7 +10652,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_139": {
    "id": "pa_139",
@@ -10168,7 +10668,7 @@
     "datei": "IMG_9389.PNG",
     "aufloesung": 1024
    },
-   "rotation": -18.0,
+   "rotation": -18,
    "gespiegelt": true,
    "streckung": 1.22,
    "content": {
@@ -10218,7 +10718,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "strahl"
   },
   "pa_140": {
    "id": "pa_140",
@@ -10232,7 +10734,7 @@
     "datei": "IMG_9390.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.08,
    "content": {
@@ -10272,7 +10774,9 @@
     "x": 64,
     "y": 768,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#68afeb",
    "korrektur": false,
@@ -10296,7 +10800,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_141": {
    "id": "pa_141",
@@ -10310,7 +10816,7 @@
     "datei": "IMG_9391.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.09,
    "content": {
@@ -10350,7 +10856,9 @@
     "x": 0,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#62a7eb",
    "korrektur": true,
@@ -10378,7 +10886,10 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "beschwoerung",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Astralkrieger: beschworener Wächter, feuert in den Folgerunden selbst."
   },
   "pa_142": {
    "id": "pa_142",
@@ -10392,7 +10903,7 @@
     "datei": "IMG_9393.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.13,
    "content": {
@@ -10432,7 +10943,9 @@
     "x": 32,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#637ceb",
    "korrektur": true,
@@ -10460,7 +10973,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_143": {
    "id": "pa_143",
@@ -10474,7 +10989,7 @@
     "datei": "IMG_9394.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.34,
    "content": {
@@ -10514,7 +11029,9 @@
     "x": 64,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#67a9eb",
    "korrektur": false,
@@ -10538,7 +11055,10 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "beschwoerung",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Astralross: beschworenes Reittier, trägt den Anwender."
   },
   "pa_144": {
    "id": "pa_144",
@@ -10552,7 +11072,7 @@
     "datei": "IMG_9397.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.07,
    "content": {
@@ -10592,7 +11112,9 @@
     "x": 96,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#9deb45",
    "korrektur": true,
@@ -10620,7 +11142,9 @@
     "y": 1024,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_145": {
    "id": "pa_145",
@@ -10634,7 +11158,7 @@
     "datei": "IMG_9398.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.11,
    "content": {
@@ -10674,7 +11198,9 @@
     "x": 128,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb8732",
    "korrektur": true,
@@ -10702,7 +11228,9 @@
     "y": 1152,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_146": {
    "id": "pa_146",
@@ -10716,7 +11244,7 @@
     "datei": "IMG_9399.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.85,
    "content": {
@@ -10756,7 +11284,9 @@
     "x": 160,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#83eb6a",
    "korrektur": true,
@@ -10784,7 +11314,9 @@
     "y": 1152,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_147": {
    "id": "pa_147",
@@ -10798,7 +11330,7 @@
     "datei": "IMG_9400.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.03,
    "content": {
@@ -10838,7 +11370,9 @@
     "x": 192,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#eb5138",
    "korrektur": true,
@@ -10866,7 +11400,9 @@
     "y": 1152,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   },
   "pa_148": {
    "id": "pa_148",
@@ -10880,7 +11416,7 @@
     "datei": "IMG_9401.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.11,
    "content": {
@@ -10920,7 +11456,9 @@
     "x": 224,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#eb8a2e",
    "korrektur": true,
@@ -10948,7 +11486,10 @@
     "y": 1152,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Feuerschild: Aura um den Anwender, kein aufgestelltes Objekt und kein Geschoss."
   },
   "pa_149": {
    "id": "pa_149",
@@ -10962,7 +11503,7 @@
     "datei": "IMG_9402.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.3,
    "content": {
@@ -11002,7 +11543,9 @@
     "x": 256,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#eb9e4b",
    "korrektur": true,
@@ -11030,7 +11573,10 @@
     "y": 1152,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "symbol",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Goldene Reliktkugel: Relikt wirkt auf den Anwender; kein abgefeuertes Geschoss."
   },
   "pa_150": {
    "id": "pa_150",
@@ -11044,7 +11590,7 @@
     "datei": "IMG_9403.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 0,
    "gespiegelt": false,
    "streckung": 1.3,
    "content": {
@@ -11084,7 +11630,9 @@
     "x": 288,
     "y": 512,
     "w": 32,
-    "h": 32
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
    "flashColor": "#509feb",
    "korrektur": true,
@@ -11112,7 +11660,9 @@
     "y": 1152,
     "w": 128,
     "h": 128
-   }
+   },
+   "rolle": "hand",
+   "wirkpfad": "projektil"
   }
  }
 }
