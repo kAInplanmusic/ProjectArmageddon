@@ -1,16 +1,19 @@
 {
- "version": 2,
+ "version": 3,
  "status": "gesperrt",
- "hinweis": "Zusatz-Sheets als Material, NICHT im Produktpfad. Jedes Blatt ist gesperrt (freigabe:false), bis Rolle und Identität abgenommen sind; Ladepfad und Abnahmekriterien siehe docs/waffen-audit-2026-11-08/ANIM-GATING.md und src/client/waffenAnim.js.",
+ "hinweis": "Zusatz-Sheets als Material, NICHT im Produktpfad. Abnahme je Blatt nach docs/waffen-audit-2026-11-08/ANIM-ABNAHME.md; Messung in anim-abnahme-messung.json. Kein Blatt ist produktfreigegeben.",
  "freigabe": {
   "produktpfad": false,
-  "regel": "Ein Blatt darf nur geladen werden, wenn freigabe===true, die ID in ANIM_FREIGABE steht und ein Lader im Renderer verdrahtet ist.",
+  "regel": "Ein Blatt darf nur geladen werden, wenn alle acht Prüfkriterien ok sind, abnahme 'abgenommen', freigabe true, die ID in ANIM_FREIGABE steht und ein Lader im Renderer verdrahtet ist.",
   "bedingungen": [
-   "Motiv stimmt mit der Waffe überein (kein fremdes Tier/Humanoid)",
-   "Rolle aus rollen ist gesetzt und die Anker passen zu dieser Rolle",
-   "mindestens 6 unterscheidbare Frames, Schleife schließt, keine Formbrüche",
-   "eingebrannte Effekte (W17) sind getrennt oder als Ruhebild belegt",
-   "Browserabnahme nach W20 bestanden"
+   "8 Frames belegt, keine leeren Zellen, kein Randanschluss",
+   "Alpha sauber: transparente Ecken, kein Rechteckhintergrund, kein Halbsaum",
+   "Motiv ist die Waffe; kein Identitätsbruch zwischen den Frames",
+   "Richtung über alle Frames stabil (Hauptachsen-Streuung ≤ 15°)",
+   "mindestens 6 unterscheidbare Frames, Schleife F7→F0 geschlossen",
+   "Rolle gesetzt und zum Motiv passend",
+   "eingebrannte Effekte getrennt oder als Ruhebild begründet (W17)",
+   "Browserabnahme W20 bestanden"
   ],
   "aktivierung": [
    "hier freigabe:true setzen (nur nach Abnahme)",
@@ -86,7 +89,97 @@
    "motiv": "blauer geflügelter Käfer/Krebs",
    "befund": "fremdes Tier statt grünem Rucksack",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00732,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "blauer geflügelter Käfer/Krebs statt Raketenrucksack; F3 zeigt eine gespreizte Flügelpose und bricht die Silhouette",
+     "brueche": [
+      3
+     ],
+     "messAuffaellig": [],
+     "histKorrMin": 0.8959,
+     "silhouetteIouMin": 0.5355,
+     "flaecheRatioMin": 0.78,
+     "flaecheRatioMax": 1.082
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 9.9,
+     "nettoWeg": 0.052,
+     "nettoWinkel": -113.8,
+     "resultante": 0.126
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.1304,
+     "schrittDifferenzen": [
+      0.13924,
+      0.1572,
+      0.17561,
+      0.20255,
+      0.07364,
+      0.07337,
+      0.0912
+     ],
+     "loopDiff": 0.14882
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Flügelwesen, kein am Rücken getragenes Objekt",
+     "drehSumme": 71.8,
+     "ortsdrift": 0.052
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "rolle",
+    "browser"
+   ]
   },
   "pa_038": {
    "id": "pa_038",
@@ -101,7 +194,88 @@
    "motiv": "orange Rakete mit Flammenmantel",
    "befund": "Triebwerksflamme eingebrannt (W17), sonst motivnah",
    "schwere": "nah",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.0073,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "orange Rakete, Motiv trifft die Waffe",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9918,
+     "silhouetteIouMin": 0.9038,
+     "flaecheRatioMin": 0.902,
+     "flaecheRatioMax": 1.015
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.6,
+     "nettoWeg": 0.035,
+     "nettoWinkel": -100.6,
+     "resultante": 0.293
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 3,
+     "vertreter": [
+      0,
+      1,
+      4
+     ],
+     "mittlereDifferenz": 0.02196,
+     "schrittDifferenzen": [
+      0.03117,
+      0.04038,
+      0.02492,
+      0.02103,
+      0.01006,
+      0.01245,
+      0.01367
+     ],
+     "loopDiff": 0.05079
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, stabile Achse",
+     "drehSumme": 4.1,
+     "ortsdrift": 0.035
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Triebwerksflamme fest im Blatt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "bewegung",
+    "effekt",
+    "browser"
+   ]
   },
   "pa_044": {
    "id": "pa_044",
@@ -116,7 +290,86 @@
    "motiv": "brennender Phönix",
    "befund": "Motiv passend, Frames nahezu identisch, Feuer eingebrannt",
    "schwere": "statisch",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00833,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "brennender Phönix, Motiv trifft den Phönixschlag",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9988,
+     "silhouetteIouMin": 0.9715,
+     "flaecheRatioMin": 0.984,
+     "flaecheRatioMax": 1.005
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.5,
+     "nettoWeg": 0.002,
+     "nettoWinkel": 168.6,
+     "resultante": 0.26
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 1,
+     "vertreter": [
+      0
+     ],
+     "mittlereDifferenz": 0.01296,
+     "schrittDifferenzen": [
+      0.01303,
+      0.00877,
+      0.01093,
+      0.01476,
+      0.01166,
+      0.01559,
+      0.01596
+     ],
+     "loopDiff": 0.015
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Flügelform konstant",
+     "drehSumme": 10.5,
+     "ortsdrift": 0.002
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Feuer in Flügeln und Körper eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "bewegung",
+    "effekt",
+    "browser"
+   ]
   },
   "pa_048": {
    "id": "pa_048",
@@ -131,7 +384,84 @@
    "motiv": "Bananengranate mit Zünder",
    "befund": "motivnah, statisch, keine Rotation/Splitter",
    "schwere": "nah",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00664,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Bananengranate mit Zünder, Motiv trifft die Waffe",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9942,
+     "silhouetteIouMin": 0.9802,
+     "flaecheRatioMin": 0.992,
+     "flaecheRatioMax": 1.006
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.1,
+     "nettoWeg": 0.0,
+     "nettoWinkel": -175.9,
+     "resultante": 0.35
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 1,
+     "vertreter": [
+      0
+     ],
+     "mittlereDifferenz": 0.00868,
+     "schrittDifferenzen": [
+      0.00763,
+      0.00932,
+      0.00859,
+      0.0114,
+      0.00701,
+      0.00932,
+      0.00749
+     ],
+     "loopDiff": 0.00929
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Silhouette konstant",
+     "drehSumme": 0.8,
+     "ortsdrift": 0.0
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_049": {
    "id": "pa_049",
@@ -146,7 +476,95 @@
    "motiv": "orange Bombe mit grauen Flügeln",
    "befund": "fremdes Flugobjekt, kein Bumerang",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00697,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "orange Bombe mit grauen Flügeln statt Bumerang",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9748,
+     "silhouetteIouMin": 0.6564,
+     "flaecheRatioMin": 0.926,
+     "flaecheRatioMax": 1.09
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 10.5,
+     "nettoWeg": 0.018,
+     "nettoWinkel": 147.1,
+     "resultante": 0.077
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09171,
+     "schrittDifferenzen": [
+      0.07774,
+      0.08778,
+      0.09512,
+      0.0659,
+      0.07946,
+      0.10595,
+      0.12998
+     ],
+     "loopDiff": 0.11035
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "keine Drehachse, keine Rückkehrbewegung erkennbar",
+     "drehSumme": 106.5,
+     "ortsdrift": 0.018
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "rolle",
+    "browser"
+   ]
   },
   "pa_053": {
    "id": "pa_053",
@@ -161,7 +579,96 @@
    "motiv": "Holzwagen mit Mäusen",
    "befund": "fremdes Motiv, keine Roboterbombe",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00998,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "Holzwagen mit Mäusen statt Roboterbombe; F1/F5 wechseln Aufbau und Aufsatz",
+     "brueche": [
+      1,
+      5
+     ],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9082,
+     "silhouetteIouMin": 0.5149,
+     "flaecheRatioMin": 0.763,
+     "flaecheRatioMax": 1.106
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 13.2,
+     "nettoWeg": 0.038,
+     "nettoWinkel": 67.4,
+     "resultante": 0.134
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09666,
+     "schrittDifferenzen": [
+      0.10397,
+      0.10162,
+      0.101,
+      0.06411,
+      0.11337,
+      0.10023,
+      0.0923
+     ],
+     "loopDiff": 0.09293
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Weltobjekt am Boden, Rollenzuordnung plausibel",
+     "drehSumme": 90.6,
+     "ortsdrift": 0.038
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_061": {
    "id": "pa_061",
@@ -176,7 +683,96 @@
    "motiv": "brennender Dämon",
    "befund": "Motiv passend, Flammen eingebrannt, statisch",
    "schwere": "statisch",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00728,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": true,
+     "befund": "brennender Dämon, Motiv trifft den Feuerdämon; F1 ist eine gelbe Feuerblase ohne Körper",
+     "brueche": [
+      1
+     ],
+     "messAuffaellig": [
+      1
+     ],
+     "histKorrMin": 0.1994,
+     "silhouetteIouMin": 0.9547,
+     "flaecheRatioMin": 0.994,
+     "flaecheRatioMax": 1.004
+    },
+    "richtung": {
+     "ok": false,
+     "streuungGrad": 17.3,
+     "nettoWeg": 0.009,
+     "nettoWinkel": -144.1,
+     "resultante": 0.223
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 3,
+     "vertreter": [
+      0,
+      1,
+      7
+     ],
+     "mittlereDifferenz": 0.04449,
+     "schrittDifferenzen": [
+      0.1031,
+      0.09854,
+      0.01117,
+      0.03698,
+      0.03622,
+      0.01178,
+      0.01363
+     ],
+     "loopDiff": 0.03049
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur mit eigener Standpose",
+     "drehSumme": 186.8,
+     "ortsdrift": 0.009
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Flamme an Händen und Körper eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "richtung",
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "richtung",
+    "bewegung",
+    "effekt",
+    "browser"
+   ]
   },
   "pa_065": {
    "id": "pa_065",
@@ -191,7 +787,91 @@
    "motiv": "Stein mit gelbem Schweif",
    "befund": "Schweif angeklebt/eingebrannt, Formwechsel",
    "schwere": "statisch",
-   "abnahme": "offen"
+   "abnahme": "datenabgenommen",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00843,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Steinmeteor, Motiv trifft den Meteorbrocken",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9925,
+     "silhouetteIouMin": 0.7899,
+     "flaecheRatioMin": 0.936,
+     "flaecheRatioMax": 1.196
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 4.4,
+     "nettoWeg": 0.012,
+     "nettoWinkel": -75.4,
+     "resultante": 0.298
+    },
+    "bewegung": {
+     "ok": true,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.07997,
+     "schrittDifferenzen": [
+      0.0861,
+      0.07983,
+      0.05857,
+      0.05174,
+      0.09758,
+      0.08119,
+      0.10477
+     ],
+     "loopDiff": 0.03963
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Achse stabil",
+     "drehSumme": 39.2,
+     "ortsdrift": 0.012
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "gelber Schweif fest im Blatt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "datenabgenommen",
+     "datenOk": true,
+     "produktOk": false,
+     "sperrgruende": [
+      "effekt",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "effekt",
+    "browser"
+   ]
   },
   "pa_073": {
    "id": "pa_073",
@@ -206,7 +886,90 @@
    "motiv": "grüner zweibeiniger Dinosaurier",
    "befund": "fremdes Tier, kein Tentakelgift",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00805,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "grüner zweibeiniger Dinosaurier statt Tentakelgift",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9974,
+     "silhouetteIouMin": 0.745,
+     "flaecheRatioMin": 0.936,
+     "flaecheRatioMax": 1.025
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 3.5,
+     "nettoWeg": 0.016,
+     "nettoWinkel": -162.2,
+     "resultante": 0.018
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 3,
+     "vertreter": [
+      0,
+      2,
+      3
+     ],
+     "mittlereDifferenz": 0.03326,
+     "schrittDifferenzen": [
+      0.02208,
+      0.04304,
+      0.03433,
+      0.03194,
+      0.03111,
+      0.04269,
+      0.02765
+     ],
+     "loopDiff": 0.02605
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Kreatur, kein abgelegtes Weltobjekt",
+     "drehSumme": 32.2,
+     "ortsdrift": 0.016
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "rolle",
+    "browser"
+   ]
   },
   "pa_112": {
    "id": "pa_112",
@@ -221,7 +984,100 @@
    "motiv": "blau geflügeltes Flugwesen",
    "befund": "fremdes Tier; bytegleich mit pa_114 (W06)",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00571,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "blau geflügeltes Flugwesen statt Düsenrucksack",
+     "brueche": [],
+     "messAuffaellig": [
+      0,
+      1,
+      4,
+      5
+     ],
+     "histKorrMin": 0.6291,
+     "silhouetteIouMin": 0.6752,
+     "flaecheRatioMin": 0.984,
+     "flaecheRatioMax": 1.075
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 6.2,
+     "nettoWeg": 0.022,
+     "nettoWinkel": 32.6,
+     "resultante": 0.254
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09064,
+     "schrittDifferenzen": [
+      0.07113,
+      0.08173,
+      0.08163,
+      0.13757,
+      0.09176,
+      0.0761,
+      0.0946
+     ],
+     "loopDiff": 0.13248
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Flügelwesen, kein getragenes Rückenobjekt",
+     "drehSumme": 50.1,
+     "ortsdrift": 0.022
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "keine eingebrannte Flamme; Düsen gehören zur Silhouette"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "rolle",
+    "browser"
+   ]
   },
   "pa_114": {
    "id": "pa_114",
@@ -236,8 +1092,101 @@
    "motiv": "blau geflügeltes Flugwesen",
    "befund": "kein Schirm; bytegleich mit pa_112 (W06)",
    "schwere": "fremd",
-   "abnahme": "offen",
-   "dubletteVon": "pa_112"
+   "abnahme": "abgelehnt",
+   "dubletteVon": "pa_112",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00571,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "dasselbe blau geflügelte Flugwesen wie pa_112, kein Gleitschirm",
+     "brueche": [],
+     "messAuffaellig": [
+      0,
+      1,
+      4,
+      5
+     ],
+     "histKorrMin": 0.6291,
+     "silhouetteIouMin": 0.6752,
+     "flaecheRatioMin": 0.984,
+     "flaecheRatioMax": 1.075
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 6.2,
+     "nettoWeg": 0.022,
+     "nettoWinkel": 32.6,
+     "resultante": 0.254
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09064,
+     "schrittDifferenzen": [
+      0.07113,
+      0.08173,
+      0.08163,
+      0.13757,
+      0.09176,
+      0.0761,
+      0.0946
+     ],
+     "loopDiff": 0.13248
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Flügelwesen, kein Schirm mit Kappe und Leinen",
+     "drehSumme": 50.1,
+     "ortsdrift": 0.022
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein Schirm, kein eigener Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "rolle",
+    "browser"
+   ]
   },
   "pa_115": {
    "id": "pa_115",
@@ -252,7 +1201,84 @@
    "motiv": "Giraffenstatue",
    "befund": "motivnah, keine Bewegung",
    "schwere": "statisch",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.0039,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Giraffenstatue, als Wächterstatue motivnah",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9988,
+     "silhouetteIouMin": 0.928,
+     "flaecheRatioMin": 0.988,
+     "flaecheRatioMax": 1.01
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.2,
+     "nettoWeg": 0.0,
+     "nettoWinkel": 168.0,
+     "resultante": 0.166
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 1,
+     "vertreter": [
+      0
+     ],
+     "mittlereDifferenz": 0.0171,
+     "schrittDifferenzen": [
+      0.00641,
+      0.0257,
+      0.02506,
+      0.00965,
+      0.00705,
+      0.02494,
+      0.0209
+     ],
+     "loopDiff": 0.00647
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Statue, Rollenzuordnung plausibel",
+     "drehSumme": 2.3,
+     "ortsdrift": 0.0
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_118": {
    "id": "pa_118",
@@ -267,7 +1293,99 @@
    "motiv": "grauer Humanoid mit Feuerball",
    "befund": "Körper/Material weicht ab, Flamme eingebrannt",
    "schwere": "identitaet",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00848,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": true,
+     "befund": "grauer Humanoid mit Feuerball, Motiv nah am Feuerwesen; Körper dreht zwischen Vorder- und Rückansicht, Feuerball bleibt starr",
+     "brueche": [
+      1,
+      3,
+      7
+     ],
+     "messAuffaellig": [
+      1,
+      3,
+      7
+     ],
+     "histKorrMin": 0.6013,
+     "silhouetteIouMin": 0.7485,
+     "flaecheRatioMin": 0.982,
+     "flaecheRatioMax": 1.006
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.2,
+     "nettoWeg": 0.003,
+     "nettoWinkel": -127.6,
+     "resultante": 0.146
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 4,
+     "vertreter": [
+      0,
+      1,
+      3,
+      7
+     ],
+     "mittlereDifferenz": 0.04517,
+     "schrittDifferenzen": [
+      0.03231,
+      0.03746,
+      0.09216,
+      0.08905,
+      0.01394,
+      0.01305,
+      0.03826
+     ],
+     "loopDiff": 0.05162
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung plausibel",
+     "drehSumme": 9.2,
+     "ortsdrift": 0.003
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Feuerball fest in der Hand (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "effekt",
+    "browser"
+   ]
   },
   "pa_121": {
    "id": "pa_121",
@@ -282,7 +1400,87 @@
    "motiv": "Clownfaust mit Raketenantrieb",
    "befund": "motivnah, Frames fast identisch, Achse prüfen",
    "schwere": "statisch",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00572,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Clownfaust mit Raketenantrieb, Motiv trifft die Raketenfaust",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.997,
+     "silhouetteIouMin": 0.964,
+     "flaecheRatioMin": 0.99,
+     "flaecheRatioMax": 1.009
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.2,
+     "nettoWeg": 0.005,
+     "nettoWinkel": -95.1,
+     "resultante": 0.269
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 2,
+     "vertreter": [
+      0,
+      1
+     ],
+     "mittlereDifferenz": 0.02674,
+     "schrittDifferenzen": [
+      0.0405,
+      0.03571,
+      0.00896,
+      0.01956,
+      0.03899,
+      0.02265,
+      0.02077
+     ],
+     "loopDiff": 0.01994
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "gehaltene Waffe, Faust als Wirkspitze plausibel",
+     "drehSumme": 1.9,
+     "ortsdrift": 0.005
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Düsenflamme am Arm eingebrannt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "bewegung",
+    "effekt",
+    "browser"
+   ]
   },
   "pa_122": {
    "id": "pa_122",
@@ -297,7 +1495,100 @@
    "motiv": "rosa geflügeltes Wesen, Frame 7 Unendlichkeitszeichen",
    "befund": "fremdes Tier, harter Motivsprung",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00667,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "rosa Flügelwesen; F4/F7 sind Unendlichkeitszeichen; F4 und F7 ersetzen den Körper durch ein Symbol",
+     "brueche": [
+      4,
+      7
+     ],
+     "messAuffaellig": [
+      4,
+      7
+     ],
+     "histKorrMin": 0.4887,
+     "silhouetteIouMin": 0.6673,
+     "flaecheRatioMin": 0.81,
+     "flaecheRatioMax": 1.462
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 9.1,
+     "nettoWeg": 0.138,
+     "nettoWinkel": -70.0,
+     "resultante": 0.472
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 7,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "mittlereDifferenz": 0.14802,
+     "schrittDifferenzen": [
+      0.08839,
+      0.10261,
+      0.14783,
+      0.20521,
+      0.20656,
+      0.09027,
+      0.19526
+     ],
+     "loopDiff": 0.19769
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Kreatur, keine Aura oder Schild am Träger",
+     "drehSumme": 369.6,
+     "ortsdrift": 0.138
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "rolle",
+    "browser"
+   ]
   },
   "pa_132": {
    "id": "pa_132",
@@ -312,7 +1603,101 @@
    "motiv": "Alte Dame (Frame 0), danach geflügeltes Wesen",
    "befund": "Identitätsbruch ab Frame 3",
    "schwere": "identitaet",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00565,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "Alte Dame nur in F0, danach ein geflügeltes Wesen; harter Motivwechsel zwischen F0 und F1",
+     "brueche": [
+      0
+     ],
+     "messAuffaellig": [
+      1,
+      5,
+      7
+     ],
+     "histKorrMin": 0.5946,
+     "silhouetteIouMin": 0.6032,
+     "flaecheRatioMin": 0.89,
+     "flaecheRatioMax": 1.043
+    },
+    "richtung": {
+     "ok": false,
+     "streuungGrad": 18.4,
+     "nettoWeg": 0.042,
+     "nettoWinkel": 172.9,
+     "resultante": 0.189
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.12258,
+     "schrittDifferenzen": [
+      0.12745,
+      0.11328,
+      0.12116,
+      0.13519,
+      0.11601,
+      0.10174,
+      0.14324
+     ],
+     "loopDiff": 0.15723
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung für F1-F7 plausibel",
+     "drehSumme": 118.8,
+     "ortsdrift": 0.042
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "richtung",
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "richtung",
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_133": {
    "id": "pa_133",
@@ -327,7 +1712,87 @@
    "motiv": "geflügeltes Schaf mit Cape",
    "befund": "motivnah, Flügelkontinuität prüfen",
    "schwere": "nah",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00743,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "geflügeltes Schaf mit Cape, Motiv trifft das Superschaf",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9593,
+     "silhouetteIouMin": 0.947,
+     "flaecheRatioMin": 0.968,
+     "flaecheRatioMax": 1.014
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.8,
+     "nettoWeg": 0.013,
+     "nettoWinkel": 169.2,
+     "resultante": 0.19
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 4,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "mittlereDifferenz": 0.0419,
+     "schrittDifferenzen": [
+      0.09116,
+      0.06446,
+      0.04332,
+      0.04443,
+      0.01193,
+      0.01939,
+      0.0186
+     ],
+     "loopDiff": 0.04939
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Achse stabil",
+     "drehSumme": 6.6,
+     "ortsdrift": 0.013
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_134": {
    "id": "pa_134",
@@ -342,7 +1807,94 @@
    "motiv": "brauner Flugkörper mit Flamme",
    "befund": "generisch, Flamme eingebrannt, keine Luftangriffsszene",
    "schwere": "identitaet",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00509,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "brauner Flugkörper ohne Bezug zum Luftangriff",
+     "brueche": [],
+     "messAuffaellig": [
+      1,
+      5
+     ],
+     "histKorrMin": 0.2586,
+     "silhouetteIouMin": 0.7556,
+     "flaecheRatioMin": 0.917,
+     "flaecheRatioMax": 1.186
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.8,
+     "nettoWeg": 0.04,
+     "nettoWinkel": -16.2,
+     "resultante": 0.144
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 4,
+     "vertreter": [
+      0,
+      1,
+      4,
+      7
+     ],
+     "mittlereDifferenz": 0.03858,
+     "schrittDifferenzen": [
+      0.03212,
+      0.0336,
+      0.04573,
+      0.03314,
+      0.0527,
+      0.03455,
+      0.03824
+     ],
+     "loopDiff": 0.03314
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Rollenzuordnung technisch plausibel",
+     "drehSumme": 16.3,
+     "ortsdrift": 0.04
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Flamme am Heck eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "effekt",
+    "browser"
+   ]
   },
   "pa_135": {
    "id": "pa_135",
@@ -357,7 +1909,100 @@
    "motiv": "Meteor mit Feuerschweif",
    "befund": "Schweif eingebrannt, Gestalt wechselt",
    "schwere": "statisch",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00685,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": true,
+     "befund": "Meteor, Motiv trifft den Meteorregen; F0/F1/F4/F5 zeigen fast nur Flamme, F2/F3/F6/F7 Gestein",
+     "brueche": [
+      0,
+      1,
+      4,
+      5
+     ],
+     "messAuffaellig": [
+      1,
+      5
+     ],
+     "histKorrMin": 0.7528,
+     "silhouetteIouMin": 0.8123,
+     "flaecheRatioMin": 0.841,
+     "flaecheRatioMax": 1.128
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.3,
+     "nettoWeg": 0.046,
+     "nettoWinkel": -12.4,
+     "resultante": 0.247
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 5,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      5
+     ],
+     "mittlereDifferenz": 0.05505,
+     "schrittDifferenzen": [
+      0.0345,
+      0.09134,
+      0.03356,
+      0.07851,
+      0.04274,
+      0.08457,
+      0.02014
+     ],
+     "loopDiff": 0.07829
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Achse stabil",
+     "drehSumme": 8.7,
+     "ortsdrift": 0.046
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Feuerschweif eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "effekt",
+    "browser"
+   ]
   },
   "pa_136": {
    "id": "pa_136",
@@ -372,7 +2017,88 @@
    "motiv": "Bohrkopfrakete mit Flamme/Rauch",
    "befund": "Schweif eingebrannt, Frames springen",
    "schwere": "statisch",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.0051,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Bohrkopfrakete, Motiv trifft die Waffe",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9873,
+     "silhouetteIouMin": 0.8009,
+     "flaecheRatioMin": 0.854,
+     "flaecheRatioMax": 1.403
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 3.5,
+     "nettoWeg": 0.085,
+     "nettoWinkel": 128.0,
+     "resultante": 0.194
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 3,
+     "vertreter": [
+      0,
+      1,
+      2
+     ],
+     "mittlereDifferenz": 0.08196,
+     "schrittDifferenzen": [
+      0.14072,
+      0.07379,
+      0.02298,
+      0.11274,
+      0.13344,
+      0.06844,
+      0.02158
+     ],
+     "loopDiff": 0.12051
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Achse stabil",
+     "drehSumme": 31.9,
+     "ortsdrift": 0.085
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Flamme und Rauchfahne eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "bewegung",
+    "effekt",
+    "browser"
+   ]
   },
   "pa_141": {
    "id": "pa_141",
@@ -387,7 +2113,96 @@
    "motiv": "einfacher blauer Humanoid",
    "befund": "fremder Humanoid statt Krieger",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00635,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "einfacher blauer Humanoid statt Astralkrieger",
+     "brueche": [],
+     "messAuffaellig": [
+      2,
+      6
+     ],
+     "histKorrMin": 0.6514,
+     "silhouetteIouMin": 0.5601,
+     "flaecheRatioMin": 0.94,
+     "flaecheRatioMax": 1.069
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.5,
+     "nettoWeg": 0.045,
+     "nettoWinkel": 171.4,
+     "resultante": 0.253
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.06087,
+     "schrittDifferenzen": [
+      0.05307,
+      0.04449,
+      0.04967,
+      0.09415,
+      0.05972,
+      0.05462,
+      0.07037
+     ],
+     "loopDiff": 0.0663
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung plausibel",
+     "drehSumme": 12.6,
+     "ortsdrift": 0.045
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_142": {
    "id": "pa_142",
@@ -402,7 +2217,100 @@
    "motiv": "blauer Cartoon-Zauberer",
    "befund": "fremder Humanoid statt Leerenritter",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00826,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "blauer Cartoon-Zauberer statt Leerenritter; F2/F6 setzen eine türkise Energiebasis, die sonst fehlt",
+     "brueche": [
+      2,
+      6
+     ],
+     "messAuffaellig": [
+      2,
+      5,
+      6
+     ],
+     "histKorrMin": 0.7482,
+     "silhouetteIouMin": 0.5766,
+     "flaecheRatioMin": 0.961,
+     "flaecheRatioMax": 1.227
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 8.5,
+     "nettoWeg": 0.015,
+     "nettoWinkel": -141.5,
+     "resultante": 0.165
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.08641,
+     "schrittDifferenzen": [
+      0.07406,
+      0.12202,
+      0.07734,
+      0.11311,
+      0.06857,
+      0.06095,
+      0.08878
+     ],
+     "loopDiff": 0.04635
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung plausibel",
+     "drehSumme": 60.2,
+     "ortsdrift": 0.015
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "Energiebasis wechselt, kein Dauer-Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_143": {
    "id": "pa_143",
@@ -417,7 +2325,97 @@
    "motiv": "ausgewaschenes gepanzertes Pferd",
    "befund": "Kontrastverlust, statisch, weiße Reste",
    "schwere": "identitaet",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00496,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": true,
+     "befund": "gepanzertes Pferd, als Astralross motivnah; F1/F6 sind ausgewaschen und verlieren den Kontrast",
+     "brueche": [
+      1,
+      6
+     ],
+     "messAuffaellig": [
+      1,
+      2,
+      5,
+      6
+     ],
+     "histKorrMin": 0.5625,
+     "silhouetteIouMin": 0.8943,
+     "flaecheRatioMin": 0.968,
+     "flaecheRatioMax": 1.004
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.6,
+     "nettoWeg": 0.004,
+     "nettoWinkel": -76.1,
+     "resultante": 0.197
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 4,
+     "vertreter": [
+      0,
+      1,
+      2,
+      5
+     ],
+     "mittlereDifferenz": 0.0761,
+     "schrittDifferenzen": [
+      0.11812,
+      0.08537,
+      0.06047,
+      0.01333,
+      0.0773,
+      0.11718,
+      0.06095
+     ],
+     "loopDiff": 0.01955
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung plausibel",
+     "drehSumme": 6.0,
+     "ortsdrift": 0.004
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "Glühen im Panzer, kein separater Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_144": {
    "id": "pa_144",
@@ -432,7 +2430,102 @@
    "motiv": "geflügeltes Vogelwesen mit Melonenkopf",
    "befund": "fremdes Tier, keine Wassermelone",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.008,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "geflügeltes Vogelwesen mit Melonenkopf statt Wassermelone",
+     "brueche": [],
+     "messAuffaellig": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      7
+     ],
+     "histKorrMin": 0.5115,
+     "silhouetteIouMin": 0.5463,
+     "flaecheRatioMin": 0.919,
+     "flaecheRatioMax": 1.08
+    },
+    "richtung": {
+     "ok": false,
+     "streuungGrad": 24.7,
+     "nettoWeg": 0.049,
+     "nettoWinkel": 155.4,
+     "resultante": 0.111
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 7,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.07987,
+     "schrittDifferenzen": [
+      0.08562,
+      0.06132,
+      0.09054,
+      0.08513,
+      0.06293,
+      0.06762,
+      0.10594
+     ],
+     "loopDiff": 0.11021
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Rollenzuordnung technisch plausibel",
+     "drehSumme": 185.7,
+     "ortsdrift": 0.049
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "richtung",
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "richtung",
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_147": {
    "id": "pa_147",
@@ -447,7 +2540,103 @@
    "motiv": "rosa geflügeltes Schwein",
    "befund": "fremdes Tier statt Weltendrache",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00623,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "rosa geflügeltes Schwein statt Weltendrache",
+     "brueche": [],
+     "messAuffaellig": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "histKorrMin": 0.7016,
+     "silhouetteIouMin": 0.7025,
+     "flaecheRatioMin": 0.95,
+     "flaecheRatioMax": 1.087
+    },
+    "richtung": {
+     "ok": false,
+     "streuungGrad": 27.9,
+     "nettoWeg": 0.044,
+     "nettoWinkel": -107.0,
+     "resultante": 0.241
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 7,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "mittlereDifferenz": 0.11231,
+     "schrittDifferenzen": [
+      0.12679,
+      0.08728,
+      0.12315,
+      0.14907,
+      0.09547,
+      0.11709,
+      0.08731
+     ],
+     "loopDiff": 0.16298
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Kreatur, Rollenzuordnung plausibel",
+     "drehSumme": 237.1,
+     "ortsdrift": 0.044
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "richtung",
+      "bewegung",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "richtung",
+    "bewegung",
+    "browser"
+   ]
   },
   "pa_148": {
    "id": "pa_148",
@@ -462,7 +2651,108 @@
    "motiv": "blaues geflügeltes Tier",
    "befund": "fremdes Tier, kein Schild",
    "schwere": "fremd",
-   "abnahme": "offen"
+   "abnahme": "abgelehnt",
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00732,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "blaues geflügeltes Tier statt Feuerschild",
+     "brueche": [],
+     "messAuffaellig": [
+      2
+     ],
+     "histKorrMin": 0.8346,
+     "silhouetteIouMin": 0.483,
+     "flaecheRatioMin": 0.976,
+     "flaecheRatioMax": 1.083
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 9.2,
+     "nettoWeg": 0.035,
+     "nettoWinkel": 146.8,
+     "resultante": 0.162
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09995,
+     "schrittDifferenzen": [
+      0.14564,
+      0.08567,
+      0.11542,
+      0.10255,
+      0.10843,
+      0.06415,
+      0.07779
+     ],
+     "loopDiff": 0.06906
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Kreatur, keine Aura oder Schild am Träger",
+     "drehSumme": 56.0,
+     "ortsdrift": 0.035
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    }
+   },
+   "sperrgruende": [
+    "identitaet",
+    "bewegung",
+    "rolle",
+    "browser"
+   ]
+  }
+ },
+ "abnahme": {
+  "datum": "2026-11-09",
+  "bericht": "docs/waffen-audit-2026-11-08/ANIM-ABNAHME.md",
+  "messung": "docs/waffen-audit-2026-11-08/anim-abnahme-messung.json",
+  "ergebnis": {
+   "gesamt": 26,
+   "abgenommen": 0,
+   "datenabgenommen": 1,
+   "abgelehnt": 25
   }
  }
 }
