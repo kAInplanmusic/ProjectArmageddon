@@ -42,9 +42,11 @@ test('Kopfzeile: Spielinfos sichtbar, Musik/Verlassen/Aufgeben erst im geöffnet
   await knopf.click();
   await expect(knopf).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('#hud-menue')).toBeVisible();
-  for (const sel of ['#musik-hud', '#hud-abort', '#hud-aufgeben', '#hud-ton']) await expect(page.locator(sel)).toBeVisible();
-  for (const sel of ['#hud-menue [data-musik-schalter]', '#hud-ton', '#hud-abort', '#hud-aufgeben']) {
-    expect((await page.locator(sel).boundingBox()).height, `${sel} Berührfläche`).toBeGreaterThanOrEqual(44);
+  for (const sel of ['#musik-hud', '#hud-abort', '#hud-aufgeben', '#hud-ton', '#kamera-beben',
+    '#hud-menue [data-kamera-effekt]']) await expect(page.locator(sel).first()).toBeVisible();
+  for (const sel of ['#hud-menue [data-musik-schalter]', '#hud-ton', '#hud-abort', '#hud-aufgeben',
+    '#kamera-beben', '#hud-menue [data-kamera-effekt]']) {
+    expect((await page.locator(sel).first().boundingBox()).height, `${sel} Berührfläche`).toBeGreaterThanOrEqual(44);
   }
   // Knopf schließt wieder.
   await knopf.click();
@@ -93,12 +95,13 @@ test('Tastatur: Enter öffnet, Pfeile wandern, Leertaste schaltet Musik ohne Sch
   await expect(page.locator('#hud-ton')).toBeFocused();
   await page.keyboard.press('ArrowDown');
   await expect(page.locator('#hud-abort')).toBeFocused();
+  // Seit KAMERA C6 steht die Gruppe „Kameraeffekte" hinter „Aufgeben": Ende ist ihr letzter Knopf.
   await page.keyboard.press('End');
-  await expect(page.locator('#hud-aufgeben')).toBeFocused();
+  await expect(page.locator('#hud-menue [data-kamera-effekt="ketten"]')).toBeFocused();
   await page.keyboard.press('Home');
   await expect(schalter).toBeFocused();
   await page.keyboard.press('ArrowUp');
-  await expect(page.locator('#hud-aufgeben')).toBeFocused();
+  await expect(page.locator('#hud-menue [data-kamera-effekt="ketten"]')).toBeFocused();
   await page.keyboard.press('Home');
 
   // Leertaste auf dem Musikschalter: schaltet die Musik, feuert nicht und zielt nicht.
@@ -133,6 +136,43 @@ test('Musik schalten per Tipp im Dropdown; Dropdown bleibt dabei offen', async (
   await schalter.click();
   expect(await musikAn(page)).toBe(true);
   await page.evaluate(() => localStorage.removeItem('pa.musik.v1'));
+  expect(fehler).toEqual([]);
+});
+
+test('Kameraeffekte: Beben schaltet durch, Schalter wirken und bleiben gespeichert', async ({ page }) => {
+  const fehler = await starte(page);
+  await page.evaluate(() => localStorage.removeItem('pa.kameraeffekte'));
+  await page.reload();
+  await page.locator('#start-button').click();
+  await expect(page.locator('#menu-overlay')).toBeHidden();
+  await page.locator('#hud-menue-knopf').click();
+
+  const beben = page.locator('#kamera-beben');
+  const stand = () => page.evaluate(() => window.__PA__.kameraEffekte());
+  await expect(beben).toContainText('Beben: Normal');
+  await beben.click();
+  expect((await stand()).beben).toBe('stark');
+  await beben.click();
+  expect((await stand()).beben).toBe('aus');
+  expect((await stand()).bebenFaktor).toBe(0);
+  await expect(beben).toContainText('Beben: Aus');
+  // Gespeichert, nicht nur im Speicher des Tabs.
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pa.kameraeffekte')).beben)).toBe('aus');
+
+  const knapp = page.locator('#hud-menue [data-kamera-effekt="knapp"]');
+  await knapp.click();
+  await expect(knapp).toHaveAttribute('aria-pressed', 'false');
+  await expect(knapp).toContainText('Knapp vorbei: aus');
+  expect((await stand()).knapp).toBe(false);
+
+  // Nach dem Neuladen gilt die Wahl weiter (vor dem Matchstart gelesen).
+  await page.reload();
+  await page.locator('#start-button').click();
+  await expect(page.locator('#menu-overlay')).toBeHidden();
+  const nach = await stand();
+  expect(nach.beben).toBe('aus');
+  expect(nach.knapp).toBe(false);
+  await page.evaluate(() => localStorage.removeItem('pa.kameraeffekte'));
   expect(fehler).toEqual([]);
 });
 

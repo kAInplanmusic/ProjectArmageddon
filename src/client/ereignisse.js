@@ -1,4 +1,5 @@
 import { BIOMOBJEKTE } from '../shared/config/bodenobjekte.js';
+import { kameraEffekte } from './kameraEffekte.js';
 /**
  * Wirkungen der Ereignisse — EINE Zuordnungstabelle für beide Betriebsarten.
  *
@@ -512,6 +513,8 @@ export const EREIGNIS_WIRKUNGEN = {
        */
       k.renderer?.addMuzzleFlash(n.playerId, n.angle ?? 0); k.renderer?.merkeSchuss?.(n.playerId, n.weaponId, n.angle);
       schussKlang(k, n);
+      // Kettenzähler (KAMERA C5): Ein neuer Schuss beginnt eine neue Zählung.
+      kameraEffekte.schuss();
     },
     /*
      * Bestätigung eines Schusses — der Server schickt `playerId` und `angle`
@@ -523,6 +526,7 @@ export const EREIGNIS_WIRKUNGEN = {
       k.shotPredictor?.resolve();
       k.renderer?.addMuzzleFlash(n?.playerId, n?.angle ?? 0); k.renderer?.merkeSchuss?.(n?.playerId, n?.weaponId, n?.angle);
       schussKlang(k, n);
+      kameraEffekte.schuss();
     },
   },
 
@@ -688,6 +692,7 @@ export const EREIGNIS_WIRKUNGEN = {
   }),
 
   mine_exploded: beide((k, n) => {
+    kameraEffekte.ketteGlied('Mine');
     k.fernzustand?.minen?.()?.delete(n.mineId);
     k.hud?.log(n.ausgang === 'super' ? 'Superexplosion! Eine Mine macht doppelten Schaden' : 'Eine Mine explodiert', n.ausgang === 'super' ? 'danger' : 'accent');
     if (n.ausgang === 'super') k.renderer?.addFlash(n.x, n.y, 70, { color: '#ffd24a' });
@@ -714,6 +719,7 @@ export const EREIGNIS_WIRKUNGEN = {
   }),
 
   fass_exploded: beide((k, n) => {
+    kameraEffekte.ketteGlied('Fass');
     k.fernzustand?.minen?.()?.delete(n.fassId);
     k.hud?.log(BIOMOBJEKTE[n.biomobjekt]?.label ? BIOMOBJEKTE[n.biomobjekt].label + ' ausgelöst' : 'Ein Fass explodiert', 'accent');
     k.renderer?.addFlash(n.x, n.y, 30, { color: '#ff9a3d' });
@@ -1115,6 +1121,26 @@ export const EREIGNIS_WIRKUNGEN = {
   },
 
   /*
+   * Wasser-Sturz-Kamera (KAMERA C4).
+   *
+   * Der Zweig steht HIER und nicht in `main.js#trackWater`: Das Ereignis kommt
+   * lokal und online gleich an (online gedrosselt, aber mit demselben Feld
+   * `level`), und `trackWater` liegt in einer gemeinsamen Datei, die dieser
+   * Auftrag nur liest. Der Wächter in `kameraEffekte.js` filtert die
+   * Dauermeldungen: Er gibt nur den ÜBERGANG ins Untergetaucht-Sein weiter,
+   * nicht die bis zu 60 Meldungen je Sekunde einer schwimmenden Figur.
+   *
+   * Die Position kommt aus dem Zustand (`findEntity`), weil `entity_in_water`
+   * nur `entityId` und `level` trägt. Fehlt die Figur (gerade entfernt), bleibt
+   * der Auftrag aus — geraten wird nicht.
+   */
+  entity_in_water: beide((k, n) => {
+    const figur = k.findEntity?.(n.entityId);
+    if (!figur) return;
+    kameraEffekte.wasserGemeldet({ entityId: n.entityId, x: figur.x, y: figur.y, level: n.level });
+  }),
+
+  /*
    * 'drowning' hat bewusst KEINE Wirkung: Das CharacterSystem meldet es bei
    * JEDEM Simulationsschritt, solange die Figur unter Wasser ist — das sind
    * bis zu 60 Meldungen je Sekunde, die das Protokoll überschwemmen. Die
@@ -1151,11 +1177,13 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   death: {
     lokal: (k, n) => {
+      kameraEffekte.ketteGlied('Figur');
       const victim = k.match?.players?.find(player => player.entityId === n.entityId);
       k.hud?.log(`${victim?.label ?? `Entity ${n.entityId}`} ausgeschaltet`, 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n.entityId) });
     },
     online: (k, n) => {
+      kameraEffekte.ketteGlied('Figur');
       k.hud?.log('Eine Einheit wurde ausgeschaltet', 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n?.entityId) });
     },

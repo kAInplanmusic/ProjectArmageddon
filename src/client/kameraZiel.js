@@ -323,16 +323,86 @@ const STOSS_MAX = 14;
  * Der Bildschub nach einem Einschlag: Stärke und Dauer nach Explosionsradius
  * und Waffenkategorie.
  *
- * @param {{radius:number, kategorie?:string|null}} p
+ * `beben` ist die Spielereinstellung (KAMERA C1): 0 schaltet den Schub ganz ab,
+ * 0,5 halbiert ihn, 1,35 verstärkt mittlere Einschläge. Der Deckel `STOSS_MAX`
+ * gilt in JEDER Stufe — „stark" ist eine stärkere Rückmeldung, kein Freibrief,
+ * das Zielkreuz unter dem Auge wegzuziehen. Die Dauer folgt der gedeckelten
+ * Stärke, damit ein starker Stoß nicht nur weiter, sondern auch länger wirkt.
+ *
+ * @param {{radius:number, kategorie?:string|null, beben?:number}} p
  * @returns {{amplitude:number, dauer:number}|null} `null`, wenn der Einschlag zu klein ist
  */
-export function stossFuer({ radius, kategorie = null }) {
+export function stossFuer({ radius, kategorie = null, beben = 1 }) {
   const r = Number(radius);
   if (!Number.isFinite(r) || r <= 0) return null;
+  const staerke = Number(beben);
+  if (!Number.isFinite(staerke) || staerke <= 0) return null;
   const faktor = STOSS_KATEGORIE[kategorie] ?? 1;
-  const amplitude = Math.min(STOSS_MAX, (2 + r * 0.14) * faktor);
+  const amplitude = Math.min(STOSS_MAX, (2 + r * 0.14) * faktor * staerke);
   if (amplitude < STOSS_MIN) return null;
   return { amplitude, dauer: 0.3 + amplitude * 0.02 };
+}
+
+/**
+ * Ab welchem Abstand (Kartenpixel) ein Vorbeiflug „knapp" ist.
+ *
+ * Eine Figur ist rund 14 px breit (Halbbreite 7). 30 px heißt: Das Geschoss
+ * geht in weniger als zwei Figurenbreiten vorbei, ohne zu treffen — nah genug,
+ * dass ein Mensch es als „fast erwischt" liest, weit genug, dass es kein
+ * Treffer war.
+ */
+export const KNAPP_RADIUS = 30;
+
+/**
+ * Unterhalb dieses Abstands gilt der Vorbeiflug als TREFFER, nicht als knapp.
+ * Ein Geschoss, das die Figur streift, soll nicht mit einem Zoom belohnt
+ * werden; der Einschlag hat Vorrang.
+ */
+export const KNAPP_TREFFER = 12;
+
+/**
+ * Der knappste Vorbeiflug eines Geschosssegments an einer Figur.
+ *
+ * Gerechnet wird der Abstand des Figurmittelpunkts zur STRECKE vom vorigen zum
+ * aktuellen Geschosspunkt (nicht zum aktuellen Punkt allein): Ein schnelles
+ * Geschoss springt je Bild 20 px und mehr, der nächste Punkt der Bahn läge
+ * sonst neben der Figur, obwohl die Bahn sie fast berührt hat.
+ *
+ * @param {object} p
+ * @param {{x:number,y:number}|null} p.von voriger Geschosspunkt (fehlt: kein Vorbeiflug)
+ * @param {{x:number,y:number}} p.nach aktueller Geschosspunkt
+ * @param {Array<{x:number,y:number}>} [p.figuren] lebende Figuren
+ * @param {number} [p.radius] Reichweite des „knapp"
+ * @returns {{x:number,y:number,abstand:number,figur:object}|null} nächster Punkt der Bahn
+ */
+export function naechsterVorbeiflug({ von, nach, figuren = [], radius = KNAPP_RADIUS }) {
+  if (!von || !nach) return null;
+  const dx = nach.x - von.x;
+  const dy = nach.y - von.y;
+  const laenge2 = dx * dx + dy * dy;
+  if (!(laenge2 > 0)) return null;
+  const grenze = Number.isFinite(radius) ? radius : KNAPP_RADIUS;
+  let best = null;
+  for (const figur of figuren) {
+    if (!figur || !Number.isFinite(figur.x) || !Number.isFinite(figur.y)) continue;
+    // Fußpunkt der Figur auf der Strecke, auf [0,1] begrenzt.
+    const roh = ((figur.x - von.x) * dx + (figur.y - von.y) * dy) / laenge2;
+    /*
+     * Nur INNERHALB der Strecke zählt der Vorbeiflug. Liegt der Fußpunkt am
+     * Anfang oder Ende, ist die Figur hinter bzw. vor dem Geschoss — der
+     * Abstand wächst nur, es war kein Vorbeiflug. Ohne diese Bedingung wäre
+     * jeder Schuss am Schützen selbst „knapp", sobald er den Lauf verlässt.
+     */
+    if (!(roh > 0.001 && roh < 0.999)) continue;
+    const t = Math.max(0, Math.min(1, roh));
+    const x = von.x + dx * t;
+    const y = von.y + dy * t;
+    const abstand = Math.hypot(figur.x - x, figur.y - y);
+    // Zu nah = Treffer (der Einschlag hat Vorrang), zu weit = kein Vorbeiflug.
+    if (abstand < KNAPP_TREFFER || abstand > grenze) continue;
+    if (!best || abstand < best.abstand) best = { x, y, abstand, figur };
+  }
+  return best;
 }
 
 /**

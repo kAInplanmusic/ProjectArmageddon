@@ -9,8 +9,18 @@
  * Bedienung: Mausrad zoomt um den Zeiger; Verschieben mit mittlerer oder rechter
  * Maustaste (die linke zielt und lädt auf); zwei Finger zoomen und verschieben.
  *
+ * ## Warum das Kameramenü hier entsteht
+ *
+ * `src/client/main.js` ist eine gemeinsame Datei und wird von diesem Auftrag
+ * nur gelesen. Diese Klasse wird aber ohnehin mit Canvas und Fenster gebaut —
+ * deshalb erzeugt sie die Bedienung der Kameraeffekte (`kameraEffekteBedienung.js`)
+ * im Konstruktor. Wer die Kamerabedienung baut, baut damit auch ihr Menü; es
+ * gibt keine zweite Verdrahtungsstelle, die man übersehen könnte.
+ *
  * @module kameraSteuerung
  */
+
+import { KameraeffekteBedienung } from './kameraEffekteBedienung.js';
 
 /** Zoomfaktor je Rastschritt des Mausrads. */
 const RAD_FAKTOR = 1.12;
@@ -32,6 +42,10 @@ export class KameraSteuerung {
     this.zeiger = new Map();
     this.ziehen = null;
     this.pinch = null;
+    // Kameraeffekte-Menü und Kettenanzeige (KAMERA C5/C6). Ohne DOM ein No-op.
+    this.kameraeffekte = new KameraeffekteBedienung({
+      doc: canvas?.ownerDocument ?? globalThis.document ?? null,
+    });
     this.#binde(tastaturFrei);
     this.aktualisiereKnopf();
   }

@@ -90,3 +90,8 @@ Seil mehr (Rückzug nur Gehen/Springen). Zugende, Wasser oder ein weggesprengter
 
 Offen: Messung an einer echten WA-Installation (Einzelbilder: Einholtempo, Schwungbeschleunigung, Reibung) würde die
 Annäherungen ersetzen; Wahl der Standardstufe durch den Auftraggeber.
+
+**A7 (2026-11-09):** Kein Feintuning an den Annäherungen. Eine Änderung von `kletterTempo`, `schwung` oder `reibung`
+wäre eine neue Seilfassung (3) mit Vergleichsmessung — ohne Playtest-Zahlen gäbe es dafür nur geratene Werte, und
+alte Replays müssten weiterhin bitgleich laufen. `tests/seil.test.js` bleibt unverändert; die Aufgabe ist beim
+Auftraggeber (Playtest).
