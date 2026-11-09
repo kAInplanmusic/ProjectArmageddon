@@ -1,0 +1,38 @@
+{
+  "00_chassis-endo-t8__aktion.webp": {
+    "sha256": "dbe4b3e1c1cf63486ea337033b5790d7d9ab63301d6fcbef12f6e4df8412985a",
+    "bytes": 210422
+  },
+  "01_slasher-cyber-jax__aktion.webp": {
+    "sha256": "2ecf45d31e787df33490d221cef332b427b3d74c82d52b4a48eb47d320acc23e",
+    "bytes": 178142
+  },
+  "02_hydra-titan-mech__aktion.webp": {
+    "sha256": "f710c902e89c621946b299a21d9fb2eb85cb75a121dd7ac563a967edb21d73bb",
+    "bytes": 302750
+  },
+  "10_recon-luchs-01__aktion.webp": {
+    "sha256": "ee00185f577f20bdd9025af8c93f7336cdbe9c618c879a43b802573a4be7c3a2",
+    "bytes": 233020
+  },
+  "11_heavy-battery-moerser-bot__aktion.webp": {
+    "sha256": "fb0e23e18d100c77ccbe931bab853dfb3e3a22e628114b971488ca401e78b5bb",
+    "bytes": 339270
+  },
+  "12_ordnance-rail-viper__aktion.webp": {
+    "sha256": "2ddf1c1b498fa051da33ace5cbad67975c0d7830c348ba437c5591d022ef2a1d",
+    "bytes": 302324
+  },
+  "20_grid-drifter-datastream__aktion.webp": {
+    "sha256": "5a6a449cedf89e4a3c0f948eec1402456700a9adf5eb7a460c873800a69a8bfc",
+    "bytes": 250540
+  },
+  "21_proxy-glitch-hack__aktion.webp": {
+    "sha256": "2c66e99b68b7b818e5325398c2f5d915b6bdb2926fcd1c2067a4465af2404fe9",
+    "bytes": 234156
+  },
+  "22_overlord-kernel-panic__aktion.webp": {
+    "sha256": "cdb8cd62ae5d30decdb31b2f1b5f8a03458822980533e24d96ad7e0100316886",
+    "bytes": 246370
+  }
+}
