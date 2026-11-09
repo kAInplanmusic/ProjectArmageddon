@@ -78,7 +78,7 @@ def keep_largest(cut, morphology):
     sizes = ndimage.sum(alpha > 8, labels, range(1, count + 1))
     largest = int(np.argmax(sizes)) + 1
     keep = sizes[largest - 1]
-    maske = np.isin(labels, [i + 1 for i, size in enumerate(sizes) if size >= keep * 0.01])
+    maske = np.isin(labels, [i + 1 for i, size in enumerate(sizes) if size >= keep * 0.05])
     data = np.array(cut)
     data[..., 3] = np.where(maske, data[..., 3], 0)
     return Image.fromarray(data, "RGBA")
@@ -90,7 +90,7 @@ def normalize(paths, character_id, animation, morphology):
     cutouts, boxes = [], []
     for path in paths:
         image = Image.open(path).convert("RGBA")
-        cut = freistellen_chroma(image).resize((1024, 1024), Image.Resampling.LANCZOS)
+        cut = keep_largest(freistellen_chroma(image), CHARACTERS[character_id]["morphology"]).resize((1024, 1024), Image.Resampling.LANCZOS)
         box = cut.getchannel("A").getbbox()
         if not box:
             raise SystemExit(f"Leere Freistellung: {path}")
