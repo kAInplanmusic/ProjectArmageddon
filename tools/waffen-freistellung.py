@@ -383,6 +383,13 @@ def bearbeite(tabelle: dict, pruefen: bool) -> dict:
     manifest, icon_dateien = lade_katalog()
     atlanten: dict[str, Atlas] = {}
     bericht = {'version': 1, 'stand': 'BAL-09', 'waffen': {}}
+    # Früheren Lauf als Zustand lesen: bereits bereinigte Zellen nicht erneut
+    # beschneiden (der Rahmen-Detektor würde sonst nach und nach die Waffe kürzen).
+    alt_bericht = {}
+    try:
+        alt_bericht = json.load(open(os.path.join(BERICHT, 'bericht.json'), encoding='utf-8'))
+    except (OSError, ValueError):
+        pass
 
     def atlas(name: str) -> Atlas:
         if name not in atlanten:
@@ -395,12 +402,16 @@ def bearbeite(tabelle: dict, pruefen: bool) -> dict:
         held_neu = None
         for rolle, regel in eintrag['rollen'].items():
             modus = regel['modus']
+            alt_hash = (alt_bericht.get('waffen', {}).get(wid, {})
+                        .get('rollen', {}).get(rolle, {}).get('hashNachher'))
             if rolle == 'menue64':
                 name = icon_dateien[wid]
                 datei = os.path.join(ICONS64, name if name.endswith('_icon.png')
                                      else os.path.splitext(name)[0] + '_icon.png')
                 vorher_bild = Image.open(datei).convert('RGBA')
                 vorher = np.array(vorher_bild)
+                if alt_hash == hashlib.sha256(vorher.tobytes()).hexdigest():
+                    modus = 'keine'
                 if modus == 'aus128':
                     z = info['icon']
                     neu = aus128(atlas(z['atlas']).zelle(z).copy())
@@ -411,6 +422,8 @@ def bearbeite(tabelle: dict, pruefen: bool) -> dict:
                 z = info[rolle]
                 a = atlas(z['atlas'])
                 vorher = a.zelle(z).copy()
+                if alt_hash == hashlib.sha256(vorher.tobytes()).hexdigest():
+                    modus = 'keine'
                 maske = np.zeros(vorher[..., 3].shape, bool)
                 if modus == 'rahmen':
                     neu, _ = rahmen_bereinigen(vorher)
@@ -466,6 +479,16 @@ def bearbeite(tabelle: dict, pruefen: bool) -> dict:
     if not pruefen:
         for a in atlanten.values():
             a.speichern()
+        # Nach dem Schreiben den tatsächlichen Zellinhalt neu lesen: Palettenatlanten
+        # quantisieren beim Speichern, sonst würde der nächste Lauf dieselbe Zelle
+        # erneut beschneiden.
+        for wid, e in bericht['waffen'].items():
+            for rolle, r in e['rollen'].items():
+                if not r.get('zelle'):
+                    continue
+                z = manifest['waffen'][wid][rolle]
+                a = Atlas(os.path.join(SPRITES, manifest['atlanten'][z['atlas']]['datei']))
+                r['hashNachher'] = hashlib.sha256(a.zelle(z).tobytes()).hexdigest()
     # Hashes der geschriebenen Dateien nachtragen.
     for wid, e in bericht['waffen'].items():
         for rolle, r in e['rollen'].items():
@@ -478,19 +501,25 @@ def bearbeite(tabelle: dict, pruefen: bool) -> dict:
 
 def kontaktbogen(wid: str, eintrag: dict, bericht: dict) -> None:
     """Vorher/Nachher je ID: dunkel/hell, 24/64/128 px, 24x/64x auf 2x (HiDPI)."""
-    info = next(iter(eintrag['rollen'].values()))
+    # Die Rolle mit der größten Änderung zeigen, nicht das ganze Atlasblatt.
+    rolle, info = max(eintrag['rollen'].items(),
+                      key=lambda r: r[1].get('entferntePixel', 0))
     datei = os.path.join(WURZEL, info['datei'])
-    vorher = Image.open(datei).convert('RGBA')
-    # Vorher aus HEAD rekonstruieren, damit der Bogen auch nach dem Schreiben stimmt.
     rel = os.path.relpath(datei, WURZEL)
+
+    def zuschneiden(bild: Image.Image) -> Image.Image:
+        z = info.get('zelle')
+        if z:
+            return bild.crop((z['x'], z['y'], z['x'] + z['w'], z['y'] + z['h']))
+        return bild
+
+    vorher = zuschneiden(Image.open(datei).convert('RGBA'))
+    # Vorher aus HEAD rekonstruieren, damit der Bogen auch nach dem Schreiben stimmt.
     alt = git_stand(datei)
     if alt:
         import io
-        vorher = Image.open(io.BytesIO(alt)).convert('RGBA')
-    if vorher.size != (128, 128):
-        # 64er-Bild: die 128er-Icon-Zelle als Vorher-Bezug nehmen.
-        pass
-    nachher = vorher if not eintrag['geaendert'] else Image.open(datei).convert('RGBA')
+        vorher = zuschneiden(Image.open(io.BytesIO(alt)).convert('RGBA'))
+    nachher = vorher if not eintrag['geaendert'] else zuschneiden(Image.open(datei).convert('RGBA'))
     spalten = [('24', 24, 1), ('64', 64, 1), ('128', 128, 1), ('24 HiDPI', 24, 2), ('64 HiDPI', 64, 2)]
     breite, hoehe = 5 * 190 + 20, 2 * 2 * 190 + 70
     bogen = Image.new('RGB', (breite, hoehe), (32, 34, 38))

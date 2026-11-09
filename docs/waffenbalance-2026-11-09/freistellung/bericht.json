@@ -183,7 +183,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 2129,
+     "entferntePixel": 1980,
      "bboxVorher": [
       7,
       6,
@@ -192,12 +192,12 @@
      ],
      "bboxNachher": [
       16,
-      7,
-      113,
-      117
+      6,
+      114,
+      118
      ],
      "kantenVorher": 0.929,
-     "kantenNachher": 0.031,
+     "kantenNachher": 0.081,
      "komponentenVorher": [
       {
        "px": 7799,
@@ -211,19 +211,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 5946,
+       "px": 6050,
        "bbox": [
         17,
-        13,
+        11,
         97,
-        100
+        103
        ]
       }
      ],
      "hashVorher": "8b92e0dbd226dcfb81cbe9a9aebbd4212e00729dfcd82212f8af7959b7ee65f4",
-     "hashNachher": "e6135d989a03f0ce7f945f01b81d67e94392aca3462eee95cb91714632b45b93",
+     "hashNachher": "95290d0447e00982b4b7ba657209e0a1a56623d47286fbe4773993c653442880",
      "geaendert": true,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
      "modus": "rahmen",
@@ -235,7 +235,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 2947,
+     "entferntePixel": 2357,
      "bboxVorher": [
       7,
       6,
@@ -243,13 +243,13 @@
       120
      ],
      "bboxNachher": [
-      23,
-      15,
+      16,
+      13,
       111,
-      109
+      111
      ],
      "kantenVorher": 0.929,
-     "kantenNachher": 0.034,
+     "kantenNachher": 0.042,
      "komponentenVorher": [
       {
        "px": 7748,
@@ -263,19 +263,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 5312,
+       "px": 5952,
        "bbox": [
-        23,
-        16,
-        87,
-        94
+        17,
+        13,
+        93,
+        99
        ]
       }
      ],
      "hashVorher": "146c97537307a6c8637b497e645a7bb7ecfdc3efc819a3a1d50c0bf20cd0a3d8",
-     "hashNachher": "fd741e7d375a14d67b7d754b86991ed4d877273c775ba32cac52dfb8f6ea173d",
+     "hashNachher": "f23fdcd5f1b42e2380bfa7808cbde1a7473a13d5ad4cb44b3de302141c95c356",
      "geaendert": true,
-     "dateiHashNachher": "dc1c7c3835a27df3f6cb8ba2ca0b932b24b2125be03ef6bf50754ba25661340b"
+     "dateiHashNachher": "b8294bd135c0ec92de5fcc8b8a31feda1ea82d285eb9a977a62ae08cde087e0b"
     },
     "silhouette": {
      "modus": "heldmaske",
@@ -287,7 +287,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 2947,
+     "entferntePixel": 2357,
      "bboxVorher": [
       7,
       6,
@@ -295,13 +295,13 @@
       120
      ],
      "bboxNachher": [
-      23,
-      15,
+      16,
+      13,
       111,
-      109
+      111
      ],
      "kantenVorher": 0.929,
-     "kantenNachher": 0.034,
+     "kantenNachher": 0.042,
      "komponentenVorher": [
       {
        "px": 7748,
@@ -315,19 +315,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 5312,
+       "px": 5952,
        "bbox": [
-        23,
-        16,
-        87,
-        94
+        17,
+        13,
+        93,
+        99
        ]
       }
      ],
      "hashVorher": "363fa63c512169386d53fe3e54aa641bfcdebac991b1b38aaa60a190273cca89",
-     "hashNachher": "b05f30aa13cca2e2f78432cff12784a82c81262b4b864dd2fcee0ec9ac1d3bea",
+     "hashNachher": "ec92158be605457c49814803b04ad4be85b872c5c38be2ef63090d00ddec3904",
      "geaendert": true,
-     "dateiHashNachher": "dc1c7c3835a27df3f6cb8ba2ca0b932b24b2125be03ef6bf50754ba25661340b"
+     "dateiHashNachher": "b8294bd135c0ec92de5fcc8b8a31feda1ea82d285eb9a977a62ae08cde087e0b"
     }
    },
    "geaendert": true
@@ -438,7 +438,7 @@
      "hashVorher": "929ba3d26ae3ff3096b903823ab5b734045339f37b06cafc724cf50f1d3a6f48",
      "hashNachher": "929ba3d26ae3ff3096b903823ab5b734045339f37b06cafc724cf50f1d3a6f48",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "menue64": {
      "modus": "keine",
@@ -503,7 +503,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 2958,
+     "entferntePixel": 2787,
      "bboxVorher": [
       6,
       6,
@@ -513,11 +513,11 @@
      "bboxNachher": [
       13,
       13,
-      112,
-      111
+      113,
+      113
      ],
      "kantenVorher": 0.861,
-     "kantenNachher": 0.02,
+     "kantenNachher": 0.05,
      "komponentenVorher": [
       {
        "px": 8634,
@@ -531,19 +531,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 6141,
+       "px": 6307,
        "bbox": [
         13,
         13,
-        99,
-        98
+        101,
+        101
        ]
       }
      ],
      "hashVorher": "b3b476d46ed26ac591eb4b517bf303df317d3c6fbb34a3be4ee305afbfb2c8bc",
-     "hashNachher": "cf2f21153a31685d2d043558bdec842c04743121d9f6c47cc0a6522a6ab03370",
+     "hashNachher": "0576a782503be946cd9e00546a1538bb118675de37e115026c23231c9a7e8d85",
      "geaendert": true,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "menue64": {
      "modus": "aus128",
@@ -560,8 +560,8 @@
      "bboxNachher": [
       6,
       6,
-      56,
-      55
+      57,
+      57
      ],
      "kantenVorher": 0.826,
      "kantenNachher": 0.0,
@@ -578,19 +578,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 1497,
+       "px": 1528,
        "bbox": [
-        8,
         7,
-        48,
-        48
+        7,
+        49,
+        49
        ]
       }
      ],
      "hashVorher": "39a9347c2a8eaf13a791e47766c75e3b610b3b6fc14fbba26e25409b2813ffb1",
-     "hashNachher": "0294c7d098c44d61bff350eb102a0ee7563ca9fee9a28ae77e8d4ba6df1ac889",
+     "hashNachher": "68d875716d7ae585a28be523787bcb4debd31a4b8fd8aefb3d6d693847e0cfa8",
      "geaendert": true,
-     "dateiHashNachher": "f92b56c57fcf6cb308a439207e21504cb5b2d1989e8f5ab9990a8872f7ff6994"
+     "dateiHashNachher": "7cd489c76bed63fe89e22ad895d6d5c0c91515f6071b9628686acba0e889811a"
     }
    },
    "geaendert": true
@@ -648,7 +648,7 @@
      "hashVorher": "c4de762b9b298957eacd2558cd25a92a1ad555137c21561d4ff1cb8bda58b704",
      "hashNachher": "c4de762b9b298957eacd2558cd25a92a1ad555137c21561d4ff1cb8bda58b704",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
      "modus": "keine",
@@ -718,7 +718,7 @@
      "hashVorher": "e6f973ccb8340e7b33f495d2b73b29a4858a54ab715201e29ea4822d3e4a975f",
      "hashNachher": "e6f973ccb8340e7b33f495d2b73b29a4858a54ab715201e29ea4822d3e4a975f",
      "geaendert": false,
-     "dateiHashNachher": "c75914be4b96e0a8fe499772aed69036d961267b93edb77efb9d7a53c0e62454"
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
     }
    },
    "geaendert": false
@@ -736,7 +736,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 1642,
+     "entferntePixel": 1340,
      "bboxVorher": [
       6,
       8,
@@ -745,12 +745,12 @@
      ],
      "bboxNachher": [
       16,
-      15,
-      112,
-      112
+      10,
+      113,
+      116
      ],
      "kantenVorher": 0.913,
-     "kantenNachher": 0.031,
+     "kantenNachher": 0.075,
      "komponentenVorher": [
       {
        "px": 8468,
@@ -764,19 +764,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 7336,
+       "px": 7622,
        "bbox": [
         16,
-        15,
-        97,
-        98
+        10,
+        98,
+        107
        ]
       }
      ],
      "hashVorher": "3a30bbfbd136b3e795e64dc5e046c057829cbc95c4b9879800ffcf4ef3118b52",
-     "hashNachher": "356e6eb0a0c9de8fa8714b0f83fbe9c7bf8984f82365cba751e233c24266912c",
+     "hashNachher": "7402551dcb5e90c139aa3a3874908d2edc749521292c514843702bb28442b11a",
      "geaendert": true,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
      "modus": "rahmen",
@@ -788,7 +788,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 2048,
+     "entferntePixel": 1652,
      "bboxVorher": [
       6,
       8,
@@ -796,13 +796,13 @@
       119
      ],
      "bboxNachher": [
-      18,
+      17,
       9,
-      110,
+      112,
       116
      ],
      "kantenVorher": 0.896,
-     "kantenNachher": 0.093,
+     "kantenNachher": 0.065,
      "komponentenVorher": [
       {
        "px": 8399,
@@ -816,19 +816,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 7024,
+       "px": 7430,
        "bbox": [
-        18,
-        11,
-        93,
-        102
+        17,
+        9,
+        96,
+        108
        ]
       }
      ],
      "hashVorher": "df7659492a5ecf692f4c2411bfd79897fc70cfb52b827337aeb79a295bda368f",
-     "hashNachher": "963cc1a881c895cfe07c1baeb4aaa34950d938e7a4ae5bf75d1f0d9f424bc7ed",
+     "hashNachher": "292b432475f4173a890ed49c6abe54268d091b0705023d82222633662ca6102a",
      "geaendert": true,
-     "dateiHashNachher": "c75914be4b96e0a8fe499772aed69036d961267b93edb77efb9d7a53c0e62454"
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
     },
     "silhouette": {
      "modus": "heldmaske",
@@ -840,7 +840,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 2048,
+     "entferntePixel": 1652,
      "bboxVorher": [
       6,
       8,
@@ -848,13 +848,13 @@
       119
      ],
      "bboxNachher": [
-      18,
+      17,
       9,
-      110,
+      112,
       116
      ],
      "kantenVorher": 0.896,
-     "kantenNachher": 0.093,
+     "kantenNachher": 0.065,
      "komponentenVorher": [
       {
        "px": 8399,
@@ -868,19 +868,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 7024,
+       "px": 7430,
        "bbox": [
-        18,
-        11,
-        93,
-        102
+        17,
+        9,
+        96,
+        108
        ]
       }
      ],
      "hashVorher": "424f53e4ebb5ab0c7560503babc1c01502fbe9d70139659bff6245406c572f52",
-     "hashNachher": "aced162eb70b57bd1c54941275e7a57563613be884bedf354934cd47d3deee95",
+     "hashNachher": "7e99ebb57091cc0bec7221e240ae6add95c843db29dc4bb87d71e0e7f200d1a4",
      "geaendert": true,
-     "dateiHashNachher": "c75914be4b96e0a8fe499772aed69036d961267b93edb77efb9d7a53c0e62454"
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
     }
    },
    "geaendert": true
@@ -938,7 +938,7 @@
      "hashVorher": "06309ba36598821512223ab1267be8fbbbe8f6e60153d20c4c23eef6419a160d",
      "hashNachher": "06309ba36598821512223ab1267be8fbbbe8f6e60153d20c4c23eef6419a160d",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
      "modus": "keine",
@@ -990,7 +990,7 @@
      "hashVorher": "53d2f9526a75dc0e86f9b49e54447b23dce84a1e539229a946704b6bad420f86",
      "hashNachher": "53d2f9526a75dc0e86f9b49e54447b23dce84a1e539229a946704b6bad420f86",
      "geaendert": false,
-     "dateiHashNachher": "c75914be4b96e0a8fe499772aed69036d961267b93edb77efb9d7a53c0e62454"
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
     }
    },
    "geaendert": false
@@ -1055,9 +1055,9 @@
       }
      ],
      "hashVorher": "6646c311d1b36ab091de7cc961ee613057070c588c0e862f2a6fd07e74961a80",
-     "hashNachher": "eb9c913fa69a1d70312ed975dd2668359eda2ea05c01a44af5ccbb3017b38c8b",
+     "hashNachher": "e863617a7819cc3535c67cbb8dc18c1dc0d178b60ee953bc9e8f758cf69782b7",
      "geaendert": true,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
      "modus": "platte",
@@ -1118,7 +1118,7 @@
      "hashVorher": "6feea67eab608921b44c79a01aa976331882468b05bcb9369014ce4cb8bc4cc8",
      "hashNachher": "2927b60dab40d478810aba8a706aeb4fb047dd22570fa05eb3260923c3c5a8d5",
      "geaendert": true,
-     "dateiHashNachher": "c75914be4b96e0a8fe499772aed69036d961267b93edb77efb9d7a53c0e62454"
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
     },
     "silhouette": {
      "modus": "heldmaske",
@@ -1179,7 +1179,7 @@
      "hashVorher": "d5109602006825452cf34a0aef0d3ab62fe543f7ea301253508f161e6a843262",
      "hashNachher": "a1f34ff499a47ffd53112429d2adbd0e85bf2ce339fb0eb1356ce1096a3d924d",
      "geaendert": true,
-     "dateiHashNachher": "c75914be4b96e0a8fe499772aed69036d961267b93edb77efb9d7a53c0e62454"
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
     }
    },
    "geaendert": true
@@ -1237,7 +1237,7 @@
      "hashVorher": "3f5c9e502b4affafe7b74f0f06c49531f195ad983c131512a58df27223120d4e",
      "hashNachher": "3f5c9e502b4affafe7b74f0f06c49531f195ad983c131512a58df27223120d4e",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "menue64": {
      "modus": "keine",
@@ -1342,7 +1342,7 @@
      "hashVorher": "5a050a8d42e0947fcb4b4f66a7b0d6e690fc2021d8ceb54b62468519e0f1a928",
      "hashNachher": "5a050a8d42e0947fcb4b4f66a7b0d6e690fc2021d8ceb54b62468519e0f1a928",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
      "modus": "keine",
@@ -1452,7 +1452,7 @@
      "hashVorher": "ab9200c3c8ab43ab368bd1fe033fab9f03a9691e2aa70b686036ef395ae47cf3",
      "hashNachher": "ab9200c3c8ab43ab368bd1fe033fab9f03a9691e2aa70b686036ef395ae47cf3",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     }
    },
    "geaendert": false
@@ -1510,7 +1510,7 @@
      "hashVorher": "c44db44e5616fe149e7bb50442bf71b3a63a146acae68ba8059d174f09b1d37f",
      "hashNachher": "c44db44e5616fe149e7bb50442bf71b3a63a146acae68ba8059d174f09b1d37f",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
      "modus": "keine",
@@ -1562,7 +1562,7 @@
      "hashVorher": "aba04f00a4d757c59b0090ccb4d76f3dc9c08a9180c85e5a2e67d01c005ef533",
      "hashNachher": "aba04f00a4d757c59b0090ccb4d76f3dc9c08a9180c85e5a2e67d01c005ef533",
      "geaendert": false,
-     "dateiHashNachher": "14599f1b0788d0ab689a4a45c21c016cd335d90ac1f5d6ea8a4f54018b826a3c"
+     "dateiHashNachher": "ea7404b702b5ca64e5675ab37a7030ea1b713aa5783f2f83ca2baaef60b02e55"
     }
    },
    "geaendert": false
@@ -1580,7 +1580,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 2667,
+     "entferntePixel": 2579,
      "bboxVorher": [
       6,
       7,
@@ -1588,13 +1588,13 @@
       120
      ],
      "bboxNachher": [
-      16,
+      14,
       13,
       113,
       112
      ],
      "kantenVorher": 0.018,
-     "kantenNachher": 0.02,
+     "kantenNachher": 0.05,
      "komponentenVorher": [
       {
        "px": 6238,
@@ -1608,7 +1608,7 @@
      ],
      "komponentenNachher": [
       {
-       "px": 4467,
+       "px": 4516,
        "bbox": [
         17,
         13,
@@ -1618,9 +1618,9 @@
       }
      ],
      "hashVorher": "ec9cea0add4341264a5f43782fe194c76d74d9cb9ca56c3ab0233fabec55a559",
-     "hashNachher": "053337e6c65011c9a52ae240f684653a3b46af0a38739953f4b3a4faac9328ce",
+     "hashNachher": "76c0dabeeb48523e89088c02e54327d5cb92926483335ae3b97d234be3885c8d",
      "geaendert": true,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
      "modus": "rahmen",
@@ -1632,7 +1632,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 3401,
+     "entferntePixel": 3266,
      "bboxVorher": [
       6,
       7,
@@ -1640,13 +1640,13 @@
       120
      ],
      "bboxNachher": [
-      16,
-      16,
+      14,
+      13,
       113,
       111
      ],
      "kantenVorher": 0.009,
-     "kantenNachher": 0.061,
+     "kantenNachher": 0.08,
      "komponentenVorher": [
       {
        "px": 6161,
@@ -1660,19 +1660,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 4410,
+       "px": 4464,
        "bbox": [
         17,
-        16,
+        13,
         97,
-        96
+        99
        ]
       }
      ],
      "hashVorher": "15248755801bd7f1fefb74a6ac681b8a751333204bdc535a29145f191a64fcd3",
-     "hashNachher": "376534c0a05c746d66f04756c4e8a400bb18ce2f3ec12e603bcba1f8261b6735",
+     "hashNachher": "fbdc10d5fd10045626996f89f2abc8aefa6dd34556b9a7971356b2177a027ec1",
      "geaendert": true,
-     "dateiHashNachher": "14599f1b0788d0ab689a4a45c21c016cd335d90ac1f5d6ea8a4f54018b826a3c"
+     "dateiHashNachher": "ea7404b702b5ca64e5675ab37a7030ea1b713aa5783f2f83ca2baaef60b02e55"
     },
     "silhouette": {
      "modus": "heldmaske",
@@ -1684,7 +1684,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 3401,
+     "entferntePixel": 3266,
      "bboxVorher": [
       6,
       7,
@@ -1692,13 +1692,13 @@
       120
      ],
      "bboxNachher": [
-      16,
-      16,
+      14,
+      13,
       113,
       111
      ],
      "kantenVorher": 0.009,
-     "kantenNachher": 0.061,
+     "kantenNachher": 0.08,
      "komponentenVorher": [
       {
        "px": 6161,
@@ -1712,26 +1712,26 @@
      ],
      "komponentenNachher": [
       {
-       "px": 4410,
+       "px": 4464,
        "bbox": [
         17,
-        16,
+        13,
         97,
-        96
+        99
        ]
       }
      ],
      "hashVorher": "1c2436d0ae4ea614bf2a4f7f2a350d4c478ecd44c5c2eecec5af8ae5da99267e",
-     "hashNachher": "8d43e6093dd2a7fb11c7e0bd2a6f12b564aca6da9a73e4106f33f295fd930c90",
+     "hashNachher": "48e1e366d74a1ed54edaae091be3f85c53ef3e11ea8fa88d541f951f19e06bc9",
      "geaendert": true,
-     "dateiHashNachher": "14599f1b0788d0ab689a4a45c21c016cd335d90ac1f5d6ea8a4f54018b826a3c"
+     "dateiHashNachher": "ea7404b702b5ca64e5675ab37a7030ea1b713aa5783f2f83ca2baaef60b02e55"
     },
     "menue64": {
      "modus": "aus128",
      "grund": "64er-Bild mit Platte und Rahmen.",
      "datei": "src/client/assets/icons/IMG_9388_icon.png",
      "zelle": null,
-     "entferntePixel": 1412,
+     "entferntePixel": 1360,
      "bboxVorher": [
       4,
       4,
@@ -1739,7 +1739,7 @@
       59
      ],
      "bboxNachher": [
-      8,
+      6,
       6,
       57,
       56
@@ -1759,19 +1759,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 1090,
+       "px": 1101,
        "bbox": [
         9,
-        8,
+        7,
         48,
-        48
+        49
        ]
       }
      ],
      "hashVorher": "2404680fa977741fc041f39841dde9b17c94965a50241589ab25fc8d92925382",
-     "hashNachher": "2af0491c1a4e431bb4b547c9cb035e29a6f55d03be65a30f1a4e1af9b65bd5ec",
+     "hashNachher": "a75a2840bc1f6c7048135d76e8ef02a719ff7bf9d1eb42474a0708e74c7755fc",
      "geaendert": true,
-     "dateiHashNachher": "8ae188904ec7470a2bb2128fa2e907203194a2ab26e2be7d89a5bf39d89a2187"
+     "dateiHashNachher": "e0159ea747ac09426c5a36e3163432da126f3605ae9049f30af0ed11c53d7086"
     }
    },
    "geaendert": true
@@ -1829,7 +1829,7 @@
      "hashVorher": "4bbac46f41fb69962f2ac4009838a933c5316be00cded35c2bba9b82c798feda",
      "hashNachher": "4bbac46f41fb69962f2ac4009838a933c5316be00cded35c2bba9b82c798feda",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     }
    },
    "geaendert": false
@@ -1887,7 +1887,7 @@
      "hashVorher": "d91576a7a0db10e9946bead006c26b9db0aa4aa589e03275890ebbc6c817ad98",
      "hashNachher": "d91576a7a0db10e9946bead006c26b9db0aa4aa589e03275890ebbc6c817ad98",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     }
    },
    "geaendert": false
@@ -1945,7 +1945,7 @@
      "hashVorher": "84cdb0c985ff0ba41fb331676452e8331e9fa92843c4321a090e5f28938c242b",
      "hashNachher": "84cdb0c985ff0ba41fb331676452e8331e9fa92843c4321a090e5f28938c242b",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     }
    },
    "geaendert": false
@@ -2003,7 +2003,7 @@
      "hashVorher": "cb6224aa532b8ee31a23b585b6b32a7b7422ed056eb9beddf85d5411e35d0200",
      "hashNachher": "cb6224aa532b8ee31a23b585b6b32a7b7422ed056eb9beddf85d5411e35d0200",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     }
    },
    "geaendert": false
@@ -2061,7 +2061,7 @@
      "hashVorher": "5facf9f58231780b9cf93bc86c80fccd5791309a568cad88d602dedff4957e70",
      "hashNachher": "5facf9f58231780b9cf93bc86c80fccd5791309a568cad88d602dedff4957e70",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     }
    },
    "geaendert": false
@@ -2119,7 +2119,7 @@
      "hashVorher": "5a18bbfc4debb7d984688433765569b0ee31f391401e8c25554194f1d844513c",
      "hashNachher": "5a18bbfc4debb7d984688433765569b0ee31f391401e8c25554194f1d844513c",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     }
    },
    "geaendert": false
@@ -2177,7 +2177,7 @@
      "hashVorher": "b82cc5e09e0496aac4d63526288571b914c94dd62e0d08ebd957e2cf97adbad1",
      "hashNachher": "b82cc5e09e0496aac4d63526288571b914c94dd62e0d08ebd957e2cf97adbad1",
      "geaendert": false,
-     "dateiHashNachher": "58266a9896a8f7ade04b091a40d0ec487dbca84eebd44c51eb2b555c63fdc7ca"
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     }
    },
    "geaendert": false
