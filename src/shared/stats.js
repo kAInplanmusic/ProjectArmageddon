@@ -66,10 +66,19 @@ export class MatchStats {
   /**
    * @param {object} optionen
    * @param {Map<number, number>|object} optionen.teams - entityId → teamId
+   * @param {Map<number, string>|object|null} [optionen.fraktionen] - entityId →
+   *   Fraktionskennung. Bewusst je FIGUR (also je Platz), nicht je Team: Die
+   *   Lieblingsnation soll auch dann stimmen, wenn ein Team aus Figuren
+   *   verschiedener Fraktionen besteht. Fehlt die Angabe, bleibt `fraktion`
+   *   `null` — alte Aufrufer und Altreplays ändern sich nicht.
    */
-  constructor({ teams = new Map() } = {}) {
+  constructor({ teams = new Map(), fraktionen = null } = {}) {
     /** entityId → teamId */
     this.teams = teams instanceof Map ? teams : new Map(Object.entries(teams).map(([k, v]) => [Number(k), v]));
+    /** entityId → Fraktionskennung (oder nichts). */
+    this.fraktionen = fraktionen instanceof Map
+      ? fraktionen
+      : new Map(Object.entries(fraktionen ?? {}).map(([k, v]) => [Number(k), v]));
     /** playerId → Kennzahlen */
     this.spieler = new Map();
     this.tick = 0;
@@ -256,6 +265,11 @@ export class MatchStats {
     return {
       playerId,
       teamId: this.teams.get(playerId) ?? null,
+      /**
+       * Fraktion dieses Platzes — die Grundlage der Lieblingsnation.
+       * `null`, wenn keine Zuordnung vorliegt (Altreplay, alter Aufrufer).
+       */
+      fraktion: this.fraktionen.get(playerId) ?? null,
       schuesse: eintrag.schuesse,
       treffer: eintrag.treffer,
       schaden: Math.round(eintrag.schaden),
@@ -331,16 +345,31 @@ export class MatchStats {
     if (liste.length === 0) return null;
     const einzelne = liste.map(id => this.fuer(id)).filter(Boolean);
     if (einzelne.length === 0) return null;
-    if (einzelne.length === 1) return { ...einzelne[0], figuren: [einzelne[0].playerId] };
+    if (einzelne.length === 1) {
+      return {
+        ...einzelne[0],
+        figuren: [einzelne[0].playerId],
+        fraktionen: einzelne[0].fraktion ? [einzelne[0].fraktion] : [],
+      };
+    }
 
     const summe = feld => einzelne.reduce((s, e) => s + e[feld], 0);
     const schuesse = summe('schuesse');
     const treffer = summe('treffer');
+    /*
+     * Fraktionen der eigenen Plätze. `fraktion` bleibt die der ERSTEN Figur
+     * (Rückwärtskompatibilität für Aufrufer, die nur ein Feld lesen);
+     * `fraktionen` nennt alle, dedupliziert und sortiert. Damit kann das Profil
+     * entweder die erste Wahl oder jede gespielte Nation verbuchen.
+     */
+    const fraktionen = [...new Set(einzelne.map(e => e.fraktion).filter(Boolean))].sort();
     return {
       playerId: einzelne[0].playerId,
       figuren: einzelne.map(e => e.playerId),
       // Ein Team hat einen Zustand; gemeldet wird der der ersten Figur.
       teamId: einzelne[0].teamId,
+      fraktion: einzelne[0].fraktion ?? null,
+      fraktionen,
       schuesse,
       treffer,
       schaden: summe('schaden'),
@@ -435,14 +464,49 @@ export class PlayerProfile {
   /**
    * Schreibt das Ergebnis einer Partie fort.
    *
+   * ## Lieblingsnation (LIEBLING-1)
+   *
+   * Die Fraktion kommt aus zwei möglichen Quellen:
+   *  - `optionen.fraktion`/`optionen.fraktionen` (die ausdrückliche Wahl dieses
+   *    Aufrufers — sie ERSETZT die Partieangabe), oder
+   *  - `partie.eigener.fraktion`/`fraktionen` (die Fraktion der eigenen Plätze
+   *    aus `MatchStats#zusammenfassung`).
+   *
+   * Mehrere eigene Plätze können verschiedene Fraktionen tragen; dann verbucht
+   * das Profil JEDE gespielte Nation genau einmal je Partie (dedupliziert).
+   * Fehlt die Angabe, passiert nichts — alte Aufrufer, Altreplays und alte
+   * Profile verhalten sich unverändert.
+   *
    * @param {object} partie - aus `MatchStats#zusammenfassung(eigenerSpielerId)`
+   * @param {{fraktion?: string|null, fraktionen?: string[]}} [optionen]
    * @returns {this}
    */
-  merge(partie) {
+  merge(partie, optionen = {}) {
     const eigener = partie?.eigener;
     // Ohne eigene Kennzahlen gibt es nichts zu verbuchen — eine Partie ohne
     // eigenen Zug (Zuschauer, sofortiges Ende) verändert das Profil nicht.
     if (!eigener) return this;
+
+    const fraktionen = new Set();
+    /*
+     * Eine ausdrückliche Wahl ersetzt die Partieangabe, sie ergänzt sie nicht:
+     * Wer beim Verbuchen „diese Fraktion" sagt, meint genau diese. Sonst zählte
+     * ein Aufrufer, der die falsch aufgelöste Partieangabe korrigieren will,
+     * beide Nationen.
+     */
+    const ausdruecklich = typeof optionen.fraktion === 'string' && optionen.fraktion;
+    const ausdruecklicheListe = Array.isArray(optionen.fraktionen) && optionen.fraktionen.length > 0;
+    if (ausdruecklich) fraktionen.add(optionen.fraktion);
+    if (ausdruecklicheListe) {
+      for (const f of optionen.fraktionen) if (typeof f === 'string' && f) fraktionen.add(f);
+    }
+    if (!ausdruecklich && !ausdruecklicheListe) {
+      if (typeof eigener.fraktion === 'string' && eigener.fraktion) fraktionen.add(eigener.fraktion);
+      if (Array.isArray(eigener.fraktionen)) {
+        for (const f of eigener.fraktionen) if (typeof f === 'string' && f) fraktionen.add(f);
+      }
+    }
+    for (const fraktion of fraktionen) this.spieleMit(fraktion);
 
     this.partien += 1;
     this.schuesse += eigener.schuesse;

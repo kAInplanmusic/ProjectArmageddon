@@ -23,12 +23,21 @@
  *    statt benotet — sie brauchen Zeit, sind aber nicht unerreichbar.
  *  - **keine Belohnungen** (`reward: null`): Es gibt kein Vergabesystem. Ein
  *    Text wie „schaltet X frei" wäre eine Behauptung über etwas, das nicht
- *    passiert.
+ *    passiert. Das Feld ist trotzdem ausformuliert (`normalisiereBelohnung`,
+ *    `BELOHNUNGS_ARTEN`), damit eine spätere Vergabe ohne Umbau der Anzeige
+ *    möglich ist — es wird nur nichts behauptet, solange nichts vergeben wird.
  *  - **die Kennungen behalten ihr Präfix `muster_`** — `id` ist laut Format
  *    stabil, damit ein Fortschritt in `localStorage` nicht verwaisen kann.
+ *  - **Symbole:** `icon` ist die stabile Kennung. Ein echtes Bild trägt optional
+ *    `iconBild` (Pfad oder Data-URI) und `iconAlt`; fehlt es, zeigt die Anzeige
+ *    weiter ★/☆. Die SVG-Dateien sind eine Gestaltungsleistung und liegen
+ *    bewusst nicht in diesem Modul (keine Assets in der Datenfassung).
  *
  * Die 100 Erfolge aus der ursprünglichen Vorgabe sind damit **nicht** erreicht;
- * das ist eine Inhaltsfrage und offen dokumentiert, keine Mechaniklücke.
+ * das ist eine Inhaltsfrage und offen dokumentiert, keine Mechaniklücke. Der
+ * Katalog wird deshalb **nicht künstlich aufgefüllt**: elf belegte Einträge
+ * sind ehrlicher als neunundachtzig erfundene. Ein Test hält den Umfang fest,
+ * damit ein späterer Ausbau eine bewusste Entscheidung bleibt.
  *
  * ## Wie ein Erfolg ausgewertet wird
  *
@@ -57,6 +66,16 @@
 
 /** Schwierigkeitsstufen, von leicht bis sehr schwer. */
 export const TIERS = Object.freeze(['leicht', 'mittel', 'schwer', 'sehr schwer']);
+
+/**
+ * Belohnungsarten, die die Anzeige kennt.
+ *
+ * `titel` = Namenszusatz, `abzeichen` = Emblem, `freischaltung` = schaltet
+ * etwas frei. Die Art ist ein Vertrag zwischen Daten und Anzeige; eine
+ * unbekannte Art wird verworfen, statt als Freitext auf dem Bildschirm zu
+ * landen.
+ */
+export const BELOHNUNGS_ARTEN = Object.freeze(['titel', 'abzeichen', 'freischaltung']);
 
 /** Gruppen für die Übersicht. */
 export const CATEGORIES = Object.freeze({
@@ -104,11 +123,17 @@ const CATEGORY_LABELS = Object.freeze({
  *  - `title`     kurzer Name
  *  - `text`      ein Satz, was zu tun ist
  *  - `hint`      Hinweis für die Übersicht
- *  - `icon`      Kennung eines Symbols (noch keine Bilddateien)
- *  - `reward`    was es gibt — `null`, solange nichts vergeben wird
+ *  - `icon`      stabile Kennung des Symbols
+ *  - `iconBild`  optional: Bildpfad oder Data-URI (fehlt = Zeichen ★/☆)
+ *  - `iconAlt`   optional: Alternativtext zum Bild
+ *  - `reward`    `null` oder `{ art, id, text }` (siehe `BELOHNUNGS_ARTEN`)
  *  - `condition` die Bedingung (Mechanik)
+ *
+ * Die Rohliste wird unten normalisiert: fehlende Bild- und Alternativfelder
+ * werden `null`/`''`. Damit bleibt das Format für alte Profile und neue
+ * Einträge gleich, ohne dass jeder Eintrag beide Felder wiederholen muss.
  */
-export const ACHIEVEMENTS = Object.freeze([
+const KATALOG = [
   // ---------------------------------------------------------------- Einstieg
   {
     id: 'muster_erster_schuss',
@@ -241,12 +266,113 @@ export const ACHIEVEMENTS = Object.freeze([
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'schaden_pro_minute', wert: 20, mindestbasis: { kennzahl: 'schuesse', wert: 20 } },
   },
-]);
+];
+
+/**
+ * Der veröffentlichte Katalog: Rohliste + Formatnormalisierung.
+ *
+ * `reward` wird NICHT automatisch in ein Objekt gedreht — `null` bleibt die
+ * ehrliche Aussage „es gibt keine Belohnung". Die Normalisierung betrifft nur
+ * die optionalen Bildfelder, damit `symbolFuer()` immer dieselbe Form sieht.
+ */
+export const ACHIEVEMENTS = Object.freeze(KATALOG.map(eintrag => Object.freeze({
+  ...eintrag,
+  iconBild: typeof eintrag.iconBild === 'string' && eintrag.iconBild.length > 0
+    ? eintrag.iconBild
+    : null,
+  iconAlt: typeof eintrag.iconAlt === 'string' ? eintrag.iconAlt : '',
+})));
 
 /** Erfolge nach Kennung. */
 export const ACHIEVEMENTS_BY_ID = Object.freeze(
   Object.fromEntries(ACHIEVEMENTS.map(e => [e.id, e])),
 );
+
+/**
+ * Der festgelegte Katalogumfang.
+ *
+ * Kein technisches Limit, sondern eine Bremse gegen künstliches Auffüllen: Die
+ * Vorgabe nennt 100 Erfolge, die Inhalte liegen beim Auftraggeber. Bis dahin
+ * bleiben die elf belegten Einträge stehen. Wer den Katalog erweitert, ändert
+ * diese Zahl BEWUSST mit — sie ist die sichtbare Entscheidung, nicht ein
+ * Nebeneffekt.
+ */
+export const KATALOG_UMFANG = 11;
+
+/**
+ * Symbol eines Erfolgs für die Anzeige.
+ *
+ * Drei Stufen, in dieser Reihenfolge:
+ *  1. `iconBild` — ein echtes Bild (Pfad oder Data-URI) mit `iconAlt`.
+ *  2. das Zeichen ★ (erreicht) / ☆ (offen) — der heutige, ehrliche Ersatz.
+ *
+ * Die Funktion erfindet kein Bild: fehlt `iconBild`, bleibt es beim Zeichen.
+ * So kann die Gestaltung Bilder nachliefern, ohne dass die Anzeige umgebaut
+ * werden muss — und ohne dass ein Platzhalter wie ein fertiges Symbol aussieht.
+ *
+ * @param {object} eintrag - Eintrag aus `ACHIEVEMENTS`
+ * @param {boolean} [erreicht]
+ * @returns {Readonly<{art:'bild'|'zeichen', quelle:string|null, alt:string, zeichen:string|null}>}
+ */
+export function symbolFuer(eintrag, erreicht = false) {
+  const bild = typeof eintrag?.iconBild === 'string' && eintrag.iconBild.length > 0
+    ? eintrag.iconBild
+    : null;
+  if (bild) {
+    return Object.freeze({
+      art: 'bild',
+      quelle: bild,
+      alt: typeof eintrag.iconAlt === 'string' && eintrag.iconAlt.length > 0
+        ? eintrag.iconAlt
+        : (eintrag.title ?? ''),
+      zeichen: null,
+    });
+  }
+  return Object.freeze({
+    art: 'zeichen',
+    quelle: null,
+    alt: '',
+    zeichen: erreicht ? '★' : '☆',
+  });
+}
+
+/**
+ * Prüft und normalisiert eine Belohnung.
+ *
+ * Erlaubt ist `null` (keine Belohnung) oder `{ art, id, text? }` mit einer Art
+ * aus `BELOHNUNGS_ARTEN`. Alles andere wird verworfen — eine kaputte Belohnung
+ * darf nicht als Freitext in der Übersicht erscheinen.
+ *
+ * @param {unknown} reward
+ * @returns {Readonly<{art:string, id:string, text:string}>|null}
+ */
+export function normalisiereBelohnung(reward) {
+  if (!reward || typeof reward !== 'object') return null;
+  if (!BELOHNUNGS_ARTEN.includes(reward.art)) return null;
+  if (typeof reward.id !== 'string' || reward.id.length === 0) return null;
+  return Object.freeze({
+    art: reward.art,
+    id: reward.id,
+    text: typeof reward.text === 'string' ? reward.text : '',
+  });
+}
+
+/**
+ * Der Text, den die Übersicht zu einer Belohnung zeigt.
+ *
+ * Bei `null` wird NICHTS versprochen: Der Satz nennt ausdrücklich, dass es noch
+ * kein Vergabesystem gibt. Sobald eine Belohnung gesetzt ist, hat ihr eigener
+ * Text Vorrang; fehlt er, wird die Art benannt.
+ *
+ * @param {object} eintrag
+ * @returns {string}
+ */
+export function belohnungstext(eintrag) {
+  const belohnung = normalisiereBelohnung(eintrag?.reward);
+  if (!belohnung) return 'Keine Belohnung — es gibt noch kein Vergabesystem.';
+  if (belohnung.text) return belohnung.text;
+  return `Belohnung: ${belohnung.art} „${belohnung.id}"`;
+}
 
 /** Anzahl der Muster-Einträge — für die Anzeige und für Tests. */
 export const MUSTER_ANZAHL = ACHIEVEMENTS.filter(e => e.muster).length;
@@ -507,4 +633,4 @@ export function uebersicht(werte, bereitsErreicht = null) {
   };
 }
 
-export default { ACHIEVEMENTS, werteAus, neueErfolge, uebersicht, kennzahlen, emblem };
+export default { ACHIEVEMENTS, werteAus, neueErfolge, uebersicht, kennzahlen, emblem, symbolFuer, belohnungstext };

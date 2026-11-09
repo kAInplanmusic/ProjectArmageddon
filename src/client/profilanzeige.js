@@ -27,6 +27,8 @@ import { beschreibe } from '../shared/stats.js';
 import {
   kennzahlen as erfolgsKennzahlen,
   uebersicht as erfolgsUebersicht,
+  symbolFuer,
+  belohnungstext,
   TIERS,
 } from '../shared/achievements.js';
 import { ablageHinweis } from '../shared/identity.js';
@@ -154,10 +156,26 @@ export function baueErfolgsAnzeige(quelle) {
 
       const symbol = quelle.document.createElement('span');
       symbol.className = 'erfolg-symbol';
-      // Kein Bild vorhanden: Die Kennung steht als Kürzel, damit die Anzeige
-      // nicht so tut, als gäbe es Symbole. `aria-hidden`, weil der Titel folgt.
-      symbol.textContent = e.erreicht ? '★' : '☆';
+      /*
+       * Bild vor Zeichen: `symbolFuer` entscheidet aus den Daten. Liegt ein
+       * `iconBild` vor, wird es als <img> gezeigt; sonst bleibt es beim
+       * ehrlichen ★/☆. `aria-hidden`, weil der Titel direkt folgt — ein
+       * vorgelesenes „Stern, Stern" wäre nur Lärm.
+       */
+      const bild = symbolFuer(e, e.erreicht);
       symbol.setAttribute('aria-hidden', 'true');
+      if (bild.art === 'bild') {
+        const img = quelle.document.createElement('img');
+        img.className = 'erfolg-symbol-bild';
+        img.src = bild.quelle;
+        img.alt = bild.alt;
+        img.width = 18;
+        img.height = 18;
+        img.loading = 'lazy';
+        symbol.append(img);
+      } else {
+        symbol.textContent = bild.zeichen;
+      }
 
       const text = quelle.document.createElement('span');
       text.className = 'erfolg-text';
@@ -190,6 +208,19 @@ export function baueErfolgsAnzeige(quelle) {
           : `${Math.round(e.stand)} / ${Math.round(e.ziel)}`);
 
       text.append(titel, ' ', stufe, quelle.document.createElement('br'), beschreibung);
+
+      /*
+       * Belohnung nur zeigen, wenn eine gesetzt ist. `reward: null` ist die
+       * ehrliche Aussage „es gibt (noch) keine"; ein Satz „Keine Belohnung"
+       * an jedem Eintrag wäre Lärm. Sobald Daten eine Belohnung tragen, steht
+       * der Text aus derselben Quelle hier.
+       */
+      if (e.reward) {
+        const belohnung = quelle.document.createElement('span');
+        belohnung.className = 'erfolg-belohnung';
+        belohnung.textContent = belohnungstext(e);
+        text.append(quelle.document.createElement('br'), belohnung);
+      }
       zeile.append(symbol, text, stand);
       zeilen.push(zeile);
     }
