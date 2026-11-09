@@ -16,7 +16,6 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
-from rembg import new_session, remove
 from scipy import ndimage
 ROOT = Path(__file__).resolve().parents[2]
 CHARACTERS = json.loads((ROOT / "tools/design-rest/characters.json").read_text())
@@ -62,6 +61,10 @@ def freistellen_chroma(image):
     hintergrund = np.median(corners, axis=0)
     abstand = np.sqrt(((rgb - hintergrund) ** 2).sum(axis=2))
     alpha = np.clip((abstand - 6) * 255 / 18, 0, 255).astype(np.uint8)
+    # Innenliegende grau-nahe Flächen (Rüstung, Stoff) wieder schließen; nur
+    # Hintergrund, der den Bildrand berührt, bleibt transparent.
+    gefuellt = ndimage.binary_fill_holes(alpha > 16)
+    alpha = np.where(gefuellt, np.maximum(alpha, 200), alpha).astype(np.uint8)
     return Image.fromarray(np.dstack([np.array(image.convert("RGB")), alpha]), "RGBA")
 
 
@@ -81,13 +84,13 @@ def keep_largest(cut, morphology):
     return Image.fromarray(data, "RGBA")
 
 
-def normalize(paths, character_id, animation, morphology, session):
+def normalize(paths, character_id, animation, morphology):
     out_dir = NORMALIZED / character_id / animation
     out_dir.mkdir(parents=True, exist_ok=True)
     cutouts, boxes = [], []
     for path in paths:
         image = Image.open(path).convert("RGBA")
-        cut = remove(image, session=session).resize((1024, 1024), Image.Resampling.LANCZOS)
+        cut = freistellen_chroma(image).resize((1024, 1024), Image.Resampling.LANCZOS)
         box = cut.getchannel("A").getbbox()
         if not box:
             raise SystemExit(f"Leere Freistellung: {path}")
@@ -99,6 +102,10 @@ def normalize(paths, character_id, animation, morphology, session):
     centers = sorted((b[0] + b[2]) / 2 for b in boxes)
     median_cx = centers[len(centers) // 2]
     dx = round(512 - scale * median_cx)
+    # Kein Frame darf den Rand berühren; die gemeinsame Verschiebung wird geklemmt.
+    min_links = min(scale * b[0] for b in boxes)
+    max_rechts = max(scale * b[2] for b in boxes)
+    dx = min(max(dx, 8 - round(min_links)), 1016 - round(max_rechts))
     for frame, (cut, box) in enumerate(zip(cutouts, boxes)):
         size = (round(1024 * scale), round(1024 * scale))
         scaled = cut.resize(size, Image.Resampling.LANCZOS)
@@ -174,11 +181,10 @@ def main():
         ids = sys.argv[3].split(",")
     else:
         ids = [cid for cid in CHARACTERS if (run_dir / f"{cid}-{animation}-0.png").exists()]
-    session = new_session("isnet-general-use")
     for index, cid in enumerate(ids, 1):
         paths = frames_for(run_dir, cid, animation)
         try:
-            normalize(paths, cid, animation, CHARACTERS[cid]["morphology"], session)
+            normalize(paths, cid, animation, CHARACTERS[cid]["morphology"])
             print(f"{index}/{len(ids)} {cid} {animation}", flush=True)
         except SystemExit as error:
             print(f"{index}/{len(ids)} {cid} {animation} FEHLER: {error}", flush=True)
