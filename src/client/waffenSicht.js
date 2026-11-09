@@ -39,8 +39,15 @@
 import { getWaffe } from '../shared/config/waffen-fassung.js';
 import { buildEffect, SELF_TARGET_KINDS } from '../engine/specials.js';
 import { wirkungLabel } from '../shared/config/wirkungstexte.js';
+import { ROLLEN, rolleFuer, wirkpfadFuer, rollenLabel } from '../shared/config/waffen-rollen.js';
 
 export const WAFFEN_ROLLEN = Object.freeze(['hand', 'geschoss', 'ruecken', 'selbst', 'weltobjekt', 'ui']);
+
+/**
+ * Die fünf semantischen Rollen (BAL-11) mit deutschen Anzeigenamen. Sie stehen
+ * in `config/waffen-rollen.js`; hier nur der Durchgriff für die Anzeige.
+ */
+export { ROLLEN as SEMANTISCHE_ROLLEN, rollenLabel, rolleFuer, wirkpfadFuer };
 
 /** Am Körper getragen, nicht in der Hand (Rucksack, Düsenrucksack, Gleitschirm). */
 const RUECKEN_IDS = Object.freeze(new Set(['pa_032', 'pa_112', 'pa_114']));
@@ -88,6 +95,18 @@ export function istSelbstwirkung(waffe) {
 /**
  * Rolle einer Waffe in der Darstellung.
  *
+ * Seit BAL-11 kommt die Entscheidung aus `config/waffen-rollen.js` (eine
+ * dokumentierte Rolle je ID), nicht mehr aus einer Sonderfall-Heuristik:
+ *
+ *   hand                      → `hand`, Wurfwaffen mit Ding-Bild → `geschoss`
+ *   ruecken                    → `ruecken`
+ *   aufstell | beschwoerung    → `weltobjekt`
+ *   symbol                     → `selbst`
+ *
+ * Nur `hand`, `geschoss` und `ruecken` werden als getragene Waffe gezeichnet;
+ * `selbst` und `weltobjekt` haben eigene Darstellungen. Für unbekannte IDs
+ * bleibt die frühere Heuristik als Rückfall erhalten.
+ *
  * @param {object|null|undefined} waffe - Katalogeintrag in der Partiefassung
  * @param {object|null} [effekt] - Ergebnis von `buildEffect` (optional, spart Arbeit)
  * @param {{projektilInfo?:{art?:string}|null}|null} [sp] - Sprite-Eintrag (Wurfdinge)
@@ -95,6 +114,15 @@ export function istSelbstwirkung(waffe) {
  */
 export function waffenRolle(waffe, effekt = buildEffect(waffe), sp = null) {
   if (!waffe) return 'ui';
+  const rolle = rolleFuer(waffe);
+  if (rolle === 'ruecken') return 'ruecken';
+  if (rolle === 'aufstell' || rolle === 'beschwoerung') return 'weltobjekt';
+  if (rolle === 'symbol') return 'selbst';
+  if (rolle === 'hand') {
+    if (sp?.projektilInfo?.art === 'ding' || (waffe.fuseTime ?? 0) > 0) return 'geschoss';
+    return 'hand';
+  }
+  // Rückfall für IDs ohne Eintrag (z. B. Sonderwerkzeuge): bisherige Heuristik.
   if (RUECKEN_IDS.has(waffe.id)) return 'ruecken';
   if (WELT_SPECIALS.has(waffe.special) || (effekt && WELT_KINDS.has(effekt.kind))) return 'weltobjekt';
   if (effekt && SELF_TARGET_KINDS.has(effekt.kind)) return 'selbst';
@@ -163,17 +191,22 @@ export function anzeigeKennzahl(waffe) {
  *
  * @param {string} id
  * @param {number} [fassung]
- * @returns {{waffe:object, effekt:object|null, rolle:string, selbst:boolean, kennzahl:string}|null}
+ * @returns {{waffe:object, effekt:object|null, rolle:string, semantischeRolle:string|null,
+ *   rollenLabel:string, wirkpfad:string|null, selbst:boolean, kennzahl:string}|null}
  */
 export function waffeFuerAnzeige(id, fassung) {
   const waffe = getWaffe(id, fassung);
   if (!waffe) return null;
   const effekt = buildEffect(waffe);
   const rolle = waffenRolle(waffe, effekt);
+  const semantischeRolle = rolleFuer(waffe);
   return {
     waffe,
     effekt,
     rolle,
+    semantischeRolle,
+    rollenLabel: rollenLabel(semantischeRolle),
+    wirkpfad: wirkpfadFuer(waffe),
     selbst: Boolean(effekt && SELF_TARGET_KINDS.has(effekt.kind)),
     kennzahl: anzeigeKennzahl(waffe),
   };

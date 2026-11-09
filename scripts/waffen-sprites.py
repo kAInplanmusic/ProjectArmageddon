@@ -28,6 +28,12 @@ Schritte je Waffe
 Handkorrekturen: scripts/waffen-sprites-korrekturen.json (je Waffen-ID, Freistellen/
 Drehen/Kachel). Griff und Muendung stehen nicht mehr dort, sondern in der Ankertabelle.
 
+Rollen (BAL-11): Dieses Skript erzeugt die Geschosszelle aus `delivery`; ob die
+Waffe wirklich ein Geschoss startet, weiss es nicht. Nach jedem Lauf deshalb
+`node scripts/waffen-rollen-eintragen.mjs` ausfuehren. Es schreibt `rolle`,
+`wirkpfad` und `projectile.eigenerPfad` aus `src/shared/config/waffen-rollen.js`
+ins Manifest (96 Geschossbilder, 87 Projektilpfade).
+
 Aufruf
   python3 scripts/waffen-sprites.py                      # alles erzeugen
   python3 scripts/waffen-sprites.py --kontaktbogen DIR   # zusaetzlich Kontaktboegen (hell+dunkel)

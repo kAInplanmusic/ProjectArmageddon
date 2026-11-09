@@ -63,11 +63,25 @@ export function zellenFuer(manifest, id) {
    */
   const grip = w.anchor?.grip ?? STANDARD_GRIFF;
   const muzzle = w.anchor?.muzzle ?? STANDARD_MUENDUNG;
+  /*
+   * BAL-11: Rolle und Wirkpfad stehen im Manifest (Quelle
+   * `src/shared/config/waffen-rollen.js`). Nur ein echter Projektilpfad darf
+   * die Geschosszelle als Flugbild benutzen: 96 Waffen tragen eine Zelle,
+   * aber neun davon sind Aufstell-/Selbstwirkungen; ihre Zelle ist
+   * Begleitmaterial (`eigenerPfad: false`) und wird hier nicht als Projektil
+   * durchgereicht.
+   */
+  const geschossbild = w.projectile ?? null;
+  const projekt = geschossbild && geschossbild.eigenerPfad !== false ? geschossbild : null;
   return {
     atlas: w.held.atlas,
     held: w.held,
     silhouette: w.silhouette,
-    projectile: w.projectile ?? null,
+    projectile: projekt,
+    /** Geschosszelle, auch wenn sie nur Begleitbild ist (Diagnose/Tests). */
+    geschossbild,
+    rolle: typeof w.rolle === 'string' ? w.rolle : null,
+    wirkpfad: typeof w.wirkpfad === 'string' ? w.wirkpfad : null,
     grip,
     muzzle,
     halt: typeof w.anchor?.halt === 'string' ? w.anchor.halt : 'koerper',
@@ -167,6 +181,12 @@ export function erzeugeWaffenSprites(abh) {
         my: laenge * Math.sin(winkel - achse),
         /** `heft` = eigenes Heft, `koerper` = am Körper gehalten (Griff = Schwerpunkt). */
         halt: z.halt,
+        /** BAL-11: dokumentierte Rolle (Hand/Rücken/Aufstell/Beschwörung/Symbol). */
+        rolle: z.rolle,
+        /** BAL-11: Projektil/Strahl/Selbst — getrennt von der Rolle. */
+        wirkpfad: z.wirkpfad,
+        /** Geschosszelle vorhanden, auch wenn sie nur Begleitbild ist. */
+        geschossbild: z.geschossbild,
         /** Belegter Heftbereich [x0, x1] in Zellpixeln (nur bei `halt: 'heft'` eine echte Spanne). */
         heft: z.heftSpanne,
         quelle: z.quelle,
