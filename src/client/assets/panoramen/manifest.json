@@ -1,0 +1,122 @@
+[
+  {
+    "file": "factory_yard-1280.avif",
+    "width": 1280,
+    "height": 720,
+    "bytes": 13768,
+    "sha256": "3a61a3d8675fa384be7f9b450fd71d6cef24aa66b746edadcb260401336d6d5d",
+    "runtime": false
+  },
+  {
+    "file": "factory_yard-1280.webp",
+    "width": 1280,
+    "height": 720,
+    "bytes": 147766,
+    "sha256": "1cc17bfc6776c2ceb292aa1f9e7e10f3a53d88ea7c7f48b5970db075ec4a3754",
+    "runtime": true
+  },
+  {
+    "file": "factory_yard-sdr.avif",
+    "width": 3840,
+    "height": 2160,
+    "bytes": 499774,
+    "sha256": "0c9c00d09b9f946d733c6a6eaca3671b6b33cbf94f11c7b0d394f1cf1721a593",
+    "runtime": true
+  },
+  {
+    "file": "factory_yard.avif",
+    "width": 3840,
+    "height": 2160,
+    "bytes": 100741,
+    "sha256": "8f19d448ea8006bbd95bc8312a9856a71c9fbee7fc8b77835a8cf9ecb1dd7316",
+    "runtime": false
+  },
+  {
+    "file": "factory_yard.webp",
+    "width": 3840,
+    "height": 2160,
+    "bytes": 1213590,
+    "sha256": "41214f80381d031d7e73ed2f6f8b887f79b44114eef5f40b72f5f4d00c9b85fd",
+    "runtime": false
+  },
+  {
+    "file": "small_cave-1280.avif",
+    "width": 1280,
+    "height": 720,
+    "bytes": 34528,
+    "sha256": "413c5e7dc0d00b685485fcd1eb4864c06d93b8be4d8882328dc73a19bcb022fe",
+    "runtime": false
+  },
+  {
+    "file": "small_cave-1280.webp",
+    "width": 1280,
+    "height": 720,
+    "bytes": 311262,
+    "sha256": "0e471dda4252ce723350df56f3ae39e0ac124c74b69108237f6f7aa47e3374ed",
+    "runtime": true
+  },
+  {
+    "file": "small_cave-sdr.avif",
+    "width": 3840,
+    "height": 2160,
+    "bytes": 994780,
+    "sha256": "4f98d443eff81996829279930367fc3b9dec987800b625ad7d7ce5519bf8808f",
+    "runtime": true
+  },
+  {
+    "file": "small_cave.avif",
+    "width": 3840,
+    "height": 2160,
+    "bytes": 271749,
+    "sha256": "fa6d9b79da1c26e64f7114c963618578543cf85bd8fe4139af45b9dd0d32be7c",
+    "runtime": false
+  },
+  {
+    "file": "small_cave.webp",
+    "width": 3840,
+    "height": 2160,
+    "bytes": 2689448,
+    "sha256": "93bfac2feaeb64ce681c22e56ef1f01cf73d8e92f57c986363d30ad6e4713c51",
+    "runtime": false
+  },
+  {
+    "file": "snow_field-1280.avif",
+    "width": 1280,
+    "height": 720,
+    "bytes": 1363,
+    "sha256": "806963cf2485899b45e9e704454b418c744cc362858677c77ea2db0ea1425e79",
+    "runtime": false
+  },
+  {
+    "file": "snow_field-1280.webp",
+    "width": 1280,
+    "height": 720,
+    "bytes": 18208,
+    "sha256": "b724e4f7491e36d017299512afcf91ff22bd8305d90facafd3bd71b5aa6bab16",
+    "runtime": true
+  },
+  {
+    "file": "snow_field-sdr.avif",
+    "width": 3840,
+    "height": 2160,
+    "bytes": 56807,
+    "sha256": "570f14b651356c17d2a682e05847969d039fd600e2940a0077866d41ddc6243e",
+    "runtime": true
+  },
+  {
+    "file": "snow_field.avif",
+    "width": 3840,
+    "height": 2160,
+    "bytes": 4926,
+    "sha256": "e7d32dfc4e788c9d42118fd49866fe81e5c2dac93b705c46bcbc27aa59ca8601",
+    "runtime": false
+  },
+  {
+    "file": "snow_field.webp",
+    "width": 3840,
+    "height": 2160,
+    "bytes": 119844,
+    "sha256": "39321af8646513c934324e3b7afdfee711c6463497e47c1be8ac51bb02c5ba5b",
+    "runtime": false
+  }
+]

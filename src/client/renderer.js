@@ -1,3 +1,4 @@
+import { zeichneBiomobjekt } from './biomobjektBild.js';
 /**
  * Canvas-Renderer für Project Armageddon.
  *
@@ -10,7 +11,7 @@
  */
 import { WATER_SCALE, TEAM_COLORS } from '../engine/match.js';
 import { teamMarke } from './teamFarben.js';
-import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
+import { DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
 import { cookieStufe, COOKIE_HUNGER } from '../shared/config/cookie.js';
 import { TierBuehne } from './tierBuehne.js';
@@ -103,8 +104,7 @@ import { KISTE_KANTE } from '../shared/config/kisten.js';
  * Die Schlüsselbildung liegt seit A18 an EINER Stelle (`kulissenUrl`); der
  * Selbsttest in `tests/backdrops.test.js` prüft die Präfixe aller Globs.
  */
-import { kulissenUrl } from './kulissenUrls.js';
-import { KulissenBildspeicher, waehleKulissenBreite } from './kulissenQuelle.js';
+import { ladeKulisse } from './kulissenLaden.js';
 import { zeichneSeil } from './seilZeichnen.js';
 
 /*
@@ -404,37 +404,7 @@ export class Renderer {
       return;
     }
     if (backdrop.key === this.backdropKey) return;
-
-    this.backdropKey = backdrop.key;
-    this.backdrop = backdrop;
-    this.backdropReady = false;
-    // Die zusammengesetzte Fläche (Zuschnitt, Sättigung, Verlauf) gehört zur alten Kulisse.
-    this.kulissenCache = null;
-    // Die Bodenfarbe gilt sofort, nicht erst nach dem Laden des Bildes: sonst
-    // zeigte der Boden kurz die vorige Farbe.
-    this.palette = paletteFor(backdrop);
-    // Quellbreite nach sichtbarer Größe, DPR-Deckel und Geräteleistung (A18).
-    const sichtbareBreite = this.canvas.clientWidth || this.width;
-    this.backdropSichtbar = sichtbareBreite;
-    this.backdropBreite = waehleKulissenBreite({
-      sichtbareBreite,
-      dpr: globalThis.devicePixelRatio,
-      leistung: this.leistung ?? {},
-    }).breite;
-    this.kulissenBilder ??= new KulissenBildspeicher({ urlFuer: kulissenUrl });
-    this.kulissenBilder.hole(backdrop, this.backdropBreite, {
-      onBild: (bild, datei) => {
-        // Nur übernehmen, wenn inzwischen keine andere Kulisse gesetzt wurde.
-        if (this.backdropKey !== backdrop.key) return;
-        this.backdropImage = bild;
-        this.backdropDatei = datei;
-        this.backdropReady = true;
-      },
-      onFehler: () => {
-        this.backdropReady = false;
-        onError?.(new Error(`Kulisse nicht gefunden oder lädt nicht: ${backdrop.file}`));
-      },
-    });
+    ladeKulisse(this, backdrop, { onError });
   }
 
   /**
@@ -1075,6 +1045,7 @@ export class Renderer {
     this.ctx.beginPath();
     this.ctx.ellipse(1, 2, 11, 3, 0, 0, Math.PI * 2);
     this.ctx.fill();
+    if (zeichneBiomobjekt(this.ctx, fass.biomobjekt)) { this.ctx.restore(); return; }
     this.ctx.fillStyle = '#8a3b2a';
     this.ctx.strokeStyle = '#3a1710';
     this.ctx.lineWidth = 1.5;
@@ -2380,12 +2351,12 @@ export class Renderer {
     this.#drawBlastPreview(aimPreview, blastRadius);
     // Kackhaufen liegen auf dem Boden, Günther darüber.
     this.#drawPoopPiles(state.guenther?.haufen ?? []);
-    this.#drawCrates(state.crates ?? []);
     /*
      * Geschütze VOR den Kisten zeichnen: Lägen beide übereinander, wäre die
      * Kiste (die man aufheben kann) wichtiger als das Geschütz.
      */
     this.#drawTurrets(state.turrets ?? []);
+    this.#drawCrates(state.crates ?? []);
     this.#drawMinen(state.bodenobjekte ?? []);
     this.#drawAimPreview(aimPreview);
     /*

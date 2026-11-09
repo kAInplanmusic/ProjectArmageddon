@@ -19,7 +19,7 @@ import { ReplayRecorder, ReplayPlayer } from '../src/engine/replay.js';
 import { LobbyManager } from '../src/server/lobby.js';
 import { starteServer } from './helfer/server-testclient.js';
 
-const ERWARTET = Object.freeze({ klein: 30_000, mittel: 40_000, gross: 50_000 });
+const ERWARTET = Object.freeze({ klein: 30_000, kompakt: 35_000, mittel: 40_000, weit: 45_000, gross: 50_000 });
 
 test('Zugzeit je Größenstufe — die eine Quelle', () => {
   for (const [stufe, ms] of Object.entries(ERWARTET)) {

@@ -36,11 +36,17 @@ export const BODENOBJEKTE_ALT = 1;
 export const BODENOBJEKTE_MINEN = 2;
 export const BODENOBJEKTE_FAESSER = 3;
 export const BODENOBJEKTE_ABWURF = 4;
-export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_ABWURF;
+export const BODENOBJEKTE_BIOM = 5;
+export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_BIOM;
+export const BIOMOBJEKTE = Object.freeze({
+  vulkan: { label: 'Dampfventil', farbe: '#ac5a34', licht: '#fff1a2', schaden: 12, radius: 100, rueckstoss: 260, gelaendeSchaden: 8, schadensart: 'fire' },
+  eiswueste: { label: 'Eislinse', farbe: '#70cce6', licht: '#e4fbff', schaden: 22, radius: 78, rueckstoss: 25, gelaendeSchaden: 66, schadensart: 'ice' },
+  schrott: { label: 'Kondensatorbank', farbe: '#62747c', licht: '#ffe64c', schaden: 72, radius: 54, rueckstoss: 35, gelaendeSchaden: 16, schadensart: 'electric' },
+});
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereBewegung`); das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBodenobjekte(fassung) {
-  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER || fassung === BODENOBJEKTE_ABWURF ? fassung : BODENOBJEKTE_STANDARD;
+  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER || fassung === BODENOBJEKTE_ABWURF || fassung === BODENOBJEKTE_BIOM ? fassung : BODENOBJEKTE_STANDARD;
 }
 
 /** Ausgang einer Auslösung. */

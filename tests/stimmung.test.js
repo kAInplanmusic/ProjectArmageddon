@@ -47,3 +47,13 @@ test('zeichneStimmung läuft für alle Kombinationen ohne Fehler', () => {
     }
   }
 });
+
+test('Hagel ersetzt Niederschlag und lässt sich vollständig abschalten', () => {
+  const hagel = wetterMit(basis, 'hagel');
+  assert.equal(hagel.hagel, 1);
+  assert.equal(hagel.regen, 0);
+  assert.equal(hagel.schnee, 0);
+  assert.equal(hagel.wind, 0.6);
+  assert.equal(wetterMit(hagel, 'klar').hagel, 0);
+  assert.equal(wetterMit(hagel, 'schnee').hagel, 0);
+});

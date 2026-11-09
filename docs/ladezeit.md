@@ -131,17 +131,18 @@ Fraktionszustand über mehrere Chunks verteilen.
 
 | Größe | nach Kader-Split | nach Integration | Δ |
 |---|---|---|---|
-| Haupt-Bundle roh | 1261391 B (1231,8 KiB) | 1317305 B (1286,4 KiB) | +54,6 KiB |
-| Haupt-Bundle gzip | 345178 B (337,1 KiB) | 360458 B (352,0 KiB) | +14,9 KiB |
-| Start roh | 1371239 B (1339,1 KiB) | 1427945 B (1394,5 KiB) | +55,4 KiB |
-| Start gzip | 372991 B (364,2 KiB) | 388453 B (379,3 KiB) | +15,1 KiB |
+| Haupt-Bundle roh | 1261391 B (1231,8 KiB) | 1294305 B (1264,0 KiB) | +32,1 KiB |
+| Haupt-Bundle gzip | 345178 B (337,1 KiB) | 360613 B (352,2 KiB) | +15,1 KiB |
+| Start roh | 1371239 B (1339,1 KiB) | 1392658 B (1360,0 KiB) | +20,9 KiB |
+| Start gzip | 372991 B (364,2 KiB) | 383498 B (374,5 KiB) | +10,3 KiB |
 
-Die Grenzen wurden um rund 1 % angehoben: haupt 1 330 000 B roh / 363 500 B
-gzip, Start 1 440 000 B roh / 391 500 B gzip. Damit bleibt Spielraum für die
-nächste Ausbaustufe, ohne den Startpfad schleichend zu vergrößern. Die
-Zerlegung aus 3.1 bleibt bestehen; `main.js` und `renderer.js` wurden zusätzlich
-um `profilDatei.js` und `windPfeil.js` entlastet und halten ihre Zeilenbudgets
-(3999/2500) wieder ein.
+Gegenüber dem Kader-Split bleiben `haupt.roh` (1 300 000 B) und `start.gzip`
+(385 000 B) **unverändert**; nur `haupt.gzip` (362 000 B) und `start.roh`
+(1 400 000 B) wurden angehoben. Der lokale Stand hat zugleich ungenutzte
+Zustand-Sheets aus dem Bau genommen, deshalb fällt der Zuwachs kleiner aus als
+die Summe der Branches. Die Zerlegung aus 3.1 bleibt bestehen; `main.js` und
+`renderer.js` wurden zusätzlich um `profilDatei.js`, `windPfeil.js` und
+`kulissenLaden.js` entlastet und halten ihre Zeilenbudgets (2471/2500) ein.
 
 ## 4. Sourcemaps
 

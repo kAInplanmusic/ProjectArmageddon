@@ -97,6 +97,7 @@ test('Lobby-Browser listet offene Lobbys und übernimmt die Auswahl', async ({ p
 
   // Beitreten übernimmt die ID ins Formular, startet aber noch kein Match.
   const beitreten = list.first().locator('button');
+  await expect(beitreten).toHaveAccessibleName(/Auswählen/);
   await expect(beitreten).toBeEnabled();
   await beitreten.click();
   await expect(page.locator('#cfg-lobby')).toHaveValue(erste.lobby.id);

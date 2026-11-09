@@ -1092,6 +1092,8 @@
             <span><b>R</b> Match verlassen (gibt nicht auf — das tut der Knopf „Aufgeben“ im Kopf, mit Rückfrage)</span>
           </div>
           <div class="menu-konfig">
+          <h2 class="konfig-titel">Spiel einrichten</h2>
+          <p class="touch-kurzhilfe">Auf dem Spielfeld halten und zum Zielen ziehen. Loslassen feuert. Zum Laufen einen Gehen-Knopf halten.</p>
           <div class="field-row drei">
             <label>Teams
               <!-- Ein Team = ein Mensch. Die Zahl der Teams ist damit die Zahl
@@ -1202,8 +1204,24 @@
                 <option value="regen">Regen</option>
                 <option value="sturm">Sturm</option>
                 <option value="schnee">Schnee</option>
+                <option value="hagel">Hagel</option>
                 <option value="nebel">Nebel</option>
                 <option value="laub">Laubfall</option>
+              </select>
+            </label>
+            <label>Kartengröße
+              <select id="cfg-kartengroesse">
+                <option value="klein">Klein · 30 s</option>
+                <option value="kompakt">Kompakt · 35 s</option>
+                <option value="mittel" selected>Mittel · 40 s</option>
+                <option value="weit">Weit · 45 s</option>
+                <option value="gross">Groß · 50 s</option>
+              </select>
+            </label>
+            <label>Kartenformat
+              <select id="cfg-kartenformat">
+                <option>24:9</option><option selected>16:9</option><option>4:3</option>
+                <option>1:1</option><option>3:4</option><option>9:16</option><option>9:24</option>
               </select>
             </label>
             <label>Biom
@@ -1495,7 +1513,7 @@
             <ellipse cx="22" cy="28" rx="7" ry="8" fill="#0d0f12"/><ellipse cx="42" cy="28" rx="7" ry="8" fill="#0d0f12"/>
             <path d="M32 36l-4 8h8z" fill="#0d0f12"/>
           </svg>
-          <p id="winner-text">—</p>
+          <p id="winner-text" tabindex="-1">—</p>
           <!-- Fraktionszeichen des Siegers (Audit A11): Emblem und Name der Fraktion. -->
           <div id="end-fraktion" class="end-fraktion" aria-live="polite"></div>
           <p id="end-summary">—</p>

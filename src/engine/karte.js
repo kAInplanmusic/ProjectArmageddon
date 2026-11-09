@@ -32,8 +32,8 @@
  * Drahtformat: Int16 mit Faktor 4 = höchstens 8191,75 px. Das breiteste Format
  * hier ist 6272 px (Krieg, 24:9).
  *
- * `krieg` (5120×2880) wird nicht mehr angeboten (Entscheidung 2026-11-05: drei
- * Stufen), bleibt aber lesbar, damit alte Aufzeichnungen unverändert laufen.
+ * `krieg` (5120×2880) wird nicht mehr angeboten (historische Entscheidung 2026-11-05: drei
+ * Stufen; seit 2026-11-09 fünf), bleibt aber lesbar, damit alte Aufzeichnungen unverändert laufen.
  */
 const FORMATE = Object.freeze({
   /* 24:9 (8:3): h = sqrt(A·3/8), w = 8/3·h. 1568×588 = 921 984 (+0,04 %); je Stufe verdoppelt. */
@@ -59,7 +59,7 @@ export const MAP_FORMAT_VORGABE = '16:9';
 /** Vorgabestufe, wenn keine Größe gewählt ist. */
 export const MAP_GROESSE_VORGABE = 'mittel';
 /** Die wählbaren Größenstufen, klein nach groß (ohne die Altstufe `krieg`). */
-export const MAP_GROESSEN = Object.freeze(['klein', 'mittel', 'gross']);
+export const MAP_GROESSEN = Object.freeze(['klein', 'kompakt', 'mittel', 'weit', 'gross']);
 /** Alle Stufen der Tabelle — `krieg` nur noch zum Lesen alter Aufzeichnungen. */
 export const MAP_GROESSEN_ALLE = Object.freeze([...MAP_GROESSEN, 'krieg']);
 
@@ -71,7 +71,14 @@ export const MAP_FORMAT_ALIASE = Object.freeze({ landscape: '16:9', portrait: '9
 
 const KARTEN = Object.freeze(Object.fromEntries(
   Object.entries(FORMATE).map(([format, liste]) => [format, Object.freeze(Object.fromEntries(
-    liste.map(([width, height], index) => [MAP_GROESSEN_ALLE[index], Object.freeze({ width, height })]),
+    MAP_GROESSEN_ALLE.map((stufe, index) => {
+      const [width, height] = index === 5 ? liste[3] : liste[Math.floor(index / 2)];
+      if (index === 1 || index === 3) {
+        const [w, h] = liste[Math.ceil(index / 2)];
+        return [stufe, Object.freeze({ width: Math.round((width + w) / 2), height: Math.round((height + h) / 2) })];
+      }
+      return [stufe, Object.freeze({ width, height })];
+    }),
   ))]),
 ));
 

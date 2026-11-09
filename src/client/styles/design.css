@@ -127,14 +127,25 @@ label { font-size: 15px; letter-spacing: 0.08em; color: var(--muted); }
   border: 1px solid var(--panel-edge);
   border-radius: 6px;
 }
-#menu-overlay .menu-konfig::before {
-  content: 'Spiel einrichten';
+#menu-overlay .konfig-titel {
+  margin: 0;
+  font-weight: 400;
   font-family: var(--font-display);
   font-size: 26px;
   letter-spacing: 0.08em;
   color: var(--lime);
   border-bottom: 1px solid var(--panel-edge);
   padding-bottom: 8px;
+}
+#menu-overlay .touch-kurzhilfe { display: none; }
+@media (pointer: coarse) {
+  #menu-overlay .touch-kurzhilfe {
+    display: block;
+    margin: 0;
+    color: var(--ink);
+    font-size: var(--fs-s);
+    line-height: 1.4;
+  }
 }
 #menu-overlay .menu-weitere { grid-area: weitere; display: grid; gap: 6px; align-content: start; }
 /* Versionskennung im Menü-Fuß (DEP-1, src/client/bauinfo.js): klein, gedämpft, nicht bedienbar. */

@@ -1,0 +1,29 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> projectarmageddon@0.9.0 checks
+> node scripts/checks.mjs
+
+ok   check:docs                194 ms  Zahlen in der Doku
+ok   check:effects             215 ms  Wirkfeld ohne Motorleser
+ok   check:fuses               191 ms  Zünder-Absicht (timed/impact)
+ok   matrix:check              227 ms  veraltete Wirkungs-Übersicht
+ok   check:targeting           397 ms  Zielarten der Waffen
+ok   check:damage-types        283 ms  Schadensart und Sichtlinie der Waffen
+ok   check:range              1155 ms  Reichweiten-Konsistenz
+ok   check:terrain             407 ms  Terrain-Erzeugung
+ok   check:map                 642 ms  Kartenmaße
+ok   check:camera              194 ms  Kameraführung
+ok   check:sizes               251 ms  Figuren- und Zuggrößen
+ok   check:reichweite          262 ms  Erreichbarkeit der Figuren
+ok   check:simultaneous        201 ms  gleichzeitige Züge (nicht gebaut)
+ok   balance:classes           199 ms  Klassen-Balance
+ok   check:biome             40524 ms  Kulisse passt zum Kartencharakter
+ok   check:crates             2045 ms  Loot-Kisten
+ok   check:achievements       2348 ms  erreichbare Erfolgs-Schwellen
+ok   check:autonom            1399 ms  Autonomie der Figuren
+ok   check:maelstrom          7973 ms  Mahlstrom-Abbruch
+ok   check:time               9657 ms  Matchdauer
+ok   check:erreichbarkeit    18868 ms  30 Partien ohne unerreichbare Figur
+ok   check:bundle             2938 ms  Bundle-Größe und Sourcemaps im Produktionsbau
+
+22 Gates in 90.6 s | fehlgeschlagen: 0
