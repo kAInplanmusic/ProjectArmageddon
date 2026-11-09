@@ -1,0 +1,6879 @@
+{
+ "version": 2,
+ "stand": "2026-11-09",
+ "bezug": "src/client/assets/sprite-sheets/manifest.json (Version 1, unverändert)",
+ "zweck": "Vorschlag für Manifestrollen mit tatsächlich geprüften Rollen und Identitätsfreigabe (Audit A03) sowie Morphologie je Figur (A01/A02). Die Datei ersetzt das Manifest erst nach Abnahme; der Client liest die Felder `identitaet` und `walk` bereits, wenn sie dort stehen.",
+ "regeln": [
+  "Farbähnlichkeit, Alpha-Bounding-Box und Dateiexistenz sind KEIN Identitätsnachweis. Nur `grundlage: \"sichtpruefung\"` gibt eine Rolle frei, die der Bauplan nicht ohnehin erlaubt.",
+  "Walk (8 Frames) nur für Zweibeiner. Vierbeiner, Kettenfahrzeuge, Schlangen, Schweber, Vögel, Spinnen und Schwärme fallen bis zur Sichtprüfung auf Seitenbild + prozedurale Animation zurück.",
+  "Treffer und Niedergestreckt nur bei menschlichem Gesicht oder nach Sichtprüfung — dort verraten die generierten Blätter Menschenkörper.",
+  "Hocke nur bei Figuren mit Beinen; Kettenfahrzeuge und Schweber brauchen Absenken statt Hocken.",
+  "Fehlt eine Rolle, wird sie nicht ersetzt: `waehleRolle` liefert null, der Renderer zeichnet Seitenbild + Prozedur."
+ ],
+ "felder": {
+  "morphologie": "biped | quadruped | tracked | serpentine | hover | avian | arachnid | swarm",
+  "gesicht": "menschlich | tier | alien | roboter | skelett | untot | geist | maske | verhuellt | oni | wesen | pflanze | schwarm | fahrzeug",
+  "identitaet.freigabe": "geprueft (Sichtprüfung) | ungeprueft (nur Heuristik) | gesperrt",
+  "identitaet.grundlage": "heuristik | sichtpruefung",
+  "identitaet.gesperrteZellen": "Zellen, die in keinem Fall gezeichnet werden dürfen",
+  "identitaet.rollen": "je Rolle {zellen, frei, grund}",
+  "identitaet.rueckfall": "seitenbild+prozedur (kein Ersatzframe)"
+ },
+ "zusammenfassung": {
+  "figuren": 81,
+  "morphologien": {
+   "arachnid": 1,
+   "avian": 1,
+   "biped": 52,
+   "hover": 10,
+   "quadruped": 11,
+   "serpentine": 3,
+   "swarm": 1,
+   "tracked": 2
+  },
+  "freigabe": {
+   "geprueft": 0,
+   "ungeprueft": 81,
+   "gesperrt": 0
+  },
+  "offen": "Sichtprüfung der Sheetframes je Figur (8 Walk- + 8 Aktions- + 8 Emotionszellen) steht aus; bis dahin bleibt jede Figur `ungeprueft`."
+ },
+ "figuren": {
+  "beasts/00_pikamon": {
+   "morphologie": "quadruped",
+   "gesicht": "tier",
+   "merkmale": [
+    "elektrisches Vierbein",
+    "Schwanz",
+    "Wangenentladung"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "beasts/00_pikamon__walk.webp",
+   "aktion": "beasts/00_pikamon__aktion.webp",
+   "zustand": "beasts/00_pikamon__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Gehblatt macht das Vierbeinwesen zweibeinig.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "beasts/01_shrew-quakes": {
+   "morphologie": "quadruped",
+   "gesicht": "tier",
+   "merkmale": [
+    "Stachelkrone",
+    "Einrollen",
+    "Vierbeinlauf"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "beasts/01_shrew-quakes__walk.webp",
+   "aktion": "beasts/01_shrew-quakes__aktion.webp",
+   "zustand": "beasts/01_shrew-quakes__zustand.webp",
+   "rollen": {
+    "hocke": 4,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Gehblatt verleiht humanoide Beine; Zustands- und Emotionsblatt vermenschlichen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       4
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "beasts/02_storm-talon": {
+   "morphologie": "avian",
+   "gesicht": "tier",
+   "merkmale": [
+    "Flügelkranz",
+    "Krallenstand",
+    "Gefiederform"
+   ],
+   "verboten": [
+    "menschlicher Gang",
+    "fehlender Flügelkranz",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "beasts/02_storm-talon__walk.webp",
+   "aktion": "beasts/02_storm-talon__aktion.webp",
+   "zustand": "beasts/02_storm-talon__zustand.webp",
+   "rollen": {
+    "hocke": 6,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Spätere Posen werden zum vogelköpfigen Humanoiden.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "beasts/10_flame-jaws": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "breiter Kiefer",
+    "Glut",
+    "theropoder Zweibeinlauf"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "beasts/10_flame-jaws__walk.webp",
+   "aktion": "beasts/10_flame-jaws__aktion.webp",
+   "zustand": "beasts/10_flame-jaws__zustand.webp",
+   "rollen": {
+    "idle": [
+     4,
+     5
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 6
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Lauf- und Aktionsbilder verlieren Kiefermasse und Glut.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       4,
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       6
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "beasts/11_ember-tails": {
+   "morphologie": "quadruped",
+   "gesicht": "tier",
+   "merkmale": [
+    "Mehrschwänzigkeit",
+    "Sattel",
+    "Feuerfuchs"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "beasts/11_ember-tails__walk.webp",
+   "aktion": "beasts/11_ember-tails__aktion.webp",
+   "zustand": "beasts/11_ember-tails__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     4
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Gehblatt lässt den Vierbeiner als Humanoiden laufen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       4
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "beasts/12_magma-plate": {
+   "morphologie": "quadruped",
+   "gesicht": "tier",
+   "merkmale": [
+    "tiefe Vierbeinsilhouette",
+    "segmentierter Panzer",
+    "glühende Fugen"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "beasts/12_magma-plate__walk.webp",
+   "aktion": "beasts/12_magma-plate__aktion.webp",
+   "zustand": "beasts/12_magma-plate__zustand.webp",
+   "rollen": {
+    "hocke": 4,
+    "idle": [
+     0,
+     3
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Gehblatt wird zum aufrechten Panzersoldaten.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       4
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "beasts/20_decay-spawn": {
+   "morphologie": "biped",
+   "gesicht": "wesen",
+   "merkmale": [
+    "verkohlte Anatomie",
+    "Flammenmantel als Effekt"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "beasts/20_decay-spawn__walk.webp",
+   "aktion": "beasts/20_decay-spawn__aktion.webp",
+   "zustand": "beasts/20_decay-spawn__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktion und Zustand verlieren den Flammenmantel und verändern die Skelettmasse.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "beasts/21_cosmic-meditate": {
+   "morphologie": "hover",
+   "gesicht": "alien",
+   "merkmale": [
+    "schwebender Schneidersitz",
+    "vier Arme",
+    "Elementarkränze"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "beasts/21_cosmic-meditate__walk.webp",
+   "aktion": "beasts/21_cosmic-meditate__aktion.webp",
+   "zustand": "beasts/21_cosmic-meditate__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Geh- und Aktionsblätter reduzieren auf zwei Arme und laufende Beine.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "beasts/22_sonic-blossom": {
+   "morphologie": "hover",
+   "gesicht": "pflanze",
+   "merkmale": [
+    "Blütenblätter",
+    "feste Rankenanzahl",
+    "kein Beinlauf"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "beasts/22_sonic-blossom__walk.webp",
+   "aktion": "beasts/22_sonic-blossom__aktion.webp",
+   "zustand": "beasts/22_sonic-blossom__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Emotionsblatt schwankt im Körpermaß; Laufbild erfindet Beine.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "datacult/00_nullpointer-exception": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Bildschirmkopf",
+    "grüne Kernhand",
+    "Kanonenarm"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "datacult/00_nullpointer-exception__walk.webp",
+   "aktion": "datacult/00_nullpointer-exception__aktion.webp",
+   "zustand": "datacult/00_nullpointer-exception__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Rasteranzeigen und grüne Kernhand in Bewegung erhalten.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "datacult/01_datapath-replicant": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "vier Arme",
+    "Antennenkopf",
+    "kein Gesicht"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "datacult/01_datapath-replicant__walk.webp",
+   "aktion": "datacult/01_datapath-replicant__aktion.webp",
+   "zustand": "datacult/01_datapath-replicant__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenbild reduziert auf zwei Arme und einen anderen Kopf.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "datacult/02_chrome-code-shifter": {
+   "morphologie": "serpentine",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Metallsegmente",
+    "Schlangenkopf"
+   ],
+   "verboten": [
+    "Beine",
+    "aufrechter Gang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "datacult/02_chrome-code-shifter__walk.webp",
+   "aktion": "datacult/02_chrome-code-shifter__aktion.webp",
+   "zustand": "datacult/02_chrome-code-shifter__zustand.webp",
+   "rollen": {
+    "hocke": 4,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       4
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "datacult/10_quantum-qubit-knight": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Ritterhelm",
+    "Schild",
+    "Energieschwert"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "datacult/10_quantum-qubit-knight__walk.webp",
+   "aktion": "datacult/10_quantum-qubit-knight__aktion.webp",
+   "zustand": "datacult/10_quantum-qubit-knight__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "datacult/11_synapse-streamer": {
+   "morphologie": "arachnid",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Netzwerkspinne",
+    "feste Beinzahl",
+    "Kugelnetz als Effekt"
+   ],
+   "verboten": [
+    "menschliches Beinpaar",
+    "abweichende Beinzahl",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "datacult/11_synapse-streamer__walk.webp",
+   "aktion": "datacult/11_synapse-streamer__aktion.webp",
+   "zustand": "datacult/11_synapse-streamer__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Beinstellung und Netz verschwinden teils; Beinzahl festlegen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "datacult/12_arcology-agent": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Visier- und Brustzeichen",
+    "eigene Schulterkontur",
+    "Datenkult-Grün"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "datacult/12_arcology-agent__walk.webp",
+   "aktion": "datacult/12_arcology-agent__aktion.webp",
+   "zustand": "datacult/12_arcology-agent__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "datacult/20_buffer-flow-swarm": {
+   "morphologie": "swarm",
+   "gesicht": "schwarm",
+   "merkmale": [
+    "viele kleine Flieger",
+    "Schwarmkerne",
+    "kein Einzelinsekt"
+   ],
+   "verboten": [
+    "Einzelkörper",
+    "Beine",
+    "einzelnes großes Insekt",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "datacult/20_buffer-flow-swarm__walk.webp",
+   "aktion": "datacult/20_buffer-flow-swarm__aktion.webp",
+   "zustand": "datacult/20_buffer-flow-swarm__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seiten- und Animationsbild machen aus dem Schwarm ein einzelnes großes Insekt.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "datacult/21_hyper-link-hound": {
+   "morphologie": "quadruped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "vier Beine",
+    "genau zwei Köpfe"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "datacult/21_hyper-link-hound__walk.webp",
+   "aktion": "datacult/21_hyper-link-hound__aktion.webp",
+   "zustand": "datacult/21_hyper-link-hound__zustand.webp",
+   "rollen": {
+    "hocke": 4,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Geh- und Aktionsblatt werden aufrecht; Kopfzahl und Proportionen variieren.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       4
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "datacult/22_ethereo": {
+   "morphologie": "biped",
+   "gesicht": "verhuellt",
+   "merkmale": [
+    "kleine Kapuzengestalt",
+    "leuchtgrüner Robensaum",
+    "Datenwürfel"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "datacult/22_ethereo__walk.webp",
+   "aktion": "datacult/22_ethereo__aktion.webp",
+   "zustand": "datacult/22_ethereo__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "machina/00_chassis-endo-t8": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Endoskelett",
+    "Axt",
+    "mechanischer Schädel"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "machina/00_chassis-endo-t8__walk.webp",
+   "aktion": "machina/00_chassis-endo-t8__aktion.webp",
+   "zustand": "machina/00_chassis-endo-t8__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "machina/01_slasher-cyber-jax": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "schlanker Rahmen",
+    "Leuchtschwert",
+    "Visier"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "machina/01_slasher-cyber-jax__walk.webp",
+   "aktion": "machina/01_slasher-cyber-jax__aktion.webp",
+   "zustand": "machina/01_slasher-cyber-jax__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "machina/02_hydra-titan-mech": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "breiter Raketen-Mech",
+    "Raketenwerfer",
+    "breite Schulterkontur"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "machina/02_hydra-titan-mech__walk.webp",
+   "aktion": "machina/02_hydra-titan-mech__aktion.webp",
+   "zustand": "machina/02_hydra-titan-mech__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Geh- und Aktionsblatt machen aus dem breiten Mech einen schmalen Soldaten; Treffer/Tod zeigen Menschengesichter.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "machina/10_recon-luchs-01": {
+   "morphologie": "quadruped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "vierbeiniger Luchs",
+    "Katzenkopf",
+    "Markierungsstrahl"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "machina/10_recon-luchs-01__walk.webp",
+   "aktion": "machina/10_recon-luchs-01__aktion.webp",
+   "zustand": "machina/10_recon-luchs-01__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Geh- und Aktionsblatt zeigen einen zweibeinigen Katzenroboter.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "machina/11_heavy-battery-moerser-bot": {
+   "morphologie": "tracked",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Kettenlauf",
+    "Mörserrohr",
+    "kippender Fahrzeugkörper"
+   ],
+   "verboten": [
+    "Beine",
+    "Gehzyklus mit Beinpaaren",
+    "Hockpose mit menschlichen Knien",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "machina/11_heavy-battery-moerser-bot__walk.webp",
+   "aktion": "machina/11_heavy-battery-moerser-bot__aktion.webp",
+   "zustand": "machina/11_heavy-battery-moerser-bot__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Geh- und Aktionsblatt wechseln zu einem aufrecht laufenden Roboter.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "machina/12_ordnance-rail-viper": {
+   "morphologie": "serpentine",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Schlängelkörper",
+    "starres Waffenlager",
+    "Schienenkanone"
+   ],
+   "verboten": [
+    "Beine",
+    "aufrechter Gang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "machina/12_ordnance-rail-viper__walk.webp",
+   "aktion": "machina/12_ordnance-rail-viper__aktion.webp",
+   "zustand": "machina/12_ordnance-rail-viper__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Bewegung wird zum humanoiden Soldaten.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "machina/20_grid-drifter-datastream": {
+   "morphologie": "hover",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Geisterkörper",
+    "Datenschweif",
+    "Zylinder",
+    "Stab"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "machina/20_grid-drifter-datastream__walk.webp",
+   "aktion": "machina/20_grid-drifter-datastream__aktion.webp",
+   "zustand": "machina/20_grid-drifter-datastream__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Lauf- und Aktionsblatt ersetzen den Geisterkörper durch einen Roboter mit Beinen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "machina/21_proxy-glitch-hack": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Antennenkopf",
+    "Werkzeug",
+    "Augenanzeige statt Mimik"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "machina/21_proxy-glitch-hack__walk.webp",
+   "aktion": "machina/21_proxy-glitch-hack__aktion.webp",
+   "zustand": "machina/21_proxy-glitch-hack__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Anzahl der Antennen, Werkzeug und Displays schwanken; Augenanzeige statt Mimik nötig.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "machina/22_overlord-kernel-panic": {
+   "morphologie": "hover",
+   "gesicht": "roboter",
+   "merkmale": [
+    "verhüllte Maschinenidentität",
+    "Ringstab",
+    "gleitender Robenboden"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "machina/22_overlord-kernel-panic__walk.webp",
+   "aktion": "machina/22_overlord-kernel-panic__aktion.webp",
+   "zustand": "machina/22_overlord-kernel-panic__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktionsblatt zeigt menschliches Gesicht und menschlichen Todeskörper.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pirates/00_captain-sven": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "Bart",
+    "Kapitänshut",
+    "Haken",
+    "Schlüssel"
+   ],
+   "verboten": [],
+   "walk": "pirates/00_captain-sven__walk.webp",
+   "aktion": "pirates/00_captain-sven__aktion.webp",
+   "zustand": "pirates/00_captain-sven__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pirates/01_swashbuckler-piet": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "schlanke Linie",
+    "Hut",
+    "Doppelsäbel"
+   ],
+   "verboten": [],
+   "walk": "pirates/01_swashbuckler-piet__walk.webp",
+   "aktion": "pirates/01_swashbuckler-piet__aktion.webp",
+   "zustand": "pirates/01_swashbuckler-piet__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pirates/02_iron-hook-harry": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "breite Massesilhouette",
+    "goldener Haken"
+   ],
+   "verboten": [],
+   "walk": "pirates/02_iron-hook-harry__walk.webp",
+   "aktion": "pirates/02_iron-hook-harry__aktion.webp",
+   "zustand": "pirates/02_iron-hook-harry__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pirates/10_cannoneer-klaus": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "goldene Feldkanone",
+    "Kanonier"
+   ],
+   "verboten": [],
+   "walk": "pirates/10_cannoneer-klaus__walk.webp",
+   "aktion": "pirates/10_cannoneer-klaus__aktion.webp",
+   "zustand": "pirates/10_cannoneer-klaus__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pirates/11_sniper-marie": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "Hutprofil",
+    "langes Goldgewehr",
+    "konstantes Gesicht"
+   ],
+   "verboten": [],
+   "walk": "pirates/11_sniper-marie__walk.webp",
+   "aktion": "pirates/11_sniper-marie__aktion.webp",
+   "zustand": "pirates/11_sniper-marie__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pirates/12_bombard-billy": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "Grinsen",
+    "grüne Brille",
+    "Bombengurt"
+   ],
+   "verboten": [],
+   "walk": "pirates/12_bombard-billy__walk.webp",
+   "aktion": "pirates/12_bombard-billy__aktion.webp",
+   "zustand": "pirates/12_bombard-billy__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pirates/20_voodoo-witch-morgana": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "Maske",
+    "violett-goldene Robe",
+    "Schädelstab"
+   ],
+   "verboten": [],
+   "walk": "pirates/20_voodoo-witch-morgana__walk.webp",
+   "aktion": "pirates/20_voodoo-witch-morgana__aktion.webp",
+   "zustand": "pirates/20_voodoo-witch-morgana__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pirates/21_storm-schamane-hooky": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "grauer Bart",
+    "meergrüner Stoff mit Goldsaum",
+    "Wetterwolken als Effekt"
+   ],
+   "verboten": [],
+   "walk": "pirates/21_storm-schamane-hooky__walk.webp",
+   "aktion": "pirates/21_storm-schamane-hooky__aktion.webp",
+   "zustand": "pirates/21_storm-schamane-hooky__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pirates/22_chanteyman-drake": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "Akkordeon",
+    "Schulterpuppe"
+   ],
+   "verboten": [],
+   "walk": "pirates/22_chanteyman-drake__walk.webp",
+   "aktion": "pirates/22_chanteyman-drake__aktion.webp",
+   "zustand": "pirates/22_chanteyman-drake__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pixel/00_nullpointer-exception": {
+   "morphologie": "quadruped",
+   "gesicht": "tier",
+   "merkmale": [
+    "polygonales Raubtier",
+    "harte Rasterkanten",
+    "Vierbeiner"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "pixel/00_nullpointer-exception__walk.webp",
+   "aktion": "pixel/00_nullpointer-exception__aktion.webp",
+   "zustand": "pixel/00_nullpointer-exception__zustand.webp",
+   "rollen": {
+    "hocke": 4,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Vierbeiner in den Animationen nicht durchgehend gesichert.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       4
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pixel/01_pyrofox-a": {
+   "morphologie": "quadruped",
+   "gesicht": "tier",
+   "merkmale": [
+    "Fuchs",
+    "Datenschweife",
+    "Rasterkanten"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "pixel/01_pyrofox-a__walk.webp",
+   "aktion": "pixel/01_pyrofox-a__aktion.webp",
+   "zustand": "pixel/01_pyrofox-a__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Gehblatt wird zum Zweibeiner.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pixel/02_pyrofox-b": {
+   "morphologie": "quadruped",
+   "gesicht": "tier",
+   "merkmale": [
+    "größerer Fuchs",
+    "Panzerplatten",
+    "mehrere Datenschweife"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "pixel/02_pyrofox-b__walk.webp",
+   "aktion": "pixel/02_pyrofox-b__aktion.webp",
+   "zustand": "pixel/02_pyrofox-b__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Vierbeinzyklus statt humanoidem Lauf nötig.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pixel/10_arcershorn-a": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "Bogendrache",
+    "Feuerschweif",
+    "Bogenführung",
+    "Pixelraster"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "pixel/10_arcershorn-a__walk.webp",
+   "aktion": "pixel/10_arcershorn-a__aktion.webp",
+   "zustand": "pixel/10_arcershorn-a__zustand.webp",
+   "rollen": {
+    "hocke": 6,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Bogen verschwindet in Animationen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pixel/11_pyrowand-a": {
+   "morphologie": "quadruped",
+   "gesicht": "tier",
+   "merkmale": [
+    "türkiser Stabfuchs",
+    "Stab",
+    "digitale Linien"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "pixel/11_pyrowand-a__walk.webp",
+   "aktion": "pixel/11_pyrowand-a__aktion.webp",
+   "zustand": "pixel/11_pyrowand-a__zustand.webp",
+   "rollen": {
+    "hocke": 6,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pixel/12_shieldmon": {
+   "morphologie": "quadruped",
+   "gesicht": "tier",
+   "merkmale": [
+    "Igel",
+    "Leiterplattenpanzer",
+    "Vierbein"
+   ],
+   "verboten": [
+    "aufrechter Zweibeinergang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "pixel/12_shieldmon__walk.webp",
+   "aktion": "pixel/12_shieldmon__aktion.webp",
+   "zustand": "pixel/12_shieldmon__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktionsblatt zeigt zeitweise ein menschliches Gesicht; Gehblatt aufrechte Anatomie.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pixel/20_phantomal-a": {
+   "morphologie": "hover",
+   "gesicht": "alien",
+   "merkmale": [
+    "Tentakelmasse",
+    "mehrere Augen",
+    "kantige Zerfallseffekte"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "pixel/20_phantomal-a__walk.webp",
+   "aktion": "pixel/20_phantomal-a__aktion.webp",
+   "zustand": "pixel/20_phantomal-a__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "In Bewegung entstehen Beine.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pixel/21_arcanus-a": {
+   "morphologie": "biped",
+   "gesicht": "verhuellt",
+   "merkmale": [
+    "Maske",
+    "zwei Ringstäbe",
+    "grüne Rasterglitches"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "pixel/21_arcanus-a__walk.webp",
+   "aktion": "pixel/21_arcanus-a__aktion.webp",
+   "zustand": "pixel/21_arcanus-a__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktionsbilder zeigen ein menschliches Gesicht.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "pixel/22_arcanus-b": {
+   "morphologie": "biped",
+   "gesicht": "verhuellt",
+   "merkmale": [
+    "mehrere Arme",
+    "Krone",
+    "Orbitalkugeln"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "pixel/22_arcanus-b__walk.webp",
+   "aktion": "pixel/22_arcanus-b__aktion.webp",
+   "zustand": "pixel/22_arcanus-b__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Bewegung reduziert auf zwei Arme und eine generische Robe.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "rodentia/00_commander-chewk": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "Hamsterbacken",
+    "rote Brustplatten",
+    "Doppelschaufel"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "rodentia/00_commander-chewk__walk.webp",
+   "aktion": "rodentia/00_commander-chewk__aktion.webp",
+   "zustand": "rodentia/00_commander-chewk__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Animationen verlieren Signaturwerkzeug, Kopfproportionen schwanken.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "rodentia/01_berzerker-fang": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "dunkle Berserkerratte",
+    "zwei Äxte",
+    "peitschender Schwanz"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "rodentia/01_berzerker-fang__walk.webp",
+   "aktion": "rodentia/01_berzerker-fang__aktion.webp",
+   "zustand": "rodentia/01_berzerker-fang__zustand.webp",
+   "rollen": {
+    "hocke": 6,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Äxte fehlen in Bewegungs- und Aktionsblättern.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "rodentia/02_vanguard-captain-rix": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "gestreifter Nager",
+    "Zahnrad-Schild",
+    "roter Teamakzent"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "rodentia/02_vanguard-captain-rix__walk.webp",
+   "aktion": "rodentia/02_vanguard-captain-rix__aktion.webp",
+   "zustand": "rodentia/02_vanguard-captain-rix__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Zahnrad-Schild fehlt im Gehblatt.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "rodentia/10_sharpshooter-quill": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "Zielbrille",
+    "Armbrust",
+    "einheitliches Rot"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "rodentia/10_sharpshooter-quill__walk.webp",
+   "aktion": "rodentia/10_sharpshooter-quill__aktion.webp",
+   "zustand": "rodentia/10_sharpshooter-quill__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Armbrust verschwindet in Bewegungsbildern; Rot wird braun.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "rodentia/11_grenadier-skitter": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "Schutzbrille",
+    "Sprengbeutel",
+    "runde Bombensilhouette"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "rodentia/11_grenadier-skitter__walk.webp",
+   "aktion": "rodentia/11_grenadier-skitter__aktion.webp",
+   "zustand": "rodentia/11_grenadier-skitter__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "rodentia/12_volley-captain-spark": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "kräftiger Nager",
+    "Gatling",
+    "Körpermasse"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "rodentia/12_volley-captain-spark__walk.webp",
+   "aktion": "rodentia/12_volley-captain-spark__aktion.webp",
+   "zustand": "rodentia/12_volley-captain-spark__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Gatling verschwindet in Lauf- und Aktionsbildern.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "rodentia/20_alchemage-nibble": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "heller Nager",
+    "Trankgürtel",
+    "Flaschen",
+    "Stab"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "rodentia/20_alchemage-nibble__walk.webp",
+   "aktion": "rodentia/20_alchemage-nibble__aktion.webp",
+   "zustand": "rodentia/20_alchemage-nibble__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktion und Bewegung entfernen Flaschen und Stab.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "rodentia/21_technomancer-squeak": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "Rundbrille",
+    "Energierucksack",
+    "Stab",
+    "Schnauzenform"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "rodentia/21_technomancer-squeak__walk.webp",
+   "aktion": "rodentia/21_technomancer-squeak__aktion.webp",
+   "zustand": "rodentia/21_technomancer-squeak__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "rodentia/22_grand-conduit-vex": {
+   "morphologie": "biped",
+   "gesicht": "tier",
+   "merkmale": [
+    "breite Robensilhouette",
+    "Brustsymbol",
+    "Stab"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "rodentia/22_grand-conduit-vex__walk.webp",
+   "aktion": "rodentia/22_grand-conduit-vex__aktion.webp",
+   "zustand": "rodentia/22_grand-conduit-vex__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Laufbilder vereinfachen die Robe und lassen den Stab verschwinden.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "shinobi/00_shred-katana-hanzmon": {
+   "morphologie": "biped",
+   "gesicht": "maske",
+   "merkmale": [
+    "weiße Rüstung",
+    "Langklinge",
+    "Scheide",
+    "maskiertes Gesicht"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "shinobi/00_shred-katana-hanzmon__walk.webp",
+   "aktion": "shinobi/00_shred-katana-hanzmon__aktion.webp",
+   "zustand": "shinobi/00_shred-katana-hanzmon__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "shinobi/01_kunoichi-wind-flapper": {
+   "morphologie": "biped",
+   "gesicht": "menschlich",
+   "merkmale": [
+    "weiße Haare",
+    "Kettenklinge",
+    "offene Beinpose"
+   ],
+   "verboten": [],
+   "walk": "shinobi/01_kunoichi-wind-flapper__walk.webp",
+   "aktion": "shinobi/01_kunoichi-wind-flapper__aktion.webp",
+   "zustand": "shinobi/01_kunoichi-wind-flapper__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "shinobi/02_tetsubo-oni-brute": {
+   "morphologie": "biped",
+   "gesicht": "oni",
+   "merkmale": [
+    "Hornform",
+    "Schultermasse",
+    "Bodenkontakt",
+    "Tetsubo"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "shinobi/02_tetsubo-oni-brute__walk.webp",
+   "aktion": "shinobi/02_tetsubo-oni-brute__aktion.webp",
+   "zustand": "shinobi/02_tetsubo-oni-brute__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "shinobi/10_dazzler-werner": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "weißmetallischer Reptilienroboter",
+    "Handprojektor",
+    "eigene Linse"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "shinobi/10_dazzler-werner__walk.webp",
+   "aktion": "shinobi/10_dazzler-werner__aktion.webp",
+   "zustand": "shinobi/10_dazzler-werner__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "shinobi/11_rauch-meister-genzi": {
+   "morphologie": "tracked",
+   "gesicht": "fahrzeug",
+   "merkmale": [
+    "Kettenpanzer",
+    "Rauch als Partikeleffekt",
+    "kein Beinlauf"
+   ],
+   "verboten": [
+    "Beine",
+    "Gehzyklus mit Beinpaaren",
+    "Hockpose mit menschlichen Knien",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "shinobi/11_rauch-meister-genzi__walk.webp",
+   "aktion": "shinobi/11_rauch-meister-genzi__aktion.webp",
+   "zustand": "shinobi/11_rauch-meister-genzi__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktionsbilder lassen den Kettenpanzer auf Beinen laufen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "shinobi/12_blowpipe-koga": {
+   "morphologie": "serpentine",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Schlangenkörper",
+    "Blasrohr",
+    "Pfeilköcher"
+   ],
+   "verboten": [
+    "Beine",
+    "aufrechter Gang",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "shinobi/12_blowpipe-koga__walk.webp",
+   "aktion": "shinobi/12_blowpipe-koga__aktion.webp",
+   "zustand": "shinobi/12_blowpipe-koga__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Geh- und Aktionsblatt verwandeln den Schlangenroboter in einen Humanoiden.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "shinobi/20_ninjutsu-master-goemon": {
+   "morphologie": "biped",
+   "gesicht": "maske",
+   "merkmale": [
+    "Maske",
+    "Kapuze",
+    "Elementarstab"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "shinobi/20_ninjutsu-master-goemon__walk.webp",
+   "aktion": "shinobi/20_ninjutsu-master-goemon__aktion.webp",
+   "zustand": "shinobi/20_ninjutsu-master-goemon__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktionsposen zeigen ein menschliches Gesicht statt der Maske.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "shinobi/21_talisman-sorcerer-jun": {
+   "morphologie": "biped",
+   "gesicht": "roboter",
+   "merkmale": [
+    "Stirnsiegel",
+    "Talismane als Effekt",
+    "Antennen"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "shinobi/21_talisman-sorcerer-jun__walk.webp",
+   "aktion": "shinobi/21_talisman-sorcerer-jun__aktion.webp",
+   "zustand": "shinobi/21_talisman-sorcerer-jun__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Bewegung verliert die Talismane.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "shinobi/22_vixen-kitsune": {
+   "morphologie": "biped",
+   "gesicht": "maske",
+   "merkmale": [
+    "Fuchsmaske",
+    "neun Schwänze",
+    "weiße Rüstung"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "shinobi/22_vixen-kitsune__walk.webp",
+   "aktion": "shinobi/22_vixen-kitsune__aktion.webp",
+   "zustand": "shinobi/22_vixen-kitsune__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Manche Aktionsbilder zeigen einen katzenhafteren Kopf.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "undead/00_bone-racker-karl": {
+   "morphologie": "biped",
+   "gesicht": "skelett",
+   "merkmale": [
+    "einheitliche Knochenfarbe",
+    "Schädel-Schild",
+    "Morgenstern"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "undead/00_bone-racker-karl__walk.webp",
+   "aktion": "undead/00_bone-racker-karl__aktion.webp",
+   "zustand": "undead/00_bone-racker-karl__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "undead/01_grave-zombie-kauer": {
+   "morphologie": "biped",
+   "gesicht": "untot",
+   "merkmale": [
+    "zerfetzte Rüstung",
+    "Kiefer",
+    "Knochengriffe"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "undead/01_grave-zombie-kauer__walk.webp",
+   "aktion": "undead/01_grave-zombie-kauer__aktion.webp",
+   "zustand": "undead/01_grave-zombie-kauer__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "undead/02_grim-reaper-silas": {
+   "morphologie": "biped",
+   "gesicht": "verhuellt",
+   "merkmale": [
+    "Kapuze",
+    "grüne Doppelsense"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "undead/02_grim-reaper-silas__walk.webp",
+   "aktion": "undead/02_grim-reaper-silas__aktion.webp",
+   "zustand": "undead/02_grim-reaper-silas__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "undead/10_archer-mortis": {
+   "morphologie": "biped",
+   "gesicht": "skelett",
+   "merkmale": [
+    "grüner Knochenstil",
+    "Bogen",
+    "dunkle Lederrüstung"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "undead/10_archer-mortis__walk.webp",
+   "aktion": "undead/10_archer-mortis__aktion.webp",
+   "zustand": "undead/10_archer-mortis__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "undead/11_pitcher-igor": {
+   "morphologie": "biped",
+   "gesicht": "skelett",
+   "merkmale": [
+    "abnehmbarer Arm",
+    "Seuchenkrug"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "undead/11_pitcher-igor__walk.webp",
+   "aktion": "undead/11_pitcher-igor__aktion.webp",
+   "zustand": "undead/11_pitcher-igor__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "undead/12_vessel-plague-skull": {
+   "morphologie": "hover",
+   "gesicht": "geist",
+   "merkmale": [
+    "grüner Flammenmantel",
+    "kein fester Unterkörper"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "undead/12_vessel-plague-skull__walk.webp",
+   "aktion": "undead/12_vessel-plague-skull__aktion.webp",
+   "zustand": "undead/12_vessel-plague-skull__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Lauf- und Aktionsblatt verlieren große Teile des grünen Geisterunterkörpers.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "undead/20_lich-king-alistair": {
+   "morphologie": "biped",
+   "gesicht": "skelett",
+   "merkmale": [
+    "Krone",
+    "einheitliches Kopfmodell",
+    "Schädelstab"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "undead/20_lich-king-alistair__walk.webp",
+   "aktion": "undead/20_lich-king-alistair__aktion.webp",
+   "zustand": "undead/20_lich-king-alistair__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "undead/21_scribe-necro-silas": {
+   "morphologie": "biped",
+   "gesicht": "untot",
+   "merkmale": [
+    "tragbares Buch",
+    "Pult nur als beschworenes Objekt"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "undead/21_scribe-necro-silas__walk.webp",
+   "aktion": "undead/21_scribe-necro-silas__aktion.webp",
+   "zustand": "undead/21_scribe-necro-silas__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Seitenansicht geprüft; Sheetframes nicht einzeln abgenommen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "undead/22_banshee-beatrice": {
+   "morphologie": "hover",
+   "gesicht": "geist",
+   "merkmale": [
+    "wehende Haarmasse",
+    "transparenter Saum",
+    "schwebend"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "undead/22_banshee-beatrice__walk.webp",
+   "aktion": "undead/22_banshee-beatrice__aktion.webp",
+   "zustand": "undead/22_banshee-beatrice__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Bewegung verleiht teilweise feste Beine.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "xeno/00_sgt-acid-xeno": {
+   "morphologie": "biped",
+   "gesicht": "alien",
+   "merkmale": [
+    "gepanzerter Panzerkopf",
+    "Säurespitzen",
+    "violetter Chitinpanzer",
+    "säuregrüne Details"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "xeno/00_sgt-acid-xeno__walk.webp",
+   "aktion": "xeno/00_sgt-acid-xeno__aktion.webp",
+   "zustand": "xeno/00_sgt-acid-xeno__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktionszellen 6 und 7 zeigen einen menschlichen Mann im Alienanzug — beide Zellen gesperrt.",
+    "gesperrteZellen": [
+     6,
+     7
+    ],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Zelle ist gesperrt (Audit-Befund)."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "xeno/01_stalker-predax": {
+   "morphologie": "biped",
+   "gesicht": "alien",
+   "merkmale": [
+    "schlanker Stachel-Jäger",
+    "Doppelklingen",
+    "Alienkopf"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "xeno/01_stalker-predax__walk.webp",
+   "aktion": "xeno/01_stalker-predax__aktion.webp",
+   "zustand": "xeno/01_stalker-predax__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Treffer- und Todesposen verlieren den Alienkopf.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "xeno/02_vortex-grabber": {
+   "morphologie": "biped",
+   "gesicht": "verhuellt",
+   "merkmale": [
+    "massiger Rumpf",
+    "verhülltes Gesicht",
+    "zwei Greifarme"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "xeno/02_vortex-grabber__walk.webp",
+   "aktion": "xeno/02_vortex-grabber__aktion.webp",
+   "zustand": "xeno/02_vortex-grabber__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     4
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Gehblatt verschlankt zum generischen Zweibeiner; Masse, verhülltes Gesicht und beide Greifarme nicht gesichert.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       4
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "xeno/10_drone-theta": {
+   "morphologie": "hover",
+   "gesicht": "alien",
+   "merkmale": [
+    "schwebende Tentakeldrohne",
+    "Sensorauge",
+    "keine Beine"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "xeno/10_drone-theta__walk.webp",
+   "aktion": "xeno/10_drone-theta__aktion.webp",
+   "zustand": "xeno/10_drone-theta__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Geh- und Aktionsblatt erzeugen Beine und humanoiden Rumpf; Schwebezyklus nötig.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "xeno/11_desintegrator-kael": {
+   "morphologie": "biped",
+   "gesicht": "alien",
+   "merkmale": [
+    "Waffenrohr",
+    "Kopfbogen",
+    "Tentakel"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "xeno/11_desintegrator-kael__walk.webp",
+   "aktion": "xeno/11_desintegrator-kael__aktion.webp",
+   "zustand": "xeno/11_desintegrator-kael__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktionsblatt verliert bei Treffer/Tod den Kopf.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "xeno/12_plasma-maw-zorg": {
+   "morphologie": "biped",
+   "gesicht": "alien",
+   "merkmale": [
+    "breiter Schlund",
+    "Plasmaspeichel",
+    "massige Schenkel"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "xeno/12_plasma-maw-zorg__walk.webp",
+   "aktion": "xeno/12_plasma-maw-zorg__aktion.webp",
+   "zustand": "xeno/12_plasma-maw-zorg__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktionsblatt verändert Körperbau und Farbton; Blickrichtung gegen die übrigen Referenzen prüfen.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "xeno/20_harbinger-zeta": {
+   "morphologie": "hover",
+   "gesicht": "alien",
+   "merkmale": [
+    "schwebendes Orakel",
+    "drei Orbitalkugeln",
+    "kein menschlicher Körper"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "xeno/20_harbinger-zeta__walk.webp",
+   "aktion": "xeno/20_harbinger-zeta__aktion.webp",
+   "zustand": "xeno/20_harbinger-zeta__zustand.webp",
+   "rollen": {
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Geh- und Aktionsblatt geben Beine und einen menschlichen Todeskörper.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "xeno/21_dark-matter-witch": {
+   "morphologie": "hover",
+   "gesicht": "alien",
+   "merkmale": [
+    "dunkle Hexensilhouette",
+    "Karten",
+    "Spiralstab",
+    "schwebender Saum"
+   ],
+   "verboten": [
+    "Beine",
+    "Bodenkontakt mit Füßen",
+    "menschlicher Todeskörper",
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "xeno/21_dark-matter-witch__walk.webp",
+   "aktion": "xeno/21_dark-matter-witch__aktion.webp",
+   "zustand": "xeno/21_dark-matter-witch__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Aktionsposen zeigen einen menschlichen Kopf.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": false,
+     "grund": "Beinenzyklus für diesen Bauplan gesperrt: Gehblätter zeigen ein humanoides Beinpaar."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": false,
+      "grund": "Hockpose nur für Zweibeiner: menschliche Kniewinkel wären bei diesem Bauplan ein Identitätsfehler."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  },
+  "xeno/22_null-entity-quark": {
+   "morphologie": "biped",
+   "gesicht": "alien",
+   "merkmale": [
+    "gezackte Leerenentität",
+    "schwebende Fragmente",
+    "kein menschlicher Leichnam"
+   ],
+   "verboten": [
+    "menschliches Gesicht",
+    "menschlicher Leichnam"
+   ],
+   "walk": "xeno/22_null-entity-quark__walk.webp",
+   "aktion": "xeno/22_null-entity-quark__aktion.webp",
+   "zustand": "xeno/22_null-entity-quark__zustand.webp",
+   "rollen": {
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "gehenOk": 8,
+   "identitaet": {
+    "freigabe": "ungeprueft",
+    "grundlage": "heuristik",
+    "befund": "Treffer und Tod zeigen menschliche Anatomie.",
+    "gesperrteZellen": [],
+    "walk": {
+     "frei": true,
+     "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
+    },
+    "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "idle": {
+      "zellen": [
+       0,
+       1
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "luft": {
+      "zellen": [
+       2
+      ],
+      "frei": true,
+      "grund": "Bauplan erlaubt die Rolle; Frame nicht einzeln gesichtet (Heuristik)."
+     },
+     "tod": {
+      "zellen": [
+       7
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     },
+     "treffer": {
+      "zellen": [
+       5
+      ],
+      "frei": false,
+      "grund": "Identitätskritische Rolle: kein Menschengesicht/Leichnam ohne Sichtprüfung."
+     }
+    },
+    "rueckfall": "seitenbild+prozedur"
+   }
+  }
+ }
+}

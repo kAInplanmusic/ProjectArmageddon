@@ -18,9 +18,10 @@
  */
 
 import { iconUrlFor } from '../shared/config/weapons.js';
+import { KOLLISIONSANKER } from '../shared/config/factions.js';
 import { spriteUrl } from './roster.js';
 import { CACHE_KANTE, STUFEN, stufeBauen } from './figurStufen.js';
-import { blattBauen, emotionBauen } from './figurSheets.js';
+import { blattBauen, emotionBauen, emotionFreigabe, freigabeFuer } from './figurSheets.js';
 import { ladeBild } from './dom.js';
 
 export { STUFEN, stufeFuer, tonung, verkleinere } from './figurStufen.js';
@@ -48,13 +49,28 @@ const EMOTION_BILDER = import.meta.glob('./assets/sprite-sheets-emotion/*/*.webp
 /** Prüfergebnis je Emotions-Sheet (`gueltig` = Zellen mit passender Identität). */
 const EMOTION_MANIFEST = import.meta.glob('./assets/sprite-sheets-emotion/manifest.json', { eager: true, import: 'default' });
 
-const STANDARD_ANKER = { fussY: 0.96, muendungX: 0.9, muendungY: 0.45 };
+const STANDARD_ANKER = Object.freeze({ fussY: KOLLISIONSANKER.fussY, muendungX: 0.9, muendungY: 0.45 });
 
-/** Ankerpunkte je Figur aus dem Manifest der Seitenansichten (Anteile 0..1). */
+/**
+ * Der Anker einer Figur: Fußpunkt aus der EINEN Kollisionsform (A10),
+ * Mündungspunkt optional je Figur.
+ *
+ * Der Fußpunkt ist bewusst NICHT aus dem Manifest: `characters-side/manifest.json`
+ * führt je Figur einen pixelgenauen `anchor` (aus der Freistellung), und
+ * `fussY` daraus würde für Vierbeiner, Kettenfahrzeuge und Schweber einen
+ * anderen Aufsetzpunkt ergeben als für Zweibeiner. Optisch sähe das nach einer
+ * anderen Trefferfläche aus, obwohl die Kollision für alle 81 gleich ist.
+ * Der Mündungsanker ist keine Kollision und darf je Figur abweichen.
+ */
 function ankerAusManifest(fraktion, datei) {
   const m = Object.values(MANIFEST)[0];
-  const e = m?.figuren?.[`${fraktion}/${datei}`];
-  return e ? { ...STANDARD_ANKER, ...e.anker } : STANDARD_ANKER;
+  const e = m?.figures?.[`${fraktion}/${datei}`];
+  const anker = e?.anker ?? {};
+  return {
+    fussY: KOLLISIONSANKER.fussY,
+    muendungX: Number.isFinite(anker.muendungX) ? anker.muendungX : STANDARD_ANKER.muendungX,
+    muendungY: Number.isFinite(anker.muendungY) ? anker.muendungY : STANDARD_ANKER.muendungY,
+  };
 }
 
 // fraktion -> datei -> Eintrag | 'laedt' | 'fehlt' (zweistufig: Nachschlag je Bild ohne Zeichenkettenbau)
@@ -90,22 +106,30 @@ async function lade(eintraege, charakter) {
 /**
  * Lädt die Sheets einer Figur (nur der Figuren, die im Spiel vorkommen) und setzt `fig.blatt`.
  * Fehlt etwas oder schlägt das Laden fehl, bleibt `fig.blatt` `null` — das Seitenbild gilt weiter.
+ *
+ * Die Rollen laufen durch `freigabeFuer`: Frames ohne Identitätsfreigabe oder mit
+ * einem Bauplan, den die Figur nicht hat (Beinenzyklus am Kettenfahrzeug), werden
+ * gar nicht erst gebaut. `fig.freigabe` hält das Ergebnis für Prüfwerkzeuge fest.
  */
 async function ladeBlatt(fig, charakter) {
   try {
     const m = Object.values(BLATT_MANIFEST)[0];
     const e = m?.figuren?.[`${charakter.faction}/${charakter.sprite.replace(/\.png$/, '')}`];
     if (!e) return;
+    const freigabe = freigabeFuer(charakter, e);
+    fig.freigabe = freigabe;
     const urls = [BLATT_BILDER[`./assets/sprite-sheets/${e.walk}`], BLATT_BILDER[`./assets/sprite-sheets/${e.aktion}`]];
     const [walk, aktion] = await Promise.all(urls.map(async (l) => (l ? ladeBild(await l()).catch(() => null) : null)));
-    const blatt = blattBauen(e, walk, aktion);
+    const blatt = blattBauen({ ...e, gehen: freigabe.gehen ?? undefined, rollen: freigabe.rollen }, walk, aktion);
     if (blatt.walk || blatt.idle) fig.blatt = blatt;
-    // Nur Figuren mit Prüfergebnis im Manifest und mindestens einer gültigen Zelle bekommen Emotionen.
+    // Nur Figuren mit SICHTgeprüfter Freigabe im Manifest bekommen Emotionen; die
+    // Farbnäherung (`gueltig`) allein ist kein Identitätsnachweis.
     const name = charakter.sprite.replace(/\.png$/, '');
     const pruefung = Object.values(EMOTION_MANIFEST)[0]?.figuren?.[`${charakter.faction}/${name}`];
     const emotion = EMOTION_BILDER[`./assets/sprite-sheets-emotion/${charakter.faction}/${name}__emotion.webp`];
-    if (fig.blatt && emotion && pruefung?.gueltig?.length) {
-      void emotion().then(ladeBild).then((bild) => { fig.blatt.emotion = emotionBauen(bild, undefined, pruefung.gueltig); }).catch(() => {});
+    const zellen = emotionFreigabe(pruefung);
+    if (fig.blatt && emotion && zellen) {
+      void emotion().then(ladeBild).then((bild) => { fig.blatt.emotion = emotionBauen(bild, undefined, zellen); }).catch(() => {});
     }
   } catch {
     fig.blatt = null;
