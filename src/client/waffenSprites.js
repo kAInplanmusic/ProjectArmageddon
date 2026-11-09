@@ -32,8 +32,16 @@ export const CACHE_KANTE = 64;
 const GESCHOSS_KANTE = 32;
 const GLANZ_KANTE = 32;
 
-/** Größte Neigung (Radiant), die ausgerichtet wird; stärker geneigte Anker gelten als Fehlschätzung. */
-const MAX_ACHSE = 1.0;
+/*
+ * Die Neigung der Achse Griff -> Mündung ist die Achse der Waffe selbst (Anker aus
+ * `scripts/waffen-anker-tabelle.json`). Sie wird deshalb nicht mehr auf einen
+ * "plausiblen" Bereich begrenzt: eine Begrenzung ließ die Mündung bei schrägen
+ * Rohren neben dem Zielstrahl liegen. Die Schranke unten fängt nur fehlerhafte
+ * Daten ab (eine Waffe, deren Mündung hinter dem Griff liegt) und ist kein
+ * Ausrichtungs-Toleranzwert; `tests/waffen-anker.test.js` verlangt für alle 150
+ * Waffen eine Neigung unter 0,6 rad.
+ */
+const MAX_ACHSE = 1.35;
 const STANDARD_GRIFF = { x: 38, y: 64 };
 const STANDARD_MUENDUNG = { x: 118, y: 64 };
 
@@ -47,7 +55,12 @@ const STANDARD_MUENDUNG = { x: 118, y: 64 };
 export function zellenFuer(manifest, id) {
   const w = manifest?.waffen?.[id];
   if (!w?.held || !w.silhouette) return null;
-  // Die Anker liegen seit der Neuberechnung (`scripts/waffen-sprites.py`) auf der Hauptachse; keine Nachkorrektur hier.
+  /*
+   * Die Anker sind gesetzt, nicht geschätzt: `heft` nennt den Punkt, an dem die Hand
+   * greift, `muzzle` das tatsächliche Ende (Quelle `scripts/waffen-anker-tabelle.json`).
+   * `halt` unterscheidet Waffen mit eigenem Heft von solchen, die am Körper gehalten
+   * werden (Griff = Schwerpunkt); `heftSpanne` ist der belegte Heftbereich.
+   */
   const grip = w.anchor?.grip ?? STANDARD_GRIFF;
   const muzzle = w.anchor?.muzzle ?? STANDARD_MUENDUNG;
   return {
@@ -57,6 +70,11 @@ export function zellenFuer(manifest, id) {
     projectile: w.projectile ?? null,
     grip,
     muzzle,
+    halt: typeof w.anchor?.halt === 'string' ? w.anchor.halt : 'koerper',
+    heftSpanne: Array.isArray(w.anchor?.heft) ? w.anchor.heft : [grip.x, grip.x],
+    quelle: typeof w.anchor?.source === 'string' ? w.anchor.source : '',
+    /** Mündung in der Ankertabelle gesetzt (Rohr erreicht den Zellrand nicht). */
+    fest: w.anchor?.fest === true,
     flashColor: typeof w.flashColor === 'string' ? w.flashColor : '#ffd166',
     form: typeof w.form === 'string' ? w.form : '',
     kachel: w.form === 'kachel' && typeof w.kachel?.modus === 'string' ? w.kachel.modus : '',
@@ -147,6 +165,13 @@ export function erzeugeWaffenSprites(abh) {
         achse,
         mx: laenge * Math.cos(winkel - achse),
         my: laenge * Math.sin(winkel - achse),
+        /** `heft` = eigenes Heft, `koerper` = am Körper gehalten (Griff = Schwerpunkt). */
+        halt: z.halt,
+        /** Belegter Heftbereich [x0, x1] in Zellpixeln (nur bei `halt: 'heft'` eine echte Spanne). */
+        heft: z.heftSpanne,
+        quelle: z.quelle,
+        /** Mündung aus der Ankertabelle gesetzt statt am Rand der Zelle (schräge Rohre). */
+        fest: z.fest,
         flashColor: z.flashColor,
         form: z.form,
         kachel: z.kachel,

@@ -47,8 +47,6 @@ export const ZELLE = 128;
  *
  *   zelle        Weltpixel, die eine 128er-Zelle breit gezeichnet wird (Waffengröße)
  *   handVor      Handposition vor der Körpermitte in Blickrichtung
- *   griffObjekt  Zellpixel, um die der Griff bei langen Objekt-Waffen zum Schaft hin rückt (negativ = hinten);
- *                bei kompakten Sprites und Kacheln 0
  *   handHoch     Handposition über (negativ: unter) der Standardhöhe
  *   idleDreh     Pendeln der Waffe im Stand (Amplitude), idleAtem Heben/Senken in px, idleTempo in Hz
  *   ziehenDauer  Einschwingen von unten beim Ziehen/Wechseln; ziehenTief Startversatz, ziehenDreh Startdrehung
@@ -64,7 +62,6 @@ const BASIS = Object.freeze({
   zelle: 28,
   handVor: 3,
   handHoch: 0,
-  griffObjekt: -8,
   idleDreh: 0.03,
   idleAtem: 0.4,
   idleTempo: 0.45,
@@ -107,15 +104,15 @@ function kategorie(werte) {
  */
 export const PARAMETER = Object.freeze({
   melee: kategorie({
-    zelle: 30, handVor: 2, handHoch: -1, griffObjekt: -16, art: 'hieb', schussDauer: 0.6, kick: 7,
+    zelle: 30, handVor: 2, handHoch: -1, art: 'hieb', schussDauer: 0.6, kick: 7,
     ziehenDreh: 1.2, blitzForm: 'keiner', blitzGroesse: 0, blitzDauer: 0, koerper: 1.6, ausfall: 0.3, start: 0,
   }),
   ranged: kategorie({
-    zelle: 28, griffObjekt: -10, art: 'kurz', schussDauer: 0.26, kick: 4.6, rueck: 0.3, wippen: 0.05, wippHz: 13,
+    zelle: 28, art: 'kurz', schussDauer: 0.26, kick: 4.6, rueck: 0.3, wippen: 0.05, wippHz: 13,
     blitzForm: 'kegel', blitzGroesse: 14, blitzDauer: 0.09, koerper: 1, ausfall: 0, start: 10,
   }),
   heavy_ranged: kategorie({
-    zelle: 34, handVor: 1.5, handHoch: 1.5, griffObjekt: -12, idleDreh: 0.018, idleAtem: 0.3, ziehenDauer: 0.3,
+    zelle: 34, handVor: 1.5, handHoch: 1.5, idleDreh: 0.018, idleAtem: 0.3, ziehenDauer: 0.3,
     art: 'schwer', schussDauer: 0.8, kick: 10, rueck: 0.45, wippen: 0.09, wippHz: 5.5,
     blitzForm: 'kegel', blitzGroesse: 26, blitzDauer: 0.18, koerper: 2.4, ausfall: 1, start: 18,
   }),
@@ -233,7 +230,13 @@ export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wu
       ...(form === 'kompakt' ? KOMPAKT(basis) : null),
       ...(form === 'kachel' ? (kachelModus === 'motiv' ? KACHEL_MOTIV(basis) : KACHEL_ORB(basis)) : null), ...korr,
     };
-    p.griff = form === 'objekt' ? (korr?.griffObjekt ?? basis.griffObjekt) : (korr?.griff ?? 0);
+    /*
+     * Kein Kategorien-Versatz mehr: Die Hand sitzt auf dem Griffanker des Sprites.
+     * Früher rückte `griffObjekt` den Griff je Kategorie um 8–16 Zellpixel nach
+     * hinten; damit lag die Hand neben dem Heft, obwohl der Anker stimmte (BAL-08).
+     * Eine bewusste Ausnahme je Waffe bleibt über `KORREKTUREN[id].griff` möglich.
+     */
+    p.griff = korr?.griff ?? 0;
     Object.freeze(p);
     parameterCache.set(schluessel, p);
   }

@@ -1,5 +1,5 @@
 {
- "_hinweis": "Handkorrekturen je Waffen-ID. rect=[x0,y0,x1,y1,radius] erzwingt Rundrechteck-Kachel (Quellpixel 1024). ringAbstand/schwelle steuern die Hintergrundschaetzung. keineDrehung, umkehren (nach der Ausrichtung spiegeln), spitzeWechseln, winkel, spiegeln, form, grip/muzzle=[x,y] in Zellpixeln, geschoss=Art oder 'keins'.",
+ "_hinweis": "Handkorrekturen je Waffen-ID. rect=[x0,y0,x1,y1,radius] erzwingt Rundrechteck-Kachel (Quellpixel 1024). ringAbstand/schwelle steuern die Hintergrundschaetzung. keineDrehung, umkehren (nach der Ausrichtung spiegeln), winkel, drehen, form, geschoss=Art des Geschosses, kachel={modus,innen,schwelle,grund}. Griff (grip) und Muendung (muzzle) stehen NICHT hier, sondern in scripts/waffen-anker-tabelle.json (BAL-08); spiegelung des Wirkendes ebenfalls dort (spiegeln).",
  "pa_118": {
   "rect": [
    139,
@@ -161,11 +161,7 @@
  "pa_012": {
   "ringAbstand": 40,
   "schwelle": 60,
-  "spitzeWechseln": true,
-  "muzzle": [
-   120,
-   49
-  ]
+  "spitzeWechseln": true
  },
  "pa_054": {
   "ringAbstand": 90
@@ -186,26 +182,16 @@
   "keineDrehung": true
  },
  "pa_043": {
-  "keineDrehung": true,
-  "art": "geraet"
+  "keineDrehung": true
  },
  "pa_053": {
-  "keineDrehung": true,
-  "art": "wurf"
+  "keineDrehung": true
  },
  "pa_061": {
   "keineDrehung": true
  },
  "pa_002": {
-  "umkehren": true,
-  "grip": [
-   26,
-   64
-  ],
-  "muzzle": [
-   108,
-   58
-  ]
+  "umkehren": true
  },
  "pa_005": {
   "umkehren": true
@@ -221,15 +207,7 @@
   "schwelle": 60
  },
  "pa_019": {
-  "umkehren": true,
-  "grip": [
-   25,
-   68
-  ],
-  "muzzle": [
-   100,
-   56
-  ]
+  "umkehren": true
  },
  "pa_021": {
   "umkehren": true
@@ -244,57 +222,17 @@
   "umkehren": true
  },
  "pa_033": {
-  "umkehren": true,
-  "art": "stab"
+  "umkehren": true
  },
  "pa_057": {
   "umkehren": true
  },
  "pa_060": {
   "umkehren": true,
-  "grip": [
-   34,
-   64
-  ],
-  "muzzle": [
-   112,
-   56
-  ],
   "drehen": 8
  },
  "pa_063": {
-  "umkehren": true,
-  "art": "geraet"
- },
- "pa_039": {
-  "grip": [
-   62,
-   76
-  ],
-  "muzzle": [
-   104,
-   24
-  ]
- },
- "pa_066": {
-  "grip": [
-   64,
-   86
-  ],
-  "muzzle": [
-   104,
-   12
-  ]
- },
- "pa_124": {
-  "grip": [
-   56,
-   64
-  ],
-  "muzzle": [
-   106,
-   62
-  ]
+  "umkehren": true
  },
  "pa_071": {
   "kachel": {
@@ -425,85 +363,20 @@
   }
  },
  "pa_139": {
-  "drehen": -18,
-  "art": "geraet"
+  "drehen": -18
  },
  "pa_059": {
-  "art": "geraet",
   "drehen": -30
- },
- "pa_067": {
-  "art": "geraet"
- },
- "pa_064": {
-  "art": "geraet"
- },
- "pa_140": {
-  "art": "geraet"
- },
- "pa_037": {
-  "art": "geraet"
- },
- "pa_113": {
-  "art": "geraet"
- },
- "pa_030": {
-  "art": "geraet"
- },
- "pa_049": {
-  "art": "wurf",
-  "grip": [
-   60,
-   56
-  ],
-  "muzzle": [
-   106,
-   66
-  ]
- },
- "pa_058": {
-  "art": "bogen"
- },
- "pa_082": {
-  "art": "stab"
- },
- "pa_137": {
-  "art": "stab"
- },
- "pa_138": {
-  "art": "stab"
- },
- "pa_020": {
-  "art": "stab"
- },
- "pa_101": {
-  "art": "schild"
  },
  "pa_011": {
   "schwelle": 60
  },
  "pa_009": {
-  "schwelle": 60,
-  "grip": [
-   65,
-   58
-  ],
-  "muzzle": [
-   120,
-   63
-  ]
+  "schwelle": 60
  },
  "pa_001": {
   "schwelle": 60,
-  "spitzeWechseln": true,
-  "grip": [
-   26,
-   63
-  ],
-  "muzzle": [
-   120,
-   63
-  ]
+  "spitzeWechseln": true
  },
  "pa_017": {
   "schwelle": 60
@@ -511,108 +384,16 @@
  "pa_014": {
   "winkel": 0.0
  },
- "pa_036": {
-  "grip": [
-   40,
-   62
-  ],
-  "muzzle": [
-   120,
-   48
-  ]
- },
  "pa_003": {
-  "spitzeWechseln": true,
-  "grip": [
-   50,
-   63
-  ],
-  "muzzle": [
-   119,
-   60
-  ]
+  "spitzeWechseln": true
  },
  "pa_004": {
-  "spitzeWechseln": true,
-  "grip": [
-   70,
-   55
-  ],
-  "muzzle": [
-   119,
-   52
-  ]
+  "spitzeWechseln": true
  },
  "pa_038": {
-  "spitzeWechseln": true,
-  "grip": [
-   70,
-   64
-  ],
-  "muzzle": [
-   120,
-   62
-  ]
+  "spitzeWechseln": true
  },
  "pa_051": {
-  "spitzeWechseln": true,
-  "grip": [
-   27,
-   66
-  ],
-  "muzzle": [
-   120,
-   66
-  ]
- },
- "pa_015": {
-  "grip": [
-   24,
-   63
-  ],
-  "muzzle": [
-   120,
-   60
-  ]
- },
- "pa_016": {
-  "grip": [
-   22,
-   65
-  ],
-  "muzzle": [
-   119,
-   65
-  ]
- },
- "pa_040": {
-  "grip": [
-   58,
-   50
-  ],
-  "muzzle": [
-   120,
-   46
-  ]
- },
- "pa_055": {
-  "grip": [
-   58,
-   52
-  ],
-  "muzzle": [
-   119,
-   53
-  ]
- },
- "pa_068": {
-  "grip": [
-   98,
-   66
-  ],
-  "muzzle": [
-   120,
-   61
-  ]
+  "spitzeWechseln": true
  }
 }

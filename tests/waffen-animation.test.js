@@ -84,8 +84,18 @@ test('Wurfwaffen: Wurfbewegung ohne Mündungsblitz; Kachel-Waffen kleiner und we
   assert.equal(gewehr.blitzForm, 'kegel');
   const kachel = waffenParameter('magic', 'pa_zzz', false, 'kachel');
   assert.ok(kachel.zelle < PARAMETER.magic.zelle && kachel.handVor > PARAMETER.magic.handVor);
+  /*
+   * Kein Kategorien-Versatz mehr (BAL-08): Die Hand sitzt auf dem Griffanker, den die
+   * Ankertabelle setzt. Frueher rueckte `griffObjekt` den Griff je Kategorie nach hinten
+   * und schob die Hand neben das Heft.
+   */
   assert.equal(kachel.griff, 0, 'Kacheln haben keinen Schaftgriff');
-  assert.equal(waffenParameter('ranged', 'pa_zzz', false, 'objekt').griff, PARAMETER.ranged.griffObjekt);
+  for (const form of ['objekt', 'kompakt', 'kachel']) {
+    assert.equal(waffenParameter('ranged', 'pa_zzz', false, form).griff, 0, `${form}: Griff verschiebt den Anker`);
+  }
+  for (const par of Object.values(PARAMETER)) {
+    assert.equal(par.griffObjekt, undefined, 'die Kategorie kennt keinen Griffversatz mehr');
+  }
   // Aus Katalogwaffe und Sprite-Eintrag: Granate mit Zünder wird geworfen, Selbstwirkung nie mit Blitz.
   const granate = WEAPONS.find(w => w.id === 'pa_047');
   assert.equal(parameterFuerWaffe(granate, { form: 'kompakt', projektilInfo: { art: 'ding' } }).blitzForm, 'keiner');

@@ -1,0 +1,5885 @@
+{
+ "zusammen": {
+  "stand": "2026-11-09T14:13:56.482Z",
+  "matrix": {
+   "seiten": 2,
+   "winkel": [
+    -0.35,
+    0.08,
+    0.52
+   ],
+   "posen": [
+    "ruhe",
+    "ruhe-still",
+    "ziehen",
+    "schuss"
+   ],
+   "skalen": [
+    0.85,
+    1,
+    1.35
+   ],
+   "faelleJeWaffe": 72
+  },
+  "kriterien": {
+   "spitze": "Mündung = äußerster Punkt der gezeichneten Waffe entlang der Achse Griff→Mündung (±2,5 Weltpixel)",
+   "quer": "das gezeichnete Ende liegt auf der Waffenachse (±1,5 Weltpixel quer)",
+   "winkel": "in ruhiger Pose ist die Waffenachse = Zielstrahl (±0,02 rad), also die Mündung auf dem Strahl",
+   "deckung": "die gezeichnete Faust (2,3 px) liegt vollständig auf Waffenmaterial (≥85 %)",
+   "heft": "bei halt=heft liegt der Griff in der belegten Heftspanne des Manifests",
+   "spiegel": "Linksfall ist pixelgenau die Spiegelung des Rechtsfalls (<2 % Abweichung)",
+   "groesse": "kein Sprung der Mündungsabweichung zwischen den Figurgrößen"
+  },
+  "geprueft": 150,
+  "bestanden": 150,
+  "verletzt": []
+ },
+ "waffen": [
+  {
+   "id": "pa_001",
+   "name": "Baseballschläger",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    42
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6245868270191531,
+   "spitzeQuer": 1.1622027404406599,
+   "deckungMin": 0.6694772344013491,
+   "griffMitte": 0.3365897518366521,
+   "dickeVerhaeltnis": 0.7128495231738244,
+   "dG": 4.0649270978337535,
+   "maxDicke": 8.806427641518175,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6245868270191531,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.0682565421189405,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_002",
+   "name": "Feuerfaust",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.31632769449462944,
+   "spitzeQuer": 10.091349340226953,
+   "deckungMin": 1,
+   "griffMitte": 0.70591192314568,
+   "dickeVerhaeltnis": 1.1233277209825163,
+   "dG": 13.926334304293183,
+   "maxDicke": 20.67578970305597,
+   "alphaMin": 255,
+   "mundMin": 14,
+   "winkelAbw": 3.1918911957973246e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.31632769449462944,
+    "fall": "rechts/ruhe-still/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.4021186790234788,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_003",
+   "name": "Hakenklinge",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    27,
+    45
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5720714051062098,
+   "spitzeQuer": 1.0593580544051011,
+   "deckungMin": 0.6644182124789207,
+   "griffMitte": 1.110822375032168,
+   "dickeVerhaeltnis": 1.35434656955605,
+   "dG": 4.328987197148601,
+   "maxDicke": 12.758363053142169,
+   "alphaMin": 255,
+   "mundMin": 253,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5720714051062098,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.12982800408159878,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_004",
+   "name": "Piratenhaken",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    42
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6137179046209932,
+   "spitzeQuer": 1.546187643544774,
+   "deckungMin": 0.5025295109612141,
+   "griffMitte": 0.2586738805884093,
+   "dickeVerhaeltnis": 1,
+   "dG": 2.8478917083817947,
+   "maxDicke": 10.857240543005474,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6137179046209932,
+    "fall": "rechts/ruhe-still/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.09687328882916979,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_005",
+   "name": "Morgenstern",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    20,
+    44
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5150441722949495,
+   "spitzeQuer": 1.7284752469539348,
+   "deckungMin": 0.5868465430016864,
+   "griffMitte": 1.3700360103180913,
+   "dickeVerhaeltnis": 1.1235317405746756,
+   "dG": 3.6793828621419227,
+   "maxDicke": 14.471181224243358,
+   "alphaMin": 254,
+   "mundMin": 254,
+   "winkelAbw": 2.220446049250313e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5150441722949495,
+    "fall": "rechts/schuss/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.033030238965867875,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_006",
+   "name": "Schaufel",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    16,
+    40
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.49606323673233516,
+   "spitzeQuer": 0.6904622972322786,
+   "deckungMin": 0.6323777403035413,
+   "griffMitte": 0.4549015078120471,
+   "dickeVerhaeltnis": 0.8727151915767717,
+   "dG": 3.7264653514107224,
+   "maxDicke": 13.437091348530826,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 2.2204460492503126e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.49606323673233516,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.009212657334720153,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_007",
+   "name": "Tonfa",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    44,
+    68
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.7165164081596463,
+   "spitzeQuer": 1.4650096784951032,
+   "deckungMin": 0.6441821247892074,
+   "griffMitte": 1.8130176724764564,
+   "dickeVerhaeltnis": 3,
+   "dG": 13.891991121037956,
+   "maxDicke": 13.891991121037956,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.7165164081596463,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.0095482416346504,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_008",
+   "name": "Kriegshammer",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    42
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6303782930508911,
+   "spitzeQuer": 1.157959362175931,
+   "deckungMin": 0.8145025295109612,
+   "griffMitte": 0.17045613411954882,
+   "dickeVerhaeltnis": 1,
+   "dG": 5.269555949042808,
+   "maxDicke": 21.788619217541875,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 1.665334536937735e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6303782930508911,
+    "fall": "rechts/schuss/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.022829778234563336,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_009",
+   "name": "Eispickel",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    70,
+    94
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.651921506009065,
+   "spitzeQuer": 1.32230168512031,
+   "deckungMin": 0.5649241146711635,
+   "griffMitte": 0.970441580079787,
+   "dickeVerhaeltnis": 1,
+   "dG": 3.6815778210993293,
+   "maxDicke": 22.82191859399784,
+   "alphaMin": 254,
+   "mundMin": 254,
+   "winkelAbw": 8.326672684688675e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.651921506009065,
+    "fall": "rechts/schuss/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.05037867344314573,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_010",
+   "name": "Kettensäge",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    22,
+    46
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.36911668093171573,
+   "spitzeQuer": 2.9930801094420403,
+   "deckungMin": 1,
+   "griffMitte": 2.3234089448959394,
+   "dickeVerhaeltnis": 1.9478899900570807,
+   "dG": 15.7227731840374,
+   "maxDicke": 23.40938214228595,
+   "alphaMin": 255,
+   "mundMin": 201,
+   "winkelAbw": 3.885780586188048e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.36911668093171573,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.03664863083750164,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_011",
+   "name": "Zwillingskatanas",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    58,
+    69
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 1.0959592763015376,
+   "spitzeQuer": 2.44778161303218,
+   "deckungMin": 0.9966273187183811,
+   "griffMitte": 1.353379795708726,
+   "dickeVerhaeltnis": 9.551877890943715,
+   "dG": 46.5056400469561,
+   "maxDicke": 46.8187642845719,
+   "alphaMin": 255,
+   "mundMin": 253,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 1.0959592763015376,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.09278524664679821,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_012",
+   "name": "Katana",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    37
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3938485713065158,
+   "spitzeQuer": 0.8042459355755772,
+   "deckungMin": 0.5109612141652614,
+   "griffMitte": 1.1880511881302858,
+   "dickeVerhaeltnis": 0.5743009536523511,
+   "dG": 3.144554636807481,
+   "maxDicke": 9.910471344760374,
+   "alphaMin": 235,
+   "mundMin": 191,
+   "winkelAbw": 1.249000902703301e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3938485713065158,
+    "fall": "rechts/ruhe-still/a0.08/s1"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.3161478814457894,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_013",
+   "name": "Mehrzweckmesser",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    42
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.24027907515836233,
+   "spitzeQuer": 0.39116072807575125,
+   "deckungMin": 0.7487352445193929,
+   "griffMitte": 0.1771258413879894,
+   "dickeVerhaeltnis": 1.0329000164388693,
+   "dG": 4.919936766905201,
+   "maxDicke": 7.950875793234971,
+   "alphaMin": 255,
+   "mundMin": 230,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.24027907515836233,
+    "fall": "rechts/schuss/a-0.35/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.2680419159133749,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_014",
+   "name": "Taschenmesser",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    28,
+    52
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.19515368632429878,
+   "spitzeQuer": 0.5528188176882646,
+   "deckungMin": 0.5193929173693086,
+   "griffMitte": 3.2518503115871837,
+   "dickeVerhaeltnis": 1.3411739723831784,
+   "dG": 7.95087579323497,
+   "maxDicke": 8.351527869011045,
+   "alphaMin": 242,
+   "mundMin": 218,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.19515368632429878,
+    "fall": "rechts/ruhe-still/a0.08/s1"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.10545961061136025,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_015",
+   "name": "Runenschwert",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    20,
+    35
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3364367638861741,
+   "spitzeQuer": 0.496552273688079,
+   "deckungMin": 0.7487352445193929,
+   "griffMitte": 1.3519086762380963,
+   "dickeVerhaeltnis": 2.7028256962649007,
+   "dG": 7.0308884067644515,
+   "maxDicke": 12.132114577910583,
+   "alphaMin": 254,
+   "mundMin": 188,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3364367638861741,
+    "fall": "rechts/ruhe-still/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.29577376915219233,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_016",
+   "name": "Rapier",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    22,
+    38
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.29704756533410875,
+   "spitzeQuer": 0.8406576214464229,
+   "deckungMin": 0.6644182124789207,
+   "griffMitte": 1.8184731956290525,
+   "dickeVerhaeltnis": 3.205789847787261,
+   "dG": 6.119009371812009,
+   "maxDicke": 12.072273727312671,
+   "alphaMin": 254,
+   "mundMin": 188,
+   "winkelAbw": 1.1102230246251565e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.29704756533410875,
+    "fall": "rechts/ruhe-still/a0.52/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.3383944758176436,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_017",
+   "name": "Kampfmesser",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    42
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.21238226901414473,
+   "spitzeQuer": 0.8042459355755701,
+   "deckungMin": 0.8903878583473862,
+   "griffMitte": 0.6497133787938077,
+   "dickeVerhaeltnis": 1.0445129694080593,
+   "dG": 6.11900937181201,
+   "maxDicke": 7.490689562721832,
+   "alphaMin": 255,
+   "mundMin": 217,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.21238226901414473,
+    "fall": "rechts/ruhe-still/a0.08/s1"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.22261719594079066,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_018",
+   "name": "Energieschwert",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    16,
+    40
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.375556089573062,
+   "spitzeQuer": 0.5714879525866058,
+   "deckungMin": 0.8026981450252951,
+   "griffMitte": 0.3365897518366519,
+   "dickeVerhaeltnis": 1.4220198543748719,
+   "dG": 7.803127380761983,
+   "maxDicke": 8.692269851828705,
+   "alphaMin": 255,
+   "mundMin": 239,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.375556089573062,
+    "fall": "rechts/ruhe-still/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.014229103708968682,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_019",
+   "name": "Doppelaxt",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    16,
+    40
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.2894410959458848,
+   "spitzeQuer": 1.059973013561218,
+   "deckungMin": 0.6897133220910624,
+   "griffMitte": 0.897110621648363,
+   "dickeVerhaeltnis": 0.9097486861394144,
+   "dG": 4.630663707012651,
+   "maxDicke": 20.56149043390415,
+   "alphaMin": 255,
+   "mundMin": 232,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.2894410959458848,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.0473845991556838,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_020",
+   "name": "Kriegssense",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    32,
+    56
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.8864357369937798,
+   "spitzeQuer": 5.195614026820647,
+   "deckungMin": 0.5261382799325464,
+   "griffMitte": 8.95106243615953,
+   "dickeVerhaeltnis": 1.351713591470091,
+   "dG": 24.021137714740902,
+   "maxDicke": 26.40894098724066,
+   "alphaMin": 255,
+   "mundMin": 246,
+   "winkelAbw": 3.469446951953613e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.8864357369937798,
+    "fall": "rechts/ruhe-still/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.013509238573564675,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_021",
+   "name": "Krummsäbel",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    14,
+    37
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3145334245008608,
+   "spitzeQuer": 0.4183359991104254,
+   "deckungMin": 0.715008431703204,
+   "griffMitte": 0.34575954073483084,
+   "dickeVerhaeltnis": 0.9111503466880462,
+   "dG": 4.527812165612578,
+   "maxDicke": 9.095700701410724,
+   "alphaMin": 255,
+   "mundMin": 242,
+   "winkelAbw": 2.220446049250313e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3145334245008608,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.01653262631771879,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_022",
+   "name": "Plasmawerfer",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    12,
+    36
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.26764977163359305,
+   "spitzeQuer": 2.7669492824592368,
+   "deckungMin": 0.9881956155143339,
+   "griffMitte": 4.299408546478577,
+   "dickeVerhaeltnis": 1.945976203111928,
+   "dG": 23.059630401575536,
+   "maxDicke": 23.094636431582177,
+   "alphaMin": 255,
+   "mundMin": 186,
+   "winkelAbw": 2.220446049250313e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.26764977163359305,
+    "fall": "rechts/ruhe/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.1999818214600737,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_023",
+   "name": "Boxhandschuhe",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    59,
+    59
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6000655761320294,
+   "spitzeQuer": 3.1018948024939803,
+   "deckungMin": 1,
+   "griffMitte": 0.44944690690763994,
+   "dickeVerhaeltnis": 1.3487880949398428,
+   "dG": 22.78313366705436,
+   "maxDicke": 23.194729304570984,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 2.4980018054066017e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6000655761320294,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.06128350676697203,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_024",
+   "name": "Mittelfinger",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    56,
+    56
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5606053411207697,
+   "spitzeQuer": 1.7401401381066408,
+   "deckungMin": 1,
+   "griffMitte": 0.33659011802586153,
+   "dickeVerhaeltnis": 1.6382947596189865,
+   "dG": 21.829946948527198,
+   "maxDicke": 21.9096530320043,
+   "alphaMin": 255,
+   "mundMin": 236,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5606053411207697,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.013941689261339762,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_025",
+   "name": "Handtuch",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    62,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5900325077983742,
+   "spitzeQuer": 2.3622374250833538,
+   "deckungMin": 1,
+   "griffMitte": 0.34798591994031014,
+   "dickeVerhaeltnis": 1.0614496973382133,
+   "dG": 15.178831254756355,
+   "maxDicke": 16.785781730341498,
+   "alphaMin": 255,
+   "mundMin": 253,
+   "winkelAbw": 2.775557561562891e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5900325077983742,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.050536315726086856,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_026",
+   "name": "Pressluftbohrer",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    30,
+    54
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3201007406096205,
+   "spitzeQuer": 1.2178142494387618,
+   "deckungMin": 0.9983136593591906,
+   "griffMitte": 3.948315783556876,
+   "dickeVerhaeltnis": 1.4887447366122344,
+   "dG": 19.046306223277423,
+   "maxDicke": 19.84537378023538,
+   "alphaMin": 255,
+   "mundMin": 232,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3201007406096205,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.015263087188456814,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_027",
+   "name": "Fackel",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    42
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.8080314983661433,
+   "spitzeQuer": 0.7869648633255023,
+   "deckungMin": 0.5851602023608768,
+   "griffMitte": 0.22745162155848275,
+   "dickeVerhaeltnis": 0.8900505111573522,
+   "dG": 3.4315911021058443,
+   "maxDicke": 11.709267934166398,
+   "alphaMin": 255,
+   "mundMin": 94,
+   "winkelAbw": 2.2204460492503126e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.8080314983661433,
+    "fall": "rechts/schuss/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.29841110208328614,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_028",
+   "name": "Kaktusbombe",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    69,
+    69
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5468496437642566,
+   "spitzeQuer": 0.4037443621968821,
+   "deckungMin": 1,
+   "griffMitte": 0.3788519908340942,
+   "dickeVerhaeltnis": 2.5738688148474456,
+   "dG": 16.182959414550538,
+   "maxDicke": 16.86868245063667,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 4.996003610813205e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5468496437642566,
+    "fall": "rechts/ruhe-still/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.02165285813278206,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_029",
+   "name": "Pömpel",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    42
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5892885149941142,
+   "spitzeQuer": 2.009204751514532,
+   "deckungMin": 0.8263069139966274,
+   "griffMitte": 0.40200464452969636,
+   "dickeVerhaeltnis": 1.0569169319997083,
+   "dG": 5.547715215021223,
+   "maxDicke": 18.977554600557735,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5892885149941142,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.0362775019371564,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_030",
+   "name": "Impulsbombe",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5357277559672013,
+   "spitzeQuer": 6.4180653938924825,
+   "deckungMin": 1,
+   "griffMitte": 0.35758030069416574,
+   "dickeVerhaeltnis": 1.30568313785183,
+   "dG": 29.425984337471572,
+   "maxDicke": 30.09051880833999,
+   "alphaMin": 255,
+   "mundMin": 1,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5357277559672013,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.07720615827079014,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_031",
+   "name": "Kraftfaust",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    62,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6081315809327089,
+   "spitzeQuer": 3.441683484256084,
+   "deckungMin": 0.8650927487352446,
+   "griffMitte": 0.2645527216822761,
+   "dickeVerhaeltnis": 1.2341506941581444,
+   "dG": 30.704152309481064,
+   "maxDicke": 31.67047311668888,
+   "alphaMin": 255,
+   "mundMin": 203,
+   "winkelAbw": 2.775557561562891e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6081315809327089,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.015531727227982683,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_032",
+   "name": "Raketenrucksack",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    59,
+    59
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.2436939682496894,
+   "spitzeQuer": 3.7815215763528456,
+   "deckungMin": 1,
+   "griffMitte": 0.8831236752400441,
+   "dickeVerhaeltnis": 1.3775269443308442,
+   "dG": 24.41301304975735,
+   "maxDicke": 27.28039068704094,
+   "alphaMin": 255,
+   "mundMin": 94,
+   "winkelAbw": 2.4980018054066017e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.2436939682496894,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.036459846868096696,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_033",
+   "name": "Zauberstab",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    42
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.16830659340168333,
+   "spitzeQuer": 0.5722207539873322,
+   "deckungMin": 0.5295109612141653,
+   "griffMitte": 0.18730432957180287,
+   "dickeVerhaeltnis": 0.8729599052589055,
+   "dG": 2.8674336501093776,
+   "maxDicke": 10.769214740916425,
+   "alphaMin": 255,
+   "mundMin": 238,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0.0006064281382656155,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.16830659340168333,
+    "fall": "rechts/ruhe-still/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.13107944931658436,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_034",
+   "name": "Zauberbolzen",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    60,
+    60
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6232353396327225,
+   "spitzeQuer": 0.49512977801450003,
+   "deckungMin": 0.821247892074199,
+   "griffMitte": 0.345759540734831,
+   "dickeVerhaeltnis": 1,
+   "dG": 5.497458412035378,
+   "maxDicke": 9.689508023498332,
+   "alphaMin": 255,
+   "mundMin": 138,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6232353396327225,
+    "fall": "rechts/ruhe-still/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.37455935197596346,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_035",
+   "name": "Energieball",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    61,
+    61
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5405144882412619,
+   "spitzeQuer": 0.49080755723739716,
+   "deckungMin": 1,
+   "griffMitte": 0.3702746306487654,
+   "dickeVerhaeltnis": 2.0355518411900753,
+   "dG": 25.944149613051948,
+   "maxDicke": 29.962871535576596,
+   "alphaMin": 255,
+   "mundMin": 220,
+   "winkelAbw": 4.0245584642661915e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5405144882412619,
+    "fall": "rechts/ruhe-still/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.0667800936106071,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_036",
+   "name": "Raketenhandschuh",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    59,
+    59
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.27166333982269936,
+   "spitzeQuer": 2.3959264625940935,
+   "deckungMin": 0.9881956155143339,
+   "griffMitte": 0.7913887126818752,
+   "dickeVerhaeltnis": 1.7419634367516335,
+   "dG": 15.919378999139758,
+   "maxDicke": 17.206877368092602,
+   "alphaMin": 255,
+   "mundMin": 49,
+   "winkelAbw": 2.4980018054066017e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.27166333982269936,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.08123153436543282,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_037",
+   "name": "Raketenwerfer",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    10,
+    34
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.25039758129209133,
+   "spitzeQuer": 1.4026526357914004,
+   "deckungMin": 0.7166947723440135,
+   "griffMitte": 1.315955251316517,
+   "dickeVerhaeltnis": 1.1033242280817837,
+   "dG": 8.230550887529594,
+   "maxDicke": 17.678758436268954,
+   "alphaMin": 255,
+   "mundMin": 246,
+   "winkelAbw": 1.6653345369377348e-16,
+   "spiegelAbw": 0.0009306654257794323,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.25039758129209133,
+    "fall": "rechts/ruhe/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.07549795116996827,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_038",
+   "name": "Rakete",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    68,
+    68
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5463168899606904,
+   "spitzeQuer": 0.6489638928265394,
+   "deckungMin": 1,
+   "griffMitte": 0.13323223725326847,
+   "dickeVerhaeltnis": 2.3087883214493017,
+   "dG": 21.302038178287557,
+   "maxDicke": 21.302038178287557,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 3.469446951953613e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5463168899606904,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.018162158411931806,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_039",
+   "name": "Feldmörser",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    32,
+    56
+   ],
+   "fest": true,
+   "orb": false,
+   "spitzeAbw": 1.6569183709293303,
+   "spitzeQuer": 15.875557015408654,
+   "deckungMin": 0.7268128161888702,
+   "griffMitte": 14.2694142300345,
+   "dickeVerhaeltnis": 1.8279208780418637,
+   "dG": 30.147678583941133,
+   "maxDicke": 32.49786306699394,
+   "alphaMin": 255,
+   "mundMin": 255,
+   "winkelAbw": 2.359223927328457e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 1.6569183709293303,
+    "fall": "rechts/ruhe/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.019270773491158133,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_040",
+   "name": "Maschinenpistole",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    8,
+    32
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6492175877165968,
+   "spitzeQuer": 8.148331319146044,
+   "deckungMin": 0.5463743676222597,
+   "griffMitte": 4.292834460205923,
+   "dickeVerhaeltnis": 1.4989105235291489,
+   "dG": 13.702871346771637,
+   "maxDicke": 22.06152289840502,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 2.0816681711721685e-16,
+   "spiegelAbw": 0.0003792188092529389,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6492175877165968,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.011600624939122395,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_041",
+   "name": "Salvengeber",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    8,
+    23
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6066092786153708,
+   "spitzeQuer": 1.711882000280011,
+   "deckungMin": 0.5834738617200674,
+   "griffMitte": 3.4158160492813896,
+   "dickeVerhaeltnis": 1.4926444710915854,
+   "dG": 15.39084575526573,
+   "maxDicke": 18.713518109607794,
+   "alphaMin": 217,
+   "mundMin": 254,
+   "winkelAbw": 1.1102230246251565e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6066092786153708,
+    "fall": "rechts/ruhe/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.08542384144548976,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_042",
+   "name": "Feuerwerkssalve",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.19569224864665813,
+   "spitzeQuer": 8.383711234178262,
+   "deckungMin": 0.9881956155143339,
+   "griffMitte": 1.156617023773297,
+   "dickeVerhaeltnis": 1.3451952143759305,
+   "dG": 25.771044747695303,
+   "maxDicke": 39.554114730671195,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 3.33066907387547e-16,
+   "spiegelAbw": 0.00015255530129672007,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.19569224864665813,
+    "fall": "rechts/ruhe/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.1295039810366575,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_043",
+   "name": "Kampfgeschütz",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    62,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5512398510434598,
+   "spitzeQuer": 10.130517354313234,
+   "deckungMin": 1,
+   "griffMitte": 0.3851614155685941,
+   "dickeVerhaeltnis": 1.9698084738915478,
+   "dG": 41.325150694582554,
+   "maxDicke": 41.325150694582554,
+   "alphaMin": 255,
+   "mundMin": 244,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0.00012087513598452798,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5512398510434598,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.02488451497271693,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_044",
+   "name": "Phönixschlag",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    66,
+    66
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.20342413727114206,
+   "spitzeQuer": 18.689205528786754,
+   "deckungMin": 1,
+   "griffMitte": 0.4823487835356808,
+   "dickeVerhaeltnis": 1.9023035039236957,
+   "dG": 38.79989927080493,
+   "maxDicke": 39.56710121319279,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.20342413727114206,
+    "fall": "rechts/ruhe-still/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.013315196669874269,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_045",
+   "name": "Raketensalve",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    68,
+    68
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6734215076593225,
+   "spitzeQuer": 6.46295923619807,
+   "deckungMin": 0.9898819561551433,
+   "griffMitte": 0.20458275301098894,
+   "dickeVerhaeltnis": 1.9540413705524815,
+   "dG": 30.899385285432135,
+   "maxDicke": 36.16774519542812,
+   "alphaMin": 255,
+   "mundMin": 105,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0.00046175157765122367,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6734215076593225,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.12719295208876535,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_046",
+   "name": "Splittergranate",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6684921023537953,
+   "spitzeQuer": 1.7108761095354101,
+   "deckungMin": 1,
+   "griffMitte": 0.1952924109218633,
+   "dickeVerhaeltnis": 1.1294906575479589,
+   "dG": 41.10861404031491,
+   "maxDicke": 41.44088127574912,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 4.3021142204224806e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6684921023537953,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.14700862160428396,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_047",
+   "name": "Handgranate",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    61,
+    61
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4041933678416001,
+   "spitzeQuer": 7.241775405703495,
+   "deckungMin": 1,
+   "griffMitte": 0.23692806645278353,
+   "dickeVerhaeltnis": 1.2920114051821525,
+   "dG": 40.80985663019251,
+   "maxDicke": 40.90348589243593,
+   "alphaMin": 255,
+   "mundMin": 20,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4041933678416001,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.05719627175918918,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_048",
+   "name": "Bananengranate",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    57,
+    57
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.36173211502385055,
+   "spitzeQuer": 4.1496970477161375,
+   "deckungMin": 1,
+   "griffMitte": 0.498402222267013,
+   "dickeVerhaeltnis": 1.056423393117349,
+   "dG": 13.601320212462312,
+   "maxDicke": 17.180707681856845,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.36173211502385055,
+    "fall": "rechts/ruhe-still/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.08414528086273099,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_049",
+   "name": "Bumerang",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5375589691397215,
+   "spitzeQuer": 8.28101051955172,
+   "deckungMin": 0.9966273187183811,
+   "griffMitte": 0.3760893696236014,
+   "dickeVerhaeltnis": 1.160705436517169,
+   "dG": 8.543675125145386,
+   "maxDicke": 8.543675125145386,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 3.885780586188047e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5375589691397215,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.005949282248089993,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_050",
+   "name": "Doppelkopfaxt",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    30,
+    54
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 1.9032373530369473,
+   "spitzeQuer": 7.431701398969601,
+   "deckungMin": 0.7487352445193929,
+   "griffMitte": 2.691328831116835,
+   "dickeVerhaeltnis": 1.0375205149674067,
+   "dG": 11.81899034029479,
+   "maxDicke": 27.738576075106124,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 1.9032373530369473,
+    "fall": "rechts/ruhe/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.006096224552787133,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_051",
+   "name": "Wurfklingen",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    30,
+    51
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.18152692494577138,
+   "spitzeQuer": 0.8648072444082876,
+   "deckungMin": 0.9730185497470489,
+   "griffMitte": 1.7776204599968255,
+   "dickeVerhaeltnis": 0.9536074810312561,
+   "dG": 9.75767322121453,
+   "maxDicke": 18.30491216468368,
+   "alphaMin": 255,
+   "mundMin": 214,
+   "winkelAbw": 3.608224830031758e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.18152692494577138,
+    "fall": "rechts/schuss/a-0.35/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.15814754216416607,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_052",
+   "name": "Molotowcocktail",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    56,
+    56
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.25656634884254004,
+   "spitzeQuer": 1.2425367195901025,
+   "deckungMin": 0.9527824620573356,
+   "griffMitte": 0.7156443135135641,
+   "dickeVerhaeltnis": 0.9583352324833603,
+   "dG": 10.005500246424981,
+   "maxDicke": 14.700171297363065,
+   "alphaMin": 255,
+   "mundMin": 124,
+   "winkelAbw": 3.33066907387547e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.25656634884254004,
+    "fall": "rechts/schuss/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.2305698074549549,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_053",
+   "name": "Roboterbombe",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5479854118925284,
+   "spitzeQuer": 4.707446204712598,
+   "deckungMin": 1,
+   "griffMitte": 0.3455877202114384,
+   "dickeVerhaeltnis": 1.0363615977186866,
+   "dG": 33.94437417125615,
+   "maxDicke": 39.6418853790415,
+   "alphaMin": 255,
+   "mundMin": 192,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5479854118925284,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.024491242703950422,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_054",
+   "name": "Schrotflinte",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    46,
+    70
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6398667144789224,
+   "spitzeQuer": 3.245396075177338,
+   "deckungMin": 0.6020236087689713,
+   "griffMitte": 4.501867031944992,
+   "dickeVerhaeltnis": 1.2773814750427832,
+   "dG": 9.999895481342834,
+   "maxDicke": 16.41467089838807,
+   "alphaMin": 230,
+   "mundMin": 253,
+   "winkelAbw": 2.359223927328457e-16,
+   "spiegelAbw": 0.0010395010395010396,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6398667144789224,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.037180632903466515,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_055",
+   "name": "Fernbüchse",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    27,
+    50
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5775610761183666,
+   "spitzeQuer": 11.127934624670862,
+   "deckungMin": 0.2765598650927487,
+   "griffMitte": 5.0239645093819805,
+   "dickeVerhaeltnis": 1.472307878426741,
+   "dG": 10.53671981999196,
+   "maxDicke": 20.40149251810188,
+   "alphaMin": 231,
+   "mundMin": 253,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0.0002587991718426501,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5775610761183666,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.1127634306043972,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_056",
+   "name": "Präzisionsgewehr",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    40,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.37977104734736145,
+   "spitzeQuer": 3.109730047912725,
+   "deckungMin": 0.49072512647554806,
+   "griffMitte": 3.4158160492813905,
+   "dickeVerhaeltnis": 1.484212582330494,
+   "dG": 7.91886200058165,
+   "maxDicke": 16.414670898388074,
+   "alphaMin": 225,
+   "mundMin": 225,
+   "winkelAbw": 2.220446049250313e-16,
+   "spiegelAbw": 0.000587026709715292,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.37977104734736145,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.15315961913135537,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_057",
+   "name": "Revolver",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    18,
+    42
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5852083743483547,
+   "spitzeQuer": 4.2565569819406335,
+   "deckungMin": 0.7487352445193929,
+   "griffMitte": 3.004453068732628,
+   "dickeVerhaeltnis": 1.0663255293015623,
+   "dG": 10.685827996540723,
+   "maxDicke": 18.52265482805061,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 1.249000902703301e-16,
+   "spiegelAbw": 0.00044159858688452196,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5852083743483547,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.03677544874464622,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_058",
+   "name": "Kampfbogen",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    43,
+    67
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.20215360629913212,
+   "spitzeQuer": 3.1258275041084906,
+   "deckungMin": 0.5649241146711635,
+   "griffMitte": 0.41075671277571796,
+   "dickeVerhaeltnis": 2.287150476826175,
+   "dG": 13.038336875903221,
+   "maxDicke": 16.669619222077348,
+   "alphaMin": 203,
+   "mundMin": 215,
+   "winkelAbw": 3.33066907387547e-16,
+   "spiegelAbw": 0.00027616680475006904,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.20215360629913212,
+    "fall": "rechts/ruhe/a0.52/s1"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.08761349333949603,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_059",
+   "name": "Armbrust",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    14,
+    38
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4284081580886223,
+   "spitzeQuer": 7.508140805920725,
+   "deckungMin": 0.403035413153457,
+   "griffMitte": 3.8807440146096237,
+   "dickeVerhaeltnis": 0.7957900219547982,
+   "dG": 7.004250175441393,
+   "maxDicke": 28.63396173771507,
+   "alphaMin": 169,
+   "mundMin": 169,
+   "winkelAbw": 2.220446049250313e-16,
+   "spiegelAbw": 0.0002190100744634253,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4284081580886223,
+    "fall": "rechts/ruhe/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.3402733419651914,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_060",
+   "name": "Gatlingkanone",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    6,
+    30
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5667112302852834,
+   "spitzeQuer": 2.9559234523485975,
+   "deckungMin": 0.6020236087689713,
+   "griffMitte": 0.7907093724852269,
+   "dickeVerhaeltnis": 2.402963043653415,
+   "dG": 31.780496782010868,
+   "maxDicke": 32.57930574266291,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 1.665334536937735e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5667112302852834,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.009901297650273477,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_061",
+   "name": "Feuerdämon",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    56,
+    56
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4156194674035187,
+   "spitzeQuer": 0.7845960721189916,
+   "deckungMin": 1,
+   "griffMitte": 2.340651475371048,
+   "dickeVerhaeltnis": 1.46660565338177,
+   "dG": 30.450323302563344,
+   "maxDicke": 30.450323302563344,
+   "alphaMin": 255,
+   "mundMin": 209,
+   "winkelAbw": 3.1918911957973246e-16,
+   "spiegelAbw": 0.00019451468585878233,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4156194674035187,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.006935333911655517,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_062",
+   "name": "Flammenwerfer",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    26,
+    50
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.7882696622958463,
+   "spitzeQuer": 4.5008707366536855,
+   "deckungMin": 0.9173693086003373,
+   "griffMitte": 3.1947006770112747,
+   "dickeVerhaeltnis": 1.7010996393422342,
+   "dG": 18.048983638739383,
+   "maxDicke": 25.73360458044675,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 2.220446049250313e-16,
+   "spiegelAbw": 0.0004906771344455348,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.7882696622958463,
+    "fall": "rechts/ruhe-still/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.08958838202708164,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_063",
+   "name": "Wasserwerfer",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    43,
+    67
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.629084696645729,
+   "spitzeQuer": 4.824256631538449,
+   "deckungMin": 0.8853288364249579,
+   "griffMitte": 5.8672315620342514,
+   "dickeVerhaeltnis": 1.2750130851398005,
+   "dG": 18.87958048313187,
+   "maxDicke": 27.577788273105813,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 4.996003610813205e-16,
+   "spiegelAbw": 0.0008673026886383347,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.629084696645729,
+    "fall": "rechts/ruhe-still/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.0009077167260292951,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_064",
+   "name": "Katapult",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.25552907506155503,
+   "spitzeQuer": 8.219948965344718,
+   "deckungMin": 1,
+   "griffMitte": 0.3591952563345018,
+   "dickeVerhaeltnis": 1.1574466405305361,
+   "dG": 31.143671680607735,
+   "maxDicke": 31.77849321683408,
+   "alphaMin": 255,
+   "mundMin": 96,
+   "winkelAbw": 4.857225732735059e-16,
+   "spiegelAbw": 0.00018463810930576072,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.25552907506155503,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.061995791748827855,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_065",
+   "name": "Meteorbrocken",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5715368867393664,
+   "spitzeQuer": 1.1756749027263342,
+   "deckungMin": 1,
+   "griffMitte": 0.5895530783359936,
+   "dickeVerhaeltnis": 1.2129913484163903,
+   "dG": 32.64712665718167,
+   "maxDicke": 32.64712665718167,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 3.885780586188047e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5715368867393664,
+    "fall": "rechts/schuss/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.0786989192558063,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_066",
+   "name": "Haubitze",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    15,
+    39
+   ],
+   "fest": true,
+   "orb": false,
+   "spitzeAbw": 4.1887331335583395,
+   "spitzeQuer": 21.967240197191163,
+   "deckungMin": 0.22259696458684655,
+   "griffMitte": 4.569844888733406,
+   "dickeVerhaeltnis": 1.5623765655014374,
+   "dG": 34.69487821881509,
+   "maxDicke": 37.53454141504311,
+   "alphaMin": 167,
+   "mundMin": 255,
+   "winkelAbw": 3.885780586188048e-16,
+   "spiegelAbw": 0.0003968253968253968,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 4.1887331335583395,
+    "fall": "rechts/ruhe-still/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.05222900947807041,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_067",
+   "name": "Säurekanone",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    38,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5872895475012522,
+   "spitzeQuer": 11.662377469253848,
+   "deckungMin": 1,
+   "griffMitte": 6.798160579855407,
+   "dickeVerhaeltnis": 1.2938192225552982,
+   "dG": 26.076673751806453,
+   "maxDicke": 28.364617814666133,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 2.220446049250313e-16,
+   "spiegelAbw": 0.0005659309564233164,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5872895475012522,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.016551585371948452,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_068",
+   "name": "Plasmagewehr",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    16,
+    40
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.21296222764041062,
+   "spitzeQuer": 6.655277397062697,
+   "deckungMin": 0.866779089376054,
+   "griffMitte": 2.5782780379338663,
+   "dickeVerhaeltnis": 1.2272173731958747,
+   "dG": 17.489476954132716,
+   "maxDicke": 24.99928136551128,
+   "alphaMin": 255,
+   "mundMin": 208,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0.00046468401486988845,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.21296222764041062,
+    "fall": "rechts/ruhe/a-0.35/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.1648096287726721,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_069",
+   "name": "Raketenkanone",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    26,
+    50
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.19478934421225583,
+   "spitzeQuer": 3.235288798675114,
+   "deckungMin": 0.9831365935919055,
+   "griffMitte": 0.5377113935095004,
+   "dickeVerhaeltnis": 1.3905355737453327,
+   "dG": 10.29477330631753,
+   "maxDicke": 26.436503420757862,
+   "alphaMin": 255,
+   "mundMin": 224,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0.00027218290691344586,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.19478934421225583,
+    "fall": "rechts/ruhe-still/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.16417815054293503,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_070",
+   "name": "Giftwolke",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6018555200027246,
+   "spitzeQuer": 10.921372372045582,
+   "deckungMin": 1,
+   "griffMitte": 0.3365891411780133,
+   "dickeVerhaeltnis": 1.0224085538219594,
+   "dG": 32.99319206887366,
+   "maxDicke": 33.006729249430535,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 3.885780586188047e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6018555200027246,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.058909640424387066,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_071",
+   "name": "Eisschlag",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    67,
+    67
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.49718023598895417,
+   "spitzeQuer": 9.508150875535744,
+   "deckungMin": 1,
+   "griffMitte": 0.42001517587338216,
+   "dickeVerhaeltnis": 1.7084520280741857,
+   "dG": 27.84081726710878,
+   "maxDicke": 29.10670119426069,
+   "alphaMin": 255,
+   "mundMin": 175,
+   "winkelAbw": 7.216449660063518e-16,
+   "spiegelAbw": 0.0006242197253433209,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.49718023598895417,
+    "fall": "rechts/ruhe/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.1614522899826738,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_072",
+   "name": "Feuerball",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.07851206152368917,
+   "spitzeQuer": 6.038081012985199,
+   "deckungMin": 1,
+   "griffMitte": 0.25290637523401455,
+   "dickeVerhaeltnis": 1.0269482588935794,
+   "dG": 28.61425541621718,
+   "maxDicke": 29.850874026660374,
+   "alphaMin": 255,
+   "mundMin": 37,
+   "winkelAbw": 4.440892098500625e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.07851206152368917,
+    "fall": "rechts/ruhe-still/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.054372075395748246,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_073",
+   "name": "Tentakelgift",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5608689895651698,
+   "spitzeQuer": 1.8112317606903166,
+   "deckungMin": 1,
+   "griffMitte": 0.8995474683896786,
+   "dickeVerhaeltnis": 1.071181479182889,
+   "dG": 27.57758009244293,
+   "maxDicke": 28.900208953070443,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5608689895651698,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.007322227425304639,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_074",
+   "name": "Verderbnissiegel",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4844763963241074,
+   "spitzeQuer": 6.460297819008594,
+   "deckungMin": 1,
+   "griffMitte": 0.3851614155685941,
+   "dickeVerhaeltnis": 1.2822522006115937,
+   "dG": 27.78398224207591,
+   "maxDicke": 28.944391124357608,
+   "alphaMin": 255,
+   "mundMin": 251,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0.0005846813486649776,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4844763963241074,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.012830692635703633,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_075",
+   "name": "Tornado",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    65,
+    65
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5565774683619509,
+   "spitzeQuer": 6.540296108320729,
+   "deckungMin": 1,
+   "griffMitte": 0.38516141556859534,
+   "dickeVerhaeltnis": 1.2599940482549814,
+   "dG": 32.89242998027871,
+   "maxDicke": 32.89242998027871,
+   "alphaMin": 255,
+   "mundMin": 1,
+   "winkelAbw": 5.273559366969493e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5565774683619509,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.02137179414515733,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_076",
+   "name": "Portalring",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.19679611034947442,
+   "spitzeQuer": 8.653681896846829,
+   "deckungMin": 1,
+   "griffMitte": 0.27707446183270434,
+   "dickeVerhaeltnis": 1.0825536285484678,
+   "dG": 32.248972056319694,
+   "maxDicke": 32.80382279516687,
+   "alphaMin": 255,
+   "mundMin": 154,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.19679611034947442,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.021484674567278234,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_077",
+   "name": "Schwarzes Loch",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5937508974081614,
+   "spitzeQuer": 1.833623769731167,
+   "deckungMin": 1,
+   "griffMitte": 0.2274516215584844,
+   "dickeVerhaeltnis": 1.471299952901628,
+   "dG": 32.66800395128246,
+   "maxDicke": 32.66800395128246,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 3.885780586188047e-16,
+   "spiegelAbw": 0.0003439972480220158,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5937508974081614,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.05648490858701127,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_078",
+   "name": "Voodoopuppe",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    65,
+    65
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.43302662875198433,
+   "spitzeQuer": 2.303522401070348,
+   "deckungMin": 1,
+   "griffMitte": 2.1170816076606465,
+   "dickeVerhaeltnis": 3.1285710148820383,
+   "dG": 28.284119708076748,
+   "maxDicke": 30.76067357167463,
+   "alphaMin": 255,
+   "mundMin": 81,
+   "winkelAbw": 5.689893001203926e-16,
+   "spiegelAbw": 0.00026198585276395077,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.43302662875198433,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.15669782544235128,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_079",
+   "name": "Kosmisches Portal",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.44710865165198754,
+   "spitzeQuer": 1.9991432291294597,
+   "deckungMin": 1,
+   "griffMitte": 0.36020610196808295,
+   "dickeVerhaeltnis": 1.1816626292687886,
+   "dG": 36.811447389421744,
+   "maxDicke": 36.811447389421744,
+   "alphaMin": 255,
+   "mundMin": 253,
+   "winkelAbw": 4.0245584642661915e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.44710865165198754,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.01071988800714796,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_080",
+   "name": "Psionischer Tentakel",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    67,
+    67
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5522419318004902,
+   "spitzeQuer": 8.642325019052537,
+   "deckungMin": 1,
+   "griffMitte": 0.4983994840356066,
+   "dickeVerhaeltnis": 1.7491487290763679,
+   "dG": 27.84081726710878,
+   "maxDicke": 29.286258098533978,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 7.216449660063518e-16,
+   "spiegelAbw": 0.0003872966692486445,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5522419318004902,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.03497010328486094,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_081",
+   "name": "Siegel der Leere",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3996642221112315,
+   "spitzeQuer": 4.123219505810801,
+   "deckungMin": 1,
+   "griffMitte": 0.33244020337506797,
+   "dickeVerhaeltnis": 1.197918752880856,
+   "dG": 28.991118969656117,
+   "maxDicke": 29.154738950655656,
+   "alphaMin": 255,
+   "mundMin": 253,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3996642221112315,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.014226475194119403,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_082",
+   "name": "Goldener Münzstab",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    26,
+    50
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5985774963492597,
+   "spitzeQuer": 9.923022598894407,
+   "deckungMin": 0.7588532883642496,
+   "griffMitte": 4.8359468693579215,
+   "dickeVerhaeltnis": 1.0157219139165856,
+   "dG": 33.92891847244393,
+   "maxDicke": 34.24259455896291,
+   "alphaMin": 253,
+   "mundMin": 254,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5985774963492597,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.05575544528144771,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_083",
+   "name": "Goldene Hand",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    65,
+    65
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4380504717154518,
+   "spitzeQuer": 1.661097176659629,
+   "deckungMin": 1,
+   "griffMitte": 0.44512575962089684,
+   "dickeVerhaeltnis": 1.2988485348625538,
+   "dG": 33.37465786823926,
+   "maxDicke": 33.428180250569035,
+   "alphaMin": 255,
+   "mundMin": 251,
+   "winkelAbw": 4.440892098500625e-16,
+   "spiegelAbw": 0.00018625442354255913,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4380504717154518,
+    "fall": "rechts/ruhe/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.01186865816658933,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_084",
+   "name": "Glutelixier",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    65,
+    65
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5637629922884031,
+   "spitzeQuer": 6.757533970566598,
+   "deckungMin": 1,
+   "griffMitte": 0.8513070657946938,
+   "dickeVerhaeltnis": 3.4848309237521216,
+   "dG": 37.595246781738744,
+   "maxDicke": 39.11237365865811,
+   "alphaMin": 255,
+   "mundMin": 160,
+   "winkelAbw": 6.106226635438362e-16,
+   "spiegelAbw": 0.0006089206880803775,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5637629922884031,
+    "fall": "rechts/ruhe-still/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.026503637796729596,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_085",
+   "name": "Feuermagier",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    62,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.40959643415011254,
+   "spitzeQuer": 1.309545183324974,
+   "deckungMin": 1,
+   "griffMitte": 2.8804935865516157,
+   "dickeVerhaeltnis": 2.2086348036923455,
+   "dG": 35.46034946847527,
+   "maxDicke": 36.12448113680238,
+   "alphaMin": 255,
+   "mundMin": 244,
+   "winkelAbw": 4.857225732735059e-16,
+   "spiegelAbw": 0.0010822510822510823,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.40959643415011254,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.03147788459543599,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_086",
+   "name": "Windkrieger",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4051475619064699,
+   "spitzeQuer": 8.390766472175349,
+   "deckungMin": 1,
+   "griffMitte": 0.2907929755227568,
+   "dickeVerhaeltnis": 1.2579560550659188,
+   "dG": 30.50859907550992,
+   "maxDicke": 30.785729377612267,
+   "alphaMin": 255,
+   "mundMin": 3,
+   "winkelAbw": 4.996003610813204e-16,
+   "spiegelAbw": 0.00048721071863581,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4051475619064699,
+    "fall": "rechts/ruhe/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.0005564407147952699,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_087",
+   "name": "Dimensionssprung",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    65,
+    65
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5553779633132407,
+   "spitzeQuer": 14.426545777292304,
+   "deckungMin": 1,
+   "griffMitte": 0.4219170699869383,
+   "dickeVerhaeltnis": 1.209449567304767,
+   "dG": 31.54115401011956,
+   "maxDicke": 31.813688090598845,
+   "alphaMin": 255,
+   "mundMin": 242,
+   "winkelAbw": 4.996003610813204e-16,
+   "spiegelAbw": 0.0004829362524146813,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5553779633132407,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.028470527451618488,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_088",
+   "name": "Dimensionsriss",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.44706534150055194,
+   "spitzeQuer": 1.727460099886068,
+   "deckungMin": 1,
+   "griffMitte": 0.396259189837199,
+   "dickeVerhaeltnis": 1.3846628068760356,
+   "dG": 35.944971997050835,
+   "maxDicke": 38.33472085357182,
+   "alphaMin": 255,
+   "mundMin": 252,
+   "winkelAbw": 5.551115123125783e-16,
+   "spiegelAbw": 0.0001381788033715628,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.44706534150055194,
+    "fall": "rechts/ruhe/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.004750173858556639,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_089",
+   "name": "Zauberstiefel",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    66,
+    66
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.7717995978328531,
+   "spitzeQuer": 14.059734054290894,
+   "deckungMin": 1,
+   "griffMitte": 0.21165820616856953,
+   "dickeVerhaeltnis": 1.20862271186852,
+   "dG": 34.706519641956085,
+   "maxDicke": 35.77781018456272,
+   "alphaMin": 255,
+   "mundMin": 56,
+   "winkelAbw": 4.440892098500625e-16,
+   "spiegelAbw": 0.00031655587211142766,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.7717995978328531,
+    "fall": "rechts/ruhe/a0.52/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.8512799907366035,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_090",
+   "name": "Giftpilz",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.18633534276528962,
+   "spitzeQuer": 2.0739447594847227,
+   "deckungMin": 1,
+   "griffMitte": 0.42289742116025647,
+   "dickeVerhaeltnis": 1.3820173788351093,
+   "dG": 33.49950237713902,
+   "maxDicke": 33.92891847244394,
+   "alphaMin": 255,
+   "mundMin": 207,
+   "winkelAbw": 5.551115123125783e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.18633534276528962,
+    "fall": "rechts/ziehen/a0.52/s1"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.17623553984317225,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_091",
+   "name": "Astralkugel",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3222356017301801,
+   "spitzeQuer": 5.133616425462734,
+   "deckungMin": 1,
+   "griffMitte": 0.20334496084488643,
+   "dickeVerhaeltnis": 1.2649151655079243,
+   "dG": 33.327664759504366,
+   "maxDicke": 33.78512965923363,
+   "alphaMin": 255,
+   "mundMin": 238,
+   "winkelAbw": 5.551115123125783e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3222356017301801,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.019202618396513993,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_092",
+   "name": "Heilzauber",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    66,
+    66
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5582695788297798,
+   "spitzeQuer": 7.824582297685592,
+   "deckungMin": 1,
+   "griffMitte": 0.5809791075704176,
+   "dickeVerhaeltnis": 1.1045418461981755,
+   "dG": 31.445963538385183,
+   "maxDicke": 32.64733956043918,
+   "alphaMin": 255,
+   "mundMin": 136,
+   "winkelAbw": 4.996003610813205e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5582695788297798,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.011604695863482561,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_093",
+   "name": "Funkenschild",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5535776836580718,
+   "spitzeQuer": 2.3289997794282056,
+   "deckungMin": 1,
+   "griffMitte": 0.4372747116862487,
+   "dickeVerhaeltnis": 1.162350826138086,
+   "dG": 31.114452396889238,
+   "maxDicke": 32.99325814835065,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0.0003190810465858328,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5535776836580718,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.011651841107984229,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_094",
+   "name": "Heilspritze",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    23,
+    47
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.6980516683024831,
+   "spitzeQuer": 0.6691458557358606,
+   "deckungMin": 0.9409780775716695,
+   "griffMitte": 0.5854538297870159,
+   "dickeVerhaeltnis": 1.9009418987549669,
+   "dG": 10.413636730745813,
+   "maxDicke": 14.335635802455243,
+   "alphaMin": 255,
+   "mundMin": 124,
+   "winkelAbw": 2.775557561562891e-16,
+   "spiegelAbw": 0.0008240626287597857,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.6980516683024831,
+    "fall": "rechts/ruhe-still/a0.08/s1"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.20891232260477932,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_095",
+   "name": "Sturmelixier",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    54,
+    54
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5287535895594075,
+   "spitzeQuer": 0.6310736837794563,
+   "deckungMin": 0.9865092748735245,
+   "griffMitte": 0.6718006705716034,
+   "dickeVerhaeltnis": 1.8548529420622317,
+   "dG": 23.750921590371362,
+   "maxDicke": 23.750921590371362,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5287535895594075,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.030309507260241286,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_096",
+   "name": "Mutationselixier",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    57,
+    57
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5288005103168771,
+   "spitzeQuer": 1.01606294801961,
+   "deckungMin": 1,
+   "griffMitte": 0.611989753265347,
+   "dickeVerhaeltnis": 1.1379671407151764,
+   "dG": 20.616711621943736,
+   "maxDicke": 21.75852658539007,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 3.33066907387547e-16,
+   "spiegelAbw": 0.00022747952684258417,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5288005103168771,
+    "fall": "rechts/ruhe-still/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.006928484899578313,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_097",
+   "name": "Traumfänger",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    65,
+    65
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5635048855892867,
+   "spitzeQuer": 5.510199274851814,
+   "deckungMin": 1,
+   "griffMitte": 0.2589253542033478,
+   "dickeVerhaeltnis": 1.1688788622835768,
+   "dG": 15.549194107016353,
+   "maxDicke": 19.893556934222,
+   "alphaMin": 255,
+   "mundMin": 167,
+   "winkelAbw": 4.857225732735059e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5635048855892867,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.0000211845421849155,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_098",
+   "name": "Lavaelixier",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    59,
+    59
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5853116140981504,
+   "spitzeQuer": 1.814905788565067,
+   "deckungMin": 1,
+   "griffMitte": 0.387860595145933,
+   "dickeVerhaeltnis": 1.288811537349473,
+   "dG": 19.564438279647835,
+   "maxDicke": 20.616672153309985,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0.0005238344683080147,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5853116140981504,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.005191123655196361,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_099",
+   "name": "Frostsanduhr",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.36384087336655097,
+   "spitzeQuer": 1.796060726323579,
+   "deckungMin": 0.9173693086003373,
+   "griffMitte": 0.6112566391065956,
+   "dickeVerhaeltnis": 1.1379671407151764,
+   "dG": 21.37479966030283,
+   "maxDicke": 26.391008212781248,
+   "alphaMin": 255,
+   "mundMin": 181,
+   "winkelAbw": 5.551115123125783e-16,
+   "spiegelAbw": 0.00039936102236421724,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.36384087336655097,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.018695894236348487,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_100",
+   "name": "Blitzwürfel",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    62,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.559852542541004,
+   "spitzeQuer": 1.3428597129909707,
+   "deckungMin": 1,
+   "griffMitte": 0.3542554501379935,
+   "dickeVerhaeltnis": 1.5342996319181514,
+   "dG": 36.61951957463602,
+   "maxDicke": 36.61951957463602,
+   "alphaMin": 255,
+   "mundMin": 134,
+   "winkelAbw": 4.440892098500625e-16,
+   "spiegelAbw": 0.00016189088554314392,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.559852542541004,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.14668322968610514,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_101",
+   "name": "Eisschild",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.49073565468735936,
+   "spitzeQuer": 13.892268237003153,
+   "deckungMin": 1,
+   "griffMitte": 0.15320246975518023,
+   "dickeVerhaeltnis": 1.2239532817110998,
+   "dG": 34.88389752634088,
+   "maxDicke": 34.88389752634088,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 3.885780586188047e-16,
+   "spiegelAbw": 0.0005403458213256485,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.49073565468735936,
+    "fall": "rechts/ruhe-still/a0.52/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.3340993031946724,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_102",
+   "name": "Gedankensturm",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    66,
+    66
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3427447980789348,
+   "spitzeQuer": 1.6623397067521364,
+   "deckungMin": 1,
+   "griffMitte": 0.2610194056830994,
+   "dickeVerhaeltnis": 1.3726092290664536,
+   "dG": 31.729747387215294,
+   "maxDicke": 33.49950237713902,
+   "alphaMin": 255,
+   "mundMin": 236,
+   "winkelAbw": 6.661338147750939e-16,
+   "spiegelAbw": 0.0004365858982754857,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3427447980789348,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.0006211360416718548,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_103",
+   "name": "Verderbniskelch",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.16180841768044138,
+   "spitzeQuer": 11.10392366830068,
+   "deckungMin": 1,
+   "griffMitte": 0.35890683587296596,
+   "dickeVerhaeltnis": 1.183438980305288,
+   "dG": 28.697274050926392,
+   "maxDicke": 30.231468773407585,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 4.996003610813205e-16,
+   "spiegelAbw": 0.0004816955684007707,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.16180841768044138,
+    "fall": "rechts/ruhe/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.12916383403631645,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_104",
+   "name": "Quantengewehr",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    23,
+    47
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.22668676800428975,
+   "spitzeQuer": 2.744878357855711,
+   "deckungMin": 0.5480607082630692,
+   "griffMitte": 5.518235716141611,
+   "dickeVerhaeltnis": 1.0912413648895254,
+   "dG": 17.03537847066413,
+   "maxDicke": 20.637049715323595,
+   "alphaMin": 212,
+   "mundMin": 194,
+   "winkelAbw": 2.9143354396410354e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.22668676800428975,
+    "fall": "rechts/ruhe/a0.08/s1"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.047389212365102185,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_105",
+   "name": "Frostrolle",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5512950549526963,
+   "spitzeQuer": 8.028641773120077,
+   "deckungMin": 1,
+   "griffMitte": 0.42289742116025647,
+   "dickeVerhaeltnis": 1.4120428283127193,
+   "dG": 29.786189060235035,
+   "maxDicke": 30.11825489439859,
+   "alphaMin": 255,
+   "mundMin": 1,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0.0004130524576621231,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5512950549526963,
+    "fall": "rechts/ruhe-still/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.01240580637562283,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_106",
+   "name": "Sonnenamulett",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.42015631955102134,
+   "spitzeQuer": 3.606475289524216,
+   "deckungMin": 1,
+   "griffMitte": 1.3607956788360542,
+   "dickeVerhaeltnis": 1.5495970862345205,
+   "dG": 31.525219317419538,
+   "maxDicke": 31.525219317419538,
+   "alphaMin": 255,
+   "mundMin": 139,
+   "winkelAbw": 5.412337245047637e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.42015631955102134,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.016439503287720425,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_107",
+   "name": "Allsehendes Auge",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.40493544306922286,
+   "spitzeQuer": 14.057605921177887,
+   "deckungMin": 1,
+   "griffMitte": 0.832671019246412,
+   "dickeVerhaeltnis": 1.0598584701519165,
+   "dG": 32.248972056319694,
+   "maxDicke": 32.55068406634313,
+   "alphaMin": 255,
+   "mundMin": 253,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.40493544306922286,
+    "fall": "rechts/ruhe-still/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.013188851915045985,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_108",
+   "name": "Zauberpeitsche",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    38,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 1.3389203845870365,
+   "spitzeQuer": 12.01384454640847,
+   "deckungMin": 1,
+   "griffMitte": 2.925744990077584,
+   "dickeVerhaeltnis": 1.1846692892165447,
+   "dG": 28.411646768831773,
+   "maxDicke": 35.59312768766106,
+   "alphaMin": 255,
+   "mundMin": 253,
+   "winkelAbw": 6.661338147750939e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 1.3389203845870365,
+    "fall": "rechts/ruhe-still/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.02413845861842856,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_109",
+   "name": "Giftbaum",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.2810069390467002,
+   "spitzeQuer": 7.752870232629994,
+   "deckungMin": 0.7841483979763912,
+   "griffMitte": 0.49573449878272885,
+   "dickeVerhaeltnis": 1.192971617396537,
+   "dG": 33.944069752138155,
+   "maxDicke": 35.51584645454066,
+   "alphaMin": 255,
+   "mundMin": 110,
+   "winkelAbw": 5.134781488891348e-16,
+   "spiegelAbw": 0.000419903422212891,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.2810069390467002,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.013336067131383356,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_110",
+   "name": "Dimensionskugel",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.42922436339622533,
+   "spitzeQuer": 7.7143091839994495,
+   "deckungMin": 1,
+   "griffMitte": 0.6863212843015442,
+   "dickeVerhaeltnis": 1.3458344120391919,
+   "dG": 35.97040251647445,
+   "maxDicke": 35.97040251647445,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 6.661338147750939e-16,
+   "spiegelAbw": 0.00038662284941040013,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.42922436339622533,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.10040028838957271,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_111",
+   "name": "Enterhaken",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    68,
+    68
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5510312649947195,
+   "spitzeQuer": 0.8803280859245058,
+   "deckungMin": 0.9915682967959528,
+   "griffMitte": 0.28918768572268644,
+   "dickeVerhaeltnis": 1.6942753848983987,
+   "dG": 27.764752827793853,
+   "maxDicke": 30.61223021958955,
+   "alphaMin": 255,
+   "mundMin": 255,
+   "winkelAbw": 4.996003610813204e-16,
+   "spiegelAbw": 0.00022114108801415304,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5510312649947195,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.031649297611962335,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_112",
+   "name": "Düsenrucksack",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5381159828427021,
+   "spitzeQuer": 2.9660292515286653,
+   "deckungMin": 1,
+   "griffMitte": 0.7461319856181502,
+   "dickeVerhaeltnis": 1.6372590380706993,
+   "dG": 29.138238268100974,
+   "maxDicke": 31.143493624349123,
+   "alphaMin": 255,
+   "mundMin": 209,
+   "winkelAbw": 5.551115123125783e-16,
+   "spiegelAbw": 0.0002452182442373713,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5381159828427021,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.0018252855308248384,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_113",
+   "name": "Bohrkanone",
+   "form": "objekt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    20,
+    44
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.21687424185700385,
+   "spitzeQuer": 3.9354831652881668,
+   "deckungMin": 1,
+   "griffMitte": 2.555836387501634,
+   "dickeVerhaeltnis": 1.1805026277211712,
+   "dG": 15.090469906031743,
+   "maxDicke": 21.953870766146924,
+   "alphaMin": 255,
+   "mundMin": 241,
+   "winkelAbw": 2.775557561562892e-16,
+   "spiegelAbw": 0.0002897710808461316,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.21687424185700385,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.08583686089078338,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_114",
+   "name": "Gleitschirm",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    66,
+    66
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5264607377759573,
+   "spitzeQuer": 1.0776386398607958,
+   "deckungMin": 0.6037099494097807,
+   "griffMitte": 0.9412061301598053,
+   "dickeVerhaeltnis": 1.3035277095733881,
+   "dG": 27.61842947229736,
+   "maxDicke": 29.218844533794528,
+   "alphaMin": 254,
+   "mundMin": 254,
+   "winkelAbw": 7.216449660063518e-16,
+   "spiegelAbw": 0.0006596306068601583,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5264607377759573,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.0037036681568349827,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_115",
+   "name": "Wächterstatue",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5024226820481476,
+   "spitzeQuer": 11.142848821383714,
+   "deckungMin": 0.9747048903878583,
+   "griffMitte": 2.5309645148275344,
+   "dickeVerhaeltnis": 1.8895448379527437,
+   "dG": 29.561557718293056,
+   "maxDicke": 31.504685964288743,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 5.134781488891348e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5024226820481476,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.02678294976164408,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_116",
+   "name": "Blutritual",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.33767968827907663,
+   "spitzeQuer": 8.285805529758534,
+   "deckungMin": 1,
+   "griffMitte": 0.7690072226870033,
+   "dickeVerhaeltnis": 1.279829274881457,
+   "dG": 26.41958731833262,
+   "maxDicke": 28.36271556432831,
+   "alphaMin": 255,
+   "mundMin": 82,
+   "winkelAbw": 4.857225732735059e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.33767968827907663,
+    "fall": "rechts/ruhe/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.10464982454792848,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_117",
+   "name": "Ananasbombe",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    58,
+    58
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.35278661144299645,
+   "spitzeQuer": 3.0424241793953968,
+   "deckungMin": 1,
+   "griffMitte": 0.7287040898402269,
+   "dickeVerhaeltnis": 1.2266631559747716,
+   "dG": 18.408827016294676,
+   "maxDicke": 18.678257775190154,
+   "alphaMin": 255,
+   "mundMin": 30,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.35278661144299645,
+    "fall": "rechts/ruhe-still/a0.52/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.35257392645920715,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_118",
+   "name": "Feuerwesen",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": true,
+   "spitzeAbw": 0,
+   "spitzeQuer": 0,
+   "deckungMin": 0,
+   "griffMitte": 0,
+   "dickeVerhaeltnis": 0,
+   "dG": 0,
+   "maxDicke": 18.87018558997588,
+   "alphaMin": 0,
+   "mundMin": 255,
+   "winkelAbw": 0,
+   "spiegelAbw": 0.00554016620498615,
+   "faelle": 36,
+   "schlecht": null,
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -20.82012305343951,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_119",
+   "name": "Munitionskiste",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    67,
+    67
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5160076992906539,
+   "spitzeQuer": 7.08833576176158,
+   "deckungMin": 1,
+   "griffMitte": 0.29575712705518126,
+   "dickeVerhaeltnis": 1.3111483502970043,
+   "dG": 29.425081998611603,
+   "maxDicke": 30.470669842160643,
+   "alphaMin": 255,
+   "mundMin": 159,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5160076992906539,
+    "fall": "rechts/ruhe/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.1502958615467198,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_120",
+   "name": "Energiefaust",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    71,
+    71
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5163387793284878,
+   "spitzeQuer": 4.720830222098498,
+   "deckungMin": 0.5497470489038786,
+   "griffMitte": 0.6954952185939156,
+   "dickeVerhaeltnis": 1.65489922357267,
+   "dG": 27.163873410363575,
+   "maxDicke": 29.561557718293056,
+   "alphaMin": 239,
+   "mundMin": 206,
+   "winkelAbw": 4.57966997657877e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5163387793284878,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.01966702946901655,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_121",
+   "name": "Raketenfaust",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    53,
+    53
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.524379811278512,
+   "spitzeQuer": 1.7318605274808074,
+   "deckungMin": 1,
+   "griffMitte": 0.82862849529547,
+   "dickeVerhaeltnis": 1.879291032576181,
+   "dG": 17.288187372935543,
+   "maxDicke": 19.893680801168447,
+   "alphaMin": 255,
+   "mundMin": 175,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0.00035587188612099647,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.524379811278512,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.1390383881457221,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_122",
+   "name": "Endlosschleife",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5402256537323353,
+   "spitzeQuer": 7.2341353779343835,
+   "deckungMin": 1,
+   "griffMitte": 0.824137510049041,
+   "dickeVerhaeltnis": 0.9603467920255034,
+   "dG": 22.39361702625729,
+   "maxDicke": 29.561557718293056,
+   "alphaMin": 255,
+   "mundMin": 223,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5402256537323353,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.0675500670749084,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_123",
+   "name": "Magnetkanone",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    62,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5356353307128217,
+   "spitzeQuer": 2.7354712156491225,
+   "deckungMin": 0.5025295109612141,
+   "griffMitte": 0.5824087515897874,
+   "dickeVerhaeltnis": 1.7477587921598496,
+   "dG": 30.74227241585358,
+   "maxDicke": 30.785086016280317,
+   "alphaMin": 211,
+   "mundMin": 229,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0.0004526935264825713,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5356353307128217,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.044773383921690946,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_124",
+   "name": "Wachgeschütz",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    59,
+    59
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5359337652246362,
+   "spitzeQuer": 1.7750480787278142,
+   "deckungMin": 1,
+   "griffMitte": 0.3851515931155494,
+   "dickeVerhaeltnis": 1.4607976819403221,
+   "dG": 32.248972056319694,
+   "maxDicke": 32.248972056319694,
+   "alphaMin": 255,
+   "mundMin": 136,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5359337652246362,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.05838211702887286,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_125",
+   "name": "Nachschubkiste",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3712840900893042,
+   "spitzeQuer": 4.240846439760943,
+   "deckungMin": 1,
+   "griffMitte": 0.5543684967399365,
+   "dickeVerhaeltnis": 1.1879147866781705,
+   "dG": 33.80002029765752,
+   "maxDicke": 34.132086131821076,
+   "alphaMin": 255,
+   "mundMin": 3,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3712840900893042,
+    "fall": "rechts/ruhe-still/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.09650220410859922,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_126",
+   "name": "Bunker",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5473060161592235,
+   "spitzeQuer": 6.989700011326195,
+   "deckungMin": 1,
+   "griffMitte": 0.3448484602687725,
+   "dickeVerhaeltnis": 1.3119454342051708,
+   "dG": 31.813688090598834,
+   "maxDicke": 31.813688090598834,
+   "alphaMin": 255,
+   "mundMin": 1,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5473060161592235,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.1132761152323653,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_127",
+   "name": "Teleportplattform",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4490546862381066,
+   "spitzeQuer": 6.566825491605641,
+   "deckungMin": 1,
+   "griffMitte": 0.1932237783298234,
+   "dickeVerhaeltnis": 1.5755478820218471,
+   "dG": 31.95924202622254,
+   "maxDicke": 33.106847401870546,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4490546862381066,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.028991153728509744,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_128",
+   "name": "Hologrammportal",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5636973723063031,
+   "spitzeQuer": 5.211397797167135,
+   "deckungMin": 1,
+   "griffMitte": 0.34484846026877314,
+   "dickeVerhaeltnis": 2.0490900237680627,
+   "dG": 31.813688090598834,
+   "maxDicke": 31.813688090598834,
+   "alphaMin": 255,
+   "mundMin": 38,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5636973723063031,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.03657661684601321,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_129",
+   "name": "Tesla-Turm",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3947940941668489,
+   "spitzeQuer": 12.131102676139342,
+   "deckungMin": 0.9763912310286678,
+   "griffMitte": 0.37208815150475755,
+   "dickeVerhaeltnis": 1.8794619538364914,
+   "dG": 31.751854985511017,
+   "maxDicke": 31.751854985511017,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 6.938893903907228e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3947940941668489,
+    "fall": "rechts/ruhe-still/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.027010402139506784,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_130",
+   "name": "Tarnnetz",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5118231343778277,
+   "spitzeQuer": 1.4593221262646476,
+   "deckungMin": 1,
+   "griffMitte": 0.27707446183270434,
+   "dickeVerhaeltnis": 1.6494475325383848,
+   "dG": 29.271827688195895,
+   "maxDicke": 29.561557718293056,
+   "alphaMin": 255,
+   "mundMin": 236,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5118231343778277,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.02770475032350672,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_131",
+   "name": "Schlauchboot",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    62,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.43187384914693655,
+   "spitzeQuer": 4.177381675039025,
+   "deckungMin": 0.7082630691399663,
+   "griffMitte": 0.623660909726194,
+   "dickeVerhaeltnis": 1.1672269437415665,
+   "dG": 18.870185589975883,
+   "maxDicke": 19.607181565720172,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.43187384914693655,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.12317590937707662,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_132",
+   "name": "Alte Dame",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    65,
+    65
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.21008553652419457,
+   "spitzeQuer": 14.546876102186161,
+   "deckungMin": 1,
+   "griffMitte": 0.5383595692515991,
+   "dickeVerhaeltnis": 1.6340823397714217,
+   "dG": 30.971016421011882,
+   "maxDicke": 30.971016421011882,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 6.38378239159465e-16,
+   "spiegelAbw": 0.0003158559696778269,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.21008553652419457,
+    "fall": "rechts/ruhe-still/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.11035191035634759,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_133",
+   "name": "Fliegendes Superschaf",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    62,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.38226821272232314,
+   "spitzeQuer": 6.332689030369544,
+   "deckungMin": 1,
+   "griffMitte": 1.5147802197804932,
+   "dickeVerhaeltnis": 1.0750543433980662,
+   "dG": 23.935050440250052,
+   "maxDicke": 29.10516555904954,
+   "alphaMin": 255,
+   "mundMin": 1,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.38226821272232314,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.0525115640885796,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_134",
+   "name": "Luftangriff",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.20099696016803983,
+   "spitzeQuer": 3.9371441721987064,
+   "deckungMin": 1,
+   "griffMitte": 0.29838678462150153,
+   "dickeVerhaeltnis": 1.3713736827535048,
+   "dG": 26.76784645399792,
+   "maxDicke": 27.907628589353877,
+   "alphaMin": 255,
+   "mundMin": 8,
+   "winkelAbw": 2.914335439641036e-16,
+   "spiegelAbw": 0.0002617801047120419,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.20099696016803983,
+    "fall": "rechts/ruhe-still/a0.08/s0.85"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.19518095737652413,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_135",
+   "name": "Meteorregen",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    70,
+    70
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.540839507453344,
+   "spitzeQuer": 9.787141648323832,
+   "deckungMin": 1,
+   "griffMitte": 0.29230851933391594,
+   "dickeVerhaeltnis": 1.2790388192035642,
+   "dG": 23.44259159495581,
+   "maxDicke": 26.419282924554526,
+   "alphaMin": 255,
+   "mundMin": 244,
+   "winkelAbw": 6.661338147750939e-16,
+   "spiegelAbw": 0.0005594405594405594,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.540839507453344,
+    "fall": "rechts/ruhe-still/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.06766571399105648,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_136",
+   "name": "Bohrkopfrakete",
+   "form": "objekt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    65,
+    65
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4545862276229163,
+   "spitzeQuer": 2.0852622361591373,
+   "deckungMin": 1,
+   "griffMitte": 0.3567853556159039,
+   "dickeVerhaeltnis": 1.333333333333333,
+   "dG": 18.270986367828023,
+   "maxDicke": 19.893680801168447,
+   "alphaMin": 255,
+   "mundMin": 213,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0.0006457862447529867,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4545862276229163,
+    "fall": "rechts/ruhe/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.11319284104705224,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_137",
+   "name": "Flammenklinge",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    61,
+    61
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3532976811790576,
+   "spitzeQuer": 13.940044066980901,
+   "deckungMin": 1,
+   "griffMitte": 0.1837752497810777,
+   "dickeVerhaeltnis": 1.4598499541362093,
+   "dG": 30.899385285432142,
+   "maxDicke": 30.899385285432142,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 2.775557561562892e-16,
+   "spiegelAbw": 0.00043830813061582295,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3532976811790576,
+    "fall": "rechts/ruhe/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.032914638480477265,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_138",
+   "name": "Arkanhammer",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    67,
+    67
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.17238895412666486,
+   "spitzeQuer": 9.253437397917883,
+   "deckungMin": 0.8684654300168634,
+   "griffMitte": 0.238211814923987,
+   "dickeVerhaeltnis": 1.0576197685730815,
+   "dG": 30.755053279208397,
+   "maxDicke": 30.899385285432135,
+   "alphaMin": 255,
+   "mundMin": 247,
+   "winkelAbw": 3.8857805861880484e-16,
+   "spiegelAbw": 0.0005428881650380022,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.17238895412666486,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.02680662507369505,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_139",
+   "name": "Höllenkanone",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    66,
+    66
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.403855199989349,
+   "spitzeQuer": 6.8093449889734865,
+   "deckungMin": 1,
+   "griffMitte": 0.39373877575392296,
+   "dickeVerhaeltnis": 1.3277006151320878,
+   "dG": 25.229825728561746,
+   "maxDicke": 28.677742052281925,
+   "alphaMin": 255,
+   "mundMin": 161,
+   "winkelAbw": 6.106226635438362e-16,
+   "spiegelAbw": 0.00025484199796126404,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.403855199989349,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.047709955553232875,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_140",
+   "name": "Quantenkanone",
+   "form": "kompakt",
+   "halt": "heft",
+   "quelle": "semantik",
+   "heft": [
+    50,
+    74
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4430795735696644,
+   "spitzeQuer": 3.2323439563242196,
+   "deckungMin": 1,
+   "griffMitte": 2.379145741569856,
+   "dickeVerhaeltnis": 1.2836685399052032,
+   "dG": 30.74227241585358,
+   "maxDicke": 30.74227241585358,
+   "alphaMin": 255,
+   "mundMin": 244,
+   "winkelAbw": 3.885780586188048e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4430795735696644,
+    "fall": "rechts/ziehen/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.048712211829476826,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_141",
+   "name": "Astralkrieger",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4805143650140451,
+   "spitzeQuer": 1.6076453234100108,
+   "deckungMin": 1,
+   "griffMitte": 0.3346875731659947,
+   "dickeVerhaeltnis": 1.1226290068816729,
+   "dG": 39.142114871734215,
+   "maxDicke": 39.142114871734215,
+   "alphaMin": 255,
+   "mundMin": 253,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4805143650140451,
+    "fall": "rechts/ruhe-still/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.012119606394791538,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_142",
+   "name": "Leerenritter",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    59,
+    59
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4762154643730412,
+   "spitzeQuer": 10.040924753567733,
+   "deckungMin": 1,
+   "griffMitte": 0.38214217821600255,
+   "dickeVerhaeltnis": 3.746680330523678,
+   "dG": 53.259317522568296,
+   "maxDicke": 55.4937098602451,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 3.1918911957973246e-16,
+   "spiegelAbw": 0.0001551590380139643,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4762154643730412,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.007629653250472712,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_143",
+   "name": "Astralross",
+   "form": "kompakt",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.3901753495182068,
+   "spitzeQuer": 11.784924273004757,
+   "deckungMin": 1,
+   "griffMitte": 0.7325611909779077,
+   "dickeVerhaeltnis": 1.0703420131150012,
+   "dG": 41.055501162430566,
+   "maxDicke": 41.15281697819392,
+   "alphaMin": 255,
+   "mundMin": 134,
+   "winkelAbw": 2.914335439641036e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.3901753495182068,
+    "fall": "rechts/ruhe-still/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.08091680914252875,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_144",
+   "name": "Kosmische Wassermelone",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    66,
+    66
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.37226682597819877,
+   "spitzeQuer": 6.193593188537686,
+   "deckungMin": 1,
+   "griffMitte": 0.17009391859345988,
+   "dickeVerhaeltnis": 1.0550456522592977,
+   "dG": 30.58626104781634,
+   "maxDicke": 32.11076045226829,
+   "alphaMin": 255,
+   "mundMin": 201,
+   "winkelAbw": 4.440892098500626e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.37226682597819877,
+    "fall": "rechts/ruhe-still/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.06577929428819257,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_145",
+   "name": "Erdspalter",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5824203025659381,
+   "spitzeQuer": 1.266116380647291,
+   "deckungMin": 1,
+   "griffMitte": 0.41499769359434185,
+   "dickeVerhaeltnis": 2.7916129873791946,
+   "dG": 51.317074171401224,
+   "maxDicke": 55.76239223408089,
+   "alphaMin": 255,
+   "mundMin": 184,
+   "winkelAbw": 3.33066907387547e-16,
+   "spiegelAbw": 0.0004776689754000478,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5824203025659381,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.1776857751132302,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_146",
+   "name": "Giftige Weltenflasche",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    61,
+    61
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.29384241475356987,
+   "spitzeQuer": 7.702447541794283,
+   "deckungMin": 1,
+   "griffMitte": 0.3387503254800244,
+   "dickeVerhaeltnis": 4.162383336788013,
+   "dG": 52.03625547494428,
+   "maxDicke": 55.60674672797311,
+   "alphaMin": 255,
+   "mundMin": 0,
+   "winkelAbw": 3.33066907387547e-16,
+   "spiegelAbw": 0.0004846526655896607,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.29384241475356987,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.10559026948443773,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_147",
+   "name": "Weltendrache",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.4746784526482344,
+   "spitzeQuer": 4.51076145260619,
+   "deckungMin": 1,
+   "griffMitte": 0.19772924653665078,
+   "dickeVerhaeltnis": 3.136570963462393,
+   "dG": 51.317074171401224,
+   "maxDicke": 55.76239223408089,
+   "alphaMin": 255,
+   "mundMin": 7,
+   "winkelAbw": 3.33066907387547e-16,
+   "spiegelAbw": 0.00047498416719442683,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.4746784526482344,
+    "fall": "rechts/ruhe/a-0.35/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.21991396628993798,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_148",
+   "name": "Feuerschild",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    63,
+    63
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.5964500743314787,
+   "spitzeQuer": 10.208882720012978,
+   "deckungMin": 1,
+   "griffMitte": 0.35150386865144395,
+   "dickeVerhaeltnis": 2.350908413863483,
+   "dG": 49.170864950378274,
+   "maxDicke": 51.134857949393705,
+   "alphaMin": 255,
+   "mundMin": 254,
+   "winkelAbw": 3.33066907387547e-16,
+   "spiegelAbw": 0.0002613468072131719,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.5964500743314787,
+    "fall": "rechts/ruhe/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.08940195931552031,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_149",
+   "name": "Goldene Reliktkugel",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    62,
+    62
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.2499638966573509,
+   "spitzeQuer": 2.170212152452114,
+   "deckungMin": 1,
+   "griffMitte": 0.36104354247066084,
+   "dickeVerhaeltnis": 1.5793258418725826,
+   "dG": 39.21436313144034,
+   "maxDicke": 39.21436313144034,
+   "alphaMin": 255,
+   "mundMin": 73,
+   "winkelAbw": 2.7755575615628914e-16,
+   "spiegelAbw": 0,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.2499638966573509,
+    "fall": "rechts/ziehen/a0.52/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": 0.05665575960214206,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  },
+  {
+   "id": "pa_150",
+   "name": "Kosmischer Kern",
+   "form": "kachel",
+   "halt": "koerper",
+   "quelle": "semantik",
+   "heft": [
+    64,
+    64
+   ],
+   "fest": false,
+   "orb": false,
+   "spitzeAbw": 0.613293116761722,
+   "spitzeQuer": 8.547967622595758,
+   "deckungMin": 1,
+   "griffMitte": 0.5048839431971276,
+   "dickeVerhaeltnis": 5.076908338515352,
+   "dG": 55.43559998884242,
+   "maxDicke": 55.76239223408089,
+   "alphaMin": 255,
+   "mundMin": 253,
+   "winkelAbw": 3.3306690738754696e-16,
+   "spiegelAbw": 0.00024380333197887038,
+   "faelle": 36,
+   "schlecht": {
+    "feld": "Spitze",
+    "wert": 0.613293116761722,
+    "fall": "rechts/ziehen/a0.08/s1.35"
+   },
+   "gripAusserhalbHeft": false,
+   "groesseSpruenge": -0.04704041828349026,
+   "grenzen": {
+    "spitze": 2.5,
+    "winkel": 0.02,
+    "spiegel": 0.02,
+    "groesse": 0.6
+   },
+   "verletzt": []
+  }
+ ]
+}

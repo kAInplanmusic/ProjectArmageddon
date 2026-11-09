@@ -69,6 +69,8 @@
     "snapshot": "bash scripts/betrieb/snapshot.sh",
     "icons": "python3 scripts/create-weapon-icons.py",
     "waffen:sprites": "python3 scripts/waffen-sprites.py",
+    "waffen:anker": "python3 scripts/waffen-sprites.py --nur-anker",
+    "waffen:anker:abnahme": "node tools/waffen-anker-abnahme.mjs",
     "weapons:build": "node scripts/build-weapon-catalog.mjs",
     "checks:schnell": "node scripts/checks.mjs --schnell",
     "audit:liste": "node tools/audit-mcp/server.mjs --liste",

@@ -20,9 +20,13 @@ Schritte je Waffe
      nach links, wird gespiegelt statt um 180 Grad gedreht (oben bleibt oben).
   4. Varianten: held 128x128 (groesste Kante ~90 %), icon 128x128 (unrotiert),
      silhouette (weiss), projectile 32x32 (nur Waffen mit physischem Geschoss), flashColor.
-  5. Anker grip/muzzle aus der Geometrie (Standardwerte bei kompakten Formen).
+  5. Anker grip/muzzle aus `scripts/waffen-anker-tabelle.json` (BAL-08): Griff am
+     gesetzten Heftpunkt (oder Schwerpunkt bei Waffen ohne gefuehrtes Heft),
+     Muendung am tatsaechlichen Ende (+x) auf der Achsenhoehe des Griffs.
+     Keine Schaetzung aus Umriss oder Randabstand.
 
-Handkorrekturen: scripts/waffen-sprites-korrekturen.json (je Waffen-ID).
+Handkorrekturen: scripts/waffen-sprites-korrekturen.json (je Waffen-ID, Freistellen/
+Drehen/Kachel). Griff und Muendung stehen nicht mehr dort, sondern in der Ankertabelle.
 
 Aufruf
   python3 scripts/waffen-sprites.py                      # alles erzeugen
@@ -42,11 +46,15 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from scipy import ndimage as ndi
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import waffen_anker
+
 WURZEL = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 QUELLE = os.path.join(WURZEL, "assets", "weapons", "source")
 ICONS64 = os.path.join(WURZEL, "assets", "weapons", "icons")
 ZIEL = os.path.join(WURZEL, "src", "client", "assets", "weapon-sprites")
 KORREKTUREN = os.path.join(WURZEL, "scripts", "waffen-sprites-korrekturen.json")
+ANKERTABELLE = waffen_anker.lade_tabelle()
 
 ZELLE = 128          # held / silhouette / icon
 FUELLUNG = 0.90      # groesste Kante / Zelle
@@ -364,72 +372,6 @@ def in_zelle(bild, groesse, fuellung=FUELLUNG):
     return zelle, skala, (ox, oy)
 
 
-def _mitte_y(a, x, breite=3):
-    """Mitte der Maske in der Spalte x (+-breite); liegt sie nicht in der Maske, der naechste Maskenpunkt."""
-    band = a[:, max(x - breite, 0):x + breite + 1]
-    zeilen = np.nonzero(band.any(axis=1))[0]
-    if len(zeilen) == 0:
-        ys, _ = np.nonzero(a)
-        return float(ys.mean())
-    mitte = (zeilen.min() + zeilen.max()) / 2.0
-    if not band[int(round(mitte))].any():
-        mitte = float(zeilen[np.abs(zeilen - mitte).argmin()])
-    return float(mitte)
-
-
-def _schwerpunkt(a, x_von, x_bis):
-    ys, xs = np.nonzero(a[:, x_von:x_bis + 1])
-    if len(xs) == 0:
-        ys, xs = np.nonzero(a)
-        return float(xs.mean()), float(ys.mean())
-    return float(xs.mean() + x_von), float(ys.mean())
-
-
-def anker(zelle, kat, kompakt, art="auto"):
-    """Griff- und Muendungsanker der held-Zelle (Spitze zeigt nach rechts).
-
-    Griff = Schwerpunkt des hinteren Drittels des Objekts (Nahkampf, Gewehre, Stab: Schaft/Kolben),
-    liegt auf der Hauptachse (Spaltenmitte).  Muendung = Spitze entlang der Hauptachse (rechter Rand).
-    Eigene Regeln je `art`: bogen (Griff am Mittelstueck), stab (Griff im unteren Drittel),
-    schild (Griff in der Mitte), wurf (Schwerpunkt: Granaten, Baelle, Wesen), geraet (hinteres
-    Drittel auch bei kompakten Bildern: Werfer, Kanonen).  Standard: Objekte = hinteres Drittel,
-    kompakte Bilder und Kacheln = Schwerpunkt.  Gibt (grip, muzzle, quelle) zurueck."""
-    a = np.asarray(zelle)[..., 3] > 100
-    ys, xs = np.nonzero(a)
-    x0, x1, y0, y1 = int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max())
-    laenge = x1 - x0 + 1
-    if art == "auto":
-        art = "wurf" if kompakt else "schaft"
-    cx, cy = _schwerpunkt(a, x0, x1)
-    mx_y = _mitte_y(a, x1, 4) if not kompakt else (y0 + y1) / 2.0
-    muendung = {"x": x1, "y": int(round(mx_y))}
-    if art in ("wurf", "schild", "wesen"):
-        gx = int(round(cx))
-        gy = int(round(cy)) if kompakt else int(round(_mitte_y(a, gx)))
-    elif art == "bogen":
-        gx = int(round(cx))
-        gy = int(round(_mitte_y(a, gx)))
-    elif art == "stab":
-        gx = int(round(x0 + 0.34 * laenge))
-        gy = int(round(_mitte_y(a, gx)))
-    else:   # schaft, geraet
-        hinten = int(x0 + 0.34 * laenge)
-        gxf, gyf = _schwerpunkt(a, x0, hinten)
-        gx = int(round(gxf))
-        gy = int(round(gyf if kompakt or art == "geraet" else _mitte_y(a, gx)))
-    if not a[min(max(gy, 0), a.shape[0] - 1), min(max(gx, 0), a.shape[1] - 1)]:
-        zeilen = np.nonzero(a[:, gx])[0]
-        if len(zeilen):
-            gy = int(zeilen[np.abs(zeilen - gy).argmin()])
-        else:
-            gx, gy = int(round(cx)), int(round(cy))
-    # Die Spitze liegt auf der Waagerechten durch den Griff (die Waffe zeigt ohne Neigung auf den Zielstrahl);
-    # sonst am naechsten Maskenpunkt der Spitzenspalten.
-    zeilen = np.nonzero(a[:, max(x1 - 3, 0):x1 + 1].any(axis=1))[0]
-    muendung = {"x": x1, "y": int(zeilen[np.abs(zeilen - gy).argmin()])}
-    return {"x": gx, "y": gy}, muendung, "geometrie"
-
-
 def flash_farbe(zelle):
     arr = np.asarray(zelle).astype(np.float32)
     m = arr[..., 3] > 200
@@ -671,6 +613,9 @@ def kontaktboegen(daten, ziel, praefix, groesse=128, spalten=6):
 def verarbeite(w, korr, ctx):
     wid = w["id"]
     k = korr.get(wid, {})
+    eintrag = ANKERTABELLE.get(wid)
+    if eintrag is None:
+        raise SystemExit(f"{wid}: kein Eintrag in scripts/waffen-anker-tabelle.json")
     img, quelle = lade_quelle(w["icon"])
     maske, _ = freistellen(img, k.get("rect"), k.get("schwelle", SCHWELLE), k.get("ringAbstand", 0))
     bild = rgba_aus(img, maske)                      # ganze Kachel / Waffe (Icon-Atlas)
@@ -688,14 +633,13 @@ def verarbeite(w, korr, ctx):
             held_quelle = rgba_aus(img, mm)
             k_aus = dict(k, keineDrehung=True)
         kachel_info = {"modus": modus, "grund": kk.get("grund", "")}
+    if eintrag.get("spiegeln"):
+        # Das Wirkende kam aus dem Quellbild nach links; `ausrichten` spiegelt nach der Drehung.
+        k_aus = dict(k_aus, umkehren=not k_aus.get("umkehren"))
     ausricht, info = ausrichten(held_quelle, k_aus)
     held, skala, off = in_zelle(ausricht, ZELLE)
     icon, _, _ = in_zelle(bild, ZELLE)
-    gr, mu, ank_quelle = anker(held, w["category"], info["kompakt"], k.get("art", "auto"))
-    if "grip" in k:
-        gr, ank_quelle = {"x": k["grip"][0], "y": k["grip"][1]}, "korrektur"
-    if "muzzle" in k:
-        mu, ank_quelle = {"x": k["muzzle"][0], "y": k["muzzle"][1]}, "korrektur"
+    anker = waffen_anker.anker_aus_tabelle(held, wid, eintrag)
     a = np.asarray(held)[..., 3] > 100
     ys, xs = np.nonzero(a)
     inhalt = {"x": int(xs.min()), "y": int(ys.min()), "w": int(xs.max() - xs.min() + 1), "h": int(ys.max() - ys.min() + 1)}
@@ -710,7 +654,7 @@ def verarbeite(w, korr, ctx):
         "quelle": {"datei": quelle, "aufloesung": int(img.shape[0])},
         "rotation": info["drehung"], "gespiegelt": info["gespiegelt"],
         "streckung": info["streckung"], "content": inhalt,
-        "anchor": {"grip": gr, "muzzle": mu, "source": ank_quelle},
+        "anchor": anker,
         "projectile": pmeta, "flashColor": flash, "korrektur": bool(k),
     }
     if kachel_info:
@@ -726,15 +670,50 @@ def ist_kachel(maske):
     return bool(fuell > 0.82 and 0.8 < bw / bh < 1.25 and max(bw, bh) > 0.5 * maske.shape[0])
 
 
+def anker_neu_setzen(ziel):
+    """Setzt nur die Anker im vorhandenen Manifest neu (aus den vorhandenen Zellen).
+
+    Schneller Weg fuer Aenderungen an `scripts/waffen-anker-tabelle.json`: die Atlanten
+    bleiben unangetastet, die Anker werden aus den gezeichneten Zellen neu gesetzt. Der
+    vollstaendige Lauf (`python3 scripts/waffen-sprites.py`) erzeugt dieselben Anker und
+    ist der kanonische Weg; dieser Modus ist die Probe nach einer Tabellenaenderung.
+    """
+    pfad = os.path.join(ziel, "manifest.json")
+    with open(pfad, encoding="utf-8") as f:
+        manifest = json.load(f)
+    bilder = {}
+    for name, a in manifest["atlanten"].items():
+        bilder[name] = Image.open(os.path.join(ziel, a["datei"])).convert("RGBA")
+    geaendert = 0
+    for wid, m in manifest["waffen"].items():
+        eintrag = ANKERTABELLE[wid]
+        e = m["held"]
+        zelle = bilder[e["atlas"]].crop((e["x"], e["y"], e["x"] + e["w"], e["y"] + e["h"]))
+        neu = waffen_anker.anker_aus_tabelle(zelle, wid, eintrag)
+        if neu != m["anchor"]:
+            geaendert += 1
+        m["anchor"] = neu
+    with open(pfad, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=1)
+        f.write("\n")
+    print(f"Anker neu gesetzt: {len(manifest['waffen'])} Waffen, {geaendert} geaendert -> {pfad}", file=sys.stderr)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--kontaktbogen", metavar="DIR", help="Kontaktboegen (hell+dunkel) hierhin schreiben")
     ap.add_argument("--nur", help="Komma-Liste Waffen-IDs (nur Debug/Kontaktbogen, schreibt keine Atlanten)")
     ap.add_argument("--ziel", default=ZIEL, help="Zielordner der Atlanten")
+    ap.add_argument("--nur-anker", action="store_true",
+                    help="nur die Anker im vorhandenen Manifest neu setzen (keine Atlanten schreiben)")
     args = ap.parse_args()
 
     katalog = lade_katalog()
     korr = lade_korrekturen()
+    waffen_anker.pruefe_tabelle(ANKERTABELLE, [w["id"] for w in katalog])
+    if args.nur_anker:
+        anker_neu_setzen(args.ziel)
+        return
     nur = set(args.nur.split(",")) if args.nur else None
     erg = []
     for w in katalog:
@@ -757,6 +736,10 @@ def main():
         "generator": "scripts/waffen-sprites.py",
         "facing": "right",
         "hinweis": "Zellen {x,y,w,h} in Atlas-Pixeln; Anker in Zellen-Pixeln der held-Zelle (0,0 = links oben). "
+                   "anchor.grip/muzzle sind gesetzt (scripts/waffen-anker-tabelle.json, Quelle 'semantik'): "
+                   "halt 'heft' = eigener Heftpunkt, 'koerper' = am Koerper gehalten (Griff = Schwerpunkt); "
+                   "anchor.heft = belegte Heftspanne, anchor.spiegeln = Zelle fuer das Wirkende nach rechts "
+                   "gespiegelt, anchor.fest = Muendung in der Tabelle gesetzt (Rohr erreicht den Zellrand nicht). "
                    "rotation = Grad gegen den Uhrzeigersinn, mit der das Original gedreht wurde (nach optionaler "
                    "Spiegelung, gespiegelt:true). projectile.angle = Drehung (Grad) der Zelle gegenueber der "
                    "Flugrichtung (0 = Spitze rechts).",

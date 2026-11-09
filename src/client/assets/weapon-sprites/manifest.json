@@ -2,7 +2,7 @@
  "version": 1,
  "generator": "scripts/waffen-sprites.py",
  "facing": "right",
- "hinweis": "Zellen {x,y,w,h} in Atlas-Pixeln; Anker in Zellen-Pixeln der held-Zelle (0,0 = links oben). rotation = Grad gegen den Uhrzeigersinn, mit der das Original gedreht wurde (nach optionaler Spiegelung, gespiegelt:true). projectile.angle = Drehung (Grad) der Zelle gegenueber der Flugrichtung (0 = Spitze rechts).",
+ "hinweis": "Zellen {x,y,w,h} in Atlas-Pixeln; Anker in Zellen-Pixeln der held-Zelle (0,0 = links oben). anchor.grip/muzzle sind gesetzt (scripts/waffen-anker-tabelle.json, Quelle 'semantik'): halt 'heft' = eigener Heftpunkt, 'koerper' = am Koerper gehalten (Griff = Schwerpunkt); anchor.heft = belegte Heftspanne, anchor.spiegeln = Zelle fuer das Wirkende nach rechts gespiegelt, anchor.fest = Muendung in der Tabelle gesetzt (Rohr erreicht den Zellrand nicht). rotation = Grad gegen den Uhrzeigersinn, mit der das Original gedreht wurde (nach optionaler Spiegelung, gespiegelt:true). projectile.angle = Drehung (Grad) der Zelle gegenueber der Flugrichtung (0 = Spitze rechts).",
  "zellen": {
   "held": 128,
   "silhouette": 128,
@@ -89,14 +89,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 26,
+     "x": 30,
      "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     42
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -160,14 +167,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 26,
+     "x": 63,
      "y": 64
     },
     "muzzle": {
-     "x": 108,
-     "y": 58
+     "x": 120,
+     "y": 64
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -231,14 +245,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 50,
-     "y": 63
+     "x": 33,
+     "y": 62
     },
     "muzzle": {
-     "x": 119,
-     "y": 60
+     "x": 120,
+     "y": 62
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     27,
+     45
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -302,14 +323,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 70,
-     "y": 55
+     "x": 30,
+     "y": 60
     },
     "muzzle": {
-     "x": 119,
-     "y": 52
+     "x": 120,
+     "y": 60
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     42
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -373,14 +401,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 25,
-     "y": 66
+     "x": 32,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 66
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     20,
+     44
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -444,14 +479,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 25,
-     "y": 64
+     "x": 28,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     16,
+     40
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -515,14 +557,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 25,
-     "y": 50
+     "x": 56,
+     "y": 70
     },
     "muzzle": {
      "x": 120,
-     "y": 50
+     "y": 54
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     44,
+     68
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -586,14 +635,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 25,
-     "y": 61
+     "x": 30,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 61
+     "y": 45
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     42
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -647,7 +703,7 @@
     "aufloesung": 1024
    },
    "rotation": 44.1,
-   "gespiegelt": true,
+   "gespiegelt": false,
    "streckung": 2.33,
    "content": {
     "x": 6,
@@ -657,14 +713,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 65,
-     "y": 58
+     "x": 82,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 59
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     70,
+     94
+    ],
+    "spiegeln": true,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -728,14 +791,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 30,
-     "y": 69
+     "x": 34,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 69
+     "y": 68
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     22,
+     46
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -799,14 +869,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 65,
-     "y": 65
+     "x": 60,
+     "y": 68
     },
     "muzzle": {
      "x": 120,
-     "y": 107
+     "y": 17
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     58,
+     69
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -870,14 +947,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 56
+     "x": 30,
+     "y": 61
     },
     "muzzle": {
      "x": 120,
      "y": 49
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     37
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -941,14 +1025,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 26,
+     "x": 30,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 59
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     42
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1012,14 +1103,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
-     "y": 72
+     "x": 40,
+     "y": 74
     },
     "muzzle": {
      "x": 120,
      "y": 72
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     28,
+     52
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1083,14 +1181,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 24,
+     "x": 32,
      "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 60
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     20,
+     35
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1108,7 +1213,7 @@
     "h": 32
    },
    "flashColor": "#eba356",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "melee",
     "x": 768,
@@ -1154,14 +1259,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 22,
-     "y": 65
+     "x": 34,
+     "y": 63
     },
     "muzzle": {
      "x": 119,
      "y": 65
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     22,
+     38
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1179,7 +1291,7 @@
     "h": 32
    },
    "flashColor": "#57a3eb",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "melee",
     "x": 896,
@@ -1225,14 +1337,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 26,
-     "y": 61
+     "x": 30,
+     "y": 60
     },
     "muzzle": {
      "x": 120,
-     "y": 61
+     "y": 58
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     42
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1296,14 +1415,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
+     "x": 28,
      "y": 64
     },
     "muzzle": {
      "x": 119,
      "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     16,
+     40
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1367,14 +1493,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 25,
-     "y": 68
+     "x": 28,
+     "y": 66
     },
     "muzzle": {
-     "x": 100,
-     "y": 56
+     "x": 120,
+     "y": 81
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     16,
+     40
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1438,14 +1571,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 46,
-     "y": 77
+     "x": 44,
+     "y": 86
     },
     "muzzle": {
      "x": 117,
-     "y": 65
+     "y": 50
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     32,
+     56
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1463,7 +1603,7 @@
     "h": 32
    },
    "flashColor": "#6a82eb",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "melee",
     "x": 384,
@@ -1509,14 +1649,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 28,
-     "y": 62
+     "x": 26,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 56
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     14,
+     37
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1580,14 +1727,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
-     "y": 64
+     "x": 24,
+     "y": 80
     },
     "muzzle": {
      "x": 120,
-     "y": 70
+     "y": 74
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     12,
+     36
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "plasma",
@@ -1651,14 +1805,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 28,
-     "y": 66
+     "x": 59,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 66
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     59,
+     59
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1722,14 +1883,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
+     "x": 56,
      "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     56,
+     56
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1793,14 +1961,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
-     "y": 63
+     "x": 62,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1864,14 +2039,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
-     "y": 61
+     "x": 42,
+     "y": 52
     },
     "muzzle": {
      "x": 117,
-     "y": 56
+     "y": 52
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     30,
+     54
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -1935,14 +2117,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 26,
+     "x": 30,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     42
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -2006,14 +2195,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 25,
-     "y": 63
+     "x": 69,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     69,
+     69
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -2077,14 +2273,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 26,
+     "x": 30,
      "y": 64
     },
     "muzzle": {
      "x": 120,
      "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     42
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -2148,14 +2351,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 60
+     "x": 64,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 53
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -2173,7 +2383,7 @@
     "h": 32
    },
    "flashColor": "#58daeb",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "ranged",
     "x": 0,
@@ -2220,13 +2430,20 @@
    "anchor": {
     "grip": {
      "x": 62,
-     "y": 65
+     "y": 60
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 60
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -2290,14 +2507,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 28,
-     "y": 68
+     "x": 59,
+     "y": 58
     },
     "muzzle": {
      "x": 120,
-     "y": 68
+     "y": 58
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     59,
+     59
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "rakete",
@@ -2361,14 +2585,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 45,
-     "y": 63
+     "x": 30,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     42
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -2432,14 +2663,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 30,
-     "y": 62
+     "x": 60,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     60,
+     60
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -2504,13 +2742,20 @@
    "anchor": {
     "grip": {
      "x": 61,
-     "y": 64
+     "y": 65
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 65
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     61,
+     61
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "plasma",
@@ -2574,14 +2819,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 62
+     "x": 59,
+     "y": 56
     },
     "muzzle": {
      "x": 120,
-     "y": 48
+     "y": 56
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     59,
+     59
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "rakete",
@@ -2599,7 +2851,7 @@
     "h": 32
    },
    "flashColor": "#eba34d",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "ranged",
     "x": 768,
@@ -2645,14 +2897,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 30,
-     "y": 61
+     "x": 22,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 61
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     10,
+     34
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "rakete",
@@ -2670,7 +2929,7 @@
     "h": 32
    },
    "flashColor": "#eb8426",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "ranged",
     "x": 896,
@@ -2716,14 +2975,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 70,
+     "x": 68,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 64
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     68,
+     68
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -2787,14 +3053,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 62,
-     "y": 76
+     "x": 44,
+     "y": 38
     },
     "muzzle": {
-     "x": 104,
-     "y": 24
+     "x": 98,
+     "y": 14
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     32,
+     56
+    ],
+    "spiegeln": false,
+    "fest": true
    },
    "projectile": {
     "art": "granate",
@@ -2812,7 +3085,7 @@
     "h": 32
    },
    "flashColor": "#eb9648",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "ranged",
     "x": 128,
@@ -2858,14 +3131,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 58,
-     "y": 50
+     "x": 20,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 46
+     "y": 48
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     8,
+     32
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "kugel",
@@ -2883,7 +3163,7 @@
     "h": 32
    },
    "flashColor": "#ebab6a",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "ranged",
     "x": 256,
@@ -2929,14 +3209,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 73
+     "x": 20,
+     "y": 68
     },
     "muzzle": {
      "x": 120,
-     "y": 71
+     "y": 68
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     8,
+     23
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "rakete",
@@ -3001,13 +3288,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 65
+     "y": 74
     },
     "muzzle": {
      "x": 120,
-     "y": 53
+     "y": 74
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "rakete",
@@ -3071,14 +3365,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 30,
-     "y": 60
+     "x": 62,
+     "y": 63
     },
     "muzzle": {
      "x": 117,
-     "y": 60
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "granate",
@@ -3143,13 +3444,20 @@
    "anchor": {
     "grip": {
      "x": 66,
-     "y": 62
+     "y": 63
     },
     "muzzle": {
      "x": 115,
-     "y": 44
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     66,
+     66
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "phoenix",
@@ -3214,13 +3522,20 @@
    "anchor": {
     "grip": {
      "x": 68,
-     "y": 58
+     "y": 68
     },
     "muzzle": {
      "x": 118,
-     "y": 58
+     "y": 68
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     68,
+     68
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "rakete",
@@ -3285,13 +3600,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 65
+     "y": 64
     },
     "muzzle": {
      "x": 104,
-     "y": 65
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -3360,9 +3682,16 @@
     },
     "muzzle": {
      "x": 112,
-     "y": 57
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     61,
+     61
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -3426,14 +3755,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 28,
-     "y": 63
+     "x": 57,
+     "y": 72
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 72
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     57,
+     57
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -3497,14 +3833,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 60,
-     "y": 56
+     "x": 63,
+     "y": 54
     },
     "muzzle": {
-     "x": 106,
-     "y": 66
+     "x": 120,
+     "y": 54
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -3522,7 +3865,7 @@
     "h": 32
    },
    "flashColor": "#eb5329",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "heavy_ranged",
     "x": 0,
@@ -3568,14 +3911,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 70,
-     "y": 57
+     "x": 42,
+     "y": 80
     },
     "muzzle": {
      "x": 120,
-     "y": 57
+     "y": 51
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     30,
+     54
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -3639,14 +3989,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
-     "y": 66
+     "x": 42,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
      "y": 66
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     30,
+     51
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -3710,14 +4067,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
-     "y": 60
+     "x": 56,
+     "y": 56
     },
     "muzzle": {
      "x": 120,
      "y": 56
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     56,
+     56
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -3782,13 +4146,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 67
+     "y": 73
     },
     "muzzle": {
      "x": 103,
-     "y": 67
+     "y": 73
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -3852,14 +4223,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 25,
-     "y": 67
+     "x": 58,
+     "y": 73
     },
     "muzzle": {
      "x": 120,
-     "y": 67
+     "y": 69
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     46,
+     70
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "kugel",
@@ -3923,14 +4301,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 58,
-     "y": 52
+     "x": 39,
+     "y": 73
     },
     "muzzle": {
-     "x": 119,
-     "y": 53
+     "x": 120,
+     "y": 57
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     27,
+     50
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "kugel",
@@ -3948,7 +4333,7 @@
     "h": 32
    },
    "flashColor": "#eba86a",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "heavy_ranged",
     "x": 768,
@@ -3994,14 +4379,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
-     "y": 62
+     "x": 52,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
      "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     40,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "kugel",
@@ -4065,14 +4457,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 70
+     "x": 30,
+     "y": 80
     },
     "muzzle": {
      "x": 120,
-     "y": 70
+     "y": 74
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     18,
+     42
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "kugel",
@@ -4136,14 +4535,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 63,
+     "x": 55,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 60
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     43,
+     67
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "pfeil",
@@ -4161,7 +4567,7 @@
     "h": 32
    },
    "flashColor": "#62aeeb",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "heavy_ranged",
     "x": 128,
@@ -4207,14 +4613,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
-     "y": 70
+     "x": 26,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 53
+     "y": 52
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     14,
+     38
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "pfeil",
@@ -4278,14 +4691,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 34,
-     "y": 64
+     "x": 18,
+     "y": 62
     },
     "muzzle": {
-     "x": 112,
-     "y": 56
+     "x": 120,
+     "y": 60
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     6,
+     30
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "kugel",
@@ -4350,13 +4770,20 @@
    "anchor": {
     "grip": {
      "x": 56,
-     "y": 69
+     "y": 73
     },
     "muzzle": {
      "x": 120,
-     "y": 69
+     "y": 73
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     56,
+     56
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "daemon",
@@ -4420,14 +4847,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 30,
-     "y": 64
+     "x": 38,
+     "y": 74
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     26,
+     50
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "feuer",
@@ -4491,14 +4925,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 62
+     "x": 55,
+     "y": 76
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 68
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     43,
+     67
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "wasser",
@@ -4562,14 +5003,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 31,
-     "y": 66
+     "x": 63,
+     "y": 68
     },
     "muzzle": {
      "x": 118,
-     "y": 66
+     "y": 68
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "stein",
@@ -4587,7 +5035,7 @@
     "h": 32
    },
    "flashColor": "#eba069",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "elemental",
     "x": 384,
@@ -4634,13 +5082,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 63
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -4704,14 +5159,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 64,
-     "y": 86
+     "x": 27,
+     "y": 56
     },
     "muzzle": {
-     "x": 104,
-     "y": 12
+     "x": 105,
+     "y": 14
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     15,
+     39
+    ],
+    "spiegeln": false,
+    "fest": true
    },
    "projectile": {
     "art": "granate",
@@ -4729,7 +5191,7 @@
     "h": 32
    },
    "flashColor": "#ebd165",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "elemental",
     "x": 640,
@@ -4775,14 +5237,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 69
+     "x": 50,
+     "y": 52
     },
     "muzzle": {
      "x": 118,
-     "y": 52
+     "y": 32
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     38,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "gift",
@@ -4800,7 +5269,7 @@
     "h": 32
    },
    "flashColor": "#eb8d37",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "elemental",
     "x": 768,
@@ -4846,14 +5315,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 98,
-     "y": 66
+     "x": 28,
+     "y": 74
     },
     "muzzle": {
      "x": 120,
      "y": 61
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     16,
+     40
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "plasma",
@@ -4871,7 +5347,7 @@
     "h": 32
    },
    "flashColor": "#56d1eb",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "elemental",
     "x": 896,
@@ -4917,14 +5393,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 28,
-     "y": 63
+     "x": 38,
+     "y": 58
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     26,
+     50
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "rakete",
@@ -4989,13 +5472,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 64
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "gift",
@@ -5060,13 +5550,20 @@
    "anchor": {
     "grip": {
      "x": 67,
-     "y": 61
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 61
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     67,
+     67
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "eis",
@@ -5139,9 +5636,16 @@
     },
     "muzzle": {
      "x": 118,
-     "y": 57
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "feuer",
@@ -5206,13 +5710,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 62
+     "y": 70
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 70
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "gift",
@@ -5281,13 +5792,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 65
+     "y": 61
     },
     "muzzle": {
      "x": 120,
-     "y": 65
+     "y": 61
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -5356,13 +5874,20 @@
    "anchor": {
     "grip": {
      "x": 65,
-     "y": 62
+     "y": 63
     },
     "muzzle": {
      "x": 116,
-     "y": 47
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     65,
+     65
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -5433,7 +5958,14 @@
      "x": 120,
      "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -5502,13 +6034,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 63
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -5573,13 +6112,20 @@
    "anchor": {
     "grip": {
      "x": 65,
-     "y": 65
+     "y": 62
     },
     "muzzle": {
      "x": 100,
-     "y": 65
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     65,
+     65
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -5650,7 +6196,14 @@
      "x": 119,
      "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -5715,13 +6268,20 @@
    "anchor": {
     "grip": {
      "x": 67,
-     "y": 61
+     "y": 68
     },
     "muzzle": {
      "x": 120,
-     "y": 61
+     "y": 68
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     67,
+     67
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -5790,13 +6350,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 61
+     "y": 66
     },
     "muzzle": {
      "x": 119,
-     "y": 61
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#ae69eb",
@@ -5850,14 +6417,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 45,
-     "y": 63
+     "x": 38,
+     "y": 80
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 80
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     26,
+     50
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -5875,7 +6449,7 @@
     "h": 32
    },
    "flashColor": "#f0d252",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "magic",
     "x": 128,
@@ -5928,7 +6502,14 @@
      "x": 119,
      "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     65,
+     65
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb9233",
@@ -5979,13 +6560,20 @@
    "anchor": {
     "grip": {
      "x": 65,
-     "y": 70
+     "y": 63
     },
     "muzzle": {
      "x": 104,
-     "y": 70
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     65,
+     65
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb290d",
@@ -6036,13 +6624,20 @@
    "anchor": {
     "grip": {
      "x": 62,
-     "y": 62
+     "y": 67
     },
     "muzzle": {
      "x": 109,
-     "y": 62
+     "y": 67
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb6f51",
@@ -6093,13 +6688,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 58
+     "y": 63
     },
     "muzzle": {
      "x": 117,
-     "y": 41
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#6aadeb",
@@ -6154,13 +6756,20 @@
    "anchor": {
     "grip": {
      "x": 65,
-     "y": 68
+     "y": 62
     },
     "muzzle": {
      "x": 118,
-     "y": 68
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     65,
+     65
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#546feb",
@@ -6221,7 +6830,14 @@
      "x": 119,
      "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#5b75eb",
@@ -6272,13 +6888,20 @@
    "anchor": {
     "grip": {
      "x": 66,
-     "y": 64
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 90
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     66,
+     66
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#48d3eb",
@@ -6329,13 +6952,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 63
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#40ebce",
@@ -6386,13 +7016,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 63
+     "y": 64
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#5da2eb",
@@ -6449,7 +7086,14 @@
      "x": 120,
      "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     66,
+     66
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#67ebcf",
@@ -6510,7 +7154,14 @@
      "x": 120,
      "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#6aadeb",
@@ -6564,14 +7215,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
+     "x": 35,
      "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     23,
+     47
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb5036",
@@ -6621,14 +7279,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
+     "x": 54,
      "y": 62
     },
     "muzzle": {
      "x": 120,
      "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     54,
+     54
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eba563",
@@ -6678,14 +7343,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
-     "y": 63
+     "x": 57,
+     "y": 60
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 60
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     57,
+     57
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#63d3eb",
@@ -6735,14 +7407,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 64
+     "x": 65,
+     "y": 55
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 55
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     65,
+     65
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#4fd2eb",
@@ -6792,14 +7471,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 28,
-     "y": 64
+     "x": 59,
+     "y": 60
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 60
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     59,
+     59
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb9a4c",
@@ -6849,14 +7535,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 28,
-     "y": 64
+     "x": 64,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#53a1eb",
@@ -6911,9 +7604,16 @@
     },
     "muzzle": {
      "x": 116,
-     "y": 62
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#4398eb",
@@ -6964,17 +7664,24 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 65
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 109
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#54cdeb",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "magic",
     "x": 512,
@@ -7021,13 +7728,20 @@
    "anchor": {
     "grip": {
      "x": 66,
-     "y": 65
+     "y": 64
     },
     "muzzle": {
      "x": 115,
-     "y": 65
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     66,
+     66
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#5ca4eb",
@@ -7078,13 +7792,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 68
+     "y": 60
     },
     "muzzle": {
      "x": 118,
-     "y": 86
+     "y": 60
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#ebcf6a",
@@ -7138,14 +7859,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 62
+     "x": 35,
+     "y": 81
     },
     "muzzle": {
      "x": 119,
-     "y": 65
+     "y": 71
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     23,
+     47
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "plasma",
@@ -7210,13 +7938,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 63
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 50
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -7285,13 +8020,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 61
+     "y": 60
     },
     "muzzle": {
      "x": 107,
-     "y": 61
+     "y": 60
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb9f45",
@@ -7342,13 +8084,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 64
+     "y": 61
     },
     "muzzle": {
      "x": 119,
-     "y": 64
+     "y": 61
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#62d1eb",
@@ -7402,14 +8151,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 64,
-     "y": 62
+     "x": 50,
+     "y": 42
     },
     "muzzle": {
      "x": 119,
-     "y": 74
+     "y": 80
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     38,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb6642",
@@ -7460,13 +8216,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 67
+     "y": 64
     },
     "muzzle": {
      "x": 111,
      "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#c4eb4a",
@@ -7517,13 +8280,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 67
+     "y": 63
     },
     "muzzle": {
      "x": 113,
-     "y": 83
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#65a7eb",
@@ -7574,13 +8344,20 @@
    "anchor": {
     "grip": {
      "x": 68,
-     "y": 65
+     "y": 68
     },
     "muzzle": {
      "x": 120,
-     "y": 65
+     "y": 68
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     68,
+     68
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#2f85eb",
@@ -7631,13 +8408,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 61
+     "y": 64
     },
     "muzzle": {
      "x": 108,
-     "y": 61
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb9344",
@@ -7687,18 +8471,25 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 60
+     "x": 32,
+     "y": 52
     },
     "muzzle": {
      "x": 120,
-     "y": 60
+     "y": 61
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     20,
+     44
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb8731",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "utility",
     "x": 256,
@@ -7745,13 +8536,20 @@
    "anchor": {
     "grip": {
      "x": 66,
-     "y": 58
+     "y": 62
     },
     "muzzle": {
      "x": 108,
-     "y": 58
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     66,
+     66
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eba865",
@@ -7802,13 +8600,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 71
+     "y": 79
     },
     "muzzle": {
      "x": 98,
-     "y": 38
+     "y": 79
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb9841",
@@ -7859,13 +8664,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 62
+     "y": 60
     },
     "muzzle": {
      "x": 119,
-     "y": 48
+     "y": 60
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb765e",
@@ -7919,14 +8731,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 28,
-     "y": 64
+     "x": 58,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 71
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     58,
+     58
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#ebca3e",
@@ -7983,7 +8802,14 @@
      "x": 120,
      "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb8d39",
@@ -8038,13 +8864,20 @@
    "anchor": {
     "grip": {
      "x": 67,
-     "y": 65
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 61
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     67,
+     67
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb9244",
@@ -8101,7 +8934,14 @@
      "x": 120,
      "y": 60
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     71,
+     71
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb5437",
@@ -8151,14 +8991,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 28,
-     "y": 62
+     "x": 53,
+     "y": 61
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 61
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     53,
+     53
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb4c33",
@@ -8209,13 +9056,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 62
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb2f8e",
@@ -8265,14 +9119,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 60,
-     "y": 69
+     "x": 62,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 69
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#3d8feb",
@@ -8322,14 +9183,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 56,
-     "y": 64
+     "x": 59,
+     "y": 68
     },
     "muzzle": {
-     "x": 106,
-     "y": 62
+     "x": 112,
+     "y": 68
     },
-    "source": "korrektur"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     59,
+     59
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "plasma",
@@ -8347,7 +9215,7 @@
     "h": 32
    },
    "flashColor": "#eb893d",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "tech",
     "x": 384,
@@ -8394,13 +9262,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 67
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 66
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb8a3b",
@@ -8451,13 +9326,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 65
+     "y": 69
     },
     "muzzle": {
      "x": 120,
-     "y": 86
+     "y": 69
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb8f47",
@@ -8512,9 +9394,16 @@
     },
     "muzzle": {
      "x": 120,
-     "y": 78
+     "y": 68
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#4bd2eb",
@@ -8565,13 +9454,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 70
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 70
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#48cceb",
@@ -8622,13 +9518,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 66
+     "y": 63
     },
     "muzzle": {
      "x": 91,
-     "y": 95
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#62a8eb",
@@ -8679,13 +9582,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 62
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#afeb5a",
@@ -8735,14 +9645,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
+     "x": 62,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 70
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb8526",
@@ -8793,13 +9710,20 @@
    "anchor": {
     "grip": {
      "x": 65,
-     "y": 64
+     "y": 62
     },
     "muzzle": {
      "x": 100,
-     "y": 110
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     65,
+     65
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eba16a",
@@ -8850,13 +9774,20 @@
    "anchor": {
     "grip": {
      "x": 62,
-     "y": 66
+     "y": 74
     },
     "muzzle": {
      "x": 120,
-     "y": 53
+     "y": 74
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "ding",
@@ -8921,13 +9852,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 61
+     "y": 66
     },
     "muzzle": {
      "x": 116,
-     "y": 52
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb9a4c",
@@ -8982,13 +9920,20 @@
    "anchor": {
     "grip": {
      "x": 70,
-     "y": 58
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 58
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     70,
+     70
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb8e3a",
@@ -9032,7 +9977,7 @@
     "aufloesung": 1024
    },
    "rotation": -37.2,
-   "gespiegelt": false,
+   "gespiegelt": true,
    "streckung": 1.79,
    "content": {
     "x": 6,
@@ -9042,14 +9987,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 67
+     "x": 65,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     65,
+     65
+    ],
+    "spiegeln": true,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb954a",
@@ -9099,18 +10051,25 @@
    },
    "anchor": {
     "grip": {
-     "x": 45,
+     "x": 61,
      "y": 64
     },
     "muzzle": {
      "x": 119,
-     "y": 42
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     61,
+     61
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb9746",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "tech",
     "x": 0,
@@ -9156,18 +10115,25 @@
    },
    "anchor": {
     "grip": {
-     "x": 45,
-     "y": 74
+     "x": 67,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 67
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     67,
+     67
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": null,
    "flashColor": "#eb9449",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "tech",
     "x": 128,
@@ -9203,27 +10169,34 @@
     "aufloesung": 1024
    },
    "rotation": -18.0,
-   "gespiegelt": false,
+   "gespiegelt": true,
    "streckung": 1.22,
    "content": {
-    "x": 6,
-    "y": 13,
-    "w": 115,
-    "h": 99
+    "x": 14,
+    "y": 6,
+    "w": 100,
+    "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 31,
-     "y": 66
+     "x": 66,
+     "y": 60
     },
     "muzzle": {
-     "x": 120,
-     "y": 63
+     "x": 113,
+     "y": 60
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     66,
+     66
+    ],
+    "spiegeln": true,
+    "fest": false
    },
    "projectile": null,
-   "flashColor": "#eb6a47",
+   "flashColor": "#eb6947",
    "korrektur": true,
    "held": {
     "atlas": "tech",
@@ -9270,14 +10243,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 65
+     "x": 62,
+     "y": 74
     },
     "muzzle": {
      "x": 120,
-     "y": 65
+     "y": 68
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "heft",
+    "heft": [
+     50,
+     74
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "plasma",
@@ -9295,7 +10275,7 @@
     "h": 32
    },
    "flashColor": "#68afeb",
-   "korrektur": true,
+   "korrektur": false,
    "held": {
     "atlas": "tech",
     "x": 384,
@@ -9342,13 +10322,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 65
+     "y": 63
     },
     "muzzle": {
      "x": 119,
-     "y": 65
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -9417,13 +10404,20 @@
    "anchor": {
     "grip": {
      "x": 59,
-     "y": 65
+     "y": 63
     },
     "muzzle": {
      "x": 119,
-     "y": 46
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     59,
+     59
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -9492,13 +10486,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 60
+     "y": 64
     },
     "muzzle": {
      "x": 109,
-     "y": 58
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -9563,13 +10564,20 @@
    "anchor": {
     "grip": {
      "x": 66,
-     "y": 62
+     "y": 70
     },
     "muzzle": {
      "x": 119,
-     "y": 62
+     "y": 70
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     66,
+     66
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -9638,13 +10646,20 @@
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 67
+     "y": 70
     },
     "muzzle": {
      "x": 120,
-     "y": 67
+     "y": 70
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "stein",
@@ -9713,13 +10728,20 @@
    "anchor": {
     "grip": {
      "x": 61,
-     "y": 65
+     "y": 63
     },
     "muzzle": {
      "x": 119,
-     "y": 85
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     61,
+     61
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -9792,9 +10814,16 @@
     },
     "muzzle": {
      "x": 120,
-     "y": 54
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     63,
+     63
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "drache",
@@ -9862,14 +10891,21 @@
    },
    "anchor": {
     "grip": {
-     "x": 63,
-     "y": 60
+     "x": 62,
+     "y": 64
     },
     "muzzle": {
      "x": 107,
-     "y": 60
+     "y": 64
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -9938,13 +10974,20 @@
    "anchor": {
     "grip": {
      "x": 62,
-     "y": 71
+     "y": 63
     },
     "muzzle": {
      "x": 117,
-     "y": 61
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     62,
+     62
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",
@@ -10013,13 +11056,20 @@
    "anchor": {
     "grip": {
      "x": 64,
-     "y": 65
+     "y": 62
     },
     "muzzle": {
      "x": 112,
-     "y": 65
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "semantik",
+    "halt": "koerper",
+    "heft": [
+     64,
+     64
+    ],
+    "spiegeln": false,
+    "fest": false
    },
    "projectile": {
     "art": "zauber",

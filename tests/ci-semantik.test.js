@@ -196,23 +196,20 @@ test('W18 Anker: Figuren stehen auf der Bodenlinie, im Bild', () => {
   }
 });
 
-test('W18 Anker: Waffengriffe sitzen am Körper, Mündungen zeigen nach vorn', () => {
+test('W18 Anker: Waffengriffe sitzen am gesetzten Heft, Mündungen zeigen nach vorn', () => {
   /*
-   * Die Figuren blicken nach rechts. Der Griff liegt deshalb näher am
-   * Bildrand, den der Körper einnimmt (links), die Mündung weiter vorn
-   * (rechts). Beide Punkte müssen im Bildinhalt der Zelle liegen — ein
-   * Anker außerhalb wäre der „numerisch gültige, semantisch falsche" Fall
-   * aus dem Audit.
+   * Die Figuren blicken nach rechts. Der Griff muss am Heft der Waffe liegen (bei Waffen
+   * ohne geführtes Heft am Schwerpunkt), die Mündung am tatsächlichen Ende davor. Beide
+   * Punkte müssen im Bildinhalt der Zelle liegen — ein Anker außerhalb wäre der
+   * „numerisch gültige, semantisch falsche" Fall aus dem Audit.
+   *
+   * Die frühere Hälftenregel („bei `form: objekt` liegt der Griff in der hinteren
+   * Bildhälfte", mit vier Ausnahmen) ist ersetzt: sie war eine Randheuristik und lag bei
+   * Waffen, die am Kopf gehalten werden (Eispickel, Tonfa), falsch. Maßgeblich ist die
+   * belegte Heftspanne aus `scripts/waffen-anker-tabelle.json`.
    */
   const waffen = Object.entries(WAFFEN_MANIFEST.waffen);
   assert.ok(waffen.length > 0, 'das Waffenmanifest ist leer');
-
-  /*
-   * Ausnahme von der Hälftenregel: Der Piratenhaken ist gekrümmt. Sein Griff
-   * sitzt am Bogen (vordere Bildhälfte), die Spitze zeigt trotzdem nach vorn.
-   * Eine Halbierung würde hier eine falsche Rückwärtsrichtung behaupten.
-   */
-  const HALBREGEL_AUSNAHMEN = new Set(['pa_004', 'pa_009', 'pa_038', 'pa_068']);
 
   for (const [id, eintrag] of waffen) {
     const { content, anchor } = eintrag;
@@ -224,14 +221,12 @@ test('W18 Anker: Waffengriffe sitzen am Körper, Mündungen zeigen nach vorn', (
     assert.ok(anchor.muzzle.x > anchor.grip.x,
       `${id} (${eintrag.name}): Mündung x=${anchor.muzzle.x} liegt hinter dem Griff x=${anchor.grip.x} — `
       + 'Griff und Mündung sind vertauscht');
-    /*
-     * Bei `form: 'objekt'` ist die Waffe ein langes Einzelstück: Der Griff gehört
-     * in die hintere Bildhälfte. `kompakt` (z. B. Zwillingskatanas) und `kachel`
-     * sind absichtlich mittig — dort wäre die Hälftenregel falsch.
-     */
-    if (eintrag.form === 'objekt' && !HALBREGEL_AUSNAHMEN.has(id)) {
-      assert.ok(anchor.grip.x < content.x + content.w / 2,
-        `${id} (${eintrag.name}): Griff liegt in der vorderen Bildhälfte — die Waffe zeigt rückwärts`);
+    assert.equal(anchor.source, 'semantik', `${id}: Ankerquelle ${anchor.source}`);
+    if (anchor.halt === 'heft') {
+      assert.ok(anchor.grip.x >= anchor.heft[0] && anchor.grip.x <= anchor.heft[1],
+        `${id} (${eintrag.name}): Griff x=${anchor.grip.x} liegt nicht im Heft ${anchor.heft.join('..')}`);
+      assert.ok(anchor.heft[0] > content.x - 1 && anchor.heft[1] < content.x + content.w,
+        `${id} (${eintrag.name}): Heftspanne liegt außerhalb der Waffe`);
     }
   }
 });
