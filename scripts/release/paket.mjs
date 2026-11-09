@@ -50,6 +50,7 @@ export const INHALT = Object.freeze({
   dateien: [
     'scripts/server.mjs', 'package.json', 'package-lock.json', 'AGENTS.md',
     'docs/betrieb.md', 'docs/betrieb-INSTANZ.md', 'docs/deploy-plan.md',
+    'docs/sicherheit-vor-oeffentlich.md',
   ],
 });
 

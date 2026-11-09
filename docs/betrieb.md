@@ -80,7 +80,9 @@ kill -TERM <pid>     # geordnet
 
 ## 3. Sicherheit — was fehlt
 
-> **Der Server hat keine Anmeldung und keine Verschlüsselung.**
+> **Der Server hat keine Zugangssperre und keine Verschlüsselung.** Konten sind
+> vorhanden, aber freiwillig: Wer die Seite erreicht, kann ohne Anmeldung eine
+> Lobby anlegen und mitspielen.
 
 `HOST` steht deshalb standardmäßig auf `127.0.0.1`. Wer ihn auf `0.0.0.0`
 bindet, macht ihn für jeden im Netz erreichbar — im offenen Netz für jeden
@@ -88,16 +90,22 @@ bindet, macht ihn für jeden im Netz erreichbar — im offenen Netz für jeden
 Fall ab; freigeschaltet wird das nur ausdrücklich über
 `PA_ERLAUBE_OEFFENTLICH=yes`.
 
-Für einen echten Betrieb fehlen drei Dinge, in dieser Reihenfolge:
+Für einen echten Betrieb fehlen vier Schritte, in dieser Reihenfolge (Anforderungen,
+Befehle und Nachweise: `docs/sicherheit-vor-oeffentlich.md`):
 
-1. **TLS** — ein Reverse-Proxy (Caddy, nginx) davor. Caddy ist die kürzeste
-   Lösung: Es holt Zertifikate selbst und leitet WebSockets durch.
-2. **Anmeldung** — ohne sie kann jeder eine Lobby öffnen und belegen. Das ist
-   der Punkt „Konten und Anmeldung" in der TODO.
-3. **Verbindungslimit je IP** — das Anlegen von Lobbys ist je Adresse begrenzt
-   (`PA_LOBBYS_PRO_MINUTE`) und die Gesamtzahl gedeckelt (`PA_MAX_LOBBYS`); Nachrichten je Verbindung
-   begrenzt `src/server/rateLimit.js`. Ein Limit gleichzeitiger WebSocket-Verbindungen je IP gibt es nicht —
-   dafür der Reverse-Proxy.
+1. **Firewall** — nur 22/80/443 offen, Spielport 3000 bleibt zu (Vorlage
+   `deploy/firewall.nft`, zweite Schicht neben `HOST=127.0.0.1`).
+2. **TLS** — ein Reverse-Proxy (Caddy, nginx) davor. Caddy ist die kürzeste
+   Lösung: Es holt Zertifikate selbst und leitet WebSockets durch
+   (`deploy/Caddyfile.beispiel`).
+3. **Anmeldung** — eine Zugangssperre gibt es nicht. Konten sind freiwillig;
+   die Entscheidung „bewusst offen", „geschlossene Gruppe per `basic_auth`"
+   oder „Kontenpflicht" trifft der Auftraggeber.
+4. **Ratenbegrenzung** — das Anlegen von Lobbys ist je Adresse begrenzt
+   (`PA_LOBBYS_PRO_MINUTE`) und die Gesamtzahl gedeckelt (`PA_MAX_LOBBYS`);
+   Nachrichten je Verbindung begrenzt `src/server/rateLimit.js`. Ein Limit
+   gleichzeitiger WebSocket-Verbindungen je IP gibt es nicht — dafür der
+   Reverse-Proxy oder eine Firewall-Regel.
 
 Der Server **ist** gegen die üblichen Angriffe von innen gehärtet: Eingaben
 werden validiert, es gibt zwei Obergrenzen für Nachrichten (WebSocket-`maxPayload` 64 KiB, danach schließt der Server die Verbindung; 512 Byte für Steuernachrichten in `validation.js`),
