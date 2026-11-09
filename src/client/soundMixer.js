@@ -415,7 +415,7 @@ export class SoundMixer {
     const opt = typeof arg === 'object' && arg !== null ? arg : { tonhoehe: Number(arg) || 1 };
     if (!this.#bereitFuer('schuss')) return false;
     const waffe = opt.waffe ?? (opt.weaponId ? getWeapon(opt.weaponId) : null);
-    const name = opt.profil ?? (waffe ? schussProfilFuer(waffe) : 'pistole');
+    const name = opt.profil ?? (waffe ? schussProfilFuer(waffe, opt.fassung) : 'pistole');
     if (opt.playerId !== undefined && opt.playerId !== null) {
       const jetzt = this.#uhr();
       const davor = this.#letzterSchuss.get(opt.playerId);

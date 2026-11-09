@@ -40,7 +40,7 @@ import {
 import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, applyRemoveToTerrain, applyAddToTerrain, applySlumpToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
-import { getWeapon, orderInventoryBySubcategory, WINDFAKTOR_JE_WAFFE } from '../shared/config/weapons.js';
+import { orderInventoryBySubcategory, WINDFAKTOR_JE_WAFFE } from '../shared/config/weapons.js';
 import { WAFFEN_STANDARD, getWaffe } from '../shared/config/waffen-fassung.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
@@ -1563,7 +1563,7 @@ class Game {
       this.hud.log(`Abwerfen nicht möglich: ${ergebnis.errors?.join(', ')}`, 'danger');
       return ergebnis;
     }
-    const name = getWeapon(weaponId)?.displayName ?? weaponId;
+    const name = getWaffe(weaponId, this.match?.waffen ?? WAFFEN_STANDARD)?.displayName ?? weaponId;
     const vorrat = ergebnis.ammo < 0 ? '∞' : ergebnis.ammo;
     this.hud.log(`${name} abgeworfen (${vorrat} Munition liegt bereit)`, 'accent');
     // Die Liste muss sofort nachziehen.
@@ -2317,7 +2317,7 @@ class Game {
     const playerId = this.match.activePlayerId;
     if (playerId === null) return false;
     this.match.inventory.selectWeapon(playerId, weaponId);
-    this.hud.log(`Waffe: ${getWeapon(weaponId)?.displayName ?? weaponId}`);
+    this.hud.log(`Waffe: ${getWaffe(weaponId, this.match?.waffen ?? WAFFEN_STANDARD)?.displayName ?? weaponId}`);
     this.sound?.verarbeite({ type: 'waffenwechsel' });
     return true;
   }
@@ -2834,7 +2834,7 @@ class Game {
     const eigene = zustand.entities.find(entity => entity.entityId === playerId);
     if (!eigene) return;
 
-    const waffe = eigene.activeWeaponId ? getWeapon(eigene.activeWeaponId) : null;
+    const waffe = eigene.activeWeaponId ? getWaffe(eigene.activeWeaponId, this.match?.waffen ?? WAFFEN_STANDARD) : null;
 
     /*
      * Selbstwirkende Waffen verschießen kein Geschoss (Heilung, Schild,
@@ -3430,7 +3430,7 @@ class Game {
 
     // Flächenwirkung der gewählten Waffe für die Radius-Vorschau.
     const activeEntity = state.entities.find(entity => entity.entityId === playerId);
-    const activeWeapon = activeEntity?.activeWeaponId ? getWeapon(activeEntity.activeWeaponId) : null;
+    const activeWeapon = activeEntity?.activeWeaponId ? getWaffe(activeEntity.activeWeaponId, this.match?.waffen ?? WAFFEN_STANDARD) : null;
 
     /*
      * Kamera auf den aktiven Spieler richten — und in dieser Ansicht auch

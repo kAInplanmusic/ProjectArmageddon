@@ -13,7 +13,7 @@ import test from 'node:test';
 
 import { WEAPONS } from '../src/shared/config/weapons.js';
 import {
-  getWaffe, WAFFEN_ALT, WAFFEN_FEIN, WAFFEN_MINE, WAFFEN_TEMPO,
+  getWaffe, WAFFEN_ALT, WAFFEN_FEIN, WAFFEN_MINE, WAFFEN_SPREIZUNG, WAFFEN_TEMPO,
 } from '../src/shared/config/waffen-fassung.js';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 import {
@@ -23,6 +23,7 @@ import { parameterFuerWaffe, geschossGruppe, GESCHOSS_GRUPPEN } from '../src/cli
 import { schussProfilFuer } from '../src/client/klangProfile.js';
 import { WaffenMenue } from '../src/client/waffenMenue.js';
 import { Hud } from '../src/client/hud.js';
+import { verarbeiteLokal } from '../src/client/ereignisse.js';
 
 // ------------------------------------------------------------ DOM-Ersatz
 
@@ -338,4 +339,94 @@ test('W14: bewusste Posenkorrekturen bleiben die letzte Schicht', () => {
   const rucksack = parameterFuerWaffe(getWaffe('pa_112'), { form: 'kompakt' });
   assert.equal(rucksack.lage, 'hinter');
   assert.equal(rucksack.handVor, -5);
+});
+
+// ---------------------------------- W03: HUD-Name folgt der Partiefassung
+
+test('W03: HUD-Leiste nennt pa_127 bis F11 Teleportplattform, ab F12 Mine', () => {
+  const alt = texteVon(hudMit(11, 'pa_127').liste).join(' | ');
+  assert.match(alt, /Teleportplattform/);
+  assert.doesNotMatch(alt, /\bMine\b/);
+
+  for (const fassung of [WAFFEN_MINE, WAFFEN_TEMPO]) {
+    const neu = texteVon(hudMit(fassung, 'pa_127').liste).join(' | ');
+    assert.match(neu, /\bMine\b/, `Fassung ${fassung}`);
+    assert.doesNotMatch(neu, /Teleportplattform/, `Fassung ${fassung}`);
+  }
+});
+
+// ------------------- W09: Nutzwerte und Altreplay-Darstellung (F9 vs F10)
+
+test('W09: Heilung, Schild und Bewegung zeigen den Nutzwert der Partiefassung', () => {
+  /*
+   * Die Staffelung der Fassung 10 hebt die Selbstwirkung vom abgeleiteten
+   * Katalogwert ab: Heilzauber 42 -> 40, Eisschild 40 -> 55, Dimensionskugel
+   * 60 -> 110. Eine Aufzeichnung der Fassung 9 muss die alten Zahlen zeigen,
+   * die laufende Partie die neuen — in Menü UND HUD derselbe Wert.
+   */
+  const faelle = [
+    ['pa_092', 9, /Heilung 42\b/, /Heilung 40\b/],
+    ['pa_101', 9, /Schild 40\b/, /Schild 55\b/],
+    ['pa_110', 9, /Versetzen 60\b/, /Versetzen 110\b/],
+  ];
+  for (const [id, altFassung, altWert, neuWert] of faelle) {
+    const altMenue = menuMit(altFassung, id);
+    const altHud = texteVon(hudMit(altFassung, id).liste).join(' | ');
+    assert.match(altMenue.info.textContent, altWert, `${id} Fassung ${altFassung} (Menü)`);
+    assert.match(altHud, altWert, `${id} Fassung ${altFassung} (HUD)`);
+    assert.doesNotMatch(altMenue.info.textContent, neuWert, `${id}: neue Zahl im Altreplay`);
+    assert.doesNotMatch(altHud, neuWert, `${id}: neue Zahl im Altreplay-HUD`);
+
+    const neuMenue = menuMit(WAFFEN_SPREIZUNG, id);
+    const neuHud = texteVon(hudMit(WAFFEN_SPREIZUNG, id).liste).join(' | ');
+    assert.match(neuMenue.info.textContent, neuWert, `${id} Fassung 10 (Menü)`);
+    assert.match(neuHud, neuWert, `${id} Fassung 10 (HUD)`);
+    assert.doesNotMatch(neuMenue.info.textContent, altWert, `${id}: alte Zahl in neuer Partie`);
+  }
+});
+
+// --------------------- W19: Schussklang kommt aus derselben Fassung (Ereignis)
+
+test('W19: das Schussereignis übergibt dem Mischer die Waffe der Partie', () => {
+  const klaenge = [];
+  const kontext = fassung => ({
+    match: { waffen: fassung, players: [] },
+    sound: { verarbeite: ereignis => klaenge.push(ereignis) },
+    findEntity: () => null,
+    renderer: { addMuzzleFlash() {}, merkeSchuss() {} },
+    hud: { log() {} },
+    shotPredictor: { resolve() {} },
+  });
+
+  for (const [fassung, art] of [[WAFFEN_FEIN, 'physical'], [WAFFEN_TEMPO, 'explosive']]) {
+    klaenge.length = 0;
+    verarbeiteLokal(kontext(fassung), {
+      type: 'shot', payload: { playerId: 1, weaponId: 'pa_041', angle: 0 },
+    });
+    const schuss = klaenge.find(ereignis => ereignis.type === 'shot');
+    assert.ok(schuss, `Fassung ${fassung}: kein Schussklang`);
+    assert.equal(schuss.waffe?.damageType, art, `Fassung ${fassung}`);
+    assert.equal(schussProfilFuer(schuss.waffe, schuss.fassung), art === 'physical' ? 'schwer' : 'rakete');
+  }
+});
+
+// ------------------- W02: die Anzeigepfade in main.js lesen keine Altdaten
+
+test('W02: main.js liest Namen, Vorschau und Radius aus der Partiefassung', async () => {
+  const quelle = await import('node:fs').then(fs => fs.readFileSync(
+    new URL('../src/client/main.js', import.meta.url), 'utf8'));
+  // Kein Grundkatalog-Zugriff mehr in der Anzeige (Import und Aufrufe).
+  assert.doesNotMatch(quelle, /getWeapon\(/);
+  // Die vier Anzeigepfade: Abwurf-Meldung, Waffenwechsel-Meldung,
+  // Bahnvorhersage und Radius-Vorschau hängen an `match.waffen`.
+  for (const pfad of [
+    /const name = getWaffe\(weaponId, this\.match\?\.waffen \?\? WAFFEN_STANDARD\)/,
+    /Waffe: \$\{getWaffe\(weaponId, this\.match\?\.waffen \?\? WAFFEN_STANDARD\)/,
+    /const waffe = eigene\.activeWeaponId \? getWaffe\(eigene\.activeWeaponId, this\.match\?\.waffen/,
+    /const activeWeapon = activeEntity\?\.activeWeaponId \? getWaffe\(activeEntity\.activeWeaponId, this\.match\?\.waffen/,
+  ]) {
+    assert.match(quelle, pfad);
+  }
+  assert.match(quelle, /blastRadius: activeWeapon\?\.blastRadius \?\? 0/,
+    'die Radius-Vorschau nimmt den Wert der Partiefassung');
 });

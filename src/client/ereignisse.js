@@ -55,6 +55,23 @@ function waffenName(kontext, weaponId) {
 }
 
 /**
+ * Der Schussklang trägt die Waffe der Partie (W19): `pa_041` klingt in einer
+ * Aufzeichnung der Fassung 4 körperlich, ab Fassung 5 als Rakete. Der Mischer
+ * liest `waffe`; ohne dieses Feld fiele er auf den Grundkatalog zurück.
+ */
+function schussKlang(k, n) {
+  const fassung = k?.match?.waffen ?? WAFFEN_STANDARD;
+  k.sound?.verarbeite({
+    type: 'shot',
+    weaponId: n?.weaponId,
+    waffe: getWaffe(n?.weaponId, fassung),
+    fassung,
+    playerId: n?.playerId,
+    ...ortVon(k, n?.playerId),
+  });
+}
+
+/**
  * Eine Wirkung: bekommt den Kontext und die Nutzlast, gibt nichts zurück.
  * @callback Wirkung
  * @param {object} kontext Zugänge zu Renderer, HUD, Match und Zustand
@@ -422,7 +439,7 @@ export const EREIGNIS_WIRKUNGEN = {
     lokal: (k, n) => {
       // Soforttreffer sichtbar machen: Strahl vom Schützen zum Einschlag.
       k.drawHitscanBeam?.(n);
-      k.sound?.verarbeite({ type: 'shot', weaponId: n.weaponId, playerId: n.playerId, ...ortVon(k, n.playerId) });
+      schussKlang(k, n);
       /*
        * Ein Treffer klingt anders als ein Fehlschuss.
        *
@@ -461,7 +478,7 @@ export const EREIGNIS_WIRKUNGEN = {
        * gedrosselt (`GEDROSSELTE_EREIGNISARTEN`) — ein Klang daran wäre ein
        * Dauerläuten. `hitscan` dagegen entsteht einmal je Schuss.
        */
-      k.sound?.verarbeite({ type: 'shot', weaponId: n.weaponId, playerId: n.playerId, ...ortVon(k, n.playerId) });
+      schussKlang(k, n);
       if (n.hit && n.target) {
         k.sound?.verarbeite({ type: 'damage', x: n.hitX, y: n.hitY, verzoegerung: 0.05 });
       }
@@ -494,7 +511,7 @@ export const EREIGNIS_WIRKUNGEN = {
        * gilt unverändert.
        */
       k.renderer?.addMuzzleFlash(n.playerId, n.angle ?? 0); k.renderer?.merkeSchuss?.(n.playerId, n.weaponId, n.angle);
-      k.sound?.verarbeite({ type: 'shot', weaponId: n.weaponId, playerId: n.playerId, ...ortVon(k, n.playerId) });
+      schussKlang(k, n);
     },
     /*
      * Bestätigung eines Schusses — der Server schickt `playerId` und `angle`
@@ -505,7 +522,7 @@ export const EREIGNIS_WIRKUNGEN = {
     online: (k, n) => {
       k.shotPredictor?.resolve();
       k.renderer?.addMuzzleFlash(n?.playerId, n?.angle ?? 0); k.renderer?.merkeSchuss?.(n?.playerId, n?.weaponId, n?.angle);
-      k.sound?.verarbeite({ type: 'shot', weaponId: n?.weaponId, playerId: n?.playerId, ...ortVon(k, n?.playerId) });
+      schussKlang(k, n);
     },
   },
 
