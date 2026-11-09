@@ -118,7 +118,7 @@ import {
   neueErfolge as neueErfolgeFuer,
   emblem,
 } from '../shared/achievements.js';
-import { buildRosterView, buildHilfeView, beschreibeWert } from './kaderansicht.js';
+import { beschreibeWert } from './wertBeschreibung.js';
 import { fraktionsEmblem, starteLadebild, zeigeSiegerFraktion } from './fraktionsAnzeige.js';
 import { wirkungLabel } from '../shared/config/wirkungstexte.js';
 
@@ -3980,9 +3980,17 @@ class Game {
 }
 
 const game = new Game();
-// Kader- und Hilfeansicht einmalig aufbauen; der Reiter wählt die Menü-Hymne (A14).
-buildRosterView({ hymneWaehlen: id => { void game.musik?.waehleHymne(id); } });
-buildHilfeView();
+/*
+ * Kader- und Hilfeansicht per `import()`: beide hängen an zugeklappten
+ * `details`-Elementen; ihr Code und Fraktions-CSS gehören nicht in den Start-Chunk.
+ * Der Kaderreiter meldet seine Fraktionswahl an dieselbe Hymnensteuerung (A14).
+ */
+import('./kaderansicht.js')
+  .then(m => {
+    m.buildRosterView({ hymneWaehlen: id => { void game.musik?.waehleHymne(id); } });
+    m.buildHilfeView();
+  })
+  .catch(fehler => console.warn('Kader- und Hilfeansicht nicht geladen', fehler));
 // Kulissenauswahl füllen, sobald das DOM steht. Der Katalog ist die einzige
 // Quelle; die Liste im HTML bleibt bewusst leer.
 if (typeof document !== 'undefined') {
