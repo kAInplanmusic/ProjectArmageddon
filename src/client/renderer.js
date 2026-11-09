@@ -48,6 +48,7 @@ import { bereichInKarte } from './sichtbereich.js';
 import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
 import { istKlassenfassungNeu } from '../shared/config/klassen-fassung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
+import { ausruestungFuer, waffeAmKoerper } from './figurAusruestung.js';
 import { FigurEffekte } from './figurEffekte.js';
 import { PARAMETER, typFuer } from './figurTypen.js';
 import { FACTIONS } from '../shared/config/factions.js';
@@ -1310,10 +1311,15 @@ export class Renderer {
         const par = PARAMETER[typ];
         const fussWelt = entity.y + zuck.dy + FUSS_ABSTAND;
         // Gehaltene Waffe: ihr Sprite am Zielstrahl (je nach Lage vor oder hinter dem Körper); ohne Sprite die Ikone.
+        // Fest montierte Körperwaffen (Armkanone, Mörserrohr) werden nicht ein zweites Mal gezeichnet (A04).
         const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
-        const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
-        const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
-        const waffenPar = waffenSprite ? parameterFuerWaffe(waffe, waffenSprite) : null;
+        const koerperWaffe = Boolean(waffe) && waffeAmKoerper(charakter?.id);
+        // Sprite bleibt für die Waffenparameter (Rückstoß, Ausfallschritt) geladen, wird aber
+        // nicht gezeichnet, wenn der Körper die Waffe schon trägt.
+        const waffenSpriteAlle = waffe ? holeWaffenSprite(waffe) : null;
+        const waffenSprite = koerperWaffe ? null : waffenSpriteAlle;
+        const ikone = waffe && !koerperWaffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
+        const waffenPar = waffenSpriteAlle ? parameterFuerWaffe(waffe, waffenSpriteAlle) : null;
         const pose = this.figurPosen.pose(entity, jetzt, {
           reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive, stoss: marke?.stoss, stossStaerke: marke?.stossStaerke,
           feuer: feuerLeben, params: par, typ, blatt: fig.blatt,
@@ -1324,6 +1330,7 @@ export class Renderer {
         });
         const zs = this.figurPosen.zustand(entity.entityId);
         zs.fig = fig; zs.team = color; zs.winkel = angle; zs.nass = entity.waterLevel ?? 0; zs.typ = typ;
+        zs.ausruestung = ausruestungFuer(charakter?.id).art;
         // Wasserlinie an der Figur (lokale Höhe im Figurrahmen) und Blasen beim Waten.
         let wasserY;
         if ((entity.waterLevel ?? 0) > 0.03) {
@@ -1333,7 +1340,7 @@ export class Renderer {
             this.figurEffekte.blasen(entity.x, wy + 2, 2);
           }
         }
-        const hinterKoerper = waffenPar?.lage === 'hinter';
+        const hinterKoerper = !koerperWaffe && waffenPar?.lage === 'hinter';
         if (hinterKoerper) {
           spriteWaffe = true;
           this.ctx.save();
@@ -1369,7 +1376,7 @@ export class Renderer {
           this.ctx.save();
           this.ctx.translate(0, FIGUR_HOCH);
           this.ctx.scale(FIGUR_SKALA, FIGUR_SKALA);
-          zeichneRohr(this.ctx, rohrParam);
+          if (!koerperWaffe) zeichneRohr(this.ctx, rohrParam);
           this.ctx.restore();
         }
         this.ctx.restore();
