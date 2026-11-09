@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { WEAPONS, WEAPONS_BY_ID, getWeapon } from '../src/shared/config/weapons.js';
 import { getWaffe } from '../src/shared/config/waffen-fassung.js';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
-import { atlasAusschnitt } from '../src/client/waffenIcons.js';
+import { atlasAusschnitt, erzeugeWaffenIconAtlas } from '../src/client/waffenIcons.js';
 import { schweifArt } from '../src/client/waffenOptik.js';
 import { MatchController } from '../src/engine/match.js';
 
@@ -198,6 +198,37 @@ test('W12: das Waffenmenü liest den Atlas, nicht nur das 64er-Bild', () => {
   assert.match(quelle, /atlasAusschnitt\(/, 'Menü rechnet den Ausschnitt nicht');
   const icons = fs.readFileSync(path.join(WURZEL, 'src', 'client', 'waffenIcons.js'), 'utf8');
   assert.match(icons, /atlas_icons\.png/, 'Iconatlasdatei nicht verdrahtet');
+});
+
+
+test('W12: Iconlader meldet Bereitschaft einmal und liefert dieselbe Zelle wie das Manifest', async () => {
+  const lader = erzeugeWaffenIconAtlas({
+    ladeManifest: async () => manifest,
+    ladeAtlasUrl: async () => 'atlas_icons.png',
+  });
+  let gemeldet = 0;
+  assert.equal(lader.hole({ id: 'pa_001' }, () => { gemeldet += 1; }), null, 'vor dem Laden kein Ausschnitt');
+  await new Promise(r => setTimeout(r, 10));
+  assert.equal(gemeldet, 1, 'Bereitschaft genau einmal gemeldet');
+  const zelle = lader.hole({ id: 'pa_001' });
+  assert.ok(zelle, 'nach dem Laden fehlt die Zelle');
+  assert.equal(zelle.url, 'atlas_icons.png');
+  assert.deepEqual(zelle.zelle, manifest.waffen.pa_001.icon);
+  assert.equal(lader.hole({ id: 'pa_001' }, () => { gemeldet += 1; }) !== null, true);
+  assert.equal(gemeldet, 1, 'kein Rueckruf mehr nach dem Laden');
+});
+
+test('W12: faellt der Atlas aus, bleibt es dauerhaft beim 64er-Bild', async () => {
+  const lader = erzeugeWaffenIconAtlas({
+    ladeManifest: async () => { throw new Error('kein Manifest'); },
+    ladeAtlasUrl: async () => 'atlas_icons.png',
+  });
+  let gemeldet = 0;
+  assert.equal(lader.hole({ id: 'pa_001' }, () => { gemeldet += 1; }), null);
+  await new Promise(r => setTimeout(r, 10));
+  assert.equal(lader.zustand().manifest, 'fehlt');
+  assert.equal(lader.hole({ id: 'pa_001' }), null);
+  assert.equal(lader.hole({ id: 'pa_002' }), null);
 });
 
 // ---------------------------------------------------------------- W13

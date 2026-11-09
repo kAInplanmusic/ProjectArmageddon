@@ -104,9 +104,13 @@ export function erzeugeWaffenIconAtlas(abh) {
      */
     hole(waffe, onBereit) {
       if (!waffe?.id) return null;
-      if (typeof onBereit === 'function' && (manifest !== 'fehlt' || url !== 'fehlt')) warten.add(onBereit);
       if (manifest === null) lade();
-      if (typeof manifest !== 'object' || typeof url !== 'string') return null;
+      if (typeof manifest !== 'object' || typeof url !== 'string') {
+        // Nur solange noch geladen wird vormerken; nach einem Fehlschlag gibt es
+        // nichts mehr zu melden, sonst sammelten sich Rueckrufe je Neuaufbau.
+        if (typeof onBereit === 'function' && manifest !== 'fehlt') warten.add(onBereit);
+        return null;
+      }
       const eintrag = manifest.waffen[waffe.id];
       const zelle = eintrag?.icon;
       const atlas = zelle ? manifest.atlanten?.[zelle.atlas] : null;
