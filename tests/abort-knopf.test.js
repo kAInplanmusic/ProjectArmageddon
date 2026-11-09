@@ -34,6 +34,10 @@ const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
 
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+// Seit dem UI-Rest A6 liegen die Grundregeln nicht mehr inline in index.html, sondern in
+// `src/client/styles/basis.css` (von design.css per @import geladen). Geprüft wird dieselbe Regel
+// am neuen Ort.
+const basisCss = fs.readFileSync(path.join(ROOT, 'src', 'client', 'styles', 'basis.css'), 'utf8');
 const main = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
 
 /** Entfernt Kommentare, damit Strukturtests den Code prüfen, nicht die Doku. */
@@ -67,7 +71,7 @@ test('Der Knopf holt sich die Klickbarkeit zurück', () => {
    * sichtbar, aber nicht bedienbar — ein Fehler, den man nur beim Klicken
    * bemerkt.
    */
-  const css = ohneKommentare(html);
+  const css = ohneKommentare(`${html}\n${basisCss}`);
   const block = css.match(/#hud-abort\s*\{([^}]*)\}/);
 
   assert.ok(block, 'die CSS-Regel für #hud-abort fehlt');
@@ -86,7 +90,7 @@ test('Der Knopf hat einen sichtbaren Fokus', () => {
    * Wer mit der Tastatur bedient, muss sehen, wo er ist. Ohne `:focus-visible`
    * verschwindet der Fokusrahmen — und die Bedienung wird zum Blinde-Essen.
    */
-  const css = ohneKommentare(html);
+  const css = ohneKommentare(`${html}\n${basisCss}`);
   assert.match(css, /#hud-abort:focus-visible/,
     'Ein Fokus-Stil für den Knopf fehlt');
 });

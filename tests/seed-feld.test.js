@@ -35,6 +35,10 @@ const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
 
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+// Seit dem UI-Rest A6 liegen die Grundregeln nicht mehr inline in index.html, sondern in
+// `src/client/styles/basis.css` (von design.css per @import geladen). Geprüft wird dieselbe Regel
+// am neuen Ort.
+const basisCss = fs.readFileSync(path.join(ROOT, 'src', 'client', 'styles', 'basis.css'), 'utf8');
 const main = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
 
 test('Das Seed-Feld nennt seine Wirkung', () => {
@@ -70,13 +74,13 @@ test('Der Hinweis erscheint nicht in Großbuchstaben', () => {
    * die Beschriftung. Ohne Aufhebung stünde der ganze Satz in Großbuchstaben —
    * schwer zu lesen und optisch falsch gewichtet.
    */
-  const regel = html.match(/\.field-hint\s*\{([^}]*)\}/);
+  const regel = basisCss.match(/\.field-hint\s*\{([^}]*)\}/);
   assert.ok(regel, 'die CSS-Regel für den Feldhinweis fehlt');
   assert.match(regel[1], /text-transform:\s*none/,
     'Der Hinweis braucht `text-transform: none` — label setzt uppercase');
 
   // Die Gegenprobe: `label` setzt tatsächlich uppercase.
-  const label = html.match(/\n    label\s*\{([^}]*)\}/);
+  const label = basisCss.match(/\nlabel\s*\{([^}]*)\}/);
   assert.ok(label, 'die CSS-Regel für label fehlt');
   assert.match(label[1], /text-transform:\s*uppercase/,
     'Testannahme: label setzt uppercase');
