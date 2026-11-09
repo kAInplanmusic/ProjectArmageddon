@@ -44,12 +44,12 @@
      "grund": "heller Zierrahmen um die Zelle; Rohr und Lafette bleiben."
     },
     "held": {
-     "modus": "rahmen",
-     "grund": "Rahmenlinie auch im Handatlas."
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     },
     "silhouette": {
-     "modus": "heldmaske",
-     "grund": "Silhouette muss dieselbe Deckflaeche wie das Handbild haben."
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     }
    }
   },
@@ -97,7 +97,7 @@
     },
     "held": {
      "modus": "keine",
-     "grund": "Figur mit Wirbel ist das Motiv selbst."
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     }
    }
   },
@@ -109,12 +109,12 @@
      "grund": "helle Standlinie und Rahmenreste am unteren Zellrand."
     },
     "held": {
-     "modus": "rahmen",
-     "grund": "dieselbe Standlinie im Handatlas."
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     },
     "silhouette": {
-     "modus": "heldmaske",
-     "grund": "Deckflaeche der Silhouette angleichen."
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     }
    }
   },
@@ -127,7 +127,7 @@
     },
     "held": {
      "modus": "keine",
-     "grund": "Leuchtsaum gehoert zum Motiv, keine Rechteckkante."
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     }
    }
   },
@@ -139,12 +139,12 @@
      "grund": "helle Plattenkomponente neben dem Schild (eigene Komponente, kein Waffenteil)."
     },
     "held": {
-     "modus": "platte",
-     "grund": "dieselbe Platte im Handatlas."
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     },
     "silhouette": {
-     "modus": "heldmaske",
-     "grund": "Deckflaeche der Silhouette angleichen."
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     }
    }
   },
@@ -170,7 +170,7 @@
     },
     "held": {
      "modus": "keine",
-     "grund": "Kreatur samt Boden ist das Motiv."
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     }
    }
   },
@@ -192,7 +192,7 @@
     },
     "held": {
      "modus": "keine",
-     "grund": "bereits freigestellt."
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     }
    }
   },
@@ -204,12 +204,12 @@
      "grund": "rechteckiger Zierrahmen mit Eckwinkeln um die Zelle."
     },
     "held": {
-     "modus": "rahmen",
-     "grund": "derselbe Rahmen im Handatlas."
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     },
     "silhouette": {
-     "modus": "heldmaske",
-     "grund": "Deckflaeche der Silhouette angleichen."
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen."
     },
     "menue64": {
      "modus": "aus128",

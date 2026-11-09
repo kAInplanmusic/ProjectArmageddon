@@ -4,6 +4,7 @@
 
 - **23 Waffen** mit Entscheidung in `tools/waffen-freistellung.json` geprüft.
 - **9 Waffen** gezielt bereinigt: `pa_012`, `pa_050`, `pa_054`, `pa_066`, `pa_075`, `pa_082`, `pa_089`, `pa_101`, `pa_138`.
+- **Nur Icon und Menü** werden bereinigt. `held` und `silhouette` bleiben unangetastet, weil die Anker-Heftspanne und die Wirkspitze darauf aufbauen.
 - Keine Waffe verlor mehr als **25 %** ihrer Bounding-Box (Menü-Icons mit Hintergrundplatte: höchstens 80 %).
 - **Keine Änderung** an bewusst belassenen Illustrationskacheln (`modus: keine`).
 - Das Werkzeug ist **idempotent**: ein zweiter `--pruefen`-Lauf meldet `0 geaendert`.

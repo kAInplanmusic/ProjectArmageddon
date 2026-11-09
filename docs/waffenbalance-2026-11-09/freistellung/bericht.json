@@ -226,8 +226,8 @@
      "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
-     "modus": "rahmen",
-     "grund": "Rahmenlinie auch im Handatlas.",
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_elemental.png",
      "zelle": {
       "x": 640,
@@ -235,7 +235,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 2357,
+     "entferntePixel": 0,
      "bboxVorher": [
       7,
       6,
@@ -243,13 +243,13 @@
       120
      ],
      "bboxNachher": [
-      16,
-      13,
-      111,
-      111
+      7,
+      6,
+      119,
+      120
      ],
      "kantenVorher": 0.929,
-     "kantenNachher": 0.042,
+     "kantenNachher": 0.929,
      "komponentenVorher": [
       {
        "px": 7748,
@@ -263,23 +263,23 @@
      ],
      "komponentenNachher": [
       {
-       "px": 5952,
+       "px": 7748,
        "bbox": [
-        17,
-        13,
-        93,
-        99
+        7,
+        6,
+        113,
+        115
        ]
       }
      ],
      "hashVorher": "146c97537307a6c8637b497e645a7bb7ecfdc3efc819a3a1d50c0bf20cd0a3d8",
-     "hashNachher": "f23fdcd5f1b42e2380bfa7808cbde1a7473a13d5ad4cb44b3de302141c95c356",
-     "geaendert": true,
-     "dateiHashNachher": "b8294bd135c0ec92de5fcc8b8a31feda1ea82d285eb9a977a62ae08cde087e0b"
+     "hashNachher": "146c97537307a6c8637b497e645a7bb7ecfdc3efc819a3a1d50c0bf20cd0a3d8",
+     "geaendert": false,
+     "dateiHashNachher": "8e8ddf9fd6a2526cab9c6070abd785476a4a372f551533aab3faf947649acd97"
     },
     "silhouette": {
-     "modus": "heldmaske",
-     "grund": "Silhouette muss dieselbe Deckflaeche wie das Handbild haben.",
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_elemental.png",
      "zelle": {
       "x": 640,
@@ -287,7 +287,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 2357,
+     "entferntePixel": 0,
      "bboxVorher": [
       7,
       6,
@@ -295,13 +295,13 @@
       120
      ],
      "bboxNachher": [
-      16,
-      13,
-      111,
-      111
+      7,
+      6,
+      119,
+      120
      ],
      "kantenVorher": 0.929,
-     "kantenNachher": 0.042,
+     "kantenNachher": 0.929,
      "komponentenVorher": [
       {
        "px": 7748,
@@ -315,19 +315,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 5952,
+       "px": 7748,
        "bbox": [
-        17,
-        13,
-        93,
-        99
+        7,
+        6,
+        113,
+        115
        ]
       }
      ],
      "hashVorher": "363fa63c512169386d53fe3e54aa641bfcdebac991b1b38aaa60a190273cca89",
-     "hashNachher": "ec92158be605457c49814803b04ad4be85b872c5c38be2ef63090d00ddec3904",
-     "geaendert": true,
-     "dateiHashNachher": "b8294bd135c0ec92de5fcc8b8a31feda1ea82d285eb9a977a62ae08cde087e0b"
+     "hashNachher": "363fa63c512169386d53fe3e54aa641bfcdebac991b1b38aaa60a190273cca89",
+     "geaendert": false,
+     "dateiHashNachher": "8e8ddf9fd6a2526cab9c6070abd785476a4a372f551533aab3faf947649acd97"
     }
    },
    "geaendert": true
@@ -652,7 +652,7 @@
     },
     "held": {
      "modus": "keine",
-     "grund": "Figur mit Wirbel ist das Motiv selbst.",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
      "zelle": {
       "x": 640,
@@ -718,7 +718,7 @@
      "hashVorher": "e6f973ccb8340e7b33f495d2b73b29a4858a54ab715201e29ea4822d3e4a975f",
      "hashNachher": "e6f973ccb8340e7b33f495d2b73b29a4858a54ab715201e29ea4822d3e4a975f",
      "geaendert": false,
-     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+     "dateiHashNachher": "423d517870a1cb123f0a1ee6715e0200e2d5bb46e121f67ce95a3bb28da4c239"
     }
    },
    "geaendert": false
@@ -779,8 +779,8 @@
      "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
-     "modus": "rahmen",
-     "grund": "dieselbe Standlinie im Handatlas.",
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
      "zelle": {
       "x": 0,
@@ -788,7 +788,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 1652,
+     "entferntePixel": 0,
      "bboxVorher": [
       6,
       8,
@@ -796,13 +796,13 @@
       119
      ],
      "bboxNachher": [
-      17,
-      9,
-      112,
-      116
+      6,
+      8,
+      120,
+      119
      ],
      "kantenVorher": 0.896,
-     "kantenNachher": 0.065,
+     "kantenNachher": 0.896,
      "komponentenVorher": [
       {
        "px": 8399,
@@ -816,23 +816,23 @@
      ],
      "komponentenNachher": [
       {
-       "px": 7430,
+       "px": 8399,
        "bbox": [
-        17,
-        9,
-        96,
-        108
+        6,
+        8,
+        115,
+        112
        ]
       }
      ],
      "hashVorher": "df7659492a5ecf692f4c2411bfd79897fc70cfb52b827337aeb79a295bda368f",
-     "hashNachher": "292b432475f4173a890ed49c6abe54268d091b0705023d82222633662ca6102a",
-     "geaendert": true,
-     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+     "hashNachher": "df7659492a5ecf692f4c2411bfd79897fc70cfb52b827337aeb79a295bda368f",
+     "geaendert": false,
+     "dateiHashNachher": "423d517870a1cb123f0a1ee6715e0200e2d5bb46e121f67ce95a3bb28da4c239"
     },
     "silhouette": {
-     "modus": "heldmaske",
-     "grund": "Deckflaeche der Silhouette angleichen.",
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
      "zelle": {
       "x": 0,
@@ -840,7 +840,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 1652,
+     "entferntePixel": 0,
      "bboxVorher": [
       6,
       8,
@@ -848,13 +848,13 @@
       119
      ],
      "bboxNachher": [
-      17,
-      9,
-      112,
-      116
+      6,
+      8,
+      120,
+      119
      ],
      "kantenVorher": 0.896,
-     "kantenNachher": 0.065,
+     "kantenNachher": 0.896,
      "komponentenVorher": [
       {
        "px": 8399,
@@ -868,19 +868,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 7430,
+       "px": 8399,
        "bbox": [
-        17,
-        9,
-        96,
-        108
+        6,
+        8,
+        115,
+        112
        ]
       }
      ],
      "hashVorher": "424f53e4ebb5ab0c7560503babc1c01502fbe9d70139659bff6245406c572f52",
-     "hashNachher": "7e99ebb57091cc0bec7221e240ae6add95c843db29dc4bb87d71e0e7f200d1a4",
-     "geaendert": true,
-     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+     "hashNachher": "424f53e4ebb5ab0c7560503babc1c01502fbe9d70139659bff6245406c572f52",
+     "geaendert": false,
+     "dateiHashNachher": "423d517870a1cb123f0a1ee6715e0200e2d5bb46e121f67ce95a3bb28da4c239"
     }
    },
    "geaendert": true
@@ -942,7 +942,7 @@
     },
     "held": {
      "modus": "keine",
-     "grund": "Leuchtsaum gehoert zum Motiv, keine Rechteckkante.",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
      "zelle": {
       "x": 896,
@@ -990,7 +990,7 @@
      "hashVorher": "53d2f9526a75dc0e86f9b49e54447b23dce84a1e539229a946704b6bad420f86",
      "hashNachher": "53d2f9526a75dc0e86f9b49e54447b23dce84a1e539229a946704b6bad420f86",
      "geaendert": false,
-     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+     "dateiHashNachher": "423d517870a1cb123f0a1ee6715e0200e2d5bb46e121f67ce95a3bb28da4c239"
     }
    },
    "geaendert": false
@@ -1060,8 +1060,8 @@
      "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
-     "modus": "platte",
-     "grund": "dieselbe Platte im Handatlas.",
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
      "zelle": {
       "x": 512,
@@ -1069,7 +1069,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 1045,
+     "entferntePixel": 0,
      "bboxVorher": [
       6,
       7,
@@ -1083,7 +1083,7 @@
       119
      ],
      "kantenVorher": 0.85,
-     "kantenNachher": 0.017,
+     "kantenNachher": 0.85,
      "komponentenVorher": [
       {
        "px": 6476,
@@ -1113,16 +1113,25 @@
         86,
         103
        ]
+      },
+      {
+       "px": 1044,
+       "bbox": [
+        6,
+        13,
+        115,
+        107
+       ]
       }
      ],
      "hashVorher": "6feea67eab608921b44c79a01aa976331882468b05bcb9369014ce4cb8bc4cc8",
-     "hashNachher": "2927b60dab40d478810aba8a706aeb4fb047dd22570fa05eb3260923c3c5a8d5",
-     "geaendert": true,
-     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+     "hashNachher": "6feea67eab608921b44c79a01aa976331882468b05bcb9369014ce4cb8bc4cc8",
+     "geaendert": false,
+     "dateiHashNachher": "423d517870a1cb123f0a1ee6715e0200e2d5bb46e121f67ce95a3bb28da4c239"
     },
     "silhouette": {
-     "modus": "heldmaske",
-     "grund": "Deckflaeche der Silhouette angleichen.",
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
      "zelle": {
       "x": 512,
@@ -1130,7 +1139,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 1045,
+     "entferntePixel": 0,
      "bboxVorher": [
       6,
       7,
@@ -1144,7 +1153,7 @@
       119
      ],
      "kantenVorher": 0.85,
-     "kantenNachher": 0.017,
+     "kantenNachher": 0.85,
      "komponentenVorher": [
       {
        "px": 6476,
@@ -1174,12 +1183,21 @@
         86,
         103
        ]
+      },
+      {
+       "px": 1044,
+       "bbox": [
+        6,
+        13,
+        115,
+        107
+       ]
       }
      ],
      "hashVorher": "d5109602006825452cf34a0aef0d3ab62fe543f7ea301253508f161e6a843262",
-     "hashNachher": "a1f34ff499a47ffd53112429d2adbd0e85bf2ce339fb0eb1356ce1096a3d924d",
-     "geaendert": true,
-     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+     "hashNachher": "d5109602006825452cf34a0aef0d3ab62fe543f7ea301253508f161e6a843262",
+     "geaendert": false,
+     "dateiHashNachher": "423d517870a1cb123f0a1ee6715e0200e2d5bb46e121f67ce95a3bb28da4c239"
     }
    },
    "geaendert": true
@@ -1346,7 +1364,7 @@
     },
     "held": {
      "modus": "keine",
-     "grund": "Kreatur samt Boden ist das Motiv.",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_utility.png",
      "zelle": {
       "x": 896,
@@ -1514,7 +1532,7 @@
     },
     "held": {
      "modus": "keine",
-     "grund": "bereits freigestellt.",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_tech.png",
      "zelle": {
       "x": 0,
@@ -1562,7 +1580,7 @@
      "hashVorher": "aba04f00a4d757c59b0090ccb4d76f3dc9c08a9180c85e5a2e67d01c005ef533",
      "hashNachher": "aba04f00a4d757c59b0090ccb4d76f3dc9c08a9180c85e5a2e67d01c005ef533",
      "geaendert": false,
-     "dateiHashNachher": "ea7404b702b5ca64e5675ab37a7030ea1b713aa5783f2f83ca2baaef60b02e55"
+     "dateiHashNachher": "a8073275d3a9b73fcf158978f3fc83d94dd3e92d08bb577ba30d9374e5e2c14f"
     }
    },
    "geaendert": false
@@ -1623,8 +1641,8 @@
      "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
     },
     "held": {
-     "modus": "rahmen",
-     "grund": "derselbe Rahmen im Handatlas.",
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_tech.png",
      "zelle": {
       "x": 128,
@@ -1632,7 +1650,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 3266,
+     "entferntePixel": 0,
      "bboxVorher": [
       6,
       7,
@@ -1640,13 +1658,13 @@
       120
      ],
      "bboxNachher": [
-      14,
-      13,
-      113,
-      111
+      6,
+      7,
+      120,
+      120
      ],
      "kantenVorher": 0.009,
-     "kantenNachher": 0.08,
+     "kantenNachher": 0.009,
      "komponentenVorher": [
       {
        "px": 6161,
@@ -1660,23 +1678,23 @@
      ],
      "komponentenNachher": [
       {
-       "px": 4464,
+       "px": 6161,
        "bbox": [
-        17,
-        13,
-        97,
-        99
+        6,
+        7,
+        115,
+        114
        ]
       }
      ],
      "hashVorher": "15248755801bd7f1fefb74a6ac681b8a751333204bdc535a29145f191a64fcd3",
-     "hashNachher": "fbdc10d5fd10045626996f89f2abc8aefa6dd34556b9a7971356b2177a027ec1",
-     "geaendert": true,
-     "dateiHashNachher": "ea7404b702b5ca64e5675ab37a7030ea1b713aa5783f2f83ca2baaef60b02e55"
+     "hashNachher": "15248755801bd7f1fefb74a6ac681b8a751333204bdc535a29145f191a64fcd3",
+     "geaendert": false,
+     "dateiHashNachher": "a8073275d3a9b73fcf158978f3fc83d94dd3e92d08bb577ba30d9374e5e2c14f"
     },
     "silhouette": {
-     "modus": "heldmaske",
-     "grund": "Deckflaeche der Silhouette angleichen.",
+     "modus": "keine",
+     "grund": "Anker-/Heftspanne: Freistellung wuerde Muendung oder Silhouette kuerzen; nur Icon/Menue bereinigen.",
      "datei": "src/client/assets/weapon-sprites/atlas_tech.png",
      "zelle": {
       "x": 128,
@@ -1684,7 +1702,7 @@
       "w": 128,
       "h": 128
      },
-     "entferntePixel": 3266,
+     "entferntePixel": 0,
      "bboxVorher": [
       6,
       7,
@@ -1692,13 +1710,13 @@
       120
      ],
      "bboxNachher": [
-      14,
-      13,
-      113,
-      111
+      6,
+      7,
+      120,
+      120
      ],
      "kantenVorher": 0.009,
-     "kantenNachher": 0.08,
+     "kantenNachher": 0.009,
      "komponentenVorher": [
       {
        "px": 6161,
@@ -1712,19 +1730,19 @@
      ],
      "komponentenNachher": [
       {
-       "px": 4464,
+       "px": 6161,
        "bbox": [
-        17,
-        13,
-        97,
-        99
+        6,
+        7,
+        115,
+        114
        ]
       }
      ],
      "hashVorher": "1c2436d0ae4ea614bf2a4f7f2a350d4c478ecd44c5c2eecec5af8ae5da99267e",
-     "hashNachher": "48e1e366d74a1ed54edaae091be3f85c53ef3e11ea8fa88d541f951f19e06bc9",
-     "geaendert": true,
-     "dateiHashNachher": "ea7404b702b5ca64e5675ab37a7030ea1b713aa5783f2f83ca2baaef60b02e55"
+     "hashNachher": "1c2436d0ae4ea614bf2a4f7f2a350d4c478ecd44c5c2eecec5af8ae5da99267e",
+     "geaendert": false,
+     "dateiHashNachher": "a8073275d3a9b73fcf158978f3fc83d94dd3e92d08bb577ba30d9374e5e2c14f"
     },
     "menue64": {
      "modus": "aus128",

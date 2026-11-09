@@ -8,7 +8,6 @@ Priorität: **P0 Waffen/BAL (ich)**, **P1 Grafik (ich)**, **P2 Betrieb/Security*
 
 | ID | Arbeit | Abnahme / Stand |
 |---|---|---|
-| BAL-09 | Waffenfreistellung und Ruheeffekte: Werkzeug optimieren, testen, nur mit Vorher/Nachher-Sichtprüfung anwenden; bei Erfolg auf alle 150 Waffen. | WIP auf `bg/bal-09` |
 | BAL-05 | Selbstauffüllenden Nachschub als Ökonomieregel entscheiden und mit mindestens 20 Anwendungen belegen. | offen |
 | BAL-15 | Browser-, Touch- und Bewegungsabnahme der Waffen-E2E; 24/64/128 px, Kontrast, Links-/Rechtszielung. | offen |
 | BAL-16 | Namen und Bildversprechen gegen tatsächliche Mechanik abgleichen, besonders pa_127 und Zauberrolle/Buch. | offen |
@@ -17,7 +16,7 @@ Priorität: **P0 Waffen/BAL (ich)**, **P1 Grafik (ich)**, **P2 Betrieb/Security*
 | DESIGNWERT-1 | 52 von 150 Waffen ohne Designwert in der Quelldatei; Herkunft klären oder bewusst als abgeleitet markieren. | offen |
 | BAL-1 | maxRange-Anzeige, Scout-Bewertung, sechs Klassen-/Archetyp-Vergleiche, Wurfweiten-Deckel. | offen |
 
-Erledigt und gemergt: BAL-02, BAL-03, BAL-04, BAL-06, BAL-07, BAL-08, BAL-10, BAL-11, BAL-12, BAL-13. BAL-01 ist als W01-Radius umgesetzt; die alte Tabelle führte ihn fälschlich weiter.
+Erledigt und gemergt: BAL-02, BAL-03, BAL-04, BAL-06, BAL-07, BAL-08, BAL-09, BAL-10, BAL-11, BAL-12, BAL-13. BAL-09: 23 geprüft, 9 bereinigt, idempotent, Beleg `docs/waffenbalance-2026-11-09/BAL-09-ABNAHME.md`. BAL-01 ist als W01-Radius umgesetzt; die alte Tabelle führte ihn fälschlich weiter.
 
 ## P1 — Grafik (Elternsession)
 
