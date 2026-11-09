@@ -965,7 +965,13 @@ export class GameServer {
     const dienst = this.#holeKonten();
     if (!dienst) return { status: 503, body: this.#fehlerNutzlast('Konten sind auf diesem Server nicht verfügbar') };
 
-    const ip = request.socket?.remoteAddress ?? '?';
+    /*
+     * Dieselbe Adresse wie beim Lobby-Limit (DEP-3): Hinter einem vertrauten Proxy zählt der
+     * letzte `X-Forwarded-For`-Eintrag. Vorher stand hier `request.socket.remoteAddress` —
+     * hinter Caddy war das für JEDEN Spieler 127.0.0.1, und die IP-Bremse (40 Anmeldeversuche
+     * je 15 min, 20 Registrierungen je 15 min) traf alle gemeinsam statt den einzelnen Absender.
+     */
+    const ip = clientAdresse(request, this.vertrauteProxys);
     const kopfToken = KontoDienst.tokenAusKopfzeilen(request.headers);
 
     if (request.method === 'GET' && pfad === '/api/bestenliste') {

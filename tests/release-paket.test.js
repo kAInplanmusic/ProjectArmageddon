@@ -37,7 +37,7 @@ test('Paketinhalt: Server, Betrieb, dist — ohne Tests, Abhängigkeiten, Zustan
       'scripts/betrieb/server-start.sh', 'scripts/betrieb/idle-watch.sh', 'scripts/betrieb/sichern.sh',
       'scripts/betrieb/wiederherstellen.sh', 'scripts/release/deploy.sh', 'scripts/release/rollback.sh',
       'scripts/release/smoke.mjs', 'deploy/systemd/projectarmageddon.service', 'deploy/Caddyfile.beispiel',
-      'docs/deploy-plan.md', 'dist/index.html', 'dist/version.json',
+      'deploy/firewall.nft', 'docs/sicherheit-vor-oeffentlich.md', 'docs/deploy-plan.md', 'dist/index.html', 'dist/version.json',
     ]) assert.ok(ziele.includes(pflicht), `fehlt: ${pflicht}`);
     for (const z of ziele) {
       assert.doesNotMatch(z, /^(tests|node_modules|\.pa-state|src\/client|assets|uploaded)\//, z);

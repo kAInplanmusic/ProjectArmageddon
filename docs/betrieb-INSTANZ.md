@@ -198,6 +198,46 @@ Ausgabe (leer):
 
 **Erst wenn Beleg 1–4 hier stehen, ist die Abschaltung nachgewiesen.**
 
+### 3a. Sicherheitsnachweis (REL-2 / DEP-3)
+
+Diese Belege gehören **nach** dem Aufsetzen hierher, bevor 443 für Spieler
+offen bleibt. Reihenfolge und Begründung: `docs/sicherheit-vor-oeffentlich.md`.
+
+**Beleg 5 — Firewall: nur 22/80/443 offen, 3000 zu**
+
+```bash
+sudo nft list ruleset          # oder: sudo ufw status verbose
+# von AUSSEN: nc -zv <knoten-ip> 3000   → refused / timeout
+```
+
+Ausgabe (leer):
+
+```
+
+```
+
+**Beleg 6 — TLS und Proxy**
+
+```bash
+curl -sSI https://<DOMAIN>/ | grep -iE 'HTTP/|strict-transport|x-content-type|x-frame'
+curl -sS -o /dev/null -w '%{http_code}\n' https://<DOMAIN>/healthz    # 404
+node /opt/projectarmageddon/current/scripts/release/smoke.mjs --url https://<DOMAIN> --aussen --version <v> --gitsha <sha>
+```
+
+Ausgabe (leer):
+
+```
+
+```
+
+**Beleg 7 — Anmeldeentscheidung**
+
+Gewählter Weg (offen / Basic-Auth / Kontenpflicht) und Begründung:
+
+```
+
+```
+
 ---
 
 ## 4. Offene Punkte (LÜCKEN, die nur der Auftraggeber füllen kann)
@@ -233,5 +273,7 @@ Ausgabe (leer):
 - **Der Nachweis ist leer.** Abschnitt 3 ist vollständig mit Platzhaltern
   gefüllt und mit keiner echten Ausgabe.
 - **Die systemd-Vorlagen sind nicht geprüft, was ihren Anschluss betrifft**
-  (Pfade, Benutzer, Rechte auf dem Zielknoten) — nur ihre Syntax. Was nicht
-  geprüft werden konnte, steht im Bericht zu diesem Auftrag (`TODO(verify)`).
+  (Pfade, Benutzer, Rechte auf dem Zielknoten) — nur Syntax und Härtung
+  (`systemd-analyze verify`, `systemd-analyze security`; siehe
+  `tests/systemd-vorlagen.test.js`). Was nicht geprüft werden konnte, steht im
+  Bericht zu diesem Auftrag (`TODO(verify)`).

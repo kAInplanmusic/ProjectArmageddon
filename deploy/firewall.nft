@@ -1,0 +1,70 @@
+#!/usr/sbin/nft -f
+# =============================================================================
+#  ProjectArmageddon — Firewall (REL-2 / DEP-3, Schritt 1: Firewall)
+# =============================================================================
+#  VORLAGE. Nicht installiert, läuft nirgends (AGENTS.md §5: eine Datei im Repo
+#  ist kein laufender Dienst). Der Betreiber spielt sie auf dem gemieteten
+#  Knoten ein — VOR Caddy/TLS und VOR dem Öffnen von 443.
+#
+#  Einspielen auf dem Knoten:
+#      sudo nft -c -f deploy/firewall.nft          # Probe: nur prüfen, nichts ändern
+#      sudo install -m 600 deploy/firewall.nft /etc/nftables.conf
+#      sudo systemctl enable --now nftables
+#      sudo nft list ruleset                       # Nachweis (Ausgabe in docs/betrieb-INSTANZ.md)
+#
+#  WAS OFFEN IST — und was nicht:
+#    22/tcp    SSH, mit Mengenbremse gegen Durchprobieren (Limit 6/min, Stoß 4)
+#    80/tcp    NUR für die ACME-Prüfung von Let's Encrypt und die Umleitung auf 443
+#    443/tcp   Caddy: TLS, Oberfläche, /api, /ws
+#    3000/tcp  ZU. Der Spielserver lauscht auf 127.0.0.1 (HOST=127.0.0.1); diese
+#              Tabelle ist die ZWEITE Schicht, falls jemand HOST auf 0.0.0.0 setzt.
+#    ausgehend alles erlaubt (ACME, npm, DNS, Zeitsynchronisation)
+#
+#  ZWEI SCHICHTEN: Hat der Anbieter eine Cloud-Firewall (Hetzner, DigitalOcean …),
+#  dort dieselben drei Ports eintragen. Sie wirkt auch dann, wenn nftables auf dem
+#  Knoten versehentlich aus ist.
+#
+#  ACHTUNG `flush ruleset`: Das entfernt ALLE vorhandenen Regeln, auch die von
+#  Docker. Auf einem Knoten mit Containern (DEP-2, deploy/compose.yaml) vorher
+#  `nft list ruleset` lesen und die Docker-Ketten übernehmen — sonst ist der
+#  Container nicht mehr erreichbar. Ohne Container ist die Vorlage vollständig.
+#
+#  Keine echten Zertifikate, keine Adressen, keine Geheimnisse: Diese Datei
+#  enthält nur Ports und Regeln.
+# =============================================================================
+
+flush ruleset
+
+table inet pa_filter {
+	chain eingang {
+		type filter hook input priority filter; policy drop;
+
+		# Loopback: hier läuft der Spielserver (127.0.0.1:3000), hier fragt die
+		# Idle-Bremse /healthz ab. Nur lokal, nie über eine Netzwerkkarte.
+		iifname "lo" accept comment "Loopback: Spielserver und /healthz"
+
+		# Antworten auf eigene Verbindungen und laufende WebSockets.
+		ct state established,related accept
+		ct state invalid drop
+
+		# Diagnose (ping/ping6) — klein und nützlich, kein Dienst.
+		meta l4proto { icmp, ipv6-icmp } accept comment "ICMP/ICMPv6"
+
+		# SSH mit Bremse: 6 neue Verbindungen je Minute, Stoß 4.
+		tcp dport 22 limit rate 6/minute burst 4 packets accept comment "SSH"
+
+		# ACME (80) und TLS-Proxy (443). Sonst nichts.
+		tcp dport { 80, 443 } accept comment "ACME und Caddy"
+
+		# Alles andere — auch 3000 — wird verworfen und gezählt.
+		counter comment "verworfen"
+	}
+
+	chain weiterleitung {
+		type filter hook forward priority filter; policy drop;
+	}
+
+	chain ausgang {
+		type filter hook output priority filter; policy accept;
+	}
+}

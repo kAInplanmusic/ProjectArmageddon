@@ -226,6 +226,19 @@ Der Spielport 3000 braucht keine Regel: Er lauscht nur auf 127.0.0.1. Die Firewa
 zweite Schicht, falls jemand `HOST` ändert. Hat der Anbieter eine eigene Cloud-Firewall, dort
 dieselben drei Ports — sie wirkt auch, wenn ufw versehentlich aus ist.
 
+Statt der ufw-Befehle kann die geprüfte nftables-Vorlage `deploy/firewall.nft` eingespielt
+werden (gleiche Ports, SSH-Bremse, `policy drop`; Achtung: `flush ruleset` entfernt auch
+Docker-Regeln):
+
+```bash
+sudo nft -c -f /opt/projectarmageddon/current/deploy/firewall.nft
+sudo install -m 600 /opt/projectarmageddon/current/deploy/firewall.nft /etc/nftables.conf
+sudo systemctl enable --now nftables && sudo nft list ruleset
+```
+
+Die vollständige Reihenfolge mit Nachweisbefehlen (Firewall → TLS → Anmeldung →
+Ratenbegrenzung): `docs/sicherheit-vor-oeffentlich.md`.
+
 **Caddy:** Vorlage `deploy/Caddyfile.beispiel` (TLS automatisch, `/ws` durchgereicht, HSTS,
 `nosniff`, `X-Frame-Options`, CSP erst als Report-Only, Kompression nur für Text, lange
 Cache-Zeit nur für `/assets/*`, `/healthz` nach außen gesperrt, API-Körper ≤ 16 KB).
@@ -383,7 +396,7 @@ abgefangen (AGENTS.md §6), Pfadausbruch aus `dist/` gesperrt.
 1. **Anmeldung/Konten** — jeder, der die Seite erreicht, kann Lobbys anlegen und belegen.
    Entscheidung „öffentlich ohne Konten" oder „erst mit Konten" liegt beim Auftraggeber
    (Abschnitt 15). Ohne Konten: Zugang zumindest einschränken (Caddy `basic_auth` für eine
-   geschlossene Testgruppe ist eine Zeile).
+   geschlossene Testgruppe ist eine Zeile). Wege und Folgen: `docs/sicherheit-vor-oeffentlich.md` §3.
 2. **Gleichzeitige WebSocket-Verbindungen je IP** — nicht begrenzt (weder Server noch Caddy-Kern).
    Gegenmittel bei Bedarf: nftables `ct count` je Quelladresse auf 443 oder ein Caddy-Modul.
 3. **CSP** steht als Report-Only; scharf erst nach einer Probe ohne Verstöße in der Konsole.
@@ -460,9 +473,13 @@ Dienst stoppen, Knoten nach Entscheidung des Besitzers löschen.
   Paketbau (echt, rund 1 700 Dateien, davon 1 553 in `dist/`, rund 107 MB; reproduzierbar), `deploy.sh`/`rollback.sh`/`sichern.sh`/
   `wiederherstellen.sh` gegen Stellvertreter für `systemctl` und `npm` in einem Temp-Verzeichnis
   (`tests/release-skripte.test.js`), `smoke.mjs` gegen einen echten Server im Prozess
-  (`tests/release-paket.test.js`), systemd-Vorlagen statisch und mit
-  `systemd-analyze security --offline` (nicht `verify` gegen echte Pfade), Dockerfile/Compose nur
+  (`tests/release-paket.test.js`), systemd-Vorlagen statisch, mit
+  `systemd-analyze verify` (Pfade auf den Repo-Ort umgeschrieben) und
+  `systemd-analyze security --offline` (Exposure 1.5, Test hält ≤ 2.0) — nicht
+  gegen den echten Anschluss, Dockerfile/Compose nur
   gelesen (`tests/container-dateien.test.js`; die COPY-Liste der Bau-Stufe wurde einmal ohne
-  Docker nachgestellt: gleiche 1 553 Dateien in `dist/`), Caddyfile nur gelesen (kein `caddy validate`).
+  Docker nachgestellt: gleiche 1 553 Dateien in `dist/`), Caddyfile und Firewall-Vorlage
+  statisch (`tests/betrieb-absicherung.test.js`; **kein** `caddy validate`, kein geladenes
+  nftables-Regelwerk).
 - Nicht geprüft: Caddy, ufw, Let's Encrypt, `npm ci` auf dem Knoten, systemd-Anschluss
   (Benutzer, Rechte, `ProtectSystem=strict` mit npm-Cache), Docker-Build.

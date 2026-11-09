@@ -11,6 +11,7 @@ laufender Dienst").
 | `systemd/projectarmageddon-idle.service` | Vorlage: ein Durchlauf der Idle-Bremse (systemd-Timer ruft sie) |
 | `systemd/projectarmageddon-idle.timer` | Vorlage: ruft die Bremse jede Minute — auch ohne offene SSH-Sitzung |
 | `betrieb.env.example` | Vorlage der Betriebsparameter; Werte, die eine Entscheidung sind, stehen als `LÜCKE` |
+| `firewall.nft` | Vorlage: nftables, eingehend Standard verwerfen, nur 22/80/443 offen, Spielport 3000 zu |
 | `Caddyfile.beispiel` | Vorlage: Caddy mit TLS vor dem Server, `/ws` durchgereicht, Sicherheits-Header, Kompression, `/healthz` außen gesperrt |
 | `compose.yaml` | Option Container (DEP-2): baut `../Dockerfile`, Port nur auf `127.0.0.1`, Spielstand im Volume |
 
@@ -51,8 +52,12 @@ scripts/betrieb/snapshot.sh --print-config
 bash -n scripts/betrieb/snapshot.sh
 node scripts/release/paket.mjs --trocken          # was ins Release-Paket käme
 scripts/release/deploy.sh --trocken <paket.tar.gz> # zeigt jeden Schritt, ändert nichts
-node --test tests/release-skripte.test.js tests/release-paket.test.js tests/container-dateien.test.js tests/systemd-vorlagen.test.js
+nft -c -f deploy/firewall.nft                    # Firewall-Syntax (ohne Rechte: unshare -rn davor)
+node --test tests/betrieb-absicherung.test.js tests/systemd-vorlagen.test.js tests/release-skripte.test.js tests/release-paket.test.js tests/container-dateien.test.js
 ```
+
+Die Anforderungen für den Schritt nach draußen (Firewall, TLS, Anmeldung,
+Ratenbegrenzung) mit Befehlen und Nachweisplätzen: `docs/sicherheit-vor-oeffentlich.md`.
 
 ## Bevor irgendetwas gemietet wird
 
