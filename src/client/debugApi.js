@@ -19,6 +19,7 @@ import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import { WEAPONS, getWeapon } from '../shared/config/weapons.js';
 import { buildEffect } from '../engine/specials.js';
 import { waffenSpritesZustand } from './waffenSprites.js';
+import { waffenAnimZustand } from './waffenAnim.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import {
   kennzahlen as erfolgsKennzahlen,
@@ -138,6 +139,8 @@ export function exposeDebugApi(game) {
        */
       waffenAnimation: () => ({
         lader: waffenSpritesZustand(),
+        /** Zusatzanimationen (W05/W11): immer gesperrt, bis Rolle und Identität abgenommen sind. */
+        zusatzAnim: waffenAnimZustand(),
         stat: { ...game.renderer.waffenStat },
         reduziert: game.renderer.reducedMotion,
         posen: Object.fromEntries(game.renderer.waffenDiagnose),
