@@ -18,7 +18,7 @@ import { MatchController, BASE_HEALTH } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { WEAPONS, WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
 import {
-  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_ZUENDERPLUS, WAFFEN_FEINTUNING, WAFFEN_VORSTRAHL, WAFFEN_SPREIZUNG, WAFFEN_WIND, WAFFEN_TEMPO, WAFFEN_F7_WERTE, WAFFEN_F8_WERTE, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, WAFFEN_F3_WERTE, normalisiereWaffen, getWaffe,
+  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_ZUENDERPLUS, WAFFEN_FEINTUNING, WAFFEN_VORSTRAHL, WAFFEN_SPREIZUNG, WAFFEN_WIND, WAFFEN_TEMPO, WAFFEN_TREFFER, WAFFEN_F7_WERTE, WAFFEN_F8_WERTE, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, WAFFEN_F3_WERTE, normalisiereWaffen, getWaffe,
 } from '../src/shared/config/waffen-fassung.js';
 import {
   KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, getStartWaffen, normalisiereKit, getStartMunition,
@@ -153,7 +153,7 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, 15); // Waffenfassung 15 (GP-4 Tempo); 14 (AERO-Windfaktor), 13, 12, 11 und 10 bleiben gültig und bitgleich
+  assert.equal(WAFFEN_STANDARD, 16); // Waffenfassung 16 (W01-Trefferfenster); 15 (GP-4 Tempo), 14 (AERO-Windfaktor), 13 bis 10 bleiben gültig und bitgleich
   assert.equal(WAFFEN_SPREIZUNG, 10);
   assert.equal(WAFFEN_VORSTRAHL, 9);
   assert.equal(WAFFEN_FEINTUNING, 8);
@@ -174,7 +174,8 @@ test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf de
   assert.equal(normalisiereWaffen(12), 12);
   assert.equal(normalisiereWaffen(13), 13);
   assert.equal(normalisiereWaffen(14), WAFFEN_WIND);
-  assert.equal(normalisiereWaffen(15), WAFFEN_STANDARD);
+  assert.equal(normalisiereWaffen(15), WAFFEN_TEMPO);
+  assert.equal(normalisiereWaffen(16), WAFFEN_STANDARD);
 });
 
 /** SHA-256 des Katalogs in Fassung 3 (gemessen am Stand 09664fe, vor Fassung 4). */
@@ -462,8 +463,9 @@ test('Fassung 14 bleibt bitgleich: Katalog in Fassung 14 = Stand vor Fassung 15 
     'Fassung 15 unterscheidet sich von Fassung 14');
 });
 
-test('Fassung 15 (WAFFEN_TEMPO) ist Standard und holt die langsamen Kategorien ins Zielband', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_TEMPO);
+test('Fassung 15 (WAFFEN_TEMPO) holt die langsamen Kategorien ins Zielband; Standard ist 16', () => {
+  assert.equal(WAFFEN_STANDARD, WAFFEN_TREFFER);
+  assert.equal(WAFFEN_TREFFER, WAFFEN_TEMPO + 1);
   assert.equal(WAFFEN_TEMPO, WAFFEN_WIND + 1);
   assert.equal(normalisiereWaffen(WAFFEN_TEMPO), WAFFEN_TEMPO);
 

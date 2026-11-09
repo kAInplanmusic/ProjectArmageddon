@@ -214,12 +214,13 @@ test('Der Werfer verletzt sich nicht selbst', () => {
 
 test('Wurfwaffen haben kein Trefferfenster', () => {
   /*
-   * Warum der Test oben gilt: `match.js` gibt Waffen ohne Flächenwirkung ein
-   * Mindest-Trefferfenster von 24 px (`blastRadius || 24`). Für ein Geschoss ist
-   * das sinnvoll, für einen Wurf nicht — er startet direkt am Körper.
+   * Warum der Test oben gilt: `shooting.js` gab Waffen ohne Flächenwirkung ein
+   * Mindest-Trefferfenster von 24 px — bis Waffenfassung 15 im Feld
+   * `blastRadius` und damit als echter Flächenschaden. Für ein Geschoss ist ein
+   * Trefferfenster sinnvoll, für einen Wurf nicht — er startet direkt am Körper.
    *
-   * Geprüft wird der Zustand des erzeugten Projektils: Sein Blast-Radius muss 0
-   * sein.
+   * Ab Waffenfassung 16 (W01) sind beide Felder getrennt: Das Wurfprojektil
+   * trägt weder Blast-Radius noch Trefferfenster; das Geschoss trägt 0/24.
    */
   const waffe = MELEE[0];
   const match = new MatchController({
@@ -235,8 +236,11 @@ test('Wurfwaffen haben kein Trefferfenster', () => {
   const blast = match.world.getComponent(schuss.projectileId, 'Projectile', 'blastRadius');
   assert.equal(blast, 0,
     `${waffe.displayName}: Blast-Radius ${blast} — eine Wurfwaffe darf kein Trefferfenster haben`);
+  assert.equal(match.world.getComponent(schuss.projectileId, 'Projectile', 'trefferRadius'), 0,
+    `${waffe.displayName}: eine Wurfwaffe bekommt auch kein separates Trefferfenster`);
 
-  // Gegenprobe: Ein Geschoss ohne Flächenwirkung bekommt es weiterhin.
+  // Gegenprobe: Ein Geschoss ohne Flächenwirkung bekommt das Trefferfenster
+  // weiterhin — aber getrennt vom Schadensradius.
   const geschoss = WEAPONS.find(w => w.category === 'ranged' && w.blastRadius === 0 && w.damage > 0);
   if (geschoss) {
     const m2 = new MatchController({
@@ -248,8 +252,9 @@ test('Wurfwaffen haben kein Trefferfenster', () => {
     m2.inventory.selectWeapon(s2.entityId, geschoss.id);
     const r2 = m2.fire(s2.entityId, 1.0, 100, geschoss.id);
     if (r2.ok) {
-      const blast2 = m2.world.getComponent(r2.projectileId, 'Projectile', 'blastRadius');
-      assert.equal(blast2, 24,
+      assert.equal(m2.world.getComponent(r2.projectileId, 'Projectile', 'blastRadius'), 0,
+        `${geschoss.displayName}: der Schadensradius bleibt 0`);
+      assert.equal(m2.world.getComponent(r2.projectileId, 'Projectile', 'trefferRadius'), 24,
         `${geschoss.displayName}: Geschosse brauchen das Trefferfenster weiterhin`);
     }
   }

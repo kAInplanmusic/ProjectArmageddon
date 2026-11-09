@@ -69,7 +69,20 @@ export function registerDefaultComponents(componentStore) {
      */
     damageType: 'Int32Array',
     damage: 'Float32Array',
+    /**
+     * Wirklicher Flächenradius (Katalogwert, 0 = keine Fläche).
+     *
+     * W01: Dieser Wert ist NUR noch Explosion/Flächenschaden (`explosion.js`).
+     * Bis Waffenfassung 15 trug er bei Projektilwaffen ohne Katalogradius einen
+     * verdeckten Fallback von 24 px und wirkte damit als Flächenschaden.
+     */
     blastRadius: 'Float32Array',
+    /**
+     * Trefferfenster in Pixeln (Waffenfassung 16, W01): vergrößert NUR die
+     * Kollision gegen eine Figur (`projectileSystem.js`, `#raycast`), niemals
+     * den Schadensradius. 0 = kein Fenster (Nahkampf-/Wurfwaffen, Flächenwaffen).
+     */
+    trefferRadius: 'Float32Array',
     knockback: 'Float32Array',
     /** Waffenfassung 11: Rückstoß des Direkttreffers in Stärke und Richtung (Grad, siehe `engine/stoss.js`); 0 = kein gerichteter Stoß. */
     stossKraft: 'Float32Array',

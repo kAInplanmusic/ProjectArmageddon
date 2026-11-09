@@ -326,6 +326,9 @@ export function turretProjectile({ turret, waffe, winkel, speed }) {
       damageType: damageTypeId(waffe.damageType),
       damage: turret.damage,
       blastRadius: waffe.blastRadius || 18,
+      // Das Geschütz ist eine echte Flächenwaffe; ein Trefferfenster zusätzlich
+      // zum Sprengradius wäre eine zweite, unbegründete Trefferhilfe (W01).
+      trefferRadius: 0,
       knockback: waffe.knockback ?? 0,
       drag: PROJECTILE_DRAG,
       gravityScale: waffe.gravityScale ?? 1,

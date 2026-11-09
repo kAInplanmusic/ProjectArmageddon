@@ -49,7 +49,7 @@
  */
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { getWaffe, WAFFEN_VORSTRAHL, WAFFEN_SICHT } from '../shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT } from '../shared/config/waffen-fassung.js';
 import { WIND_JE_ZUG, WIND_FAKTOR_MAX } from '../shared/config/wind.js';
 import { combatProfile, klassenKennung } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
@@ -293,25 +293,36 @@ function feuere(quelle, playerId, angle, power, weaponId) {
     // Der Schadensbonus aus Buffs wirkt auf den tatsaechlichen Schaden.
     damage: weapon.damage * profile.damageMultiplier * quelle.statuses.damageMultiplier(playerId),
     /*
-     * Der Mindestradius ist ein TREFFERFENSTER, keine Explosion.
+     * Trefferfenster und Schadensradius sind ZWEI Dinge (Waffenfassung 16, W01).
      *
-     * FUND (belegt): Hier stand `weapon.blastRadius || 24` — ein pauschaler
-     * Fallback von 24 px für JEDE Waffe ohne Flächenwirkung (60 Projektile).
-     * Für ein Geschoss, das aus der Mündung heraus beschleunigt, ist das ein
-     * sinnvolles Trefferfenster.
+     * FUND (belegt, docs/waffen-audit-2026-11-08 W01): Hier stand
+     * `weapon.blastRadius || 24` — der Fallback landete im Feld `blastRadius`
+     * und damit in `explosion.js`. Für 33 tatsächlich erzeugte Projektile
+     * (u. a. Maschinenpistole `pa_040`) wies der Katalog Radius 0 aus, das
+     * Geschoss trug aber 24 und verteilte echten Flächenschaden mit Abfall;
+     * selbst der Krater (0,6 × Radius = 14 px) entstand daraus. Ein
+     * Trefferfenster war das nie — es war ein verdeckter Sprengradius.
      *
-     * Für eine WURFWAFFE ist es falsch: Sie wird direkt am Körper abgeworfen
-     * und bleibt durch ihre niedrige Geschwindigkeit (Faktor 0,3–0,6) mehrere
-     * Ticks in diesem Radius. Gemessen: Der Baseballschläger verursachte am
-     * SCHÜTZEN 104 Schaden bei jedem Winkel und am Ziel 0 — er traf sich
-     * selbst, statt zu fliegen.
+     * Ab Fassung 16 gilt:
+     *  - `blastRadius` ist AUSSCHLIESSLICH der Katalogwert. 0 bleibt 0: kein
+     *    Flächenschaden, kein Krater aus einem Radius, den niemand angezeigt hat.
+     *  - `trefferRadius` (24 px) vergrößert NUR die Kollision gegen eine Figur
+     *    (`projectileSystem.js`, `#raycast`). Das Geschoss trifft damit
+     *    zuverlässig, richtet seinen Schaden aber allein am getroffenen Ziel an.
+     *  - Nahkampf-/Wurfwaffen bekommen KEIN Trefferfenster: Sie starten direkt
+     *    am Körper (gemessen: Baseballschläger traf sich selbst mit 104 Schaden).
+     *  - Echte Flächenwaffen (Katalog-Radius > 0) bleiben unverändert; ihr
+     *    Radius wirkt weiter als Explosion, ein zweites Fenster brauchen sie nicht.
      *
-     * Wurfwaffen bekommen deshalb KEIN Trefferfenster: Sie treffen direkt
-     * (der Besitzer ist vom Treffer ausgeschlossen, siehe projectileSystem)
-     * oder gar nicht. Ihr Krater entsteht über `terrainDamage`.
+     * Fassungen 1 bis 15 behalten den alten Spawnwert bitgleich — Aufzeichnungen
+     * davor dürfen nicht nachträglich anders laufen (AGENTS.md §2).
      */
-    blastRadius: weapon.blastRadius
-      || (weapon.category === 'melee' ? 0 : 24),
+    blastRadius: (!(quelle.waffenFassung >= WAFFEN_TREFFER) && weapon.category !== 'melee')
+      ? (weapon.blastRadius || 24)
+      : weapon.blastRadius,
+    trefferRadius: (quelle.waffenFassung >= WAFFEN_TREFFER
+      && weapon.category !== 'melee'
+      && !(weapon.blastRadius > 0)) ? 24 : 0,
     // Waffenfassung 11: Waffen mit Richtung (`stossRichtung`) stoßen den Direkttreffer gerichtet (`engine/stoss.js`), nicht radial.
     knockback: weapon.stossRichtung === undefined ? weapon.knockback : 0,
     stossKraft: weapon.stossRichtung === undefined ? 0 : weapon.knockback,
