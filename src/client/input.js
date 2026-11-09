@@ -132,7 +132,7 @@ export class InputController {
       // Ohne diese Prüfung würde z. B. der Seed "2026" den Winkel verändern,
       // die Leertaste feuern und "r" das Match neu starten.
       // Ebenso nicht, solange der Fokus im Einstellungs-Dropdown liegt oder der Dreh-Hinweis das Spiel abdeckt.
-      if (spielTastenAus(event.target)) return;
+      if (spielTastenAus(event.target, event.key)) return;
       this.#keys.add(taste(event.key));
       this.#onKeyDown(event);
     });
