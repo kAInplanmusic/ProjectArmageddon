@@ -1,0 +1,9664 @@
+{
+ "auftrag": "BAL-10",
+ "verfahren": "Pixelmessung je Rasterzelle; Urteile aus SICHT in tools/waffen-anim-abnahme.py",
+ "schwellen": {
+  "alphaSichtbar": 16,
+  "distinktDifferenz": 0.03,
+  "loopMax": 0.045,
+  "histKorrMin": 0.85,
+  "silhouetteIouMin": 0.45,
+  "richtungStreuungMax": 15.0,
+  "minDistinkt": 6
+ },
+ "blaetter": {
+  "pa_032": {
+   "id": "pa_032",
+   "waffe": "Raketenrucksack",
+   "rolle": "ruecken",
+   "motivDokumentiert": "blauer geflügelter Käfer/Krebs",
+   "naechsterSchritt": "Neue Vorlage: Rucksack mit zwei Düsen unten, Flamme separat.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 20358,
+     "deckung": 0.31064,
+     "bbox": [
+      38,
+      43,
+      217,
+      239
+     ],
+     "schwerpunkt": [
+      137.16,
+      137.63
+     ],
+     "orientierung": 129.29,
+     "transparent": 0.68324,
+     "halbsaum": 0.00612,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 24413,
+     "deckung": 0.37251,
+     "bbox": [
+      9,
+      26,
+      246,
+      239
+     ],
+     "schwerpunkt": [
+      125.45,
+      131.93
+     ],
+     "orientierung": 142.64,
+     "transparent": 0.61989,
+     "halbsaum": 0.0076,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 24185,
+     "deckung": 0.36903,
+     "bbox": [
+      8,
+      57,
+      248,
+      240
+     ],
+     "schwerpunkt": [
+      136.69,
+      147.81
+     ],
+     "orientierung": 154.01,
+     "transparent": 0.6246,
+     "halbsaum": 0.00636,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 26144,
+     "deckung": 0.39893,
+     "bbox": [
+      14,
+      24,
+      241,
+      239
+     ],
+     "schwerpunkt": [
+      129.29,
+      139.57
+     ],
+     "orientierung": 165.42,
+     "transparent": 0.59204,
+     "halbsaum": 0.00903,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 28235,
+     "deckung": 0.43083,
+     "bbox": [
+      11,
+      9,
+      245,
+      239
+     ],
+     "schwerpunkt": [
+      131.23,
+      120.12
+     ],
+     "orientierung": 140.08,
+     "transparent": 0.56133,
+     "halbsaum": 0.00784,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 26879,
+     "deckung": 0.41014,
+     "bbox": [
+      8,
+      24,
+      248,
+      239
+     ],
+     "schwerpunkt": [
+      131.99,
+      128.58
+     ],
+     "orientierung": 145.0,
+     "transparent": 0.58276,
+     "halbsaum": 0.0071,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 26041,
+     "deckung": 0.39735,
+     "bbox": [
+      8,
+      33,
+      248,
+      240
+     ],
+     "schwerpunkt": [
+      132.42,
+      134.54
+     ],
+     "orientierung": 146.24,
+     "transparent": 0.59598,
+     "halbsaum": 0.00667,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 27301,
+     "deckung": 0.41658,
+     "bbox": [
+      11,
+      17,
+      245,
+      239
+     ],
+     "schwerpunkt": [
+      131.76,
+      125.37
+     ],
+     "orientierung": 142.0,
+     "transparent": 0.57556,
+     "halbsaum": 0.00786,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9638,
+     "silhouetteIou": 0.6654,
+     "flaecheRatio": 0.78,
+     "lageAbweichung": 0.0268
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9672,
+     "silhouetteIou": 0.5647,
+     "flaecheRatio": 0.936,
+     "lageAbweichung": 0.0256
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9964,
+     "silhouetteIou": 0.7448,
+     "flaecheRatio": 0.927,
+     "lageAbweichung": 0.06
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.8959,
+     "silhouetteIou": 0.5355,
+     "flaecheRatio": 1.002,
+     "lageAbweichung": 0.0268
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9966,
+     "silhouetteIou": 0.7765,
+     "flaecheRatio": 1.082,
+     "lageAbweichung": 0.0513
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9972,
+     "silhouetteIou": 0.7837,
+     "flaecheRatio": 1.03,
+     "lageAbweichung": 0.0182
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9977,
+     "silhouetteIou": 0.7732,
+     "flaecheRatio": 0.998,
+     "lageAbweichung": 0.0055
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9967,
+     "silhouetteIou": 0.7867,
+     "flaecheRatio": 1.046,
+     "lageAbweichung": 0.0307
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.1304,
+    "loopDiff": 0.14882,
+    "richtungsStreuungGrad": 9.9,
+    "nettoWeg": 0.052,
+    "richtungsResultante": 0.126,
+    "drehSummeGrad": 71.8,
+    "halbsaum": 0.00732,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00732,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "blauer geflügelter Käfer/Krebs statt Raketenrucksack; F3 zeigt eine gespreizte Flügelpose und bricht die Silhouette",
+     "brueche": [
+      3
+     ],
+     "messAuffaellig": [],
+     "histKorrMin": 0.8959,
+     "silhouetteIouMin": 0.5355,
+     "flaecheRatioMin": 0.78,
+     "flaecheRatioMax": 1.082
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 9.9,
+     "nettoWeg": 0.052,
+     "nettoWinkel": -113.8,
+     "resultante": 0.126
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.1304,
+     "schrittDifferenzen": [
+      0.13924,
+      0.1572,
+      0.17561,
+      0.20255,
+      0.07364,
+      0.07337,
+      0.0912
+     ],
+     "loopDiff": 0.14882
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Flügelwesen, kein am Rücken getragenes Objekt",
+     "drehSumme": 71.8,
+     "ortsdrift": 0.052
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_038": {
+   "id": "pa_038",
+   "waffe": "Rakete",
+   "rolle": "flug",
+   "motivDokumentiert": "orange Rakete mit Flammenmantel",
+   "naechsterSchritt": "Flamme als eigene Ebene trennen und 6+ unterscheidbare Frames erzeugen.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 23987,
+     "deckung": 0.36601,
+     "bbox": [
+      10,
+      30,
+      245,
+      239
+     ],
+     "schwerpunkt": [
+      134.92,
+      134.16
+     ],
+     "orientierung": 140.67,
+     "transparent": 0.62791,
+     "halbsaum": 0.00607,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 25802,
+     "deckung": 0.39371,
+     "bbox": [
+      12,
+      29,
+      244,
+      239
+     ],
+     "schwerpunkt": [
+      132.85,
+      128.75
+     ],
+     "orientierung": 139.22,
+     "transparent": 0.5985,
+     "halbsaum": 0.0078,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 24904,
+     "deckung": 0.38,
+     "bbox": [
+      9,
+      26,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      135.77,
+      131.75
+     ],
+     "orientierung": 140.31,
+     "transparent": 0.61383,
+     "halbsaum": 0.00616,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 26709,
+     "deckung": 0.40755,
+     "bbox": [
+      9,
+      26,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      132.54,
+      126.93
+     ],
+     "orientierung": 139.53,
+     "transparent": 0.58446,
+     "halbsaum": 0.008,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 26995,
+     "deckung": 0.41191,
+     "bbox": [
+      9,
+      23,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      132.73,
+      125.08
+     ],
+     "orientierung": 139.1,
+     "transparent": 0.57993,
+     "halbsaum": 0.00816,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 26714,
+     "deckung": 0.40762,
+     "bbox": [
+      9,
+      22,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      132.89,
+      124.65
+     ],
+     "orientierung": 139.24,
+     "transparent": 0.5844,
+     "halbsaum": 0.00798,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 26630,
+     "deckung": 0.40634,
+     "bbox": [
+      9,
+      24,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      132.55,
+      125.82
+     ],
+     "orientierung": 139.3,
+     "transparent": 0.58582,
+     "halbsaum": 0.00784,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 26564,
+     "deckung": 0.40533,
+     "bbox": [
+      9,
+      25,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      133.25,
+      125.25
+     ],
+     "orientierung": 139.15,
+     "transparent": 0.58824,
+     "halbsaum": 0.00642,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9918,
+     "silhouetteIou": 0.9038,
+     "flaecheRatio": 0.902,
+     "lageAbweichung": 0.0315
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9981,
+     "silhouetteIou": 0.9499,
+     "flaecheRatio": 0.97,
+     "lageAbweichung": 0.0093
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9925,
+     "silhouetteIou": 0.9079,
+     "flaecheRatio": 0.936,
+     "lageAbweichung": 0.0239
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9987,
+     "silhouetteIou": 0.9557,
+     "flaecheRatio": 1.004,
+     "lageAbweichung": 0.0025
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9985,
+     "silhouetteIou": 0.9543,
+     "flaecheRatio": 1.015,
+     "lageAbweichung": 0.0051
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9983,
+     "silhouetteIou": 0.9463,
+     "flaecheRatio": 1.004,
+     "lageAbweichung": 0.0067
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.998,
+     "silhouetteIou": 0.9546,
+     "flaecheRatio": 1.001,
+     "lageAbweichung": 0.0025
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9987,
+     "silhouetteIou": 0.9464,
+     "flaecheRatio": 0.999,
+     "lageAbweichung": 0.0046
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 3,
+    "mittlereDifferenz": 0.02196,
+    "loopDiff": 0.05079,
+    "richtungsStreuungGrad": 0.6,
+    "nettoWeg": 0.035,
+    "richtungsResultante": 0.293,
+    "drehSummeGrad": 4.1,
+    "halbsaum": 0.0073,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.0073,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "orange Rakete, Motiv trifft die Waffe",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9918,
+     "silhouetteIouMin": 0.9038,
+     "flaecheRatioMin": 0.902,
+     "flaecheRatioMax": 1.015
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.6,
+     "nettoWeg": 0.035,
+     "nettoWinkel": -100.6,
+     "resultante": 0.293
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 3,
+     "vertreter": [
+      0,
+      1,
+      4
+     ],
+     "mittlereDifferenz": 0.02196,
+     "schrittDifferenzen": [
+      0.03117,
+      0.04038,
+      0.02492,
+      0.02103,
+      0.01006,
+      0.01245,
+      0.01367
+     ],
+     "loopDiff": 0.05079
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, stabile Achse",
+     "drehSumme": 4.1,
+     "ortsdrift": 0.035
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Triebwerksflamme fest im Blatt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_044": {
+   "id": "pa_044",
+   "waffe": "Phönixschlag",
+   "rolle": "flug",
+   "motivDokumentiert": "brennender Phönix",
+   "naechsterSchritt": "Flügelschlag neu animieren; Feuer als eigene Ebene.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 28860,
+     "deckung": 0.44037,
+     "bbox": [
+      26,
+      21,
+      230,
+      240
+     ],
+     "schwerpunkt": [
+      132.54,
+      125.78
+     ],
+     "orientierung": 68.45,
+     "transparent": 0.55119,
+     "halbsaum": 0.00844,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 29312,
+     "deckung": 0.44727,
+     "bbox": [
+      25,
+      20,
+      231,
+      240
+     ],
+     "schwerpunkt": [
+      132.5,
+      125.46
+     ],
+     "orientierung": 65.64,
+     "transparent": 0.5444,
+     "halbsaum": 0.00833,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 29448,
+     "deckung": 0.44934,
+     "bbox": [
+      24,
+      20,
+      232,
+      240
+     ],
+     "schwerpunkt": [
+      132.75,
+      125.43
+     ],
+     "orientierung": 64.81,
+     "transparent": 0.54263,
+     "halbsaum": 0.00803,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 29393,
+     "deckung": 0.4485,
+     "bbox": [
+      24,
+      20,
+      231,
+      240
+     ],
+     "schwerpunkt": [
+      131.98,
+      125.47
+     ],
+     "orientierung": 64.57,
+     "transparent": 0.54314,
+     "halbsaum": 0.00836,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 28912,
+     "deckung": 0.44116,
+     "bbox": [
+      26,
+      22,
+      230,
+      240
+     ],
+     "schwerpunkt": [
+      132.38,
+      126.0
+     ],
+     "orientierung": 67.58,
+     "transparent": 0.55009,
+     "halbsaum": 0.00874,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 29174,
+     "deckung": 0.44516,
+     "bbox": [
+      25,
+      21,
+      231,
+      240
+     ],
+     "schwerpunkt": [
+      132.35,
+      125.97
+     ],
+     "orientierung": 65.51,
+     "transparent": 0.54651,
+     "halbsaum": 0.00833,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 29468,
+     "deckung": 0.44965,
+     "bbox": [
+      24,
+      20,
+      232,
+      240
+     ],
+     "schwerpunkt": [
+      132.52,
+      125.1
+     ],
+     "orientierung": 64.22,
+     "transparent": 0.54269,
+     "halbsaum": 0.00766,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 29342,
+     "deckung": 0.44772,
+     "bbox": [
+      24,
+      20,
+      231,
+      240
+     ],
+     "schwerpunkt": [
+      132.0,
+      125.89
+     ],
+     "orientierung": 64.44,
+     "transparent": 0.54353,
+     "halbsaum": 0.00874,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9991,
+     "silhouetteIou": 0.9824,
+     "flaecheRatio": 0.984,
+     "lageAbweichung": 0.0007
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9993,
+     "silhouetteIou": 0.98,
+     "flaecheRatio": 0.999,
+     "lageAbweichung": 0.0007
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9988,
+     "silhouetteIou": 0.9785,
+     "flaecheRatio": 1.004,
+     "lageAbweichung": 0.0014
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9994,
+     "silhouetteIou": 0.9773,
+     "flaecheRatio": 1.002,
+     "lageAbweichung": 0.0019
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9992,
+     "silhouetteIou": 0.9715,
+     "flaecheRatio": 0.986,
+     "lageAbweichung": 0.0015
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9988,
+     "silhouetteIou": 0.9793,
+     "flaecheRatio": 0.995,
+     "lageAbweichung": 0.0014
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.999,
+     "silhouetteIou": 0.9753,
+     "flaecheRatio": 1.005,
+     "lageAbweichung": 0.0021
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9994,
+     "silhouetteIou": 0.9772,
+     "flaecheRatio": 1.001,
+     "lageAbweichung": 0.002
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 1,
+    "mittlereDifferenz": 0.01296,
+    "loopDiff": 0.015,
+    "richtungsStreuungGrad": 1.5,
+    "nettoWeg": 0.002,
+    "richtungsResultante": 0.26,
+    "drehSummeGrad": 10.5,
+    "halbsaum": 0.00833,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00833,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "brennender Phönix, Motiv trifft den Phönixschlag",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9988,
+     "silhouetteIouMin": 0.9715,
+     "flaecheRatioMin": 0.984,
+     "flaecheRatioMax": 1.005
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.5,
+     "nettoWeg": 0.002,
+     "nettoWinkel": 168.6,
+     "resultante": 0.26
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 1,
+     "vertreter": [
+      0
+     ],
+     "mittlereDifferenz": 0.01296,
+     "schrittDifferenzen": [
+      0.01303,
+      0.00877,
+      0.01093,
+      0.01476,
+      0.01166,
+      0.01559,
+      0.01596
+     ],
+     "loopDiff": 0.015
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Flügelform konstant",
+     "drehSumme": 10.5,
+     "ortsdrift": 0.002
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Feuer in Flügeln und Körper eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_048": {
+   "id": "pa_048",
+   "waffe": "Bananengranate",
+   "rolle": "flug",
+   "motivDokumentiert": "Bananengranate mit Zünder",
+   "naechsterSchritt": "Rotation und Splitter ergänzen; acht echte Phasen statt Standbild.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 21974,
+     "deckung": 0.3353,
+     "bbox": [
+      18,
+      21,
+      237,
+      239
+     ],
+     "schwerpunkt": [
+      138.3,
+      149.24
+     ],
+     "orientierung": 130.75,
+     "transparent": 0.65741,
+     "halbsaum": 0.00729,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 22037,
+     "deckung": 0.33626,
+     "bbox": [
+      18,
+      21,
+      238,
+      239
+     ],
+     "schwerpunkt": [
+      138.73,
+      149.08
+     ],
+     "orientierung": 130.7,
+     "transparent": 0.65663,
+     "halbsaum": 0.00711,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 21886,
+     "deckung": 0.33395,
+     "bbox": [
+      19,
+      21,
+      237,
+      239
+     ],
+     "schwerpunkt": [
+      138.98,
+      149.13
+     ],
+     "orientierung": 130.62,
+     "transparent": 0.66006,
+     "halbsaum": 0.00598,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 21915,
+     "deckung": 0.3344,
+     "bbox": [
+      19,
+      20,
+      237,
+      239
+     ],
+     "schwerpunkt": [
+      138.61,
+      148.71
+     ],
+     "orientierung": 130.42,
+     "transparent": 0.659,
+     "halbsaum": 0.00661,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 21943,
+     "deckung": 0.33482,
+     "bbox": [
+      19,
+      21,
+      237,
+      239
+     ],
+     "schwerpunkt": [
+      139.08,
+      149.29
+     ],
+     "orientierung": 130.73,
+     "transparent": 0.65858,
+     "halbsaum": 0.00659,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 21827,
+     "deckung": 0.33305,
+     "bbox": [
+      19,
+      21,
+      237,
+      239
+     ],
+     "schwerpunkt": [
+      138.83,
+      149.33
+     ],
+     "orientierung": 130.66,
+     "transparent": 0.66052,
+     "halbsaum": 0.00642,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 21731,
+     "deckung": 0.33159,
+     "bbox": [
+      19,
+      22,
+      236,
+      239
+     ],
+     "schwerpunkt": [
+      138.04,
+      149.66
+     ],
+     "orientierung": 130.66,
+     "transparent": 0.66194,
+     "halbsaum": 0.00647,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 21862,
+     "deckung": 0.33359,
+     "bbox": [
+      19,
+      21,
+      236,
+      239
+     ],
+     "schwerpunkt": [
+      138.18,
+      149.23
+     ],
+     "orientierung": 130.57,
+     "transparent": 0.65974,
+     "halbsaum": 0.00667,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9977,
+     "silhouetteIou": 0.9875,
+     "flaecheRatio": 1.003,
+     "lageAbweichung": 0.0014
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9979,
+     "silhouetteIou": 0.9802,
+     "flaecheRatio": 1.006,
+     "lageAbweichung": 0.0006
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9979,
+     "silhouetteIou": 0.9886,
+     "flaecheRatio": 0.999,
+     "lageAbweichung": 0.0013
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.999,
+     "silhouetteIou": 0.983,
+     "flaecheRatio": 1.001,
+     "lageAbweichung": 0.0021
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9957,
+     "silhouetteIou": 0.9864,
+     "flaecheRatio": 1.002,
+     "lageAbweichung": 0.0016
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9964,
+     "silhouetteIou": 0.9892,
+     "flaecheRatio": 0.997,
+     "lageAbweichung": 0.0007
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.998,
+     "silhouetteIou": 0.9859,
+     "flaecheRatio": 0.992,
+     "lageAbweichung": 0.003
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9942,
+     "silhouetteIou": 0.9858,
+     "flaecheRatio": 0.998,
+     "lageAbweichung": 0.0019
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 1,
+    "mittlereDifferenz": 0.00868,
+    "loopDiff": 0.00929,
+    "richtungsStreuungGrad": 0.1,
+    "nettoWeg": 0.0,
+    "richtungsResultante": 0.35,
+    "drehSummeGrad": 0.8,
+    "halbsaum": 0.00664,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00664,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Bananengranate mit Zünder, Motiv trifft die Waffe",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9942,
+     "silhouetteIouMin": 0.9802,
+     "flaecheRatioMin": 0.992,
+     "flaecheRatioMax": 1.006
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.1,
+     "nettoWeg": 0.0,
+     "nettoWinkel": -175.9,
+     "resultante": 0.35
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 1,
+     "vertreter": [
+      0
+     ],
+     "mittlereDifferenz": 0.00868,
+     "schrittDifferenzen": [
+      0.00763,
+      0.00932,
+      0.00859,
+      0.0114,
+      0.00701,
+      0.00932,
+      0.00749
+     ],
+     "loopDiff": 0.00929
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Silhouette konstant",
+     "drehSumme": 0.8,
+     "ortsdrift": 0.0
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_049": {
+   "id": "pa_049",
+   "waffe": "Bumerang",
+   "rolle": "wurf",
+   "motivDokumentiert": "orange Bombe mit grauen Flügeln",
+   "naechsterSchritt": "Neue Vorlage Bumerang mit sichtbarer Rotation und Rückflugpose.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 23582,
+     "deckung": 0.35983,
+     "bbox": [
+      15,
+      21,
+      240,
+      239
+     ],
+     "schwerpunkt": [
+      140.61,
+      165.07
+     ],
+     "orientierung": 137.98,
+     "transparent": 0.6331,
+     "halbsaum": 0.00706,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 23857,
+     "deckung": 0.36403,
+     "bbox": [
+      9,
+      43,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      138.78,
+      163.92
+     ],
+     "orientierung": 168.86,
+     "transparent": 0.62932,
+     "halbsaum": 0.00665,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 22820,
+     "deckung": 0.34821,
+     "bbox": [
+      14,
+      14,
+      242,
+      239
+     ],
+     "schwerpunkt": [
+      142.83,
+      167.78
+     ],
+     "orientierung": 142.55,
+     "transparent": 0.64487,
+     "halbsaum": 0.00693,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 25493,
+     "deckung": 0.38899,
+     "bbox": [
+      13,
+      21,
+      243,
+      239
+     ],
+     "schwerpunkt": [
+      144.43,
+      160.62
+     ],
+     "orientierung": 144.52,
+     "transparent": 0.60321,
+     "halbsaum": 0.0078,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 23183,
+     "deckung": 0.35374,
+     "bbox": [
+      9,
+      27,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      145.99,
+      169.04
+     ],
+     "orientierung": 151.13,
+     "transparent": 0.63943,
+     "halbsaum": 0.00682,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 25325,
+     "deckung": 0.38643,
+     "bbox": [
+      9,
+      21,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      138.62,
+      161.03
+     ],
+     "orientierung": 146.41,
+     "transparent": 0.60628,
+     "halbsaum": 0.00729,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 22924,
+     "deckung": 0.34979,
+     "bbox": [
+      21,
+      11,
+      234,
+      239
+     ],
+     "schwerpunkt": [
+      141.75,
+      156.52
+     ],
+     "orientierung": 130.63,
+     "transparent": 0.64337,
+     "halbsaum": 0.00684,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 21642,
+     "deckung": 0.33023,
+     "bbox": [
+      9,
+      58,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      136.72,
+      167.59
+     ],
+     "orientierung": 150.88,
+     "transparent": 0.66342,
+     "halbsaum": 0.00635,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9748,
+     "silhouetteIou": 0.7627,
+     "flaecheRatio": 1.009,
+     "lageAbweichung": 0.0032
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9921,
+     "silhouetteIou": 0.6821,
+     "flaecheRatio": 1.02,
+     "lageAbweichung": 0.0096
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9922,
+     "silhouetteIou": 0.7493,
+     "flaecheRatio": 0.976,
+     "lageAbweichung": 0.0143
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9752,
+     "silhouetteIou": 0.6942,
+     "flaecheRatio": 1.09,
+     "lageAbweichung": 0.0197
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9885,
+     "silhouetteIou": 0.7467,
+     "flaecheRatio": 0.991,
+     "lageAbweichung": 0.0258
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9832,
+     "silhouetteIou": 0.7279,
+     "flaecheRatio": 1.083,
+     "lageAbweichung": 0.0168
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9886,
+     "silhouetteIou": 0.712,
+     "flaecheRatio": 0.98,
+     "lageAbweichung": 0.0312
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9752,
+     "silhouetteIou": 0.6564,
+     "flaecheRatio": 0.926,
+     "lageAbweichung": 0.0212
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.09171,
+    "loopDiff": 0.11035,
+    "richtungsStreuungGrad": 10.5,
+    "nettoWeg": 0.018,
+    "richtungsResultante": 0.077,
+    "drehSummeGrad": 106.5,
+    "halbsaum": 0.00697,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00697,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "orange Bombe mit grauen Flügeln statt Bumerang",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9748,
+     "silhouetteIouMin": 0.6564,
+     "flaecheRatioMin": 0.926,
+     "flaecheRatioMax": 1.09
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 10.5,
+     "nettoWeg": 0.018,
+     "nettoWinkel": 147.1,
+     "resultante": 0.077
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09171,
+     "schrittDifferenzen": [
+      0.07774,
+      0.08778,
+      0.09512,
+      0.0659,
+      0.07946,
+      0.10595,
+      0.12998
+     ],
+     "loopDiff": 0.11035
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "keine Drehachse, keine Rückkehrbewegung erkennbar",
+     "drehSumme": 106.5,
+     "ortsdrift": 0.018
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_053": {
+   "id": "pa_053",
+   "waffe": "Roboterbombe",
+   "rolle": "welt",
+   "motivDokumentiert": "Holzwagen mit Mäusen",
+   "naechsterSchritt": "Neue Vorlage Roboterbombe mit Zünder und Explosionsphase.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 20351,
+     "deckung": 0.31053,
+     "bbox": [
+      40,
+      26,
+      215,
+      240
+     ],
+     "schwerpunkt": [
+      132.67,
+      148.06
+     ],
+     "orientierung": 94.38,
+     "transparent": 0.67958,
+     "halbsaum": 0.00989,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 18963,
+     "deckung": 0.28935,
+     "bbox": [
+      48,
+      20,
+      208,
+      240
+     ],
+     "schwerpunkt": [
+      124.1,
+      147.13
+     ],
+     "orientierung": 84.11,
+     "transparent": 0.6992,
+     "halbsaum": 0.01144,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 20189,
+     "deckung": 0.30806,
+     "bbox": [
+      43,
+      15,
+      213,
+      240
+     ],
+     "schwerpunkt": [
+      132.25,
+      146.29
+     ],
+     "orientierung": 95.32,
+     "transparent": 0.68127,
+     "halbsaum": 0.01067,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 16370,
+     "deckung": 0.24979,
+     "bbox": [
+      40,
+      22,
+      216,
+      240
+     ],
+     "schwerpunkt": [
+      138.33,
+      142.28
+     ],
+     "orientierung": 86.93,
+     "transparent": 0.74049,
+     "halbsaum": 0.00972,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 17845,
+     "deckung": 0.27229,
+     "bbox": [
+      38,
+      14,
+      217,
+      240
+     ],
+     "schwerpunkt": [
+      135.55,
+      136.06
+     ],
+     "orientierung": 82.61,
+     "transparent": 0.71709,
+     "halbsaum": 0.01062,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 14036,
+     "deckung": 0.21417,
+     "bbox": [
+      59,
+      27,
+      197,
+      240
+     ],
+     "schwerpunkt": [
+      131.32,
+      153.72
+     ],
+     "orientierung": 93.91,
+     "transparent": 0.7774,
+     "halbsaum": 0.00842,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 19785,
+     "deckung": 0.3019,
+     "bbox": [
+      47,
+      17,
+      210,
+      240
+     ],
+     "schwerpunkt": [
+      133.04,
+      143.62
+     ],
+     "orientierung": 88.24,
+     "transparent": 0.68805,
+     "halbsaum": 0.01006,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 15717,
+     "deckung": 0.23982,
+     "bbox": [
+      43,
+      37,
+      213,
+      240
+     ],
+     "schwerpunkt": [
+      136.38,
+      156.97
+     ],
+     "orientierung": 127.74,
+     "transparent": 0.75117,
+     "halbsaum": 0.009,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.926,
+     "silhouetteIou": 0.6639,
+     "flaecheRatio": 1.106,
+     "lageAbweichung": 0.0053
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9298,
+     "silhouetteIou": 0.5492,
+     "flaecheRatio": 1.03,
+     "lageAbweichung": 0.0342
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9781,
+     "silhouetteIou": 0.6493,
+     "flaecheRatio": 1.097,
+     "lageAbweichung": 0.0029
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9082,
+     "silhouetteIou": 0.6084,
+     "flaecheRatio": 0.889,
+     "lageAbweichung": 0.0275
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9338,
+     "silhouetteIou": 0.6184,
+     "flaecheRatio": 0.97,
+     "lageAbweichung": 0.0429
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9555,
+     "silhouetteIou": 0.5149,
+     "flaecheRatio": 0.763,
+     "lageAbweichung": 0.0281
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9647,
+     "silhouetteIou": 0.6571,
+     "flaecheRatio": 1.075,
+     "lageAbweichung": 0.0121
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9755,
+     "silhouetteIou": 0.5507,
+     "flaecheRatio": 0.854,
+     "lageAbweichung": 0.0424
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.09666,
+    "loopDiff": 0.09293,
+    "richtungsStreuungGrad": 13.2,
+    "nettoWeg": 0.038,
+    "richtungsResultante": 0.134,
+    "drehSummeGrad": 90.6,
+    "halbsaum": 0.00998,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00998,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "Holzwagen mit Mäusen statt Roboterbombe; F1/F5 wechseln Aufbau und Aufsatz",
+     "brueche": [
+      1,
+      5
+     ],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9082,
+     "silhouetteIouMin": 0.5149,
+     "flaecheRatioMin": 0.763,
+     "flaecheRatioMax": 1.106
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 13.2,
+     "nettoWeg": 0.038,
+     "nettoWinkel": 67.4,
+     "resultante": 0.134
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09666,
+     "schrittDifferenzen": [
+      0.10397,
+      0.10162,
+      0.101,
+      0.06411,
+      0.11337,
+      0.10023,
+      0.0923
+     ],
+     "loopDiff": 0.09293
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Weltobjekt am Boden, Rollenzuordnung plausibel",
+     "drehSumme": 90.6,
+     "ortsdrift": 0.038
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_061": {
+   "id": "pa_061",
+   "waffe": "Feuerdämon",
+   "rolle": "beschwoerung",
+   "motivDokumentiert": "brennender Dämon",
+   "naechsterSchritt": "F1 ersetzen, Flamme trennen, mindestens sechs Körperphasen.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 29759,
+     "deckung": 0.45409,
+     "bbox": [
+      15,
+      20,
+      240,
+      240
+     ],
+     "schwerpunkt": [
+      115.49,
+      138.03
+     ],
+     "orientierung": 106.07,
+     "transparent": 0.53839,
+     "halbsaum": 0.00752,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 29867,
+     "deckung": 0.45573,
+     "bbox": [
+      13,
+      20,
+      243,
+      240
+     ],
+     "schwerpunkt": [
+      113.72,
+      137.73
+     ],
+     "orientierung": 127.67,
+     "transparent": 0.53743,
+     "halbsaum": 0.00684,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 29886,
+     "deckung": 0.45602,
+     "bbox": [
+      13,
+      20,
+      243,
+      240
+     ],
+     "schwerpunkt": [
+      114.38,
+      137.91
+     ],
+     "orientierung": 134.53,
+     "transparent": 0.53671,
+     "halbsaum": 0.00726,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 29965,
+     "deckung": 0.45723,
+     "bbox": [
+      12,
+      20,
+      243,
+      240
+     ],
+     "schwerpunkt": [
+      113.78,
+      137.9
+     ],
+     "orientierung": 150.64,
+     "transparent": 0.53532,
+     "halbsaum": 0.00745,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 29922,
+     "deckung": 0.45657,
+     "bbox": [
+      15,
+      19,
+      241,
+      240
+     ],
+     "schwerpunkt": [
+      116.23,
+      137.76
+     ],
+     "orientierung": 101.06,
+     "transparent": 0.53601,
+     "halbsaum": 0.00742,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 30066,
+     "deckung": 0.45877,
+     "bbox": [
+      12,
+      20,
+      243,
+      240
+     ],
+     "schwerpunkt": [
+      113.66,
+      137.87
+     ],
+     "orientierung": 148.0,
+     "transparent": 0.5341,
+     "halbsaum": 0.00713,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 30066,
+     "deckung": 0.45877,
+     "bbox": [
+      13,
+      18,
+      243,
+      240
+     ],
+     "schwerpunkt": [
+      114.31,
+      137.38
+     ],
+     "orientierung": 119.46,
+     "transparent": 0.53374,
+     "halbsaum": 0.00749,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 30064,
+     "deckung": 0.45874,
+     "bbox": [
+      12,
+      18,
+      243,
+      240
+     ],
+     "schwerpunkt": [
+      113.69,
+      136.72
+     ],
+     "orientierung": 136.69,
+     "transparent": 0.53413,
+     "halbsaum": 0.00713,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9994,
+     "silhouetteIou": 0.9598,
+     "flaecheRatio": 0.994,
+     "lageAbweichung": 0.0057
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.1994,
+     "silhouetteIou": 0.9691,
+     "flaecheRatio": 0.997,
+     "lageAbweichung": 0.0013
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.999,
+     "silhouetteIou": 0.9766,
+     "flaecheRatio": 0.998,
+     "lageAbweichung": 0.0013
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9993,
+     "silhouetteIou": 0.9757,
+     "flaecheRatio": 1.001,
+     "lageAbweichung": 0.0011
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9995,
+     "silhouetteIou": 0.9547,
+     "flaecheRatio": 0.999,
+     "lageAbweichung": 0.0085
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9988,
+     "silhouetteIou": 0.9783,
+     "flaecheRatio": 1.004,
+     "lageAbweichung": 0.0015
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.999,
+     "silhouetteIou": 0.974,
+     "flaecheRatio": 1.004,
+     "lageAbweichung": 0.002
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9991,
+     "silhouetteIou": 0.9774,
+     "flaecheRatio": 1.004,
+     "lageAbweichung": 0.0045
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 3,
+    "mittlereDifferenz": 0.04449,
+    "loopDiff": 0.03049,
+    "richtungsStreuungGrad": 17.3,
+    "nettoWeg": 0.009,
+    "richtungsResultante": 0.223,
+    "drehSummeGrad": 186.8,
+    "halbsaum": 0.00728,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00728,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": true,
+     "befund": "brennender Dämon, Motiv trifft den Feuerdämon; F1 ist eine gelbe Feuerblase ohne Körper",
+     "brueche": [
+      1
+     ],
+     "messAuffaellig": [
+      1
+     ],
+     "histKorrMin": 0.1994,
+     "silhouetteIouMin": 0.9547,
+     "flaecheRatioMin": 0.994,
+     "flaecheRatioMax": 1.004
+    },
+    "richtung": {
+     "ok": false,
+     "streuungGrad": 17.3,
+     "nettoWeg": 0.009,
+     "nettoWinkel": -144.1,
+     "resultante": 0.223
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 3,
+     "vertreter": [
+      0,
+      1,
+      7
+     ],
+     "mittlereDifferenz": 0.04449,
+     "schrittDifferenzen": [
+      0.1031,
+      0.09854,
+      0.01117,
+      0.03698,
+      0.03622,
+      0.01178,
+      0.01363
+     ],
+     "loopDiff": 0.03049
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur mit eigener Standpose",
+     "drehSumme": 186.8,
+     "ortsdrift": 0.009
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Flamme an Händen und Körper eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "richtung",
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_065": {
+   "id": "pa_065",
+   "waffe": "Meteorbrocken",
+   "rolle": "flug",
+   "motivDokumentiert": "Stein mit gelbem Schweif",
+   "naechsterSchritt": "Schweif als eigene Ebene trennen, dann W20 im Renderer.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 24847,
+     "deckung": 0.37914,
+     "bbox": [
+      17,
+      29,
+      238,
+      239
+     ],
+     "schwerpunkt": [
+      122.33,
+      157.41
+     ],
+     "orientierung": 157.11,
+     "transparent": 0.61217,
+     "halbsaum": 0.0087,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 25961,
+     "deckung": 0.39613,
+     "bbox": [
+      12,
+      19,
+      244,
+      239
+     ],
+     "schwerpunkt": [
+      119.57,
+      154.63
+     ],
+     "orientierung": 162.69,
+     "transparent": 0.59499,
+     "halbsaum": 0.00888,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 27856,
+     "deckung": 0.42505,
+     "bbox": [
+      9,
+      24,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      120.44,
+      153.48
+     ],
+     "orientierung": 162.61,
+     "transparent": 0.56474,
+     "halbsaum": 0.01021,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 26562,
+     "deckung": 0.4053,
+     "bbox": [
+      15,
+      23,
+      240,
+      239
+     ],
+     "schwerpunkt": [
+      122.04,
+      152.57
+     ],
+     "orientierung": 156.91,
+     "transparent": 0.58606,
+     "halbsaum": 0.00864,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 25154,
+     "deckung": 0.38382,
+     "bbox": [
+      17,
+      21,
+      239,
+      239
+     ],
+     "schwerpunkt": [
+      122.13,
+      154.9
+     ],
+     "orientierung": 155.44,
+     "transparent": 0.60689,
+     "halbsaum": 0.00929,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 29155,
+     "deckung": 0.44487,
+     "bbox": [
+      9,
+      21,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      121.76,
+      149.68
+     ],
+     "orientierung": 159.74,
+     "transparent": 0.54845,
+     "halbsaum": 0.00668,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 31748,
+     "deckung": 0.48444,
+     "bbox": [
+      9,
+      30,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      118.76,
+      143.24
+     ],
+     "orientierung": 170.05,
+     "transparent": 0.50899,
+     "halbsaum": 0.00658,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 26517,
+     "deckung": 0.40462,
+     "bbox": [
+      16,
+      27,
+      240,
+      239
+     ],
+     "schwerpunkt": [
+      123.1,
+      154.44
+     ],
+     "orientierung": 158.26,
+     "transparent": 0.58694,
+     "halbsaum": 0.00844,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9995,
+     "silhouetteIou": 0.9056,
+     "flaecheRatio": 0.936,
+     "lageAbweichung": 0.0136
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9927,
+     "silhouetteIou": 0.8623,
+     "flaecheRatio": 0.978,
+     "lageAbweichung": 0.0095
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9988,
+     "silhouetteIou": 0.9088,
+     "flaecheRatio": 1.05,
+     "lageAbweichung": 0.006
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9996,
+     "silhouetteIou": 0.9201,
+     "flaecheRatio": 1.001,
+     "lageAbweichung": 0.0054
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9974,
+     "silhouetteIou": 0.8837,
+     "flaecheRatio": 0.948,
+     "lageAbweichung": 0.0038
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9968,
+     "silhouetteIou": 0.9039,
+     "flaecheRatio": 1.099,
+     "lageAbweichung": 0.0167
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9925,
+     "silhouetteIou": 0.7899,
+     "flaecheRatio": 1.196,
+     "lageAbweichung": 0.0436
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9982,
+     "silhouetteIou": 0.9167,
+     "flaecheRatio": 0.999,
+     "lageAbweichung": 0.0051
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.07997,
+    "loopDiff": 0.03963,
+    "richtungsStreuungGrad": 4.4,
+    "nettoWeg": 0.012,
+    "richtungsResultante": 0.298,
+    "drehSummeGrad": 39.2,
+    "halbsaum": 0.00843,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00843,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Steinmeteor, Motiv trifft den Meteorbrocken",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9925,
+     "silhouetteIouMin": 0.7899,
+     "flaecheRatioMin": 0.936,
+     "flaecheRatioMax": 1.196
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 4.4,
+     "nettoWeg": 0.012,
+     "nettoWinkel": -75.4,
+     "resultante": 0.298
+    },
+    "bewegung": {
+     "ok": true,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.07997,
+     "schrittDifferenzen": [
+      0.0861,
+      0.07983,
+      0.05857,
+      0.05174,
+      0.09758,
+      0.08119,
+      0.10477
+     ],
+     "loopDiff": 0.03963
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Achse stabil",
+     "drehSumme": 39.2,
+     "ortsdrift": 0.012
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "gelber Schweif fest im Blatt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "datenabgenommen",
+     "datenOk": true,
+     "produktOk": false,
+     "sperrgruende": [
+      "effekt",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_073": {
+   "id": "pa_073",
+   "waffe": "Tentakelgift",
+   "rolle": "welt",
+   "motivDokumentiert": "grüner zweibeiniger Dinosaurier",
+   "naechsterSchritt": "Neue Vorlage Tentakelgift als Weltobjekt mit Giftwolke.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 16787,
+     "deckung": 0.25615,
+     "bbox": [
+      21,
+      21,
+      235,
+      239
+     ],
+     "schwerpunkt": [
+      139.54,
+      131.59
+     ],
+     "orientierung": 117.28,
+     "transparent": 0.73615,
+     "halbsaum": 0.00771,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 16078,
+     "deckung": 0.24533,
+     "bbox": [
+      23,
+      21,
+      233,
+      239
+     ],
+     "schwerpunkt": [
+      141.47,
+      128.4
+     ],
+     "orientierung": 112.13,
+     "transparent": 0.74673,
+     "halbsaum": 0.00793,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 15522,
+     "deckung": 0.23685,
+     "bbox": [
+      30,
+      21,
+      224,
+      239
+     ],
+     "schwerpunkt": [
+      136.26,
+      127.09
+     ],
+     "orientierung": 106.83,
+     "transparent": 0.75563,
+     "halbsaum": 0.00752,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 16802,
+     "deckung": 0.25638,
+     "bbox": [
+      25,
+      21,
+      230,
+      239
+     ],
+     "schwerpunkt": [
+      135.24,
+      131.07
+     ],
+     "orientierung": 116.26,
+     "transparent": 0.73495,
+     "halbsaum": 0.00867,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 16879,
+     "deckung": 0.25755,
+     "bbox": [
+      21,
+      19,
+      235,
+      239
+     ],
+     "schwerpunkt": [
+      139.61,
+      129.45
+     ],
+     "orientierung": 116.75,
+     "transparent": 0.73396,
+     "halbsaum": 0.00848,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 16389,
+     "deckung": 0.25008,
+     "bbox": [
+      18,
+      21,
+      237,
+      239
+     ],
+     "schwerpunkt": [
+      141.42,
+      128.94
+     ],
+     "orientierung": 114.97,
+     "transparent": 0.74178,
+     "halbsaum": 0.00815,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 16208,
+     "deckung": 0.24731,
+     "bbox": [
+      28,
+      19,
+      227,
+      239
+     ],
+     "schwerpunkt": [
+      136.71,
+      127.31
+     ],
+     "orientierung": 110.59,
+     "transparent": 0.74451,
+     "halbsaum": 0.00818,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 17010,
+     "deckung": 0.25955,
+     "bbox": [
+      24,
+      19,
+      231,
+      239
+     ],
+     "schwerpunkt": [
+      135.75,
+      130.38
+     ],
+     "orientierung": 116.27,
+     "transparent": 0.73267,
+     "halbsaum": 0.00778,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9982,
+     "silhouetteIou": 0.7847,
+     "flaecheRatio": 1.012,
+     "lageAbweichung": 0.0109
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9974,
+     "silhouetteIou": 0.7878,
+     "flaecheRatio": 0.969,
+     "lageAbweichung": 0.0135
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9986,
+     "silhouetteIou": 0.745,
+     "flaecheRatio": 0.936,
+     "lageAbweichung": 0.011
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9977,
+     "silhouetteIou": 0.791,
+     "flaecheRatio": 1.013,
+     "lageAbweichung": 0.0134
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9977,
+     "silhouetteIou": 0.7653,
+     "flaecheRatio": 1.018,
+     "lageAbweichung": 0.0059
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9981,
+     "silhouetteIou": 0.7501,
+     "flaecheRatio": 0.988,
+     "lageAbweichung": 0.0129
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9978,
+     "silhouetteIou": 0.7692,
+     "flaecheRatio": 0.977,
+     "lageAbweichung": 0.0092
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9988,
+     "silhouetteIou": 0.7818,
+     "flaecheRatio": 1.025,
+     "lageAbweichung": 0.0103
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 3,
+    "mittlereDifferenz": 0.03326,
+    "loopDiff": 0.02605,
+    "richtungsStreuungGrad": 3.5,
+    "nettoWeg": 0.016,
+    "richtungsResultante": 0.018,
+    "drehSummeGrad": 32.2,
+    "halbsaum": 0.00805,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00805,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "grüner zweibeiniger Dinosaurier statt Tentakelgift",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9974,
+     "silhouetteIouMin": 0.745,
+     "flaecheRatioMin": 0.936,
+     "flaecheRatioMax": 1.025
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 3.5,
+     "nettoWeg": 0.016,
+     "nettoWinkel": -162.2,
+     "resultante": 0.018
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 3,
+     "vertreter": [
+      0,
+      2,
+      3
+     ],
+     "mittlereDifferenz": 0.03326,
+     "schrittDifferenzen": [
+      0.02208,
+      0.04304,
+      0.03433,
+      0.03194,
+      0.03111,
+      0.04269,
+      0.02765
+     ],
+     "loopDiff": 0.02605
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Kreatur, kein abgelegtes Weltobjekt",
+     "drehSumme": 32.2,
+     "ortsdrift": 0.016
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_112": {
+   "id": "pa_112",
+   "waffe": "Düsenrucksack",
+   "rolle": "ruecken",
+   "motivDokumentiert": "blau geflügeltes Flugwesen",
+   "naechsterSchritt": "Eigene Vorlage Düsenrucksack; Dublette zu pa_114 auflösen (W06).",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 21462,
+     "deckung": 0.32748,
+     "bbox": [
+      28,
+      14,
+      227,
+      240
+     ],
+     "schwerpunkt": [
+      130.23,
+      137.94
+     ],
+     "orientierung": 92.25,
+     "transparent": 0.66769,
+     "halbsaum": 0.00482,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 22579,
+     "deckung": 0.34453,
+     "bbox": [
+      31,
+      22,
+      224,
+      240
+     ],
+     "schwerpunkt": [
+      127.59,
+      134.57
+     ],
+     "orientierung": 92.19,
+     "transparent": 0.64917,
+     "halbsaum": 0.0063,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 21920,
+     "deckung": 0.33447,
+     "bbox": [
+      32,
+      28,
+      223,
+      240
+     ],
+     "schwerpunkt": [
+      130.73,
+      139.15
+     ],
+     "orientierung": 100.31,
+     "transparent": 0.65933,
+     "halbsaum": 0.0062,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 21710,
+     "deckung": 0.33127,
+     "bbox": [
+      41,
+      23,
+      215,
+      240
+     ],
+     "schwerpunkt": [
+      132.93,
+      137.74
+     ],
+     "orientierung": 92.76,
+     "transparent": 0.66255,
+     "halbsaum": 0.00618,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 21586,
+     "deckung": 0.32938,
+     "bbox": [
+      30,
+      20,
+      226,
+      239
+     ],
+     "schwerpunkt": [
+      131.97,
+      135.91
+     ],
+     "orientierung": 98.42,
+     "transparent": 0.66556,
+     "halbsaum": 0.00507,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 23456,
+     "deckung": 0.35791,
+     "bbox": [
+      30,
+      19,
+      226,
+      240
+     ],
+     "schwerpunkt": [
+      131.03,
+      135.53
+     ],
+     "orientierung": 90.11,
+     "transparent": 0.63667,
+     "halbsaum": 0.00542,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 22550,
+     "deckung": 0.34409,
+     "bbox": [
+      35,
+      17,
+      219,
+      240
+     ],
+     "schwerpunkt": [
+      127.69,
+      133.0
+     ],
+     "orientierung": 89.26,
+     "transparent": 0.64992,
+     "halbsaum": 0.006,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 21540,
+     "deckung": 0.32867,
+     "bbox": [
+      36,
+      34,
+      220,
+      240
+     ],
+     "schwerpunkt": [
+      134.89,
+      140.93
+     ],
+     "orientierung": 108.83,
+     "transparent": 0.66565,
+     "halbsaum": 0.00568,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.6291,
+     "silhouetteIou": 0.7231,
+     "flaecheRatio": 0.984,
+     "lageAbweichung": 0.005
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.6521,
+     "silhouetteIou": 0.7922,
+     "flaecheRatio": 1.035,
+     "lageAbweichung": 0.0156
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.8897,
+     "silhouetteIou": 0.7797,
+     "flaecheRatio": 1.005,
+     "lageAbweichung": 0.0091
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.8902,
+     "silhouetteIou": 0.6752,
+     "flaecheRatio": 0.995,
+     "lageAbweichung": 0.0088
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.6667,
+     "silhouetteIou": 0.7519,
+     "flaecheRatio": 0.99,
+     "lageAbweichung": 0.0056
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.758,
+     "silhouetteIou": 0.7789,
+     "flaecheRatio": 1.075,
+     "lageAbweichung": 0.0051
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.8706,
+     "silhouetteIou": 0.7881,
+     "flaecheRatio": 1.034,
+     "lageAbweichung": 0.0195
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9033,
+     "silhouetteIou": 0.6986,
+     "flaecheRatio": 0.987,
+     "lageAbweichung": 0.0224
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.09064,
+    "loopDiff": 0.13248,
+    "richtungsStreuungGrad": 6.2,
+    "nettoWeg": 0.022,
+    "richtungsResultante": 0.254,
+    "drehSummeGrad": 50.1,
+    "halbsaum": 0.00571,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00571,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "blau geflügeltes Flugwesen statt Düsenrucksack",
+     "brueche": [],
+     "messAuffaellig": [
+      0,
+      1,
+      4,
+      5
+     ],
+     "histKorrMin": 0.6291,
+     "silhouetteIouMin": 0.6752,
+     "flaecheRatioMin": 0.984,
+     "flaecheRatioMax": 1.075
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 6.2,
+     "nettoWeg": 0.022,
+     "nettoWinkel": 32.6,
+     "resultante": 0.254
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09064,
+     "schrittDifferenzen": [
+      0.07113,
+      0.08173,
+      0.08163,
+      0.13757,
+      0.09176,
+      0.0761,
+      0.0946
+     ],
+     "loopDiff": 0.13248
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Flügelwesen, kein getragenes Rückenobjekt",
+     "drehSumme": 50.1,
+     "ortsdrift": 0.022
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "keine eingebrannte Flamme; Düsen gehören zur Silhouette"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_114": {
+   "id": "pa_114",
+   "waffe": "Gleitschirm",
+   "rolle": "ruecken",
+   "motivDokumentiert": "blau geflügeltes Flugwesen",
+   "naechsterSchritt": "Eigene Vorlage Gleitschirm mit Kappe, Leinen und Startpose.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 21462,
+     "deckung": 0.32748,
+     "bbox": [
+      28,
+      14,
+      227,
+      240
+     ],
+     "schwerpunkt": [
+      130.23,
+      137.94
+     ],
+     "orientierung": 92.25,
+     "transparent": 0.66769,
+     "halbsaum": 0.00482,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 22579,
+     "deckung": 0.34453,
+     "bbox": [
+      31,
+      22,
+      224,
+      240
+     ],
+     "schwerpunkt": [
+      127.59,
+      134.57
+     ],
+     "orientierung": 92.19,
+     "transparent": 0.64917,
+     "halbsaum": 0.0063,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 21920,
+     "deckung": 0.33447,
+     "bbox": [
+      32,
+      28,
+      223,
+      240
+     ],
+     "schwerpunkt": [
+      130.73,
+      139.15
+     ],
+     "orientierung": 100.31,
+     "transparent": 0.65933,
+     "halbsaum": 0.0062,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 21710,
+     "deckung": 0.33127,
+     "bbox": [
+      41,
+      23,
+      215,
+      240
+     ],
+     "schwerpunkt": [
+      132.93,
+      137.74
+     ],
+     "orientierung": 92.76,
+     "transparent": 0.66255,
+     "halbsaum": 0.00618,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 21586,
+     "deckung": 0.32938,
+     "bbox": [
+      30,
+      20,
+      226,
+      239
+     ],
+     "schwerpunkt": [
+      131.97,
+      135.91
+     ],
+     "orientierung": 98.42,
+     "transparent": 0.66556,
+     "halbsaum": 0.00507,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 23456,
+     "deckung": 0.35791,
+     "bbox": [
+      30,
+      19,
+      226,
+      240
+     ],
+     "schwerpunkt": [
+      131.03,
+      135.53
+     ],
+     "orientierung": 90.11,
+     "transparent": 0.63667,
+     "halbsaum": 0.00542,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 22550,
+     "deckung": 0.34409,
+     "bbox": [
+      35,
+      17,
+      219,
+      240
+     ],
+     "schwerpunkt": [
+      127.69,
+      133.0
+     ],
+     "orientierung": 89.26,
+     "transparent": 0.64992,
+     "halbsaum": 0.006,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 21540,
+     "deckung": 0.32867,
+     "bbox": [
+      36,
+      34,
+      220,
+      240
+     ],
+     "schwerpunkt": [
+      134.89,
+      140.93
+     ],
+     "orientierung": 108.83,
+     "transparent": 0.66565,
+     "halbsaum": 0.00568,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.6291,
+     "silhouetteIou": 0.7231,
+     "flaecheRatio": 0.984,
+     "lageAbweichung": 0.005
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.6521,
+     "silhouetteIou": 0.7922,
+     "flaecheRatio": 1.035,
+     "lageAbweichung": 0.0156
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.8897,
+     "silhouetteIou": 0.7797,
+     "flaecheRatio": 1.005,
+     "lageAbweichung": 0.0091
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.8902,
+     "silhouetteIou": 0.6752,
+     "flaecheRatio": 0.995,
+     "lageAbweichung": 0.0088
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.6667,
+     "silhouetteIou": 0.7519,
+     "flaecheRatio": 0.99,
+     "lageAbweichung": 0.0056
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.758,
+     "silhouetteIou": 0.7789,
+     "flaecheRatio": 1.075,
+     "lageAbweichung": 0.0051
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.8706,
+     "silhouetteIou": 0.7881,
+     "flaecheRatio": 1.034,
+     "lageAbweichung": 0.0195
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9033,
+     "silhouetteIou": 0.6986,
+     "flaecheRatio": 0.987,
+     "lageAbweichung": 0.0224
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.09064,
+    "loopDiff": 0.13248,
+    "richtungsStreuungGrad": 6.2,
+    "nettoWeg": 0.022,
+    "richtungsResultante": 0.254,
+    "drehSummeGrad": 50.1,
+    "halbsaum": 0.00571,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00571,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "dasselbe blau geflügelte Flugwesen wie pa_112, kein Gleitschirm",
+     "brueche": [],
+     "messAuffaellig": [
+      0,
+      1,
+      4,
+      5
+     ],
+     "histKorrMin": 0.6291,
+     "silhouetteIouMin": 0.6752,
+     "flaecheRatioMin": 0.984,
+     "flaecheRatioMax": 1.075
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 6.2,
+     "nettoWeg": 0.022,
+     "nettoWinkel": 32.6,
+     "resultante": 0.254
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09064,
+     "schrittDifferenzen": [
+      0.07113,
+      0.08173,
+      0.08163,
+      0.13757,
+      0.09176,
+      0.0761,
+      0.0946
+     ],
+     "loopDiff": 0.13248
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Flügelwesen, kein Schirm mit Kappe und Leinen",
+     "drehSumme": 50.1,
+     "ortsdrift": 0.022
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein Schirm, kein eigener Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_115": {
+   "id": "pa_115",
+   "waffe": "Wächterstatue",
+   "rolle": "beschwoerung",
+   "motivDokumentiert": "Giraffenstatue",
+   "naechsterSchritt": "Idle-Bewegung oder bewusst prozedural; Standbild ist keine Animation.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 14958,
+     "deckung": 0.22824,
+     "bbox": [
+      52,
+      20,
+      203,
+      240
+     ],
+     "schwerpunkt": [
+      126.69,
+      147.41
+     ],
+     "orientierung": 112.46,
+     "transparent": 0.76773,
+     "halbsaum": 0.00403,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 14967,
+     "deckung": 0.22838,
+     "bbox": [
+      52,
+      21,
+      204,
+      240
+     ],
+     "schwerpunkt": [
+      127.37,
+      147.79
+     ],
+     "orientierung": 112.61,
+     "transparent": 0.76749,
+     "halbsaum": 0.00414,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 14750,
+     "deckung": 0.22507,
+     "bbox": [
+      56,
+      21,
+      200,
+      240
+     ],
+     "schwerpunkt": [
+      124.24,
+      147.8
+     ],
+     "orientierung": 112.11,
+     "transparent": 0.77116,
+     "halbsaum": 0.00377,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 14836,
+     "deckung": 0.22638,
+     "bbox": [
+      53,
+      22,
+      203,
+      240
+     ],
+     "schwerpunkt": [
+      127.26,
+      147.83
+     ],
+     "orientierung": 112.36,
+     "transparent": 0.76981,
+     "halbsaum": 0.00381,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 15059,
+     "deckung": 0.22978,
+     "bbox": [
+      52,
+      19,
+      203,
+      240
+     ],
+     "schwerpunkt": [
+      126.58,
+      146.9
+     ],
+     "orientierung": 112.31,
+     "transparent": 0.76627,
+     "halbsaum": 0.00395,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 15073,
+     "deckung": 0.23,
+     "bbox": [
+      52,
+      20,
+      204,
+      240
+     ],
+     "schwerpunkt": [
+      127.24,
+      147.31
+     ],
+     "orientierung": 112.55,
+     "transparent": 0.76602,
+     "halbsaum": 0.00398,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 14814,
+     "deckung": 0.22604,
+     "bbox": [
+      56,
+      20,
+      200,
+      240
+     ],
+     "schwerpunkt": [
+      124.17,
+      147.2
+     ],
+     "orientierung": 111.88,
+     "transparent": 0.7701,
+     "halbsaum": 0.00386,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 14892,
+     "deckung": 0.22723,
+     "bbox": [
+      53,
+      21,
+      203,
+      240
+     ],
+     "schwerpunkt": [
+      126.59,
+      147.43
+     ],
+     "orientierung": 112.33,
+     "transparent": 0.76909,
+     "halbsaum": 0.00368,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.999,
+     "silhouetteIou": 0.9619,
+     "flaecheRatio": 1.002,
+     "lageAbweichung": 0.0002
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9992,
+     "silhouetteIou": 0.9643,
+     "flaecheRatio": 1.003,
+     "lageAbweichung": 0.0032
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9993,
+     "silhouetteIou": 0.9301,
+     "flaecheRatio": 0.988,
+     "lageAbweichung": 0.0095
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9993,
+     "silhouetteIou": 0.9604,
+     "flaecheRatio": 0.994,
+     "lageAbweichung": 0.0029
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9994,
+     "silhouetteIou": 0.9665,
+     "flaecheRatio": 1.009,
+     "lageAbweichung": 0.0021
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9993,
+     "silhouetteIou": 0.9609,
+     "flaecheRatio": 1.01,
+     "lageAbweichung": 0.0024
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9988,
+     "silhouetteIou": 0.928,
+     "flaecheRatio": 0.993,
+     "lageAbweichung": 0.0097
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9993,
+     "silhouetteIou": 0.9623,
+     "flaecheRatio": 0.998,
+     "lageAbweichung": 0.0002
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 1,
+    "mittlereDifferenz": 0.0171,
+    "loopDiff": 0.00647,
+    "richtungsStreuungGrad": 0.2,
+    "nettoWeg": 0.0,
+    "richtungsResultante": 0.166,
+    "drehSummeGrad": 2.3,
+    "halbsaum": 0.0039,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.0039,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Giraffenstatue, als Wächterstatue motivnah",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9988,
+     "silhouetteIouMin": 0.928,
+     "flaecheRatioMin": 0.988,
+     "flaecheRatioMax": 1.01
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.2,
+     "nettoWeg": 0.0,
+     "nettoWinkel": 168.0,
+     "resultante": 0.166
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 1,
+     "vertreter": [
+      0
+     ],
+     "mittlereDifferenz": 0.0171,
+     "schrittDifferenzen": [
+      0.00641,
+      0.0257,
+      0.02506,
+      0.00965,
+      0.00705,
+      0.02494,
+      0.0209
+     ],
+     "loopDiff": 0.00647
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Statue, Rollenzuordnung plausibel",
+     "drehSumme": 2.3,
+     "ortsdrift": 0.0
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_118": {
+   "id": "pa_118",
+   "waffe": "Feuerwesen",
+   "rolle": "beschwoerung",
+   "motivDokumentiert": "grauer Humanoid mit Feuerball",
+   "naechsterSchritt": "Körperhaltung durchgehend gleich, Feuerball als eigene Ebene.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 24415,
+     "deckung": 0.37254,
+     "bbox": [
+      33,
+      21,
+      223,
+      239
+     ],
+     "schwerpunkt": [
+      120.26,
+      117.88
+     ],
+     "orientierung": 77.93,
+     "transparent": 0.6189,
+     "halbsaum": 0.00856,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 24016,
+     "deckung": 0.36646,
+     "bbox": [
+      34,
+      21,
+      222,
+      239
+     ],
+     "schwerpunkt": [
+      120.36,
+      116.88
+     ],
+     "orientierung": 77.1,
+     "transparent": 0.62564,
+     "halbsaum": 0.0079,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 24289,
+     "deckung": 0.37062,
+     "bbox": [
+      34,
+      21,
+      222,
+      239
+     ],
+     "schwerpunkt": [
+      120.57,
+      118.26
+     ],
+     "orientierung": 77.11,
+     "transparent": 0.62122,
+     "halbsaum": 0.00816,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 24559,
+     "deckung": 0.37474,
+     "bbox": [
+      22,
+      21,
+      233,
+      239
+     ],
+     "schwerpunkt": [
+      110.92,
+      118.11
+     ],
+     "orientierung": 74.04,
+     "transparent": 0.61694,
+     "halbsaum": 0.00832,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 24598,
+     "deckung": 0.37534,
+     "bbox": [
+      33,
+      20,
+      223,
+      239
+     ],
+     "schwerpunkt": [
+      120.6,
+      117.08
+     ],
+     "orientierung": 77.88,
+     "transparent": 0.61603,
+     "halbsaum": 0.00864,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 24500,
+     "deckung": 0.37384,
+     "bbox": [
+      33,
+      21,
+      222,
+      239
+     ],
+     "schwerpunkt": [
+      120.48,
+      117.25
+     ],
+     "orientierung": 78.15,
+     "transparent": 0.61758,
+     "halbsaum": 0.00858,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 24609,
+     "deckung": 0.3755,
+     "bbox": [
+      33,
+      20,
+      222,
+      239
+     ],
+     "schwerpunkt": [
+      120.79,
+      117.11
+     ],
+     "orientierung": 77.63,
+     "transparent": 0.61562,
+     "halbsaum": 0.00888,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 24224,
+     "deckung": 0.36963,
+     "bbox": [
+      33,
+      20,
+      222,
+      239
+     ],
+     "schwerpunkt": [
+      119.87,
+      117.37
+     ],
+     "orientierung": 76.96,
+     "transparent": 0.6216,
+     "halbsaum": 0.00877,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9353,
+     "silhouetteIou": 0.9405,
+     "flaecheRatio": 0.998,
+     "lageAbweichung": 0.0023
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.6013,
+     "silhouetteIou": 0.9436,
+     "flaecheRatio": 0.982,
+     "lageAbweichung": 0.0017
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9466,
+     "silhouetteIou": 0.9434,
+     "flaecheRatio": 0.993,
+     "lageAbweichung": 0.0037
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.7919,
+     "silhouetteIou": 0.7485,
+     "flaecheRatio": 1.004,
+     "lageAbweichung": 0.0372
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9926,
+     "silhouetteIou": 0.9447,
+     "flaecheRatio": 1.006,
+     "lageAbweichung": 0.0011
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9722,
+     "silhouetteIou": 0.946,
+     "flaecheRatio": 1.002,
+     "lageAbweichung": 0.0003
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9905,
+     "silhouetteIou": 0.9466,
+     "flaecheRatio": 1.006,
+     "lageAbweichung": 0.0016
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.6886,
+     "silhouetteIou": 0.9441,
+     "flaecheRatio": 0.99,
+     "lageAbweichung": 0.0022
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 4,
+    "mittlereDifferenz": 0.04517,
+    "loopDiff": 0.05162,
+    "richtungsStreuungGrad": 1.2,
+    "nettoWeg": 0.003,
+    "richtungsResultante": 0.146,
+    "drehSummeGrad": 9.2,
+    "halbsaum": 0.00848,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00848,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": true,
+     "befund": "grauer Humanoid mit Feuerball, Motiv nah am Feuerwesen; Körper dreht zwischen Vorder- und Rückansicht, Feuerball bleibt starr",
+     "brueche": [
+      1,
+      3,
+      7
+     ],
+     "messAuffaellig": [
+      1,
+      3,
+      7
+     ],
+     "histKorrMin": 0.6013,
+     "silhouetteIouMin": 0.7485,
+     "flaecheRatioMin": 0.982,
+     "flaecheRatioMax": 1.006
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.2,
+     "nettoWeg": 0.003,
+     "nettoWinkel": -127.6,
+     "resultante": 0.146
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 4,
+     "vertreter": [
+      0,
+      1,
+      3,
+      7
+     ],
+     "mittlereDifferenz": 0.04517,
+     "schrittDifferenzen": [
+      0.03231,
+      0.03746,
+      0.09216,
+      0.08905,
+      0.01394,
+      0.01305,
+      0.03826
+     ],
+     "loopDiff": 0.05162
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung plausibel",
+     "drehSumme": 9.2,
+     "ortsdrift": 0.003
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Feuerball fest in der Hand (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_121": {
+   "id": "pa_121",
+   "waffe": "Raketenfaust",
+   "rolle": "hand",
+   "motivDokumentiert": "Clownfaust mit Raketenantrieb",
+   "naechsterSchritt": "Rückstoßphasen und Düsenflamme trennen, sechs echte Frames.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 26780,
+     "deckung": 0.40863,
+     "bbox": [
+      14,
+      21,
+      242,
+      239
+     ],
+     "schwerpunkt": [
+      133.36,
+      121.85
+     ],
+     "orientierung": 138.78,
+     "transparent": 0.58557,
+     "halbsaum": 0.0058,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 26663,
+     "deckung": 0.40685,
+     "bbox": [
+      14,
+      21,
+      240,
+      239
+     ],
+     "schwerpunkt": [
+      131.2,
+      121.24
+     ],
+     "orientierung": 138.68,
+     "transparent": 0.58766,
+     "halbsaum": 0.00549,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 27009,
+     "deckung": 0.41212,
+     "bbox": [
+      13,
+      21,
+      243,
+      239
+     ],
+     "schwerpunkt": [
+      133.14,
+      121.72
+     ],
+     "orientierung": 139.17,
+     "transparent": 0.58221,
+     "halbsaum": 0.00566,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 27010,
+     "deckung": 0.41214,
+     "bbox": [
+      13,
+      21,
+      243,
+      239
+     ],
+     "schwerpunkt": [
+      133.22,
+      121.72
+     ],
+     "orientierung": 139.11,
+     "transparent": 0.58228,
+     "halbsaum": 0.00558,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 26878,
+     "deckung": 0.41013,
+     "bbox": [
+      14,
+      20,
+      242,
+      239
+     ],
+     "schwerpunkt": [
+      133.41,
+      120.62
+     ],
+     "orientierung": 138.48,
+     "transparent": 0.5836,
+     "halbsaum": 0.00627,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 26737,
+     "deckung": 0.40797,
+     "bbox": [
+      14,
+      21,
+      240,
+      239
+     ],
+     "schwerpunkt": [
+      131.29,
+      121.12
+     ],
+     "orientierung": 138.57,
+     "transparent": 0.58598,
+     "halbsaum": 0.00604,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 27197,
+     "deckung": 0.41499,
+     "bbox": [
+      12,
+      20,
+      243,
+      239
+     ],
+     "schwerpunkt": [
+      132.59,
+      121.36
+     ],
+     "orientierung": 138.92,
+     "transparent": 0.57935,
+     "halbsaum": 0.00566,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 27190,
+     "deckung": 0.41489,
+     "bbox": [
+      12,
+      19,
+      243,
+      239
+     ],
+     "schwerpunkt": [
+      133.24,
+      120.49
+     ],
+     "orientierung": 138.76,
+     "transparent": 0.57985,
+     "halbsaum": 0.00526,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9978,
+     "silhouetteIou": 0.9848,
+     "flaecheRatio": 0.994,
+     "lageAbweichung": 0.0023
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9971,
+     "silhouetteIou": 0.964,
+     "flaecheRatio": 0.99,
+     "lageAbweichung": 0.0077
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9974,
+     "silhouetteIou": 0.9839,
+     "flaecheRatio": 1.002,
+     "lageAbweichung": 0.0017
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9981,
+     "silhouetteIou": 0.9844,
+     "flaecheRatio": 1.002,
+     "lageAbweichung": 0.0016
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9978,
+     "silhouetteIou": 0.9791,
+     "flaecheRatio": 0.998,
+     "lageAbweichung": 0.0028
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.997,
+     "silhouetteIou": 0.969,
+     "flaecheRatio": 0.992,
+     "lageAbweichung": 0.0074
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9981,
+     "silhouetteIou": 0.9844,
+     "flaecheRatio": 1.009,
+     "lageAbweichung": 0.0023
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9981,
+     "silhouetteIou": 0.9849,
+     "flaecheRatio": 1.009,
+     "lageAbweichung": 0.0032
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 2,
+    "mittlereDifferenz": 0.02674,
+    "loopDiff": 0.01994,
+    "richtungsStreuungGrad": 0.2,
+    "nettoWeg": 0.005,
+    "richtungsResultante": 0.269,
+    "drehSummeGrad": 1.9,
+    "halbsaum": 0.00572,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00572,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Clownfaust mit Raketenantrieb, Motiv trifft die Raketenfaust",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.997,
+     "silhouetteIouMin": 0.964,
+     "flaecheRatioMin": 0.99,
+     "flaecheRatioMax": 1.009
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.2,
+     "nettoWeg": 0.005,
+     "nettoWinkel": -95.1,
+     "resultante": 0.269
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 2,
+     "vertreter": [
+      0,
+      1
+     ],
+     "mittlereDifferenz": 0.02674,
+     "schrittDifferenzen": [
+      0.0405,
+      0.03571,
+      0.00896,
+      0.01956,
+      0.03899,
+      0.02265,
+      0.02077
+     ],
+     "loopDiff": 0.01994
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "gehaltene Waffe, Faust als Wirkspitze plausibel",
+     "drehSumme": 1.9,
+     "ortsdrift": 0.005
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Düsenflamme am Arm eingebrannt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_122": {
+   "id": "pa_122",
+   "waffe": "Endlosschleife",
+   "rolle": "selbst",
+   "motivDokumentiert": "rosa geflügeltes Wesen, Frame 7 Unendlichkeitszeichen",
+   "naechsterSchritt": "Neue Vorlage Endlosschleife als Aura/Symbol ohne Körperbruch.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 23135,
+     "deckung": 0.35301,
+     "bbox": [
+      9,
+      41,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      115.94,
+      164.79
+     ],
+     "orientierung": 166.37,
+     "transparent": 0.64133,
+     "halbsaum": 0.00566,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 21314,
+     "deckung": 0.32523,
+     "bbox": [
+      8,
+      56,
+      248,
+      240
+     ],
+     "schwerpunkt": [
+      108.64,
+      166.89
+     ],
+     "orientierung": 6.44,
+     "transparent": 0.66978,
+     "halbsaum": 0.00499,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 26105,
+     "deckung": 0.39833,
+     "bbox": [
+      9,
+      38,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      117.47,
+      157.87
+     ],
+     "orientierung": 171.59,
+     "transparent": 0.59497,
+     "halbsaum": 0.0067,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 31183,
+     "deckung": 0.47581,
+     "bbox": [
+      10,
+      21,
+      246,
+      239
+     ],
+     "schwerpunkt": [
+      124.6,
+      145.81
+     ],
+     "orientierung": 156.16,
+     "transparent": 0.51424,
+     "halbsaum": 0.00995,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 38445,
+     "deckung": 0.58662,
+     "bbox": [
+      9,
+      30,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      128.6,
+      131.19
+     ],
+     "orientierung": 159.62,
+     "transparent": 0.4066,
+     "halbsaum": 0.00677,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 25199,
+     "deckung": 0.38451,
+     "bbox": [
+      9,
+      48,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      115.48,
+      159.45
+     ],
+     "orientierung": 172.31,
+     "transparent": 0.60918,
+     "halbsaum": 0.00632,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 26493,
+     "deckung": 0.40425,
+     "bbox": [
+      9,
+      41,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      116.83,
+      156.58
+     ],
+     "orientierung": 168.64,
+     "transparent": 0.58939,
+     "halbsaum": 0.00636,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 38060,
+     "deckung": 0.58075,
+     "bbox": [
+      9,
+      31,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      127.99,
+      131.64
+     ],
+     "orientierung": 159.31,
+     "transparent": 0.41261,
+     "halbsaum": 0.00664,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9924,
+     "silhouetteIou": 0.6761,
+     "flaecheRatio": 0.88,
+     "lageAbweichung": 0.0299
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9581,
+     "silhouetteIou": 0.673,
+     "flaecheRatio": 0.81,
+     "lageAbweichung": 0.0503
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9871,
+     "silhouetteIou": 0.7301,
+     "flaecheRatio": 0.993,
+     "lageAbweichung": 0.0028
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9661,
+     "silhouetteIou": 0.689,
+     "flaecheRatio": 1.186,
+     "lageAbweichung": 0.0532
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.4887,
+     "silhouetteIou": 0.6673,
+     "flaecheRatio": 1.462,
+     "lageAbweichung": 0.1111
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9811,
+     "silhouetteIou": 0.7162,
+     "flaecheRatio": 0.958,
+     "lageAbweichung": 0.0109
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.983,
+     "silhouetteIou": 0.727,
+     "flaecheRatio": 1.007,
+     "lageAbweichung": 0.0028
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.5111,
+     "silhouetteIou": 0.6714,
+     "flaecheRatio": 1.447,
+     "lageAbweichung": 0.1085
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 7,
+    "mittlereDifferenz": 0.14802,
+    "loopDiff": 0.19769,
+    "richtungsStreuungGrad": 9.1,
+    "nettoWeg": 0.138,
+    "richtungsResultante": 0.472,
+    "drehSummeGrad": 369.6,
+    "halbsaum": 0.00667,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00667,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "rosa Flügelwesen; F4/F7 sind Unendlichkeitszeichen; F4 und F7 ersetzen den Körper durch ein Symbol",
+     "brueche": [
+      4,
+      7
+     ],
+     "messAuffaellig": [
+      4,
+      7
+     ],
+     "histKorrMin": 0.4887,
+     "silhouetteIouMin": 0.6673,
+     "flaecheRatioMin": 0.81,
+     "flaecheRatioMax": 1.462
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 9.1,
+     "nettoWeg": 0.138,
+     "nettoWinkel": -70.0,
+     "resultante": 0.472
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 7,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "mittlereDifferenz": 0.14802,
+     "schrittDifferenzen": [
+      0.08839,
+      0.10261,
+      0.14783,
+      0.20521,
+      0.20656,
+      0.09027,
+      0.19526
+     ],
+     "loopDiff": 0.19769
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Kreatur, keine Aura oder Schild am Träger",
+     "drehSumme": 369.6,
+     "ortsdrift": 0.138
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_132": {
+   "id": "pa_132",
+   "waffe": "Alte Dame",
+   "rolle": "beschwoerung",
+   "motivDokumentiert": "Alte Dame (Frame 0), danach geflügeltes Wesen",
+   "naechsterSchritt": "Eine Figur über alle acht Frames; F0 nicht als Ruhepose verwenden.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 19011,
+     "deckung": 0.29008,
+     "bbox": [
+      63,
+      20,
+      192,
+      240
+     ],
+     "schwerpunkt": [
+      126.27,
+      135.58
+     ],
+     "orientierung": 88.38,
+     "transparent": 0.70514,
+     "halbsaum": 0.00478,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 21682,
+     "deckung": 0.33084,
+     "bbox": [
+      23,
+      21,
+      232,
+      240
+     ],
+     "schwerpunkt": [
+      117.65,
+      135.79
+     ],
+     "orientierung": 80.82,
+     "transparent": 0.66299,
+     "halbsaum": 0.00616,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 22282,
+     "deckung": 0.34,
+     "bbox": [
+      37,
+      21,
+      219,
+      240
+     ],
+     "schwerpunkt": [
+      125.4,
+      130.18
+     ],
+     "orientierung": 71.01,
+     "transparent": 0.65398,
+     "halbsaum": 0.00603,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 21660,
+     "deckung": 0.33051,
+     "bbox": [
+      40,
+      9,
+      215,
+      240
+     ],
+     "schwerpunkt": [
+      121.3,
+      129.76
+     ],
+     "orientierung": 97.62,
+     "transparent": 0.66408,
+     "halbsaum": 0.00542,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 20882,
+     "deckung": 0.31863,
+     "bbox": [
+      53,
+      15,
+      203,
+      239
+     ],
+     "schwerpunkt": [
+      129.52,
+      133.11
+     ],
+     "orientierung": 105.86,
+     "transparent": 0.67607,
+     "halbsaum": 0.00529,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 20957,
+     "deckung": 0.31978,
+     "bbox": [
+      18,
+      27,
+      237,
+      240
+     ],
+     "schwerpunkt": [
+      123.87,
+      133.61
+     ],
+     "orientierung": 122.23,
+     "transparent": 0.67387,
+     "halbsaum": 0.00635,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 21574,
+     "deckung": 0.32919,
+     "bbox": [
+      49,
+      13,
+      207,
+      240
+     ],
+     "schwerpunkt": [
+      129.36,
+      130.41
+     ],
+     "orientierung": 99.51,
+     "transparent": 0.66582,
+     "halbsaum": 0.00499,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 21156,
+     "deckung": 0.32281,
+     "bbox": [
+      28,
+      32,
+      227,
+      240
+     ],
+     "schwerpunkt": [
+      115.7,
+      136.9
+     ],
+     "orientierung": 126.98,
+     "transparent": 0.67104,
+     "halbsaum": 0.00615,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.884,
+     "silhouetteIou": 0.6478,
+     "flaecheRatio": 0.89,
+     "lageAbweichung": 0.0108
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.5946,
+     "silhouetteIou": 0.6032,
+     "flaecheRatio": 1.015,
+     "lageAbweichung": 0.0289
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.8623,
+     "silhouetteIou": 0.6172,
+     "flaecheRatio": 1.043,
+     "lageAbweichung": 0.0128
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9053,
+     "silhouetteIou": 0.6086,
+     "flaecheRatio": 1.014,
+     "lageAbweichung": 0.0192
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.8573,
+     "silhouetteIou": 0.657,
+     "flaecheRatio": 0.977,
+     "lageAbweichung": 0.0191
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.8466,
+     "silhouetteIou": 0.6144,
+     "flaecheRatio": 0.981,
+     "lageAbweichung": 0.0031
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9202,
+     "silhouetteIou": 0.642,
+     "flaecheRatio": 1.01,
+     "lageAbweichung": 0.0218
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.6782,
+     "silhouetteIou": 0.6105,
+     "flaecheRatio": 0.99,
+     "lageAbweichung": 0.0375
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.12258,
+    "loopDiff": 0.15723,
+    "richtungsStreuungGrad": 18.4,
+    "nettoWeg": 0.042,
+    "richtungsResultante": 0.189,
+    "drehSummeGrad": 118.8,
+    "halbsaum": 0.00565,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00565,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "Alte Dame nur in F0, danach ein geflügeltes Wesen; harter Motivwechsel zwischen F0 und F1",
+     "brueche": [
+      0
+     ],
+     "messAuffaellig": [
+      1,
+      5,
+      7
+     ],
+     "histKorrMin": 0.5946,
+     "silhouetteIouMin": 0.6032,
+     "flaecheRatioMin": 0.89,
+     "flaecheRatioMax": 1.043
+    },
+    "richtung": {
+     "ok": false,
+     "streuungGrad": 18.4,
+     "nettoWeg": 0.042,
+     "nettoWinkel": 172.9,
+     "resultante": 0.189
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.12258,
+     "schrittDifferenzen": [
+      0.12745,
+      0.11328,
+      0.12116,
+      0.13519,
+      0.11601,
+      0.10174,
+      0.14324
+     ],
+     "loopDiff": 0.15723
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung für F1-F7 plausibel",
+     "drehSumme": 118.8,
+     "ortsdrift": 0.042
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "richtung",
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_133": {
+   "id": "pa_133",
+   "waffe": "Fliegendes Superschaf",
+   "rolle": "flug",
+   "motivDokumentiert": "geflügeltes Schaf mit Cape",
+   "naechsterSchritt": "Vier zusätzliche unterscheidbare Flügel-/Beinphasen und Loop schließen.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 35514,
+     "deckung": 0.5419,
+     "bbox": [
+      12,
+      23,
+      245,
+      239
+     ],
+     "schwerpunkt": [
+      130.14,
+      134.59
+     ],
+     "orientierung": 9.68,
+     "transparent": 0.4509,
+     "halbsaum": 0.0072,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 34689,
+     "deckung": 0.52931,
+     "bbox": [
+      9,
+      27,
+      246,
+      239
+     ],
+     "schwerpunkt": [
+      126.59,
+      137.68
+     ],
+     "orientierung": 8.63,
+     "transparent": 0.46275,
+     "halbsaum": 0.00793,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 34894,
+     "deckung": 0.53244,
+     "bbox": [
+      9,
+      25,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      127.68,
+      135.96
+     ],
+     "orientierung": 9.75,
+     "transparent": 0.46013,
+     "halbsaum": 0.00743,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 33923,
+     "deckung": 0.51762,
+     "bbox": [
+      9,
+      27,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      124.92,
+      136.55
+     ],
+     "orientierung": 10.67,
+     "transparent": 0.47548,
+     "halbsaum": 0.0069,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 35022,
+     "deckung": 0.53439,
+     "bbox": [
+      9,
+      24,
+      248,
+      239
+     ],
+     "schwerpunkt": [
+      127.34,
+      135.34
+     ],
+     "orientierung": 9.48,
+     "transparent": 0.45824,
+     "halbsaum": 0.00737,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 35046,
+     "deckung": 0.53476,
+     "bbox": [
+      9,
+      24,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      126.82,
+      135.31
+     ],
+     "orientierung": 9.3,
+     "transparent": 0.45746,
+     "halbsaum": 0.00778,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 35086,
+     "deckung": 0.53537,
+     "bbox": [
+      9,
+      25,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      127.23,
+      136.22
+     ],
+     "orientierung": 11.03,
+     "transparent": 0.45723,
+     "halbsaum": 0.0074,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 35125,
+     "deckung": 0.53596,
+     "bbox": [
+      9,
+      24,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      126.88,
+      135.21
+     ],
+     "orientierung": 10.62,
+     "transparent": 0.45657,
+     "halbsaum": 0.00746,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9994,
+     "silhouetteIou": 0.947,
+     "flaecheRatio": 1.014,
+     "lageAbweichung": 0.0127
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9593,
+     "silhouetteIou": 0.9696,
+     "flaecheRatio": 0.99,
+     "lageAbweichung": 0.0081
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9995,
+     "silhouetteIou": 0.9749,
+     "flaecheRatio": 0.996,
+     "lageAbweichung": 0.0027
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9994,
+     "silhouetteIou": 0.9582,
+     "flaecheRatio": 0.968,
+     "lageAbweichung": 0.0091
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9994,
+     "silhouetteIou": 0.976,
+     "flaecheRatio": 1.0,
+     "lageAbweichung": 0.0016
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9994,
+     "silhouetteIou": 0.9787,
+     "flaecheRatio": 1.0,
+     "lageAbweichung": 0.0016
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9992,
+     "silhouetteIou": 0.9768,
+     "flaecheRatio": 1.001,
+     "lageAbweichung": 0.0023
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9991,
+     "silhouetteIou": 0.9764,
+     "flaecheRatio": 1.003,
+     "lageAbweichung": 0.0018
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 4,
+    "mittlereDifferenz": 0.0419,
+    "loopDiff": 0.04939,
+    "richtungsStreuungGrad": 0.8,
+    "nettoWeg": 0.013,
+    "richtungsResultante": 0.19,
+    "drehSummeGrad": 6.6,
+    "halbsaum": 0.00743,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00743,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "geflügeltes Schaf mit Cape, Motiv trifft das Superschaf",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9593,
+     "silhouetteIouMin": 0.947,
+     "flaecheRatioMin": 0.968,
+     "flaecheRatioMax": 1.014
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.8,
+     "nettoWeg": 0.013,
+     "nettoWinkel": 169.2,
+     "resultante": 0.19
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 4,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "mittlereDifferenz": 0.0419,
+     "schrittDifferenzen": [
+      0.09116,
+      0.06446,
+      0.04332,
+      0.04443,
+      0.01193,
+      0.01939,
+      0.0186
+     ],
+     "loopDiff": 0.04939
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Achse stabil",
+     "drehSumme": 6.6,
+     "ortsdrift": 0.013
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_134": {
+   "id": "pa_134",
+   "waffe": "Luftangriff",
+   "rolle": "flug",
+   "motivDokumentiert": "brauner Flugkörper mit Flamme",
+   "naechsterSchritt": "Neue Vorlage mit erkennbarer Luftangriffsszene, Flamme trennen.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 15604,
+     "deckung": 0.2381,
+     "bbox": [
+      9,
+      119,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      110.81,
+      177.51
+     ],
+     "orientierung": 164.89,
+     "transparent": 0.75694,
+     "halbsaum": 0.00496,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 14351,
+     "deckung": 0.21898,
+     "bbox": [
+      9,
+      123,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      108.14,
+      180.63
+     ],
+     "orientierung": 165.48,
+     "transparent": 0.77666,
+     "halbsaum": 0.00436,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 14660,
+     "deckung": 0.22369,
+     "bbox": [
+      9,
+      126,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      110.22,
+      181.21
+     ],
+     "orientierung": 167.94,
+     "transparent": 0.77147,
+     "halbsaum": 0.00484,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 16602,
+     "deckung": 0.25333,
+     "bbox": [
+      9,
+      110,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      116.48,
+      174.62
+     ],
+     "orientierung": 162.47,
+     "transparent": 0.7408,
+     "halbsaum": 0.00587,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 18565,
+     "deckung": 0.28328,
+     "bbox": [
+      9,
+      111,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      120.57,
+      172.11
+     ],
+     "orientierung": 164.55,
+     "transparent": 0.71164,
+     "halbsaum": 0.00508,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 15623,
+     "deckung": 0.23839,
+     "bbox": [
+      9,
+      120,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      111.93,
+      177.61
+     ],
+     "orientierung": 165.98,
+     "transparent": 0.75681,
+     "halbsaum": 0.00481,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 15678,
+     "deckung": 0.23923,
+     "bbox": [
+      9,
+      118,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      110.0,
+      177.21
+     ],
+     "orientierung": 165.37,
+     "transparent": 0.7549,
+     "halbsaum": 0.00587,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 16484,
+     "deckung": 0.25153,
+     "bbox": [
+      9,
+      99,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      120.71,
+      174.63
+     ],
+     "orientierung": 161.71,
+     "transparent": 0.74358,
+     "halbsaum": 0.0049,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9939,
+     "silhouetteIou": 0.8803,
+     "flaecheRatio": 0.997,
+     "lageAbweichung": 0.0023
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.263,
+     "silhouetteIou": 0.8634,
+     "flaecheRatio": 0.917,
+     "lageAbweichung": 0.0179
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9196,
+     "silhouetteIou": 0.8654,
+     "flaecheRatio": 0.937,
+     "lageAbweichung": 0.0157
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9083,
+     "silhouetteIou": 0.8506,
+     "flaecheRatio": 1.061,
+     "lageAbweichung": 0.0226
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9895,
+     "silhouetteIou": 0.8456,
+     "flaecheRatio": 1.186,
+     "lageAbweichung": 0.0414
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.2586,
+     "silhouetteIou": 0.875,
+     "flaecheRatio": 0.998,
+     "lageAbweichung": 0.0024
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9627,
+     "silhouetteIou": 0.8792,
+     "flaecheRatio": 1.002,
+     "lageAbweichung": 0.0054
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9818,
+     "silhouetteIou": 0.7556,
+     "flaecheRatio": 1.053,
+     "lageAbweichung": 0.038
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 4,
+    "mittlereDifferenz": 0.03858,
+    "loopDiff": 0.03314,
+    "richtungsStreuungGrad": 1.8,
+    "nettoWeg": 0.04,
+    "richtungsResultante": 0.144,
+    "drehSummeGrad": 16.3,
+    "halbsaum": 0.00509,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00509,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "brauner Flugkörper ohne Bezug zum Luftangriff",
+     "brueche": [],
+     "messAuffaellig": [
+      1,
+      5
+     ],
+     "histKorrMin": 0.2586,
+     "silhouetteIouMin": 0.7556,
+     "flaecheRatioMin": 0.917,
+     "flaecheRatioMax": 1.186
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.8,
+     "nettoWeg": 0.04,
+     "nettoWinkel": -16.2,
+     "resultante": 0.144
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 4,
+     "vertreter": [
+      0,
+      1,
+      4,
+      7
+     ],
+     "mittlereDifferenz": 0.03858,
+     "schrittDifferenzen": [
+      0.03212,
+      0.0336,
+      0.04573,
+      0.03314,
+      0.0527,
+      0.03455,
+      0.03824
+     ],
+     "loopDiff": 0.03314
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Rollenzuordnung technisch plausibel",
+     "drehSumme": 16.3,
+     "ortsdrift": 0.04
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Flamme am Heck eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_135": {
+   "id": "pa_135",
+   "waffe": "Meteorregen",
+   "rolle": "flug",
+   "motivDokumentiert": "Meteor mit Feuerschweif",
+   "naechsterSchritt": "Gestein in allen Frames halten, Schweif als eigene Ebene.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 17938,
+     "deckung": 0.27371,
+     "bbox": [
+      15,
+      9,
+      241,
+      239
+     ],
+     "schwerpunkt": [
+      133.2,
+      123.38
+     ],
+     "orientierung": 135.58,
+     "transparent": 0.71991,
+     "halbsaum": 0.00638,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 17918,
+     "deckung": 0.27341,
+     "bbox": [
+      17,
+      9,
+      239,
+      239
+     ],
+     "schwerpunkt": [
+      133.03,
+      125.11
+     ],
+     "orientierung": 135.33,
+     "transparent": 0.72101,
+     "halbsaum": 0.00558,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 21912,
+     "deckung": 0.33435,
+     "bbox": [
+      14,
+      35,
+      241,
+      239
+     ],
+     "schwerpunkt": [
+      143.41,
+      125.2
+     ],
+     "orientierung": 139.54,
+     "transparent": 0.65909,
+     "halbsaum": 0.00656,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 22251,
+     "deckung": 0.33952,
+     "bbox": [
+      17,
+      32,
+      238,
+      239
+     ],
+     "schwerpunkt": [
+      143.66,
+      122.43
+     ],
+     "orientierung": 137.93,
+     "transparent": 0.65334,
+     "halbsaum": 0.00714,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 18402,
+     "deckung": 0.28079,
+     "bbox": [
+      10,
+      15,
+      245,
+      239
+     ],
+     "schwerpunkt": [
+      132.72,
+      125.64
+     ],
+     "orientierung": 137.66,
+     "transparent": 0.71155,
+     "halbsaum": 0.00766,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 16961,
+     "deckung": 0.2588,
+     "bbox": [
+      16,
+      21,
+      240,
+      239
+     ],
+     "schwerpunkt": [
+      132.54,
+      130.63
+     ],
+     "orientierung": 136.62,
+     "transparent": 0.73431,
+     "halbsaum": 0.00688,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 22731,
+     "deckung": 0.34685,
+     "bbox": [
+      15,
+      27,
+      240,
+      239
+     ],
+     "schwerpunkt": [
+      144.84,
+      118.95
+     ],
+     "orientierung": 137.82,
+     "transparent": 0.64581,
+     "halbsaum": 0.00734,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 22382,
+     "deckung": 0.34152,
+     "bbox": [
+      16,
+      30,
+      239,
+      239
+     ],
+     "schwerpunkt": [
+      144.74,
+      120.83
+     ],
+     "orientierung": 137.91,
+     "transparent": 0.65121,
+     "halbsaum": 0.00726,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9298,
+     "silhouetteIou": 0.8182,
+     "flaecheRatio": 0.89,
+     "lageAbweichung": 0.0202
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.7528,
+     "silhouetteIou": 0.8147,
+     "flaecheRatio": 0.889,
+     "lageAbweichung": 0.0209
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9055,
+     "silhouetteIou": 0.8184,
+     "flaecheRatio": 1.087,
+     "lageAbweichung": 0.0203
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9364,
+     "silhouetteIou": 0.8219,
+     "flaecheRatio": 1.104,
+     "lageAbweichung": 0.0221
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9425,
+     "silhouetteIou": 0.8215,
+     "flaecheRatio": 0.913,
+     "lageAbweichung": 0.0225
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.8233,
+     "silhouetteIou": 0.8123,
+     "flaecheRatio": 0.841,
+     "lageAbweichung": 0.0336
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9622,
+     "silhouetteIou": 0.8276,
+     "flaecheRatio": 1.128,
+     "lageAbweichung": 0.0329
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9394,
+     "silhouetteIou": 0.8263,
+     "flaecheRatio": 1.11,
+     "lageAbweichung": 0.0284
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 5,
+    "mittlereDifferenz": 0.05505,
+    "loopDiff": 0.07829,
+    "richtungsStreuungGrad": 1.3,
+    "nettoWeg": 0.046,
+    "richtungsResultante": 0.247,
+    "drehSummeGrad": 8.7,
+    "halbsaum": 0.00685,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00685,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": true,
+     "befund": "Meteor, Motiv trifft den Meteorregen; F0/F1/F4/F5 zeigen fast nur Flamme, F2/F3/F6/F7 Gestein",
+     "brueche": [
+      0,
+      1,
+      4,
+      5
+     ],
+     "messAuffaellig": [
+      1,
+      5
+     ],
+     "histKorrMin": 0.7528,
+     "silhouetteIouMin": 0.8123,
+     "flaecheRatioMin": 0.841,
+     "flaecheRatioMax": 1.128
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.3,
+     "nettoWeg": 0.046,
+     "nettoWinkel": -12.4,
+     "resultante": 0.247
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 5,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      5
+     ],
+     "mittlereDifferenz": 0.05505,
+     "schrittDifferenzen": [
+      0.0345,
+      0.09134,
+      0.03356,
+      0.07851,
+      0.04274,
+      0.08457,
+      0.02014
+     ],
+     "loopDiff": 0.07829
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Achse stabil",
+     "drehSumme": 8.7,
+     "ortsdrift": 0.046
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Feuerschweif eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_136": {
+   "id": "pa_136",
+   "waffe": "Bohrkopfrakete",
+   "rolle": "flug",
+   "motivDokumentiert": "Bohrkopfrakete mit Flamme/Rauch",
+   "naechsterSchritt": "Drei fehlende Phasen ergänzen, Loop schließen, Effekt trennen.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 29440,
+     "deckung": 0.44922,
+     "bbox": [
+      9,
+      38,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      122.28,
+      142.25
+     ],
+     "orientierung": 146.68,
+     "transparent": 0.54468,
+     "halbsaum": 0.0061,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 17925,
+     "deckung": 0.27351,
+     "bbox": [
+      8,
+      97,
+      248,
+      240
+     ],
+     "schwerpunkt": [
+      106.7,
+      168.69
+     ],
+     "orientierung": 156.9,
+     "transparent": 0.72241,
+     "halbsaum": 0.00407,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 21456,
+     "deckung": 0.32739,
+     "bbox": [
+      9,
+      76,
+      248,
+      239
+     ],
+     "schwerpunkt": [
+      110.92,
+      157.95
+     ],
+     "orientierung": 153.44,
+     "transparent": 0.66827,
+     "halbsaum": 0.00433,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 20555,
+     "deckung": 0.31364,
+     "bbox": [
+      8,
+      78,
+      248,
+      240
+     ],
+     "schwerpunkt": [
+      109.03,
+      159.13
+     ],
+     "orientierung": 152.82,
+     "transparent": 0.68147,
+     "halbsaum": 0.00488,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 29083,
+     "deckung": 0.44377,
+     "bbox": [
+      9,
+      43,
+      247,
+      239
+     ],
+     "schwerpunkt": [
+      122.76,
+      144.2
+     ],
+     "orientierung": 147.4,
+     "transparent": 0.54866,
+     "halbsaum": 0.00757,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 18058,
+     "deckung": 0.27554,
+     "bbox": [
+      8,
+      95,
+      248,
+      240
+     ],
+     "schwerpunkt": [
+      105.99,
+      167.55
+     ],
+     "orientierung": 156.33,
+     "transparent": 0.72087,
+     "halbsaum": 0.00359,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 21407,
+     "deckung": 0.32664,
+     "bbox": [
+      9,
+      78,
+      248,
+      239
+     ],
+     "schwerpunkt": [
+      110.85,
+      158.76
+     ],
+     "orientierung": 154.06,
+     "transparent": 0.66806,
+     "halbsaum": 0.00529,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 20477,
+     "deckung": 0.31245,
+     "bbox": [
+      8,
+      79,
+      248,
+      239
+     ],
+     "schwerpunkt": [
+      108.85,
+      159.45
+     ],
+     "orientierung": 153.04,
+     "transparent": 0.68257,
+     "halbsaum": 0.00497,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9873,
+     "silhouetteIou": 0.8038,
+     "flaecheRatio": 1.403,
+     "lageAbweichung": 0.0811
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9979,
+     "silhouetteIou": 0.8909,
+     "flaecheRatio": 0.854,
+     "lageAbweichung": 0.0401
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.9972,
+     "silhouetteIou": 0.9026,
+     "flaecheRatio": 1.023,
+     "lageAbweichung": 0.0055
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9985,
+     "silhouetteIou": 0.9016,
+     "flaecheRatio": 0.98,
+     "lageAbweichung": 0.0036
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9873,
+     "silhouetteIou": 0.8009,
+     "flaecheRatio": 1.386,
+     "lageAbweichung": 0.0763
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9961,
+     "silhouetteIou": 0.8788,
+     "flaecheRatio": 0.861,
+     "lageAbweichung": 0.037
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9981,
+     "silhouetteIou": 0.901,
+     "flaecheRatio": 1.02,
+     "lageAbweichung": 0.0036
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9989,
+     "silhouetteIou": 0.9011,
+     "flaecheRatio": 0.976,
+     "lageAbweichung": 0.0047
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 3,
+    "mittlereDifferenz": 0.08196,
+    "loopDiff": 0.12051,
+    "richtungsStreuungGrad": 3.5,
+    "nettoWeg": 0.085,
+    "richtungsResultante": 0.194,
+    "drehSummeGrad": 31.9,
+    "halbsaum": 0.0051,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.0051,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": true,
+     "motivPasst": true,
+     "befund": "Bohrkopfrakete, Motiv trifft die Waffe",
+     "brueche": [],
+     "messAuffaellig": [],
+     "histKorrMin": 0.9873,
+     "silhouetteIouMin": 0.8009,
+     "flaecheRatioMin": 0.854,
+     "flaecheRatioMax": 1.403
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 3.5,
+     "nettoWeg": 0.085,
+     "nettoWinkel": 128.0,
+     "resultante": 0.194
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 3,
+     "vertreter": [
+      0,
+      1,
+      2
+     ],
+     "mittlereDifferenz": 0.08196,
+     "schrittDifferenzen": [
+      0.14072,
+      0.07379,
+      0.02298,
+      0.11274,
+      0.13344,
+      0.06844,
+      0.02158
+     ],
+     "loopDiff": 0.12051
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Achse stabil",
+     "drehSumme": 31.9,
+     "ortsdrift": 0.085
+    },
+    "effekt": {
+     "ok": false,
+     "befund": "Flamme und Rauchfahne eingebrannt (W17)"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "bewegung",
+      "effekt",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_141": {
+   "id": "pa_141",
+   "waffe": "Astralkrieger",
+   "rolle": "beschwoerung",
+   "motivDokumentiert": "einfacher blauer Humanoid",
+   "naechsterSchritt": "Neue Vorlage Astralkrieger mit Rüstung und Waffe; Loop schließen.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 14727,
+     "deckung": 0.22472,
+     "bbox": [
+      69,
+      21,
+      186,
+      239
+     ],
+     "schwerpunkt": [
+      136.74,
+      125.12
+     ],
+     "orientierung": 91.05,
+     "transparent": 0.77013,
+     "halbsaum": 0.00516,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 15702,
+     "deckung": 0.23959,
+     "bbox": [
+      59,
+      21,
+      197,
+      239
+     ],
+     "schwerpunkt": [
+      141.06,
+      126.03
+     ],
+     "orientierung": 89.58,
+     "transparent": 0.75447,
+     "halbsaum": 0.00594,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 14828,
+     "deckung": 0.22626,
+     "bbox": [
+      63,
+      23,
+      192,
+      239
+     ],
+     "schwerpunkt": [
+      134.57,
+      125.69
+     ],
+     "orientierung": 90.69,
+     "transparent": 0.76738,
+     "halbsaum": 0.00636,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 16013,
+     "deckung": 0.24434,
+     "bbox": [
+      57,
+      22,
+      199,
+      239
+     ],
+     "schwerpunkt": [
+      133.87,
+      126.79
+     ],
+     "orientierung": 88.95,
+     "transparent": 0.74773,
+     "halbsaum": 0.00793,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 15537,
+     "deckung": 0.23708,
+     "bbox": [
+      67,
+      20,
+      188,
+      239
+     ],
+     "schwerpunkt": [
+      117.57,
+      125.42
+     ],
+     "orientierung": 90.94,
+     "transparent": 0.75731,
+     "halbsaum": 0.00562,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 15631,
+     "deckung": 0.23851,
+     "bbox": [
+      60,
+      21,
+      195,
+      239
+     ],
+     "schwerpunkt": [
+      111.73,
+      125.7
+     ],
+     "orientierung": 93.69,
+     "transparent": 0.75592,
+     "halbsaum": 0.00557,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 16746,
+     "deckung": 0.25552,
+     "bbox": [
+      52,
+      22,
+      204,
+      239
+     ],
+     "schwerpunkt": [
+      114.35,
+      128.46
+     ],
+     "orientierung": 92.77,
+     "transparent": 0.73796,
+     "halbsaum": 0.00652,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 16044,
+     "deckung": 0.24481,
+     "bbox": [
+      65,
+      21,
+      191,
+      239
+     ],
+     "schwerpunkt": [
+      125.47,
+      126.82
+     ],
+     "orientierung": 90.13,
+     "transparent": 0.74745,
+     "halbsaum": 0.00774,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.8886,
+     "silhouetteIou": 0.6004,
+     "flaecheRatio": 0.94,
+     "lageAbweichung": 0.0278
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.968,
+     "silhouetteIou": 0.5743,
+     "flaecheRatio": 1.002,
+     "lageAbweichung": 0.0445
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.6803,
+     "silhouetteIou": 0.6307,
+     "flaecheRatio": 0.946,
+     "lageAbweichung": 0.0192
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9842,
+     "silhouetteIou": 0.6345,
+     "flaecheRatio": 1.022,
+     "lageAbweichung": 0.0168
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9148,
+     "silhouetteIou": 0.6277,
+     "flaecheRatio": 0.992,
+     "lageAbweichung": 0.0473
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.9661,
+     "silhouetteIou": 0.5601,
+     "flaecheRatio": 0.998,
+     "lageAbweichung": 0.0701
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.6514,
+     "silhouetteIou": 0.5972,
+     "flaecheRatio": 1.069,
+     "lageAbweichung": 0.0607
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9662,
+     "silhouetteIou": 0.6566,
+     "flaecheRatio": 1.024,
+     "lageAbweichung": 0.0168
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.06087,
+    "loopDiff": 0.0663,
+    "richtungsStreuungGrad": 1.5,
+    "nettoWeg": 0.045,
+    "richtungsResultante": 0.253,
+    "drehSummeGrad": 12.6,
+    "halbsaum": 0.00635,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00635,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "einfacher blauer Humanoid statt Astralkrieger",
+     "brueche": [],
+     "messAuffaellig": [
+      2,
+      6
+     ],
+     "histKorrMin": 0.6514,
+     "silhouetteIouMin": 0.5601,
+     "flaecheRatioMin": 0.94,
+     "flaecheRatioMax": 1.069
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 1.5,
+     "nettoWeg": 0.045,
+     "nettoWinkel": 171.4,
+     "resultante": 0.253
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.06087,
+     "schrittDifferenzen": [
+      0.05307,
+      0.04449,
+      0.04967,
+      0.09415,
+      0.05972,
+      0.05462,
+      0.07037
+     ],
+     "loopDiff": 0.0663
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung plausibel",
+     "drehSumme": 12.6,
+     "ortsdrift": 0.045
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_142": {
+   "id": "pa_142",
+   "waffe": "Leerenritter",
+   "rolle": "beschwoerung",
+   "motivDokumentiert": "blauer Cartoon-Zauberer",
+   "naechsterSchritt": "Neue Vorlage Leerenritter; Basis und Loop vereinheitlichen.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 19943,
+     "deckung": 0.30431,
+     "bbox": [
+      30,
+      21,
+      225,
+      239
+     ],
+     "schwerpunkt": [
+      127.07,
+      129.81
+     ],
+     "orientierung": 104.01,
+     "transparent": 0.68781,
+     "halbsaum": 0.00789,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 19987,
+     "deckung": 0.30498,
+     "bbox": [
+      32,
+      18,
+      224,
+      239
+     ],
+     "schwerpunkt": [
+      135.03,
+      127.79
+     ],
+     "orientierung": 99.87,
+     "transparent": 0.68607,
+     "halbsaum": 0.00896,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 19964,
+     "deckung": 0.30463,
+     "bbox": [
+      44,
+      20,
+      211,
+      239
+     ],
+     "schwerpunkt": [
+      121.76,
+      144.07
+     ],
+     "orientierung": 84.46,
+     "transparent": 0.68727,
+     "halbsaum": 0.0081,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 20174,
+     "deckung": 0.30783,
+     "bbox": [
+      27,
+      20,
+      228,
+      239
+     ],
+     "schwerpunkt": [
+      113.87,
+      129.76
+     ],
+     "orientierung": 106.44,
+     "transparent": 0.68478,
+     "halbsaum": 0.00739,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 19292,
+     "deckung": 0.29437,
+     "bbox": [
+      27,
+      28,
+      229,
+      239
+     ],
+     "schwerpunkt": [
+      129.68,
+      133.02
+     ],
+     "orientierung": 111.42,
+     "transparent": 0.69673,
+     "halbsaum": 0.0089,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 23519,
+     "deckung": 0.35887,
+     "bbox": [
+      11,
+      30,
+      245,
+      239
+     ],
+     "schwerpunkt": [
+      127.94,
+      142.22
+     ],
+     "orientierung": 110.99,
+     "transparent": 0.63403,
+     "halbsaum": 0.0071,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 24635,
+     "deckung": 0.3759,
+     "bbox": [
+      26,
+      24,
+      229,
+      239
+     ],
+     "schwerpunkt": [
+      130.87,
+      145.73
+     ],
+     "orientierung": 105.11,
+     "transparent": 0.61557,
+     "halbsaum": 0.00853,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 20594,
+     "deckung": 0.31424,
+     "bbox": [
+      17,
+      21,
+      239,
+      239
+     ],
+     "schwerpunkt": [
+      124.1,
+      127.45
+     ],
+     "orientierung": 112.44,
+     "transparent": 0.67657,
+     "halbsaum": 0.00919,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9122,
+     "silhouetteIou": 0.7165,
+     "flaecheRatio": 0.993,
+     "lageAbweichung": 0.0065
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9081,
+     "silhouetteIou": 0.6478,
+     "flaecheRatio": 0.995,
+     "lageAbweichung": 0.0326
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.7482,
+     "silhouetteIou": 0.5766,
+     "flaecheRatio": 0.994,
+     "lageAbweichung": 0.0543
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9884,
+     "silhouetteIou": 0.5893,
+     "flaecheRatio": 1.005,
+     "lageAbweichung": 0.0536
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.8981,
+     "silhouetteIou": 0.6709,
+     "flaecheRatio": 0.961,
+     "lageAbweichung": 0.0106
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.7637,
+     "silhouetteIou": 0.7008,
+     "flaecheRatio": 1.171,
+     "lageAbweichung": 0.0422
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.7512,
+     "silhouetteIou": 0.6859,
+     "flaecheRatio": 1.227,
+     "lageAbweichung": 0.0575
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9736,
+     "silhouetteIou": 0.6879,
+     "flaecheRatio": 1.026,
+     "lageAbweichung": 0.0204
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.08641,
+    "loopDiff": 0.04635,
+    "richtungsStreuungGrad": 8.5,
+    "nettoWeg": 0.015,
+    "richtungsResultante": 0.165,
+    "drehSummeGrad": 60.2,
+    "halbsaum": 0.00826,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00826,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "blauer Cartoon-Zauberer statt Leerenritter; F2/F6 setzen eine türkise Energiebasis, die sonst fehlt",
+     "brueche": [
+      2,
+      6
+     ],
+     "messAuffaellig": [
+      2,
+      5,
+      6
+     ],
+     "histKorrMin": 0.7482,
+     "silhouetteIouMin": 0.5766,
+     "flaecheRatioMin": 0.961,
+     "flaecheRatioMax": 1.227
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 8.5,
+     "nettoWeg": 0.015,
+     "nettoWinkel": -141.5,
+     "resultante": 0.165
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.08641,
+     "schrittDifferenzen": [
+      0.07406,
+      0.12202,
+      0.07734,
+      0.11311,
+      0.06857,
+      0.06095,
+      0.08878
+     ],
+     "loopDiff": 0.04635
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung plausibel",
+     "drehSumme": 60.2,
+     "ortsdrift": 0.015
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "Energiebasis wechselt, kein Dauer-Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_143": {
+   "id": "pa_143",
+   "waffe": "Astralross",
+   "rolle": "beschwoerung",
+   "motivDokumentiert": "ausgewaschenes gepanzertes Pferd",
+   "naechsterSchritt": "Kontrast in F1/F6 reparieren und vier echte Bewegungsphasen ergänzen.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 31387,
+     "deckung": 0.47893,
+     "bbox": [
+      34,
+      21,
+      221,
+      240
+     ],
+     "schwerpunkt": [
+      127.88,
+      127.89
+     ],
+     "orientierung": 84.8,
+     "transparent": 0.51613,
+     "halbsaum": 0.00494,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 30380,
+     "deckung": 0.46356,
+     "bbox": [
+      25,
+      35,
+      230,
+      240
+     ],
+     "schwerpunkt": [
+      131.62,
+      132.63
+     ],
+     "orientierung": 86.02,
+     "transparent": 0.53249,
+     "halbsaum": 0.00395,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 31390,
+     "deckung": 0.47897,
+     "bbox": [
+      34,
+      21,
+      221,
+      240
+     ],
+     "schwerpunkt": [
+      127.41,
+      127.73
+     ],
+     "orientierung": 85.06,
+     "transparent": 0.51599,
+     "halbsaum": 0.00504,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 31330,
+     "deckung": 0.47806,
+     "bbox": [
+      34,
+      20,
+      221,
+      240
+     ],
+     "schwerpunkt": [
+      127.33,
+      127.19
+     ],
+     "orientierung": 84.74,
+     "transparent": 0.51706,
+     "halbsaum": 0.00488,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 31503,
+     "deckung": 0.4807,
+     "bbox": [
+      34,
+      19,
+      222,
+      240
+     ],
+     "schwerpunkt": [
+      127.65,
+      127.01
+     ],
+     "orientierung": 85.0,
+     "transparent": 0.51402,
+     "halbsaum": 0.00528,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 30719,
+     "deckung": 0.46873,
+     "bbox": [
+      24,
+      34,
+      231,
+      240
+     ],
+     "schwerpunkt": [
+      131.52,
+      132.13
+     ],
+     "orientierung": 86.75,
+     "transparent": 0.52579,
+     "halbsaum": 0.00548,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 31385,
+     "deckung": 0.4789,
+     "bbox": [
+      35,
+      19,
+      220,
+      240
+     ],
+     "schwerpunkt": [
+      127.86,
+      127.1
+     ],
+     "orientierung": 85.27,
+     "transparent": 0.51593,
+     "halbsaum": 0.00517,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 31495,
+     "deckung": 0.48058,
+     "bbox": [
+      35,
+      19,
+      221,
+      240
+     ],
+     "schwerpunkt": [
+      128.11,
+      126.97
+     ],
+     "orientierung": 85.3,
+     "transparent": 0.51445,
+     "halbsaum": 0.00497,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.9452,
+     "silhouetteIou": 0.9567,
+     "flaecheRatio": 1.0,
+     "lageAbweichung": 0.0017
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.5625,
+     "silhouetteIou": 0.8976,
+     "flaecheRatio": 0.968,
+     "lageAbweichung": 0.025
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.6915,
+     "silhouetteIou": 0.959,
+     "flaecheRatio": 1.0,
+     "lageAbweichung": 0.0021
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9406,
+     "silhouetteIou": 0.9569,
+     "flaecheRatio": 0.998,
+     "lageAbweichung": 0.0024
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9224,
+     "silhouetteIou": 0.9561,
+     "flaecheRatio": 1.004,
+     "lageAbweichung": 0.002
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.763,
+     "silhouetteIou": 0.8943,
+     "flaecheRatio": 0.979,
+     "lageAbweichung": 0.0232
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.6676,
+     "silhouetteIou": 0.9559,
+     "flaecheRatio": 1.0,
+     "lageAbweichung": 0.0014
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.9359,
+     "silhouetteIou": 0.9565,
+     "flaecheRatio": 1.003,
+     "lageAbweichung": 0.0021
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 4,
+    "mittlereDifferenz": 0.0761,
+    "loopDiff": 0.01955,
+    "richtungsStreuungGrad": 0.6,
+    "nettoWeg": 0.004,
+    "richtungsResultante": 0.197,
+    "drehSummeGrad": 6.0,
+    "halbsaum": 0.00496,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00496,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": true,
+     "befund": "gepanzertes Pferd, als Astralross motivnah; F1/F6 sind ausgewaschen und verlieren den Kontrast",
+     "brueche": [
+      1,
+      6
+     ],
+     "messAuffaellig": [
+      1,
+      2,
+      5,
+      6
+     ],
+     "histKorrMin": 0.5625,
+     "silhouetteIouMin": 0.8943,
+     "flaecheRatioMin": 0.968,
+     "flaecheRatioMax": 1.004
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 0.6,
+     "nettoWeg": 0.004,
+     "nettoWinkel": -76.1,
+     "resultante": 0.197
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 4,
+     "vertreter": [
+      0,
+      1,
+      2,
+      5
+     ],
+     "mittlereDifferenz": 0.0761,
+     "schrittDifferenzen": [
+      0.11812,
+      0.08537,
+      0.06047,
+      0.01333,
+      0.0773,
+      0.11718,
+      0.06095
+     ],
+     "loopDiff": 0.01955
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Figur, Rollenzuordnung plausibel",
+     "drehSumme": 6.0,
+     "ortsdrift": 0.004
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "Glühen im Panzer, kein separater Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_144": {
+   "id": "pa_144",
+   "waffe": "Kosmische Wassermelone",
+   "rolle": "flug",
+   "motivDokumentiert": "geflügeltes Vogelwesen mit Melonenkopf",
+   "naechsterSchritt": "Neue Vorlage Wassermelone; Richtung über alle Frames stabil halten.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 14889,
+     "deckung": 0.22719,
+     "bbox": [
+      17,
+      26,
+      239,
+      240
+     ],
+     "schwerpunkt": [
+      139.28,
+      125.83
+     ],
+     "orientierung": 94.99,
+     "transparent": 0.76518,
+     "halbsaum": 0.00763,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 15103,
+     "deckung": 0.23045,
+     "bbox": [
+      30,
+      31,
+      224,
+      240
+     ],
+     "schwerpunkt": [
+      124.29,
+      127.28
+     ],
+     "orientierung": 79.57,
+     "transparent": 0.76239,
+     "halbsaum": 0.00716,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 17133,
+     "deckung": 0.26143,
+     "bbox": [
+      31,
+      20,
+      224,
+      240
+     ],
+     "schwerpunkt": [
+      125.53,
+      124.7
+     ],
+     "orientierung": 91.66,
+     "transparent": 0.7314,
+     "halbsaum": 0.00717,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 17483,
+     "deckung": 0.26677,
+     "bbox": [
+      19,
+      26,
+      236,
+      239
+     ],
+     "schwerpunkt": [
+      138.52,
+      126.36
+     ],
+     "orientierung": 114.63,
+     "transparent": 0.72476,
+     "halbsaum": 0.00847,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 15407,
+     "deckung": 0.23509,
+     "bbox": [
+      17,
+      17,
+      238,
+      240
+     ],
+     "schwerpunkt": [
+      141.02,
+      125.55
+     ],
+     "orientierung": 106.58,
+     "transparent": 0.75739,
+     "halbsaum": 0.00752,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 16909,
+     "deckung": 0.25801,
+     "bbox": [
+      17,
+      19,
+      238,
+      240
+     ],
+     "schwerpunkt": [
+      129.88,
+      122.81
+     ],
+     "orientierung": 71.12,
+     "transparent": 0.73386,
+     "halbsaum": 0.00813,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 15480,
+     "deckung": 0.23621,
+     "bbox": [
+      31,
+      16,
+      225,
+      239
+     ],
+     "schwerpunkt": [
+      132.74,
+      123.95
+     ],
+     "orientierung": 95.26,
+     "transparent": 0.75601,
+     "halbsaum": 0.00778,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 17199,
+     "deckung": 0.26244,
+     "bbox": [
+      13,
+      33,
+      242,
+      240
+     ],
+     "schwerpunkt": [
+      127.95,
+      131.0
+     ],
+     "orientierung": 162.83,
+     "transparent": 0.72739,
+     "halbsaum": 0.01018,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.8057,
+     "silhouetteIou": 0.6436,
+     "flaecheRatio": 0.919,
+     "lageAbweichung": 0.0311
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.8256,
+     "silhouetteIou": 0.6134,
+     "flaecheRatio": 0.933,
+     "lageAbweichung": 0.0281
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.7719,
+     "silhouetteIou": 0.6018,
+     "flaecheRatio": 1.058,
+     "lageAbweichung": 0.0229
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.5748,
+     "silhouetteIou": 0.6155,
+     "flaecheRatio": 1.08,
+     "lageAbweichung": 0.0283
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.8535,
+     "silhouetteIou": 0.6225,
+     "flaecheRatio": 0.951,
+     "lageAbweichung": 0.038
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.5901,
+     "silhouetteIou": 0.6785,
+     "flaecheRatio": 1.044,
+     "lageAbweichung": 0.0126
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.5985,
+     "silhouetteIou": 0.6295,
+     "flaecheRatio": 0.956,
+     "lageAbweichung": 0.0088
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.5115,
+     "silhouetteIou": 0.5463,
+     "flaecheRatio": 1.062,
+     "lageAbweichung": 0.0246
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 7,
+    "mittlereDifferenz": 0.07987,
+    "loopDiff": 0.11021,
+    "richtungsStreuungGrad": 24.7,
+    "nettoWeg": 0.049,
+    "richtungsResultante": 0.111,
+    "drehSummeGrad": 185.7,
+    "halbsaum": 0.008,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.008,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "geflügeltes Vogelwesen mit Melonenkopf statt Wassermelone",
+     "brueche": [],
+     "messAuffaellig": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      7
+     ],
+     "histKorrMin": 0.5115,
+     "silhouetteIouMin": 0.5463,
+     "flaecheRatioMin": 0.919,
+     "flaecheRatioMax": 1.08
+    },
+    "richtung": {
+     "ok": false,
+     "streuungGrad": 24.7,
+     "nettoWeg": 0.049,
+     "nettoWinkel": 155.4,
+     "resultante": 0.111
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 7,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.07987,
+     "schrittDifferenzen": [
+      0.08562,
+      0.06132,
+      0.09054,
+      0.08513,
+      0.06293,
+      0.06762,
+      0.10594
+     ],
+     "loopDiff": 0.11021
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "Projektil im Flug, Rollenzuordnung technisch plausibel",
+     "drehSumme": 185.7,
+     "ortsdrift": 0.049
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "richtung",
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_147": {
+   "id": "pa_147",
+   "waffe": "Weltendrache",
+   "rolle": "beschwoerung",
+   "motivDokumentiert": "rosa geflügeltes Schwein",
+   "naechsterSchritt": "Neue Vorlage Weltendrache; Drehung im Zyklus vermeiden.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 24561,
+     "deckung": 0.37477,
+     "bbox": [
+      23,
+      21,
+      232,
+      239
+     ],
+     "schwerpunkt": [
+      132.65,
+      144.88
+     ],
+     "orientierung": 113.29,
+     "transparent": 0.61954,
+     "halbsaum": 0.00569,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 25878,
+     "deckung": 0.39487,
+     "bbox": [
+      20,
+      23,
+      235,
+      239
+     ],
+     "schwerpunkt": [
+      121.95,
+      142.34
+     ],
+     "orientierung": 71.68,
+     "transparent": 0.59888,
+     "halbsaum": 0.00626,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 25808,
+     "deckung": 0.3938,
+     "bbox": [
+      22,
+      24,
+      234,
+      239
+     ],
+     "schwerpunkt": [
+      119.42,
+      142.67
+     ],
+     "orientierung": 57.24,
+     "transparent": 0.60002,
+     "halbsaum": 0.00618,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 27826,
+     "deckung": 0.42459,
+     "bbox": [
+      20,
+      23,
+      236,
+      239
+     ],
+     "schwerpunkt": [
+      130.43,
+      135.54
+     ],
+     "orientierung": 126.13,
+     "transparent": 0.56883,
+     "halbsaum": 0.00658,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 25321,
+     "deckung": 0.38637,
+     "bbox": [
+      25,
+      17,
+      231,
+      239
+     ],
+     "schwerpunkt": [
+      135.19,
+      140.34
+     ],
+     "orientierung": 116.73,
+     "transparent": 0.60716,
+     "halbsaum": 0.00647,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 24831,
+     "deckung": 0.37889,
+     "bbox": [
+      21,
+      17,
+      235,
+      239
+     ],
+     "schwerpunkt": [
+      126.82,
+      141.72
+     ],
+     "orientierung": 71.33,
+     "transparent": 0.6151,
+     "halbsaum": 0.00601,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 26340,
+     "deckung": 0.40192,
+     "bbox": [
+      31,
+      16,
+      224,
+      239
+     ],
+     "schwerpunkt": [
+      126.16,
+      137.36
+     ],
+     "orientierung": 87.32,
+     "transparent": 0.59245,
+     "halbsaum": 0.00563,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 28103,
+     "deckung": 0.42882,
+     "bbox": [
+      19,
+      22,
+      237,
+      239
+     ],
+     "schwerpunkt": [
+      129.38,
+      134.19
+     ],
+     "orientierung": 128.7,
+     "transparent": 0.56418,
+     "halbsaum": 0.007,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.7637,
+     "silhouetteIou": 0.7371,
+     "flaecheRatio": 0.95,
+     "lageAbweichung": 0.0233
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.7477,
+     "silhouetteIou": 0.7025,
+     "flaecheRatio": 1.001,
+     "lageAbweichung": 0.0245
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.7016,
+     "silhouetteIou": 0.7126,
+     "flaecheRatio": 0.999,
+     "lageAbweichung": 0.0345
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.7326,
+     "silhouetteIou": 0.7301,
+     "flaecheRatio": 1.077,
+     "lageAbweichung": 0.0233
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.8207,
+     "silhouetteIou": 0.7464,
+     "flaecheRatio": 0.98,
+     "lageAbweichung": 0.0278
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.7257,
+     "silhouetteIou": 0.7513,
+     "flaecheRatio": 0.961,
+     "lageAbweichung": 0.0057
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.7311,
+     "silhouetteIou": 0.7675,
+     "flaecheRatio": 1.019,
+     "lageAbweichung": 0.0162
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.7288,
+     "silhouetteIou": 0.7272,
+     "flaecheRatio": 1.087,
+     "lageAbweichung": 0.0272
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 7,
+    "mittlereDifferenz": 0.11231,
+    "loopDiff": 0.16298,
+    "richtungsStreuungGrad": 27.9,
+    "nettoWeg": 0.044,
+    "richtungsResultante": 0.241,
+    "drehSummeGrad": 237.1,
+    "halbsaum": 0.00623,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00623,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "rosa geflügeltes Schwein statt Weltendrache",
+     "brueche": [],
+     "messAuffaellig": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "histKorrMin": 0.7016,
+     "silhouetteIouMin": 0.7025,
+     "flaecheRatioMin": 0.95,
+     "flaecheRatioMax": 1.087
+    },
+    "richtung": {
+     "ok": false,
+     "streuungGrad": 27.9,
+     "nettoWeg": 0.044,
+     "nettoWinkel": -107.0,
+     "resultante": 0.241
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 7,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "mittlereDifferenz": 0.11231,
+     "schrittDifferenzen": [
+      0.12679,
+      0.08728,
+      0.12315,
+      0.14907,
+      0.09547,
+      0.11709,
+      0.08731
+     ],
+     "loopDiff": 0.16298
+    },
+    "rolle": {
+     "ok": true,
+     "befund": "beschworene Kreatur, Rollenzuordnung plausibel",
+     "drehSumme": 237.1,
+     "ortsdrift": 0.044
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "richtung",
+      "bewegung",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  },
+  "pa_148": {
+   "id": "pa_148",
+   "waffe": "Feuerschild",
+   "rolle": "selbst",
+   "motivDokumentiert": "blaues geflügeltes Tier",
+   "naechsterSchritt": "Neue Vorlage Feuerschild als Aura; Loop schließen.",
+   "frames": [
+    {
+     "index": 0,
+     "flaeche": 16386,
+     "deckung": 0.25003,
+     "bbox": [
+      32,
+      21,
+      224,
+      239
+     ],
+     "schwerpunkt": [
+      137.1,
+      125.35
+     ],
+     "orientierung": 99.34,
+     "transparent": 0.7428,
+     "halbsaum": 0.00717,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 1,
+     "flaeche": 16585,
+     "deckung": 0.25307,
+     "bbox": [
+      33,
+      21,
+      223,
+      239
+     ],
+     "schwerpunkt": [
+      120.49,
+      125.91
+     ],
+     "orientierung": 78.95,
+     "transparent": 0.73938,
+     "halbsaum": 0.00755,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 2,
+     "flaeche": 16391,
+     "deckung": 0.25011,
+     "bbox": [
+      23,
+      24,
+      232,
+      239
+     ],
+     "schwerpunkt": [
+      112.06,
+      129.29
+     ],
+     "orientierung": 79.66,
+     "transparent": 0.74274,
+     "halbsaum": 0.00716,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 3,
+     "flaeche": 17930,
+     "deckung": 0.27359,
+     "bbox": [
+      38,
+      20,
+      218,
+      239
+     ],
+     "schwerpunkt": [
+      125.11,
+      125.6
+     ],
+     "orientierung": 100.23,
+     "transparent": 0.71895,
+     "halbsaum": 0.00746,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 4,
+     "flaeche": 16172,
+     "deckung": 0.24677,
+     "bbox": [
+      38,
+      24,
+      218,
+      239
+     ],
+     "schwerpunkt": [
+      140.2,
+      125.46
+     ],
+     "orientierung": 99.38,
+     "transparent": 0.74571,
+     "halbsaum": 0.00752,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 5,
+     "flaeche": 16764,
+     "deckung": 0.2558,
+     "bbox": [
+      38,
+      21,
+      217,
+      239
+     ],
+     "schwerpunkt": [
+      128.63,
+      126.08
+     ],
+     "orientierung": 102.17,
+     "transparent": 0.73619,
+     "halbsaum": 0.00801,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 6,
+     "flaeche": 17950,
+     "deckung": 0.2739,
+     "bbox": [
+      42,
+      23,
+      213,
+      239
+     ],
+     "schwerpunkt": [
+      119.65,
+      128.07
+     ],
+     "orientierung": 102.34,
+     "transparent": 0.71916,
+     "halbsaum": 0.00694,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    },
+    {
+     "index": 7,
+     "flaeche": 16552,
+     "deckung": 0.25256,
+     "bbox": [
+      35,
+      29,
+      220,
+      239
+     ],
+     "schwerpunkt": [
+      129.7,
+      130.18
+     ],
+     "orientierung": 91.83,
+     "transparent": 0.74068,
+     "halbsaum": 0.00676,
+     "eckenAlpha": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "rechteckHintergrund": false,
+     "randAnschluss": false
+    }
+   ],
+   "identitaetFrames": [
+    {
+     "frame": 0,
+     "histKorr": 0.943,
+     "silhouetteIou": 0.5929,
+     "flaecheRatio": 0.989,
+     "lageAbweichung": 0.04
+    },
+    {
+     "frame": 1,
+     "histKorr": 0.9287,
+     "silhouetteIou": 0.5255,
+     "flaecheRatio": 1.001,
+     "lageAbweichung": 0.0249
+    },
+    {
+     "frame": 2,
+     "histKorr": 0.8346,
+     "silhouetteIou": 0.483,
+     "flaecheRatio": 0.989,
+     "lageAbweichung": 0.0593
+    },
+    {
+     "frame": 3,
+     "histKorr": 0.9677,
+     "silhouetteIou": 0.6209,
+     "flaecheRatio": 1.082,
+     "lageAbweichung": 0.0071
+    },
+    {
+     "frame": 4,
+     "histKorr": 0.9523,
+     "silhouetteIou": 0.532,
+     "flaecheRatio": 0.976,
+     "lageAbweichung": 0.0521
+    },
+    {
+     "frame": 5,
+     "histKorr": 0.897,
+     "silhouetteIou": 0.6301,
+     "flaecheRatio": 1.012,
+     "lageAbweichung": 0.0069
+    },
+    {
+     "frame": 6,
+     "histKorr": 0.9244,
+     "silhouetteIou": 0.6285,
+     "flaecheRatio": 1.083,
+     "lageAbweichung": 0.0293
+    },
+    {
+     "frame": 7,
+     "histKorr": 0.8654,
+     "silhouetteIou": 0.6096,
+     "flaecheRatio": 0.999,
+     "lageAbweichung": 0.0197
+    }
+   ],
+   "messung": {
+    "distinkteFrames": 8,
+    "mittlereDifferenz": 0.09995,
+    "loopDiff": 0.06906,
+    "richtungsStreuungGrad": 9.2,
+    "nettoWeg": 0.035,
+    "richtungsResultante": 0.162,
+    "drehSummeGrad": 56.0,
+    "halbsaum": 0.00732,
+    "transparenteEcken": 8
+   },
+   "pruefung": {
+    "frames": {
+     "ok": true,
+     "belegt": 8,
+     "leer": [],
+     "randAnschluss": []
+    },
+    "alpha": {
+     "ok": true,
+     "transparenteEcken": 8,
+     "halbsaum": 0.00732,
+     "rechteckHintergrund": []
+    },
+    "identitaet": {
+     "ok": false,
+     "motivPasst": false,
+     "befund": "blaues geflügeltes Tier statt Feuerschild",
+     "brueche": [],
+     "messAuffaellig": [
+      2
+     ],
+     "histKorrMin": 0.8346,
+     "silhouetteIouMin": 0.483,
+     "flaecheRatioMin": 0.976,
+     "flaecheRatioMax": 1.083
+    },
+    "richtung": {
+     "ok": true,
+     "streuungGrad": 9.2,
+     "nettoWeg": 0.035,
+     "nettoWinkel": 146.8,
+     "resultante": 0.162
+    },
+    "bewegung": {
+     "ok": false,
+     "distinkteFrames": 8,
+     "vertreter": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "mittlereDifferenz": 0.09995,
+     "schrittDifferenzen": [
+      0.14564,
+      0.08567,
+      0.11542,
+      0.10255,
+      0.10843,
+      0.06415,
+      0.07779
+     ],
+     "loopDiff": 0.06906
+    },
+    "rolle": {
+     "ok": false,
+     "befund": "Kreatur, keine Aura oder Schild am Träger",
+     "drehSumme": 56.0,
+     "ortsdrift": 0.035
+    },
+    "effekt": {
+     "ok": true,
+     "befund": "kein eingebrannter Effekt"
+    },
+    "browser": {
+     "ok": false,
+     "befund": "W20 nicht durchgeführt: kein Rendereranschluss vor Produktfreigabe"
+    },
+    "ergebnis": {
+     "abnahme": "abgelehnt",
+     "datenOk": false,
+     "produktOk": false,
+     "sperrgruende": [
+      "identitaet",
+      "bewegung",
+      "rolle",
+      "browser"
+     ]
+    },
+    "datum": "2026-11-09",
+    "verfahren": "tools/waffen-anim-abnahme.py",
+    "messung": "anim-abnahme-messung.json"
+   }
+  }
+ }
+}

@@ -15,6 +15,23 @@ Manifest erfasst, keines ist freigegeben, 12 zeigen ein fremdes Motiv,
 pa_112/pa_114 bleiben bytegleich, und 15 Ruhebilder plus 8 Animationsblätter sind
 als Effektträger (W17) auf Datenebene erfasst.
 
+## Nachtrag BAL-10: Abnahme je Blatt (09.11.2026)
+
+Die 26 Blätter wurden pixelbasiert neu abgenommen (8 Frames, Alpha, Identität,
+Richtung, Bewegung, Rolle), nicht pauschal. Ergebnis: **0 produktfreigegeben,
+1 datenabgenommen (pa_065), 25 abgelehnt**. pa_065 besteht alle sechs
+Datenkriterien, bleibt aber wegen des eingebrannten Schweifs (W17) und der
+fehlenden Browserabnahme (W20) gesperrt. Jedes andere Blatt hat mindestens ein
+offenes Datenkriterium; die häufigsten Gründe sind Bewegung (25),
+Identität (18), offene Schleifen (17) und fremdes Motiv (14). Manifest ist
+jetzt Version 3 und trägt je Blatt `pruefung`, `abnahme` und `sperrgruende`.
+
+Beleg: [ANIM-ABNAHME.md](ANIM-ABNAHME.md), Messung
+[anim-abnahme-messung.json](anim-abnahme-messung.json), Werkzeug
+`tools/waffen-anim-abnahme.py`, Tests `tests/waffen-anim-abnahme.test.js` und
+`tests/waffen-anim-gating.test.js`. Der Lader weist auch eine manipulierte
+Freigabeliste ab; ein synthetischer Vollbeleg öffnet ihn als Gegenprobe.
+
 ## W05 – Prüfung des Ladepfads
 
 Gesucht wurde im gesamten Produktbaum (`src/`, `index.html`, `vite.config.mjs`)

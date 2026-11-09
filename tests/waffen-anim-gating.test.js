@@ -23,6 +23,8 @@ import { join, relative, resolve } from 'node:path';
 import { ohneKommentare } from './helfer/ohne-kommentare.js';
 import {
   ANIM_FREIGABE,
+  ANIM_KRITERIEN,
+  ANIM_PRODUKT_KRITERIEN,
   ANIM_ROLLEN_NAMEN,
   ANIM_SCHWEREN,
   ANIM_STATUS,
@@ -83,16 +85,28 @@ test('jedes Blatt ist gesperrt, hat Rolle, Motiv und Befund', () => {
   assert.equal(ids.length, 26, 'erwartet 26 Zusatz-Sheets');
   assert.equal(manifest.status, 'gesperrt');
   assert.equal(manifest.freigabe.produktpfad, false);
+  assert.equal(manifest.version, 3);
+  assert.equal(manifest.abnahme.ergebnis.gesamt, 26);
   for (const id of ids) {
     const e = manifest.waffen[id];
     assert.equal(e.freigabe, false, `${id} darf nicht freigegeben sein`);
-    assert.equal(e.abnahme, 'offen', `${id} ist ohne Abnahme`);
+    assert.ok(['abgelehnt', 'datenabgenommen'].includes(e.abnahme), `${id}: Abnahmestufe ${e.abnahme}`);
     assert.ok(ANIM_ROLLEN_NAMEN.includes(e.rolle), `${id} ohne gültige Rolle`);
     assert.ok(ANIM_SCHWEREN.includes(e.schwere), `${id} ohne gültigen Schweregrad`);
     assert.ok(e.motiv.length > 3, `${id} ohne Motivbeschreibung`);
     assert.ok(e.befund.length > 3, `${id} ohne Befund`);
     assert.equal(e.zelle, 256, `${id} mit unerwarteter Zellgröße`);
     assert.equal(e.frames, 8, `${id} mit unerwarteter Framezahl`);
+    assert.ok(e.pruefung && typeof e.pruefung === 'object', `${id} ohne Abnahmeprüfung`);
+    for (const kriterium of [...ANIM_KRITERIEN, ...ANIM_PRODUKT_KRITERIEN]) {
+      assert.equal(typeof e.pruefung[kriterium]?.ok, 'boolean', `${id}: ${kriterium} ohne ok`);
+    }
+    assert.deepEqual(
+      [...e.sperrgruende].sort(),
+      [...ANIM_KRITERIEN, ...ANIM_PRODUKT_KRITERIEN]
+        .filter(k => e.pruefung[k].ok !== true).sort(),
+      `${id}: Sperrgründe passen nicht zu den Kriterien`,
+    );
   }
 });
 
