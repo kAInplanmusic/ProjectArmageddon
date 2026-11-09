@@ -25,7 +25,7 @@ import { WET_LEVEL } from '../shared/config/water.js';
 import { TERRAIN_MATERIAL } from '../shared/config/terrain.js';
 import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
 import { ARCHETYPE_IDS, klassenKennung } from '../shared/config/classes.js';
-import { KLASSEN_ALT } from '../shared/config/klassen-fassung.js';
+import { KLASSEN_ALT, istKlassenfassungNeu } from '../shared/config/klassen-fassung.js';
 import { EFFECT_KIND, SPECIAL_DEFAULTS } from './specials.js';
 import { damageTypeId, damageTypeName } from './damageTypes.js';
 
@@ -70,6 +70,22 @@ export class MaliRegeln {
   /** Klassenfassung des Matches (fehlt sie, gilt die Altfassung). */
   #klassen() {
     return this.#q.klassen?.() ?? KLASSEN_ALT;
+  }
+
+  /**
+   * Archetyp der Figur — in Fassung ≥ 3 bewusst `null`.
+   *
+   * Das Komponentenfeld `Class.archetypeId` ist eine Zahl; `spawnManager.js` schreibt
+   * in Fassung 3 überall 0. Diese 0 darf nicht als `ARCHETYPE_IDS[0]` („brawler")
+   * gelesen werden, sonst erbten alle neuen Klassen dessen Gift-/Säure-Abzug
+   * (BAL-03). Die Bedeutung entscheidet allein die Klassenfassung.
+   *
+   * @param {object|null} spieler
+   * @returns {string|null}
+   */
+  #archetyp(spieler) {
+    if (istKlassenfassungNeu(this.#klassen())) return null;
+    return ARCHETYPE_IDS[spieler?.archetypeId ?? 0] ?? null;
   }
 
   #lebt(id) {
@@ -186,7 +202,7 @@ export class MaliRegeln {
 
     const spieler = this.#spieler(id);
     const klasse = klassenKennung(spieler?.classId ?? 0, this.#klassen());
-    const archetyp = ARCHETYPE_IDS[spieler?.archetypeId ?? 0];
+    const archetyp = this.#archetyp(spieler);
     const biom = this.#q.biomId();
     const eis = this.#bodenMaterial(id) === TERRAIN_MATERIAL.ICE;
     void klasse;
@@ -202,7 +218,7 @@ export class MaliRegeln {
       const plus = (WECHSELWIRKUNG.frostBiomZusatz[biom] ?? 0) + (eis ? WECHSELWIRKUNG.frostEisbodenZusatz : 0);
       if (plus) { turns += plus; verstaerkt.push(eis ? 'eisboden' : `biom:${biom}`); }
     }
-    turns = Math.min(SPECIAL_DEFAULTS.maxTurns, Math.max(OBERGRENZEN.mindestDauer, turns - dauerAbzug(archetyp, schluessel)));
+    turns = Math.min(SPECIAL_DEFAULTS.maxTurns, Math.max(OBERGRENZEN.mindestDauer, turns - dauerAbzug(archetyp, schluessel, this.#klassen())));
 
     // Gegenspiel zwischen den Elementen: Feuer taut, Eis und Wasser löschen.
     if (schluessel === 'brand') this.entferne(id, 'frost', 'feuer');
@@ -468,7 +484,7 @@ export class MaliRegeln {
       const spieler = this.#spieler(id);
       danach *= resistenzFaktor(
         klassenKennung(spieler?.classId ?? 0, this.#klassen()),
-        ARCHETYPE_IDS[spieler?.archetypeId ?? 0], art,
+        this.#archetyp(spieler), art, this.#klassen(),
       );
       if (familieVonArt(art) === 'heilig' && this.hat(id, 'fluch')) danach *= WECHSELWIRKUNG.heiligGegenFluch;
     }
