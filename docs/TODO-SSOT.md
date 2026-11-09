@@ -8,6 +8,8 @@ Regeln: Nichts erfinden. „Status ungeprüft“ heißt: aus einem älteren Beri
 
 Geprüfter Vorschlag und Belege: [Waffenbalancing-Bericht](waffenbalance-2026-11-09/BERICHT.md), [150 Einzelprüfungen](waffenbalance-2026-11-09/EINZELPRUEFUNG-150.md). Keine Spielwerte geändert. Fortschritt ausschließlich hier führen; Umsetzungsvorschlag mit Abhängigkeiten in `waffenbalance-2026-11-09/massnahmen-17.json`.
 
+**BAL-08 erledigt 2026-11-09:** Anker aus `scripts/waffen-anker-tabelle.json` (50 gesetzte Heftpunkte, 100 am Körper gehaltene Waffen, 3 gespiegelte Zellen), `griffObjekt` entfallen, Achsklemme im Renderer entfernt. Abnahme `npm run waffen:anker:abnahme` 150/150 in 72 Konstellationen; Beleg [Ankerabnahme](waffen-anker-abnahme.md).
+
 | ID | Priorität | Offene Arbeit | Abnahme |
 |---|---|---|---|
 | BAL-01 | P0 | Trefferfenster und echten Flächenradius trennen | 33 betroffene IDs: Nahvorbeiflug ohne Direkttreffer macht bei Radius 0 keinen Flächenschaden. Direkttreffer bleibt wirksam. Radius > 0 behält Abfallkurve. Altreplays bis F15 bleiben bitgleich. |
@@ -17,7 +19,6 @@ Geprüfter Vorschlag und Belege: [Waffenbalancing-Bericht](waffenbalance-2026-11
 | BAL-05 | P1 | Selbstauffüllenden Nachschub als Ökonomieregel entscheiden | Mindestens 20 eigene Anwendungen mit Inventar nur aus Reserve/Nachschub und mit zusätzlicher endlicher Waffe. Munitionsbilanz, Cooldowns, Inventarreihenfolge und Obergrenze 5 dokumentiert; keine unbeabsichtigte positive Rückkopplung. |
 | BAL-06 | P0 | Bestehende Balancewerkzeuge auf den tatsächlichen Spielvertrag bringen | Alle 150 aktuelle Namen/Werte; Klassenleben 130/100/70; 9 unbegrenzte, 73 Drei-, 48 Zwei-, 20 Einschusswaffen. Alte Fassung separat reproduzierbar. Jede Distanz bleibt als angefragt/gemessen sichtbar. |
 | BAL-07 | P1 | Menü, HUD, Beschreibung und Renderer an dieselbe Partiefassung binden | F11 zeigt historische Teleportplattform, F12/F15 die aktuelle Mine. Maschinenpistole zeigt zur Partie passende 21/42 Werte. Heilung/Schild/Bewegung zeigen reale Nutzwerte; Altreplays erhalten ihre Darstellung. |
-| BAL-08 | P1 | Griffe und Wirkspitzen semantisch korrigieren | Links/rechts, drei Zielwinkel, Ruhe/Ziehen/Schuss und drei Figurengrößen im echten Renderer. Griff sitzt am nutzbaren Heft, Wirkspitze am tatsächlichen Ende, Spiegelung bleibt korrekt. Keine geometrische Randheuristik als Freigabe. |
 | BAL-09 | P1 | Freistellung und Ruheeffekte gezielt bereinigen | Dunkler/heller Spielgrund; Menü 24/64, HiDPI und native Handgröße. Jede Änderung mit Vorher/Nachher pro ID und ohne Verlust von Waffenbestandteilen. |
 | BAL-10 | P1 | 26 Zusatzanimationen vor Produktanschluss neu abnehmen | Je Blatt Identität aller acht Frames, Alpha, Richtung, Bewegung und Rolle prüfen. Freigabe vor Loaderanschluss. Schlechte Sheets bleiben ausgeschaltet; starre Werkzeuge dürfen prozedurale Animation behalten. |
 | BAL-11 | P1 | Hand-, Rücken-, Aufstell-, Beschwörungs- und Symbolrollen festlegen | Alle 150 IDs haben dokumentierte Rolle; Spezialfälle Rucksack, Gleitschirm, Statue, Boot, Mine und Beschwörung sind im Spiel semantisch verständlich. 96 vorhandene Geschossbilder werden nicht als 96 echte Projektilpfade ausgegeben. |

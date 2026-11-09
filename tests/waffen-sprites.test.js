@@ -162,20 +162,18 @@ test('Anker grip und muzzle liegen innerhalb der Zelle, content innerhalb der De
       assert.ok(Number.isInteger(p.x) && Number.isInteger(p.y), `${w.id}/${k}: nicht ganzzahlig`);
       assert.ok(p.x >= 0 && p.x < 128 && p.y >= 0 && p.y < 128, `${w.id}/${k}: (${p.x},${p.y}) außerhalb`);
     }
-    assert.ok(['geometrie', 'standard', 'korrektur'].includes(e.anchor.source));
+    /*
+     * Die Anker sind gesetzt (BAL-08), nicht aus dem Randabstand geschätzt: Griff am
+     * Heftpunkt oder Schwerpunkt, Mündung am tatsächlichen Ende. Die inhaltliche Prüfung
+     * (Griff auf dem Heft, Spitze am Ende, Spiegelung) steht in `waffen-anker.test.js`.
+     */
+    assert.equal(e.anchor.source, 'semantik', `${w.id}: Ankerquelle ${e.anchor.source}`);
+    assert.ok(['heft', 'koerper'].includes(e.anchor.halt), `${w.id}: halt ${e.anchor.halt}`);
+    assert.ok(Array.isArray(e.anchor.heft) && e.anchor.heft.length === 2, `${w.id}: Heftspanne fehlt`);
     assert.ok(e.anchor.muzzle.x >= e.anchor.grip.x, `${w.id}: Mündung liegt links vom Griff`);
     const c = e.content;
     assert.ok(c.x >= 0 && c.y >= 0 && c.x + c.w <= 128 && c.y + c.h <= 128, `${w.id}: content außerhalb`);
     assert.ok(Math.max(c.w, c.h) >= 100 && Math.max(c.w, c.h) <= 124, `${w.id}: größte Kante ${Math.max(c.w, c.h)} nicht ~90 %`);
-    if (e.anchor.source === 'korrektur') {
-      // Von Hand gesetzter Anker (z. B. schräges Rohr einer Kanone): Die Mündung liegt innerhalb der Umrisse der Waffe;
-      // die Animation dreht die Waffe um den Griff so, dass sie auf dem Zielstrahl liegt.
-      assert.ok(e.anchor.muzzle.x >= c.x && e.anchor.muzzle.x <= c.x + c.w
-        && e.anchor.muzzle.y >= c.y && e.anchor.muzzle.y <= c.y + c.h, `${w.id}: Mündung (korrigiert) außerhalb des Waffenumrisses`);
-    } else {
-      // Mündung sitzt am rechten Rand der Waffe (nach rechts zeigend)
-      assert.ok(e.anchor.muzzle.x >= c.x + c.w - 6, `${w.id}: Mündung nicht am rechten Rand`);
-    }
   }
 });
 
@@ -224,26 +222,31 @@ test('Gesamtgröße der Atlanten bleibt unter 6 MB', () => {
   assert.ok(summe < 6 * 1024 * 1024, `${(summe / 1048576).toFixed(2)} MB`);
 });
 
-test('Griffanker liegt auf einem deckenden Pixel der Waffe, die Mündung an den Umrissen auf der Achse', () => {
+test('Griffanker liegt auf einem deckenden Pixel der Waffe, die Mündung am tatsächlichen Ende', () => {
   for (const w of WEAPONS) {
     const e = manifest.waffen[w.id];
     const alpha = zelleAlpha(e.held);
     const { grip, muzzle } = e.anchor;
     assert.ok(alpha(grip.x, grip.y) > 100, `${w.id}: Griff (${grip.x},${grip.y}) liegt nicht innerhalb der Waffenumrisse`);
-    if (e.anchor.source !== 'geometrie') continue;
-    // Die Mündung ist ein Spitzenpunkt: höchstens drei Pixel neben einem deckenden Pixel.
-    let nah = false;
-    for (let dy = -3; dy <= 3 && !nah; dy++) {
-      for (let dx = -3; dx <= 0 && !nah; dx++) {
-        const x = muzzle.x + dx;
-        const y = muzzle.y + dy;
-        if (x >= 0 && y >= 0 && x < 128 && y < 128 && alpha(x, y) > 100) nah = true;
-      }
+    /*
+     * Die Mündung ist der äußerste Materialpunkt am rechten Ende. Früher stand hier eine
+     * Randheuristik ("höchstens drei Pixel neben einem deckenden Pixel, Spitze auf der
+     * Achse durch den Griff, Griff zwischen 3 % und 75 % der Länge"). Sie ist ersetzt:
+     * die Anker sind gesetzt, und `waffen-anker.test.js` prüft Heft, Ende und Spiegelung.
+     */
+    if (e.anchor.halt === 'heft') {
+      // Mit eigenem Heft liegt die Mündung auf dem Material des Wirkendes; bei Waffen ohne
+      // Heft (Karte, Orb, Körperwesen) ist sie der vordere Rand in Griffhöhe.
+      let nah = 0;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) nah = Math.max(nah, alpha(muzzle.x + dx, muzzle.y + dy));
+      assert.ok(nah > 100, `${w.id}: Mündung (${muzzle.x},${muzzle.y}) liegt nicht am Waffenende`);
     }
-    assert.ok(nah, `${w.id}: Mündung (${muzzle.x},${muzzle.y}) liegt nicht an den Umrissen`);
-    if (e.form === 'objekt') assert.ok(Math.abs(muzzle.y - grip.y) <= 8, `${w.id}: Spitze liegt nicht auf der Achse durch den Griff`);
-    const anteil = (grip.x - e.content.x) / e.content.w;
-    assert.ok(anteil >= 0.03 && anteil <= 0.75, `${w.id}: Griff bei ${(anteil * 100).toFixed(0)} % der Waffenlänge`);
+    if (e.anchor.fest) continue;   // gesetzte Muendung (schraeges Rohr): Zellrand ist nicht das Ende
+    for (let x = muzzle.x + 1; x < 128; x += 1) {
+      let weiter = false;
+      for (let y = 0; y < 128 && !weiter; y++) if (alpha(x, y) > 100) weiter = true;
+      assert.ok(!weiter, `${w.id}: Waffe reicht über die Mündung hinaus (Spalte ${x})`);
+    }
   }
 });
 
@@ -278,26 +281,30 @@ test('Herausgelöste Motive haben keinen Rahmen: Zellecken transparent, Zelle ni
   }
 });
 
-test('Korrekturtabelle: nur bekannte Waffen und Felder, Anker und Kachel-Modus stimmen mit dem Manifest überein', () => {
+test('Korrekturtabelle: nur bekannte Waffen und Felder, Kachel-Modus stimmt mit dem Manifest überein', () => {
   const korr = JSON.parse(fs.readFileSync(path.join(HIER, '..', 'scripts', 'waffen-sprites-korrekturen.json'), 'utf8'));
   const felder = new Set(['rect', 'form', 'ringAbstand', 'schwelle', 'keineDrehung', 'umkehren', 'spitzeWechseln', 'winkel',
-    'spiegeln', 'nichtSpiegeln', 'grip', 'muzzle', 'geschoss', 'kachel', 'art', 'drehen']);
-  const arten = new Set(['wurf', 'geraet', 'bogen', 'stab', 'schild', 'schaft', 'wesen']);
+    'spiegeln', 'nichtSpiegeln', 'geschoss', 'kachel', 'drehen']);
   const ids = new Set(WEAPONS.map(w => w.id));
   for (const [id, k] of Object.entries(korr)) {
     if (id.startsWith('_')) continue;
     assert.ok(ids.has(id), `Korrektur für unbekannte Waffe ${id}`);
     for (const feld of Object.keys(k)) assert.ok(felder.has(feld), `${id}: unbekanntes Feld ${feld}`);
-    if (k.art) assert.ok(arten.has(k.art), `${id}: unbekannte Art ${k.art}`);
     const e = manifest.waffen[id];
-    if (k.grip) {
-      assert.deepEqual(e.anchor.grip, { x: k.grip[0], y: k.grip[1] }, `${id}: grip weicht vom Manifest ab`);
-      assert.equal(e.anchor.source, 'korrektur');
-    }
     if (k.kachel) {
       assert.equal(e.form, 'kachel', `${id}: kachel-Eintrag, aber Form ${e.form}`);
       assert.equal(e.kachel.modus, k.kachel.modus);
     }
+  }
+  /*
+   * Griff und Mündung stehen seit BAL-08 in `scripts/waffen-anker-tabelle.json`; die
+   * Korrekturtabelle trägt nur noch Freistellen, Drehen, Spiegeln und Kacheln. Zwei
+   * Pixelquellen für denselben Anker waren die Ursache für veraltete Werte (z. B. eine
+   * Mündung 20 px vor dem tatsächlichen Ende).
+   */
+  for (const [id, k] of Object.entries(korr)) {
+    if (id.startsWith('_')) continue;
+    for (const feld of ['grip', 'muzzle', 'art']) assert.equal(k[feld], undefined, `${id}: ${feld} gehört in die Ankertabelle`);
   }
 });
 

@@ -1,0 +1,861 @@
+{
+  "_hinweis": "Semantik der Waffenanker (BAL-08). Je Waffe: halt = 'heft' (eigenes, nutzbares Heft; heft = [x,y] in Zellpixeln der held-Zelle, dort greift die Hand) oder 'koerper' (kein gefuehrtes Heft: gehalten am Koerper, Griff = Schwerpunkt). wirkt = Art des Wirkendes (spitze|kopf|muendung|vorn) zur Dokumentation; die Mündung liegt immer am tatsaechlichen Ende (+x) auf der Achse durch den Griff. spiegeln = true, wenn die Zelle aus dem Quellbild mit dem Wirkende nach links kam und deshalb gespiegelt wird (facing bleibt 'right'). grund = Begruendung der Einordnung, besonders bei Ausnahmen. Die Tabelle ist die einzige Quelle der Anker; es gibt keine Schaetzung aus Umriss oder Randabstand mehr. muendung = [x,y] nur bei Waffen, deren Rohr nicht bis an den Zellrand reicht (schraege Geschuetze); sonst liegt die Muendung am tatsaechlichen Rand des Materials.",
+  "waffen": {
+    "pa_001": {
+      "halt": "heft",
+      "heft": [
+        30,
+        63
+      ],
+      "wirkt": "kopf",
+      "grund": "Schlaeger: Hand am Schaft, Wirkung an der Schlagsaeule"
+    },
+    "pa_002": {
+      "halt": "koerper",
+      "wirkt": "kopf",
+      "grund": "flammende Faust: am Koerper gehalten"
+    },
+    "pa_003": {
+      "halt": "heft",
+      "heft": [
+        33,
+        62
+      ],
+      "wirkt": "spitze"
+    },
+    "pa_004": {
+      "halt": "heft",
+      "heft": [
+        30,
+        60
+      ],
+      "wirkt": "spitze",
+      "grund": "Haken: Hand am Schaft, nicht am Bogen"
+    },
+    "pa_005": {
+      "halt": "heft",
+      "heft": [
+        32,
+        62
+      ],
+      "wirkt": "kopf"
+    },
+    "pa_006": {
+      "halt": "heft",
+      "heft": [
+        28,
+        63
+      ],
+      "wirkt": "kopf"
+    },
+    "pa_007": {
+      "halt": "heft",
+      "heft": [
+        56,
+        70
+      ],
+      "wirkt": "kopf",
+      "grund": "Tonfa wird am Quergriff gehalten, nicht am Hauptschaft"
+    },
+    "pa_008": {
+      "halt": "heft",
+      "heft": [
+        30,
+        62
+      ],
+      "wirkt": "kopf"
+    },
+    "pa_009": {
+      "halt": "heft",
+      "heft": [
+        82,
+        62
+      ],
+      "wirkt": "kopf",
+      "spiegeln": true,
+      "grund": "Eispickel: Wirkkopf kam links, wird gespiegelt; Heft direkt unter dem Kopf"
+    },
+    "pa_010": {
+      "halt": "heft",
+      "heft": [
+        34,
+        62
+      ],
+      "wirkt": "kopf",
+      "grund": "Kettensaege: Hand am hinteren Griff, Wirkung an der Schiene"
+    },
+    "pa_011": {
+      "halt": "heft",
+      "heft": [
+        60,
+        68
+      ],
+      "wirkt": "spitze",
+      "grund": "zwei Klingen: beide Hefte kreuzen sich in der Mitte"
+    },
+    "pa_012": {
+      "halt": "heft",
+      "heft": [
+        30,
+        61
+      ],
+      "wirkt": "spitze"
+    },
+    "pa_013": {
+      "halt": "heft",
+      "heft": [
+        30,
+        64
+      ],
+      "wirkt": "spitze"
+    },
+    "pa_014": {
+      "halt": "heft",
+      "heft": [
+        40,
+        74
+      ],
+      "wirkt": "spitze",
+      "grund": "Taschenmesser diagonal: Hand am Holzheft"
+    },
+    "pa_015": {
+      "halt": "heft",
+      "heft": [
+        32,
+        63
+      ],
+      "wirkt": "spitze"
+    },
+    "pa_016": {
+      "halt": "heft",
+      "heft": [
+        34,
+        63
+      ],
+      "wirkt": "spitze"
+    },
+    "pa_017": {
+      "halt": "heft",
+      "heft": [
+        30,
+        60
+      ],
+      "wirkt": "spitze"
+    },
+    "pa_018": {
+      "halt": "heft",
+      "heft": [
+        28,
+        64
+      ],
+      "wirkt": "spitze"
+    },
+    "pa_019": {
+      "halt": "heft",
+      "heft": [
+        28,
+        66
+      ],
+      "wirkt": "kopf"
+    },
+    "pa_020": {
+      "halt": "heft",
+      "heft": [
+        44,
+        86
+      ],
+      "wirkt": "kopf",
+      "grund": "Sense: Hand am unteren Schaft, Wirkung am Sensenblatt"
+    },
+    "pa_021": {
+      "halt": "heft",
+      "heft": [
+        26,
+        64
+      ],
+      "wirkt": "spitze"
+    },
+    "pa_022": {
+      "halt": "heft",
+      "heft": [
+        24,
+        80
+      ],
+      "wirkt": "muendung",
+      "grund": "Plasmawerfer: Hand am Pistolengriff unten"
+    },
+    "pa_023": {
+      "halt": "koerper",
+      "wirkt": "kopf",
+      "grund": "Boxhandschuh: Faust als Ganzes"
+    },
+    "pa_024": {
+      "halt": "koerper",
+      "wirkt": "kopf",
+      "grund": "Hand als Waffe"
+    },
+    "pa_025": {
+      "halt": "koerper",
+      "wirkt": "kopf",
+      "grund": "Handtuch: in der Mitte gefasst"
+    },
+    "pa_026": {
+      "halt": "heft",
+      "heft": [
+        42,
+        52
+      ],
+      "wirkt": "muendung",
+      "grund": "Bohrer: Hand am seitlichen Griff, nicht am Gehaeuse"
+    },
+    "pa_027": {
+      "halt": "heft",
+      "heft": [
+        30,
+        64
+      ],
+      "wirkt": "kopf",
+      "grund": "Fackel: Hand am Stiel, Wirkung an der Flamme"
+    },
+    "pa_028": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_029": {
+      "halt": "heft",
+      "heft": [
+        30,
+        64
+      ],
+      "wirkt": "kopf"
+    },
+    "pa_030": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_031": {
+      "halt": "koerper",
+      "wirkt": "kopf"
+    },
+    "pa_032": {
+      "halt": "koerper",
+      "wirkt": "muendung",
+      "grund": "Rucksack: fest am Koerper"
+    },
+    "pa_033": {
+      "halt": "heft",
+      "heft": [
+        30,
+        64
+      ],
+      "wirkt": "kopf",
+      "grund": "Stab: Hand am Schaft unter dem Gema"
+    },
+    "pa_034": {
+      "halt": "koerper",
+      "wirkt": "spitze",
+      "grund": "Geschoss: am Koerper gefuehrt"
+    },
+    "pa_035": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_036": {
+      "halt": "koerper",
+      "wirkt": "kopf"
+    },
+    "pa_037": {
+      "halt": "heft",
+      "heft": [
+        22,
+        66
+      ],
+      "wirkt": "muendung"
+    },
+    "pa_038": {
+      "halt": "koerper",
+      "wirkt": "spitze"
+    },
+    "pa_039": {
+      "halt": "heft",
+      "heft": [
+        44,
+        38
+      ],
+      "wirkt": "muendung",
+      "grund": "Moerser: Hand an der Richtkurbel, Rohrmuendung oben rechts gesetzt (Rohr erreicht den Zellrand nicht)",
+      "muzzle": [
+        98,
+        14
+      ]
+    },
+    "pa_040": {
+      "halt": "heft",
+      "heft": [
+        20,
+        66
+      ],
+      "wirkt": "muendung",
+      "grund": "MP: Hand am Pistolengriff unter dem Verschluss"
+    },
+    "pa_041": {
+      "halt": "heft",
+      "heft": [
+        20,
+        68
+      ],
+      "wirkt": "muendung"
+    },
+    "pa_042": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_043": {
+      "halt": "koerper",
+      "wirkt": "muendung",
+      "grund": "Geschuetz: auf Lafette, Griff am Geraet"
+    },
+    "pa_044": {
+      "halt": "koerper",
+      "wirkt": "kopf"
+    },
+    "pa_045": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_046": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_047": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_048": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_049": {
+      "halt": "koerper",
+      "wirkt": "kopf"
+    },
+    "pa_050": {
+      "halt": "heft",
+      "heft": [
+        42,
+        80
+      ],
+      "wirkt": "kopf",
+      "grund": "Doppelkopf-Axt: Hand am Schaft"
+    },
+    "pa_051": {
+      "halt": "heft",
+      "heft": [
+        42,
+        62
+      ],
+      "wirkt": "spitze",
+      "grund": "Wurfmesser: Hand am Griffbuendel"
+    },
+    "pa_052": {
+      "halt": "koerper",
+      "wirkt": "kopf",
+      "grund": "Molotow: Flasche am Koerper, Wirkung an der Flamme"
+    },
+    "pa_053": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_054": {
+      "halt": "heft",
+      "heft": [
+        58,
+        73
+      ],
+      "wirkt": "muendung",
+      "grund": "Flinte: Hand am Abzugsgriff, nicht am Kolben"
+    },
+    "pa_055": {
+      "halt": "heft",
+      "heft": [
+        39,
+        73
+      ],
+      "wirkt": "muendung"
+    },
+    "pa_056": {
+      "halt": "heft",
+      "heft": [
+        52,
+        66
+      ],
+      "wirkt": "muendung"
+    },
+    "pa_057": {
+      "halt": "heft",
+      "heft": [
+        30,
+        80
+      ],
+      "wirkt": "muendung"
+    },
+    "pa_058": {
+      "halt": "heft",
+      "heft": [
+        55,
+        64
+      ],
+      "wirkt": "muendung",
+      "grund": "Bogen: Hand am Mittelstueck, Pfeil nach vorn"
+    },
+    "pa_059": {
+      "halt": "heft",
+      "heft": [
+        26,
+        63
+      ],
+      "wirkt": "muendung",
+      "grund": "Armbrust: Hand am Schaft"
+    },
+    "pa_060": {
+      "halt": "heft",
+      "heft": [
+        18,
+        62
+      ],
+      "wirkt": "muendung",
+      "grund": "Gatling: Hand an der hinteren Kurbel"
+    },
+    "pa_061": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_062": {
+      "halt": "heft",
+      "heft": [
+        38,
+        74
+      ],
+      "wirkt": "muendung"
+    },
+    "pa_063": {
+      "halt": "heft",
+      "heft": [
+        55,
+        76
+      ],
+      "wirkt": "muendung"
+    },
+    "pa_064": {
+      "halt": "koerper",
+      "wirkt": "vorn",
+      "grund": "Katapult: aufgestellt, Griff am Geraet"
+    },
+    "pa_065": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_066": {
+      "halt": "heft",
+      "heft": [
+        27,
+        56
+      ],
+      "wirkt": "muendung",
+      "grund": "Haubitze: Hand an der Richtkurbel, Rohrmuendung oben rechts gesetzt (Zelle traegt einen Zierrahmen)",
+      "muzzle": [
+        105,
+        14
+      ]
+    },
+    "pa_067": {
+      "halt": "heft",
+      "heft": [
+        50,
+        52
+      ],
+      "wirkt": "muendung"
+    },
+    "pa_068": {
+      "halt": "heft",
+      "heft": [
+        28,
+        74
+      ],
+      "wirkt": "muendung",
+      "grund": "Plasmagewehr: Hand am Pistolengriff, nicht am Vorderschaft"
+    },
+    "pa_069": {
+      "halt": "heft",
+      "heft": [
+        38,
+        58
+      ],
+      "wirkt": "muendung"
+    },
+    "pa_070": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_071": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_072": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_073": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_074": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_075": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_076": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_077": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_078": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_079": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_080": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_081": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_082": {
+      "halt": "heft",
+      "heft": [
+        38,
+        80
+      ],
+      "wirkt": "kopf",
+      "grund": "Muenzstab: Hand am unteren Schaft, Wirkung am Kopf"
+    },
+    "pa_083": {
+      "halt": "koerper",
+      "wirkt": "kopf"
+    },
+    "pa_084": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_085": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_086": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_087": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_088": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_089": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_090": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_091": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_092": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_093": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_094": {
+      "halt": "heft",
+      "heft": [
+        35,
+        63
+      ],
+      "wirkt": "spitze",
+      "grund": "Spritze: Hand am Zylinder, Nadel nach vorn"
+    },
+    "pa_095": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_096": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_097": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_098": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_099": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_100": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_101": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_102": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_103": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_104": {
+      "halt": "heft",
+      "heft": [
+        35,
+        81
+      ],
+      "wirkt": "muendung",
+      "grund": "Quantengewehr: Hand am Pistolengriff"
+    },
+    "pa_105": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_106": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_107": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_108": {
+      "halt": "heft",
+      "heft": [
+        50,
+        42
+      ],
+      "wirkt": "spitze",
+      "grund": "Peitsche: Hand am Griff, Wirkung an der Schnur"
+    },
+    "pa_109": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_110": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_111": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_112": {
+      "halt": "koerper",
+      "wirkt": "muendung",
+      "grund": "Rucksack: fest am Koerper"
+    },
+    "pa_113": {
+      "halt": "heft",
+      "heft": [
+        32,
+        52
+      ],
+      "wirkt": "muendung",
+      "grund": "Bohrkanone: Hand am seitlichen Griff"
+    },
+    "pa_114": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_115": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_116": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_117": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_118": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_119": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_120": {
+      "halt": "koerper",
+      "wirkt": "kopf"
+    },
+    "pa_121": {
+      "halt": "koerper",
+      "wirkt": "kopf",
+      "grund": "Raketenfaust: Faust als Ganzes"
+    },
+    "pa_122": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_123": {
+      "halt": "koerper",
+      "wirkt": "vorn",
+      "grund": "Magnet: am Koerper gehalten"
+    },
+    "pa_124": {
+      "halt": "koerper",
+      "wirkt": "muendung",
+      "grund": "Geschuetz: aufgestellt"
+    },
+    "pa_125": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_126": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_127": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_128": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_129": {
+      "halt": "koerper",
+      "wirkt": "muendung"
+    },
+    "pa_130": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_131": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_132": {
+      "halt": "koerper",
+      "wirkt": "kopf"
+    },
+    "pa_133": {
+      "halt": "koerper",
+      "wirkt": "kopf"
+    },
+    "pa_134": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_135": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_136": {
+      "halt": "koerper",
+      "wirkt": "spitze",
+      "spiegeln": true,
+      "grund": "Bohrkopf-Rakete: Bohrspitze kam links, wird gespiegelt"
+    },
+    "pa_137": {
+      "halt": "koerper",
+      "wirkt": "vorn",
+      "grund": "Kartenmotiv im Rahmen: kein gefuehrtes Heft"
+    },
+    "pa_138": {
+      "halt": "koerper",
+      "wirkt": "vorn",
+      "grund": "Kartenmotiv im Rahmen: kein gefuehrtes Heft"
+    },
+    "pa_139": {
+      "halt": "koerper",
+      "wirkt": "muendung",
+      "spiegeln": true,
+      "grund": "Hoellenkanone: Rohr kam links, wird gespiegelt"
+    },
+    "pa_140": {
+      "halt": "heft",
+      "heft": [
+        62,
+        74
+      ],
+      "wirkt": "muendung",
+      "grund": "Quantenkanone: Hand am Pistolengriff"
+    },
+    "pa_141": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_142": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_143": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_144": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_145": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_146": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_147": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_148": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_149": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    },
+    "pa_150": {
+      "halt": "koerper",
+      "wirkt": "vorn"
+    }
+  }
+}

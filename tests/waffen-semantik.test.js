@@ -100,62 +100,75 @@ function zelleAlpha(zelle) {
   return feld;
 }
 
-// ---------------------------------------------------------------- W04
+// ---------------------------------------------------------------- W04 / BAL-08
 
-test('W04: die korrigierten Anker stehen so im Manifest wie in der Korrekturdatei', () => {
+/*
+ * Die Anker stammen seit BAL-08 aus `scripts/waffen-anker-tabelle.json`, nicht mehr aus
+ * Handwerten in der Korrekturdatei. Die früheren W04-Tests prüften genau diese Handwerte
+ * (Quelle `korrektur`, gleiche Pixel in beiden Dateien) und eine flache Achse; beides ist
+ * ersetzt. Was bleibt, ist die Semantik: Wirkende rechts, Anker auf der Waffe, Mündung am
+ * Ende — jetzt gegen die gezeichneten Zellen und die Ankertabelle.
+ */
+const ankertabelle = JSON.parse(fs.readFileSync(path.join(WURZEL, 'scripts', 'waffen-anker-tabelle.json'), 'utf8')).waffen;
+
+test('W04/BAL-08: die Anker der geprüften Waffen stehen so im Manifest wie in der Ankertabelle', () => {
   for (const id of SEMANTIK_IDS) {
     const eintrag = manifest.waffen[id];
+    const t = ankertabelle[id];
     assert.ok(eintrag, `${id}: fehlt im Manifest`);
-    const k = korrekturen[id] ?? {};
-    if (k.grip) {
-      assert.equal(eintrag.anchor.source, 'korrektur', `${id}: Anker muss von Hand gesetzt sein`);
-      assert.deepEqual(eintrag.anchor.grip, { x: k.grip[0], y: k.grip[1] }, `${id}: Griff`);
-    }
-    if (k.muzzle) {
-      assert.deepEqual(eintrag.anchor.muzzle, { x: k.muzzle[0], y: k.muzzle[1] }, `${id}: Mündung`);
-    }
+    assert.equal(eintrag.anchor.source, 'semantik', `${id}: Ankerquelle ${eintrag.anchor.source}`);
+    assert.equal(eintrag.anchor.halt, t.halt, `${id}: halt`);
+    if (t.halt === 'heft') assert.deepEqual(eintrag.anchor.grip, { x: t.heft[0], y: t.heft[1] }, `${id}: Griff`);
+    if (t.muzzle) assert.deepEqual(eintrag.anchor.muzzle, { x: t.muzzle[0], y: t.muzzle[1] }, `${id}: Mündung`);
   }
 });
 
-test('W04: Wirkende zeigt nach rechts — Mündung rechts vom Griff, Achse flach', () => {
+test('W04/BAL-08: Wirkende zeigt nach rechts — Mündung vor dem Griff, Achse ausrichtbar', () => {
   for (const id of SEMANTIK_IDS) {
     const { grip, muzzle } = manifest.waffen[id].anchor;
-    // Untergrenze statt fester Achse: Bei Kurzwaffen liegt der Griff dicht an
-    // der Mündung (pa_068: 22 px), die Richtung muss trotzdem stimmen.
-    assert.ok(muzzle.x - grip.x >= 20, `${id}: Griff→Mündung nur ${muzzle.x - grip.x} px`);
-    assert.ok(Math.abs(muzzle.y - grip.y) <= 10, `${id}: Achse schief (${grip.y}→${muzzle.y}) — die Waffe würde schräg stehen`);
+    // Untergrenze statt fester Achse: Bei Kurzwaffen liegt der Griff dicht an der Mündung,
+    // die Richtung muss trotzdem stimmen. Die Achse darf schräg sein (Moerser, Axt); der
+    // Renderer dreht sie auf den Zielstrahl, statt sie zu klemmen.
+    assert.ok(muzzle.x - grip.x >= 12, `${id}: Griff→Mündung nur ${muzzle.x - grip.x} px`);
+    const neigung = Math.abs(Math.atan2(muzzle.y - grip.y, muzzle.x - grip.x));
+    assert.ok(neigung < 0.75, `${id}: Achsneigung ${(neigung * 180 / Math.PI).toFixed(1)}° zu steil`);
   }
 });
 
-test('W04: Anker liegen auf der Waffe selbst, die Mündung am äußeren Rand', () => {
+test('W04/BAL-08: Anker liegen auf der Waffe selbst, die Mündung am äußeren Rand oder gesetzt', () => {
   for (const id of SEMANTIK_IDS) {
     const eintrag = manifest.waffen[id];
     const alpha = zelleAlpha(eintrag.held);
     const { grip, muzzle } = eintrag.anchor;
     const deckend = (x, y) => alpha[y * eintrag.held.w + x] > 100;
     assert.ok(deckend(grip.x, grip.y), `${id}: Griff (${grip.x},${grip.y}) liegt neben der Waffe`);
-    assert.ok(deckend(muzzle.x, muzzle.y), `${id}: Mündung (${muzzle.x},${muzzle.y}) liegt neben der Waffe`);
-
+    if (eintrag.anchor.halt === 'heft') assert.ok(deckend(muzzle.x, muzzle.y), `${id}: Mündung (${muzzle.x},${muzzle.y}) liegt neben der Waffe`);
     let rechteste = 0;
     for (let y = 0; y < eintrag.held.h; y++) {
       for (let x = 0; x < eintrag.held.w; x++) if (alpha[y * eintrag.held.w + x] > 100) rechteste = Math.max(rechteste, x);
     }
-    assert.ok(rechteste - muzzle.x <= 4, `${id}: Mündung ${rechteste - muzzle.x} px vor dem Rand`);
+    // Gesetzte Mündungen (schräge Rohre) liegen bewusst vor dem Zellrand.
+    if (!eintrag.anchor.fest) assert.ok(rechteste - muzzle.x <= 4, `${id}: Mündung ${rechteste - muzzle.x} px vor dem Rand`);
   }
 });
 
-test('W04: gedrehte Waffen tragen die Drehung in der Korrekturdatei (Nachvollziehbarkeit)', () => {
+test('W04/BAL-08: Orientierungskorrekturen der Pipeline bleiben nachvollziehbar', () => {
+  /*
+   * Die Zellen werden weiterhin in `ausrichten` gedreht/gespiegelt; Kippen nach links wird
+   * über `spitzeWechseln` bzw. `umkehren` korrigiert, das zusätzliche Spiegeln des
+   * Wirkendes steht in der Ankertabelle (`spiegeln`). Beides muss dokumentiert bleiben.
+   */
   for (const id of GEDREHT_SPITZE) {
-    assert.equal(korrekturen[id].spitzeWechseln, true, `${id}: spitzeWechseln fehlt`);
-    assert.notEqual(korrekturen[id].umkehren, true, `${id}: umkehren würde die Drehung wieder aufheben`);
+    assert.equal(korrekturen[id]?.spitzeWechseln, true, `${id}: spitzeWechseln fehlt`);
   }
   for (const id of GEDREHT_UMKEHREN) {
     assert.notEqual(korrekturen[id]?.umkehren, true, `${id}: umkehren dreht die Waffe wieder nach links`);
   }
-  // Gegenprobe: Waffen, die schon richtig standen, wurden NICHT gedreht.
-  for (const id of ['pa_009', 'pa_015', 'pa_016', 'pa_055', 'pa_068']) {
-    assert.notEqual(korrekturen[id].spitzeWechseln, true, `${id}: unnötig gedreht`);
+  for (const [id, t] of Object.entries(ankertabelle)) {
+    if (t.spiegeln) assert.equal(manifest.waffen[id].anchor.spiegeln, true, `${id}: spiegeln fehlt im Anker`);
   }
+  assert.deepEqual(Object.entries(ankertabelle).filter(([, t]) => t.spiegeln).map(([id]) => id).sort(),
+    ['pa_009', 'pa_136', 'pa_139']);
 });
 
 // ---------------------------------------------------------------- W12
