@@ -18,6 +18,7 @@ import {
   MALI_LEITUNGSMARKE,
 } from '../src/shared/config/schaden.js';
 import { findeZahlen } from '../src/client/schadenszahlen.js';
+import { MatchStats } from '../src/shared/stats.js';
 
 function aufbau(fassung = SCHADEN_STATUS, extra = {}) {
   const match = new MatchController({
@@ -380,6 +381,116 @@ test('Schaden über Zeit meldet den Tod', () => {
   match.mali.wende(opfer, 'brand', { dmg: 10, by: schuetze, dauer: 3 });
   const tick = zuegeDesOpfers(match, opfer, 1).find(e => e.type === 'dot_tick');
   assert.equal(tick.payload.lethal, true);
+});
+
+// ------------------------------------------------- Urheber von Schaden über Zeit
+
+/**
+ * Zweiter Aufbau mit zwei Angreifern in einem Team und einem gemeinsamen Ziel.
+ * Die Mali werden direkt gesetzt; es geht hier nur um die Zurechnung der Takte.
+ */
+function aufbauMitZweiAngreifern() {
+  const match = new MatchController({
+    seed: 31337, teams: 2, playersPerTeam: 2, preset: 'open', turnDurationMs: 1_000_000,
+    kit: KIT_FLAECHE, schaden: SCHADEN_STATUS, kisten: KISTEN_OFT, waffen: 4,
+    loadouts: [0, 1, 2, 3].map(() => ({ classId: 'scout', archetypeId: 'brawler' })),
+  });
+  match.start();
+  const entities = match.getState().entities;
+  const [a, b] = entities.filter(e => e.teamId === 0).map(e => e.entityId);
+  const ziel = entities.find(e => e.teamId === 1).entityId;
+  match.world.setComponent(ziel, 'Health', 'max', 1000);
+  match.world.setComponent(ziel, 'Health', 'current', 1000);
+  return { match, a, b, ziel };
+}
+
+/** Alle Ereignisse in der Reihenfolge des Laufs durch die Statistik führen. */
+function statistiken(match, ereignisse) {
+  const teams = new Map(match.getState().entities.map(e => [e.entityId, e.teamId]));
+  const stats = new MatchStats({ teams });
+  for (const e of ereignisse) stats.feed(e, match.world.tickCount);
+  return stats;
+}
+
+test('BAL-04 pa_137: 33 direkt und 36 Brand gehen an den Angreifer; dot_tick zählt nicht doppelt', () => {
+  const { match, schuetze, opfer } = aufbau();
+  match.inventory.grantWeapon(schuetze, 'pa_137');
+  match.inventory.grantAmmo(schuetze, 'pa_137', 99);
+  match.inventory.selectWeapon(schuetze, 'pa_137');
+
+  const direkt = [];
+  assert.ok(match.fire(schuetze, 0.05, 80, 'pa_137').ok);
+  direkt.push(...match.consumeEvents());
+
+  const direkterTreffer = direkt.filter(e => e.type === 'damage' && e.payload.entityId === opfer);
+  assert.equal(direkterTreffer.length, 1, 'genau ein Direktschaden');
+  assert.equal(direkterTreffer[0].payload.amount, 33);
+  assert.equal(direkterTreffer[0].payload.attackerId, schuetze);
+  assert.notEqual(direkterTreffer[0].payload.dot, true, 'der Direkttreffer ist kein DoT');
+
+  const nachwirkung = zuegeDesOpfers(match, opfer, 3);
+  const alle = [...direkt, ...nachwirkung];
+  const dotSchaden = alle.filter(
+    e => e.type === 'damage' && e.payload.entityId === opfer && e.payload.dot === true,
+  );
+  assert.equal(dotSchaden.length, 3, 'drei Brandtakte');
+  assert.equal(dotSchaden.reduce((s, e) => s + e.payload.amount, 0), 36);
+  assert.ok(dotSchaden.every(e => e.payload.attackerId === schuetze && e.payload.sourceEntityId === schuetze),
+    'jeder Brandtakt trägt den Urheber');
+
+  const ticks = nachwirkung.filter(e => e.type === 'dot_tick');
+  assert.equal(ticks.length, 3);
+  assert.equal(ticks.reduce((s, e) => s + e.payload.damage, 0), 36);
+
+  const stats = statistiken(match, alle);
+  assert.equal(stats.spieler.get(schuetze).schaden, 69, '33 direkt + 36 Brand');
+  assert.equal(stats.feed({ type: 'dot_tick', payload: { playerId: opfer, damage: 36 } }), false,
+    'dot_tick ist eine Zusammenfassung, keine zweite Schadensquelle');
+  assert.equal(stats.spieler.get(schuetze).schaden, 69, 'kein Doppelzählen von damage und dot_tick');
+});
+
+test('BAL-04 zwei Urheber: jeder Giftstapel gehört seinem eigenen Angreifer', () => {
+  const { match, a, b, ziel } = aufbauMitZweiAngreifern();
+  match.mali.wende(ziel, 'gift', { dmg: 10, by: a, dauer: 3 });
+  match.mali.wende(ziel, 'gift', { dmg: 10, by: b, dauer: 3 });
+  const stapel = match.statuses.maliLesen(ziel).gift;
+  assert.equal(stapel.length, 2, 'zwei getrennte Stapel');
+
+  const ereignisse = zuegeDesOpfers(match, ziel, 1);
+  const dotSchaden = ereignisse.filter(e => e.type === 'damage' && e.payload.entityId === ziel && e.payload.dot === true);
+  assert.equal(dotSchaden.length, 2, 'ein Schadensereignis je Stapel');
+  assert.deepEqual(dotSchaden.map(e => e.payload.attackerId).sort(), [a, b].sort());
+
+  const tick = ereignisse.find(e => e.type === 'dot_tick');
+  assert.deepEqual([...tick.payload.eintraege.map(e => e.by)].sort(), [a, b].sort(), 'die Abrechnung nennt beide Urheber');
+  const jeStapel = tick.payload.eintraege[0].schaden; // nach Schild/Rüstung, nicht der Rohwert
+  assert.ok(dotSchaden.every(e => e.payload.amount === jeStapel));
+
+  const stats = statistiken(match, ereignisse);
+  assert.equal(stats.spieler.get(a).schaden, jeStapel);
+  assert.equal(stats.spieler.get(b).schaden, jeStapel);
+});
+
+test('BAL-04 DoT-Kill: der Brandurheber erhält den Kill, nicht die Umgebung', () => {
+  const { match, schuetze, opfer } = aufbau();
+  match.world.setComponent(opfer, 'Health', 'current', 5);
+  match.mali.wende(opfer, 'brand', { dmg: 15, by: schuetze, dauer: 3 });
+
+  const ereignisse = zuegeDesOpfers(match, opfer, 1);
+  for (let i = 0; i < 10; i += 1) {
+    match.step();
+    ereignisse.push(...match.consumeEvents());
+  }
+
+  const tick = ereignisse.find(e => e.type === 'dot_tick');
+  assert.equal(tick.payload.lethal, true);
+  assert.ok(ereignisse.some(e => e.type === 'death' && e.payload.entityId === opfer), 'der Tod wird gemeldet');
+  const letzterSchaden = ereignisse.filter(e => e.type === 'damage' && e.payload.entityId === opfer).at(-1);
+  assert.equal(letzterSchaden.payload.dot, true);
+  assert.equal(letzterSchaden.payload.attackerId, schuetze);
+
+  const stats = statistiken(match, ereignisse);
+  assert.equal(stats.spieler.get(schuetze)?.kills, 1, 'der Kill gehört dem Urheber des Brands');
 });
 
 // ------------------------------------------------- Resistenz nach Klasse

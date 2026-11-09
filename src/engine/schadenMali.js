@@ -372,7 +372,20 @@ export class MaliRegeln {
     for (const p of posten) {
       if (!this.#lebt(id)) break;
       const vorher = this.#q.world.getComponent(id, 'Health', 'current') ?? 0;
-      damage?.applyDamage(this.#q.world, id, p.dmg * faktor, null, { damageType: damageTypeId(MALUS[p.art].schadensart) });
+      /*
+       * Der Urheber reist bis zum Schadensereignis mit.
+       *
+       * Bis BAL-04 stand hier `null`: Der Tick war damit für die Ereignisauswertung
+       * Umwelt und floss weder in die Schadensbilanz noch in die Killzuordnung ein,
+       * obwohl der Malus seinen `by` kennt. Die Höhe bleibt unverändert; nur die
+       * Herkunft wird jetzt mitgegeben. `dot: true` trennt den Takt in den
+       * Werkzeugen vom Direktschaden, ohne dass jemand `damage` und `dot_tick`
+       * doppelt addieren muss.
+       */
+      damage?.applyDamage(this.#q.world, id, p.dmg * faktor, p.by ?? null, {
+        damageType: damageTypeId(MALUS[p.art].schadensart),
+        dot: true,
+      });
       const nachher = this.#q.world.getComponent(id, 'Health', 'current') ?? 0;
       eintraege.push({ art: p.art, schaden: Math.round((vorher - nachher) * 10) / 10, by: p.by });
       gesamt += vorher - nachher;

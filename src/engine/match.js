@@ -2312,7 +2312,7 @@ export class MatchController {
     this.#jumpsUsed.set(entityId, 0);
 
     if (turnState.damage > 0 && this.isPlayerAlive(entityId)) {
-      this.#world.getSystem('damage')?.applyDamage(this.#world, entityId, turnState.damage, null);
+      this.#world.getSystem('damage')?.applyDamage(this.#world, entityId, turnState.damage, null, { dot: true });
       this.#events.emit('dot_tick', {
         playerId: entityId,
         damage: turnState.damage,

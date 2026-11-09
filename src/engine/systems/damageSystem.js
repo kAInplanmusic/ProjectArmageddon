@@ -56,9 +56,13 @@ export class DamageSystem {
    * @param {number} [options.damageType] Kennung der Schadensart
    *   (`src/engine/damageTypes.js`). Reist bis ins Ereignis mit, damit
    *   Resistenzen, Anzeige und Aufzeichnung die Art kennen. 0 = körperlich.
+   * @param {boolean} [options.dot] Schaden über Zeit. Das Ereignis trägt dann
+   *   `dot: true`; die Statistik zählt ihn beim Urheber und die Balancewerkzeuge
+   *   können ihn vom Direktschaden trennen. Die Angabe ändert den Schaden nicht.
    * @returns {number} verbleibende Gesundheit
    */
   applyDamage(world, entityId, amount, attackerId = null, options = {}) {
+    const dot = options.dot === true;
     if (!world.isActive(entityId) || !world.hasComponent(entityId, 'Health')) return 0;
 
     const flatResistance = Math.max(0, options.flatResistance ?? 0);
@@ -120,6 +124,8 @@ export class DamageSystem {
       remaining: newHealth,
       damageType: damageTypeId(options.damageType),
       damageTypeName: damageTypeName(damageTypeId(options.damageType)),
+      // Nur bei DoT gesetzt: „false" fehlt, damit alte Ereignisse unverändert bleiben.
+      ...(dot ? { dot: true } : {}),
       ...erweitert,
     });
 
