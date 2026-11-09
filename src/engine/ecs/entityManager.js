@@ -79,8 +79,9 @@ export class EntityManager {
    * Holt alle aktiven Entity-IDs.
    * @returns {number[]}
    */
-  getAllEntities() {
-    const result = [];
+  getAllEntities(ziel = []) {
+    const result = ziel;
+    result.length = 0;
     for (const [id, active] of this.#entityActive) {
       if (active) result.push(id);
     }

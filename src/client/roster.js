@@ -16,22 +16,49 @@
  */
 import { FACTIONS, getFaction, charactersOf } from '../shared/config/factions.js';
 
+/*
+ * A5/ENG-12: Die Globs werden erst beim ersten Zugriff ausgewertet. `node --test`
+ * kennt `import.meta.glob` nicht; der try/catch liefert dort eine leere Tabelle,
+ * statt den Import des Renderers zu verhindern. Im Vite-Build bleibt der Glob
+ * unverändert (statische Ersetzung durch die URL-Tabelle).
+ */
+let bilder = null;
+let hdBilder = null;
+
 /** Alle Bilder, von Vite aufgelöst. Schlüssel: `./assets/characters/<fraktion>/<datei>`. */
-const BILDER = import.meta.glob('./assets/characters/*/*.png', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
+function bilderTabelle() {
+  if (bilder === null) {
+    try {
+      bilder = import.meta.glob('./assets/characters/*/*.png', {
+        eager: true,
+        query: '?url',
+        import: 'default',
+      });
+    } catch {
+      bilder = {};
+    }
+  }
+  return bilder;
+}
 
 /**
  * Die HD-Porträts, LAZY: Vite macht daraus Lade-Funktionen statt sofort aufgelöster
  * URLs, die Bilder landen als eigene Dateien im Bundle und werden erst geholt, wenn
  * eine große Anzeige sie verlangt.
  */
-const HD_BILDER = import.meta.glob('./assets/characters-hd/*/*.png', {
-  query: '?url',
-  import: 'default',
-});
+function hdBilderTabelle() {
+  if (hdBilder === null) {
+    try {
+      hdBilder = import.meta.glob('./assets/characters-hd/*/*.png', {
+        query: '?url',
+        import: 'default',
+      });
+    } catch {
+      hdBilder = {};
+    }
+  }
+  return hdBilder;
+}
 
 /**
  * Liefert die URL eines Charakterbildes.
@@ -43,7 +70,7 @@ const HD_BILDER = import.meta.glob('./assets/characters-hd/*/*.png', {
  */
 export function spriteUrl(character) {
   if (!character) return null;
-  return BILDER[`./assets/characters/${character.faction}/${character.sprite}`] ?? null;
+  return bilderTabelle()[`./assets/characters/${character.faction}/${character.sprite}`] ?? null;
 }
 
 /**
@@ -55,13 +82,13 @@ export function spriteUrl(character) {
  */
 export async function hdUrl(character) {
   if (!character) return null;
-  const lader = HD_BILDER[`./assets/characters-hd/${character.faction}/${character.sprite}`];
+  const lader = hdBilderTabelle()[`./assets/characters-hd/${character.faction}/${character.sprite}`];
   return lader ? lader() : spriteUrl(character);
 }
 
 /** Wie viele Bilder tatsächlich geladen wurden. */
 export function spriteCount() {
-  return Object.keys(BILDER).length;
+  return Object.keys(bilderTabelle()).length;
 }
 
 /** Die Fraktionen mit ihren Charakteren und Bild-URLs. */

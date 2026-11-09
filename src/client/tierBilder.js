@@ -14,14 +14,41 @@
 
 import { ladeBild } from './dom.js';
 
-const BILDER = {
-  guenther: import.meta.glob('./assets/guenther/*.png', { query: '?url', import: 'default' }),
-  cookie: import.meta.glob('./assets/cookie/*.png', { query: '?url', import: 'default' }),
-};
-const MANIFESTE = {
-  guenther: import.meta.glob('./assets/guenther/manifest.json', { eager: true, import: 'default' }),
-  cookie: import.meta.glob('./assets/cookie/manifest.json', { eager: true, import: 'default' }),
-};
+/*
+ * A5/ENG-12: Globs erst beim ersten Zugriff. `node --test` kennt
+ * `import.meta.glob` nicht; der try/catch liefert dort leere Tabellen, statt den
+ * Import des Renderers zu verhindern. Im Vite-Build bleibt der Glob unverändert.
+ */
+let bilder = null;
+let manifeste = null;
+
+function bilderTabelle() {
+  if (bilder === null) {
+    try {
+      bilder = {
+        guenther: import.meta.glob('./assets/guenther/*.png', { query: '?url', import: 'default' }),
+        cookie: import.meta.glob('./assets/cookie/*.png', { query: '?url', import: 'default' }),
+      };
+    } catch {
+      bilder = {};
+    }
+  }
+  return bilder;
+}
+
+function manifestTabelle() {
+  if (manifeste === null) {
+    try {
+      manifeste = {
+        guenther: import.meta.glob('./assets/guenther/manifest.json', { eager: true, import: 'default' }),
+        cookie: import.meta.glob('./assets/cookie/manifest.json', { eager: true, import: 'default' }),
+      };
+    } catch {
+      manifeste = {};
+    }
+  }
+  return manifeste;
+}
 
 /** Darstellung je Tier: Ordner und Zeichenhöhe in Kartenpixeln (Sprite-Kante). */
 const TIER_ANSICHT = Object.freeze({
@@ -34,7 +61,7 @@ const tierCache = new Map();
 
 /** Anker (Pixel im 256er Bild) und Dateiname einer Pose aus dem Manifest. */
 function poseEintrag(art, pose) {
-  const manifest = Object.values(MANIFESTE[art] ?? {})[0];
+  const manifest = Object.values(manifestTabelle()[art] ?? {})[0];
   const e = manifest?.posen?.[pose];
   return e ? { datei: e.datei, anker: { x: e.anker?.x ?? 128, y: e.anker?.y ?? 240 }, spiegeln: e.blick === 'links' } : null;
 }
@@ -50,7 +77,7 @@ export function holeTierPose(art, pose) {
   if (stand && typeof stand === 'object') return stand;
   if (stand) return null;
   const eintrag = poseEintrag(art, pose);
-  const lader = eintrag ? BILDER[art]?.[`./assets/${TIER_ANSICHT[art].ordner}/${eintrag.datei}`] : null;
+  const lader = eintrag ? bilderTabelle()[art]?.[`./assets/${TIER_ANSICHT[art].ordner}/${eintrag.datei}`] : null;
   if (!lader) { poses.set(pose, 'fehlt'); return null; }
   poses.set(pose, 'laedt');
   lader().then(ladeBild).then((bild) => {
@@ -61,6 +88,6 @@ export function holeTierPose(art, pose) {
 
 /** Lädt alle Posen eines Tiers vor (beim Spielstart). */
 export function ladeTierPosenVor(art) {
-  const manifest = Object.values(MANIFESTE[art] ?? {})[0];
+  const manifest = Object.values(manifestTabelle()[art] ?? {})[0];
   for (const pose of Object.keys(manifest?.posen ?? {})) holeTierPose(art, pose);
 }

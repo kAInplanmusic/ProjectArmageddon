@@ -2,8 +2,14 @@
  * Kulissen-URLs, von Vite aufgelöst.
  *
  * Renderer (`renderer.js`) und Kulissenmaler (`kulisseUndWasser.js`) brauchen dieselbe
- * Liste derselben Dateien. Der Glob steht deshalb hier einmal; die Schlüssel tragen wie
+ * Liste derselben Dateien. Die Globs stehen deshalb hier einmal; die Schlüssel tragen wie
  * von Vite vergeben das Präfix `./assets/backdrops/`.
+ *
+ * A5/ENG-12: Jeder Glob wird erst beim ersten Zugriff ausgewertet (Funktionen mit
+ * Zwischenspeicher), nicht beim Modulimport. `node --test` kennt `import.meta.glob`
+ * nicht; der try/catch liefert dort eine leere Tabelle, statt die Importkette des
+ * Renderers unladbar zu machen. Im Vite-Build ersetzt Vite den Aufruf statisch
+ * durch die URL-Tabelle — das Verhalten im Browser ist unverändert.
  *
  * Format WebP (seit 2026-11-04, BLD-1): gegenüber den früheren JPG rund ein Drittel
  * weniger Bytes bei SSIM-belegter Gleichwertigkeit, Messung in `docs/ladezeit.md`,
@@ -17,37 +23,71 @@
  * @module kulissenUrls
  */
 
-export const BACKDROP_URLS = import.meta.glob('./assets/backdrops/**/*.webp', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
+let klassisch = null;
+let neu = null;
+let gross = null;
+let panoramen = null;
+
+/** Klassische Kulissen (`backdrops/`, inklusive `stimmung/`). Leer ohne Vite (node --test). */
+export function klassischeKulissen() {
+  if (klassisch === null) {
+    try {
+      klassisch = import.meta.glob('./assets/backdrops/**/*.webp', {
+        eager: true,
+        query: '?url',
+        import: 'default',
+      });
+    } catch {
+      klassisch = {};
+    }
+  }
+  return klassisch;
+}
 
 /**
- * Die Kulissen der Biome 15 bis 20 (`config/backdrops-neu.js`): eigener Ordner, WebP. Eigener Glob, damit das Muster oben
- * (nur `backdrops/`) für die klassischen Kulissen unverändert bleibt.
+ * Die Kulissen der Biome 15 bis 20 (`config/backdrops-neu.js`): eigener Ordner, WebP.
+ * Eigener Glob, damit das Muster oben (nur `backdrops/`) für die klassischen Kulissen
+ * unverändert bleibt.
  */
-const BACKDROP_URLS_NEU = import.meta.glob('./assets/backdrops-neu/*.webp', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
+function kulissenNeu() {
+  if (neu === null) {
+    try {
+      neu = import.meta.glob('./assets/backdrops-neu/*.webp', {
+        eager: true,
+        query: '?url',
+        import: 'default',
+      });
+    } catch {
+      neu = {};
+    }
+  }
+  return neu;
+}
 
 /** Native Großfassungen (1920/2560/3840), sobald produziert. */
-const BACKDROP_URLS_4K = import.meta.glob('./assets/backdrops-4k/*.webp', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
+function kulissen4k() {
+  if (gross === null) {
+    try {
+      gross = import.meta.glob('./assets/backdrops-4k/*.webp', {
+        eager: true,
+        query: '?url',
+        import: 'default',
+      });
+    } catch {
+      gross = {};
+    }
+  }
+  return gross;
+}
 
 /** URL einer neuen Kulisse (Dateiname aus `BACKDROPS_NEU`), sonst `undefined`. */
 export function kulissenUrlNeu(datei) {
-  return BACKDROP_URLS_NEU[`./assets/backdrops-neu/${datei}`];
+  return kulissenNeu()[`./assets/backdrops-neu/${datei}`];
 }
 
 /** URL einer 4K-Fassung (Dateiname mit Breite), sonst `undefined`. */
 export function kulissenUrl4k(datei) {
-  return BACKDROP_URLS_4K[`./assets/backdrops-4k/${datei}`];
+  return kulissen4k()[`./assets/backdrops-4k/${datei}`];
 }
 
 /**
@@ -55,22 +95,30 @@ export function kulissenUrl4k(datei) {
  * neue Biome, native Großfassung. `undefined`, wenn keine Datei existiert.
  */
 export function kulissenUrl(datei) {
-  return BACKDROP_URLS[`./assets/backdrops/${datei}`]
+  return klassischeKulissen()[`./assets/backdrops/${datei}`]
     ?? kulissenUrlNeu(datei)
     ?? kulissenUrl4k(datei);
 }
 
-export default BACKDROP_URLS;
-
 // SDR bleibt SDR, auch im AVIF-Container. Die alten HDR-Vorarbeiten sind nicht im Glob.
-const PANORAMEN = import.meta.glob(['./assets/panoramen/*-sdr.avif', './assets/panoramen/*-1280.webp'], {
-  eager: true, query: '?url', import: 'default',
-});
+function panoramenTabelle() {
+  if (panoramen === null) {
+    try {
+      panoramen = import.meta.glob(['./assets/panoramen/*-sdr.avif', './assets/panoramen/*-1280.webp'], {
+        eager: true, query: '?url', import: 'default',
+      });
+    } catch {
+      panoramen = {};
+    }
+  }
+  return panoramen;
+}
 
 export function panoramaUrls(id) {
   const klein = globalThis.matchMedia?.('(max-width: 1280px)').matches;
   const pfad = './assets/panoramen/' + id;
+  const tabelle = panoramenTabelle();
   return (klein
-    ? [PANORAMEN[pfad + '-1280.webp'], PANORAMEN[pfad + '-sdr.avif']]
-    : [PANORAMEN[pfad + '-sdr.avif'], PANORAMEN[pfad + '-1280.webp']]).filter(Boolean);
+    ? [tabelle[pfad + '-1280.webp'], tabelle[pfad + '-sdr.avif']]
+    : [tabelle[pfad + '-sdr.avif'], tabelle[pfad + '-1280.webp']]).filter(Boolean);
 }

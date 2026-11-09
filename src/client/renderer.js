@@ -85,12 +85,12 @@ import {
   rauchWolke, schreiteRauchFort, rauchDarstellung,
 } from './gefuehl.js';
 /*
- * Die Kisten-ARTEN für die Zeichnung. Die Zuordnung Zahl → Art steht einmal im
- * Motor (`CRATE_TYPES`); hier gelesen, nicht als zweite Zahlenliste geführt —
- * sonst zeigte die Anzeige irgendwann eine andere Kiste als die, die dort liegt.
+ * Kistenfarbe und -marke kommen aus `rendererLogik.js`. Die Zuordnung
+ * Zahl → Art steht einmal im Motor (`CRATE_TYPES`); dort gelesen, nicht als
+ * zweite Zahlenliste geführt — sonst zeigte die Anzeige irgendwann eine andere
+ * Kiste als die, die dort liegt. Die Logik ist dort ohne Canvas prüfbar (A5/ENG-12).
  */
-import { CRATE_TYPES, RARITY_IDS } from '../engine/systems/lootSystem.js';
-import { LOOT_DROP_RULES } from '../shared/config/loot.js';
+import { kistenFarbe, kistenMarke } from './rendererLogik.js';
 import { KISTE_KANTE } from '../shared/config/kisten.js';
 
 /**
@@ -112,8 +112,6 @@ import { zeichneSeil } from './seilZeichnen.js';
  * wie in der Kaderansicht (ENG-3, Duplikate-Bericht Fund 12). Hier standen zwei eigene Listen
  * (Kistentyp- und Seltenheitsfarben), schon zur Hälfte von der Config abgedriftet.
  */
-const kistenFarbe = stufe => LOOT_DROP_RULES.rarityColors[RARITY_IDS[stufe]] ?? LOOT_DROP_RULES.rarityColors.standard;
-
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -1131,18 +1129,18 @@ export class Renderer {
       this.ctx.globalAlpha = 0.85;
       this.ctx.lineWidth = 2;
       const halb = size / 2;
-      switch (crate.crateType) {
-        case CRATE_TYPES.weapon:
+      switch (kistenMarke(crate.crateType)) {
+        case 'gefuellt':
           this.ctx.fillStyle = color;
           this.ctx.fillRect(-halb + 3, -halb + 3, size - 6, size - 6);
           break;
-        case CRATE_TYPES.sustain:
+        case 'ring':
           this.ctx.beginPath();
           this.ctx.arc(0, 0, halb - 3, 0, Math.PI * 2);
           this.ctx.stroke();
           break;
-        case CRATE_TYPES.ammo: for (const dx of [-3, 0, 3]) this.ctx.strokeRect(dx - 0.5, -halb + 3, 1, size - 6); break; // Patronen
-        case CRATE_TYPES.trap: {
+        case 'streifen': for (const dx of [-3, 0, 3]) this.ctx.strokeRect(dx - 0.5, -halb + 3, 1, size - 6); break; // Patronen
+        case 'dreieck': {
           // Warndreieck — die einzige Art, die man NICHT öffnen will.
           this.ctx.beginPath();
           this.ctx.moveTo(0, -halb + 2);
@@ -1153,7 +1151,7 @@ export class Renderer {
           break;
         }
         default:
-          // `empty` — die Kiste bleibt leer gezeichnet, das ist die Aussage.
+          // `leer` — die Kiste bleibt leer gezeichnet, das ist die Aussage.
           break;
       }
       this.ctx.restore();

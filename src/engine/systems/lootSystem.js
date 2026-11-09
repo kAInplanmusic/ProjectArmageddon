@@ -220,6 +220,13 @@ function legeMunitionskiste(world, rng, x, y) {
 }
 
 export class LootSystem {
+  /**
+   * ENG-6: EINE Figurenliste je System statt einer neuen pro Kiste und Tick.
+   * `update` füllt sie zu Beginn neu; innerhalb des Ticks ändert sich die
+   * Figurenmenge nicht (Aufsammeln entfernt nur die Kiste).
+   */
+  #spielerPuffer = [];
+
   constructor({ rng } = {}) {
     this.rng = rng ?? null;
   }
@@ -269,6 +276,15 @@ export class LootSystem {
     const events = services.events ?? null;
     const inventory = services.inventory ?? null;
     const damageSystem = world.getSystem('damage');
+    /*
+     * ENG-6: Die Figurenliste stand vorher INNERHALB der Kistenschleife —
+     * gleiche Signaturabfrage je Kiste und Tick. Einmal gezogen ist sie
+     * wertgleich: Das Aufsammeln entfernt die Kiste, nie eine Figur.
+     */
+    const players = world.getEntitiesBySignature(
+      COMPONENT_SIGNATURES.POSITION | COMPONENT_SIGNATURES.HEALTH,
+      this.#spielerPuffer,
+    );
 
     for (const crateId of entities) {
       if (!world.isActive(crateId)) continue;
@@ -281,10 +297,6 @@ export class LootSystem {
       const crateY = world.getComponent(crateId, 'Position', 'y') || 0;
       const crateType = world.getComponent(crateId, 'Crate', 'crateType');
       const weaponIndex = world.getComponent(crateId, 'Crate', 'weaponId');
-
-      const players = world.getEntitiesBySignature(
-        COMPONENT_SIGNATURES.POSITION | COMPONENT_SIGNATURES.HEALTH
-      );
 
       for (const playerId of players) {
         if (!world.isActive(playerId)) continue;
