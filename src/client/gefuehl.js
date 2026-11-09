@@ -531,16 +531,17 @@ export function rauchDarstellung(wolke) {
  * Betrag und Richtung aus `engine/stoss.js`). Der Server bleibt maßgeblich; die Lage der Figur kommt aus dem Snapshot.
  *
  * @param {{weaponId:string, angle:number}|null|undefined} schuss
+ * @param {number} [fassung] - Waffenfassung der Partie; fehlt sie: Standard
  * @returns {number} +1 nach rechts, -1 nach links, 0 wenn keine Waagerechte vorhergesagt wird
  */
-export function vorhergesagterStoss(schuss) {
-  const waffe = schuss ? getWaffe(schuss.weaponId) : null;
+export function vorhergesagterStoss(schuss, fassung) {
+  const waffe = schuss ? getWaffe(schuss.weaponId, fassung) : null;
   if (!waffe || waffe.stossRichtung === undefined || !(waffe.knockback > 0)) return 0;
   const seite = Math.cos(schuss.angle ?? 0) < 0 ? -1 : 1;
   return Math.sign(stossVektor(waffe.knockback, waffe.stossRichtung, seite).x);
 }
 
 /** Stärke des vorhergesagten Rückstoßes für das Zucken (0 bis 1; 100 Punkte Katalogstärke = 1). */
-export function vorhergesagteStaerke(schuss) {
-  return vorhergesagterStoss(schuss) === 0 ? 0 : begrenze01((getWaffe(schuss.weaponId).knockback ?? 0) / 100);
+export function vorhergesagteStaerke(schuss, fassung) {
+  return vorhergesagterStoss(schuss, fassung) === 0 ? 0 : begrenze01((getWaffe(schuss.weaponId, fassung).knockback ?? 0) / 100);
 }

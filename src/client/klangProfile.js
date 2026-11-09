@@ -486,9 +486,11 @@ export const PROFIL_KORREKTUR = Object.freeze({
   pa_064: 'schwer', pa_065: 'schwer', pa_135: 'schwer',
 });
 
-function nachSchadensart(w, vorgabe) {
-  // Schadensart der Waffenfassung im Standard (Fassung 10 gibt den Elementwaffen ihr Element), sonst die des Katalogs.
-  switch (w.id ? (getWaffe(w.id)?.damageType ?? w.damageType) : w.damageType) {
+function nachSchadensart(w, vorgabe, fassung) {
+  // Schadensart der Waffenfassung (Fassung 10 gibt den Elementwaffen ihr Element).
+  // W19: Die Fassung wird ausdrücklich übergeben — nicht implizit der Standard.
+  const art = getWaffe(w.id, fassung)?.damageType ?? w.damageType;
+  switch (art) {
     case 'fire': return 'feuer';
     case 'ice': return 'eis';
     case 'electric': return 'blitz';
@@ -507,9 +509,10 @@ function nachSchadensart(w, vorgabe) {
  *
  * @param {{id?:string, category?:string, damage?:number, damageType?:string, delivery?:string,
  *   fuseTime?:number, blastRadius?:number, special?:string, targeting?:string}} w
+ * @param {number} [fassung] - Waffenfassung der Partie (`match.waffen`); fehlt sie: Standard
  * @returns {string} Schlüssel in `SCHUSS_PROFILE`
  */
-export function schussProfilFuer(w) {
+export function schussProfilFuer(w, fassung) {
   if (!w) return 'pistole';
   const korr = PROFIL_KORREKTUR[w.id];
   if (korr) return korr;
@@ -521,15 +524,15 @@ export function schussProfilFuer(w) {
   if ((w.fuseTime ?? 0) > 0) return 'wurf';
   switch (kat) {
     case 'melee': return 'nahkampf';
-    case 'ranged': return nachSchadensart(w, 'pistole');
-    case 'heavy_ranged': return nachSchadensart(w, 'schwer');
-    case 'elemental': return nachSchadensart(w, 'magie');
+    case 'ranged': return nachSchadensart(w, 'pistole', fassung);
+    case 'heavy_ranged': return nachSchadensart(w, 'schwer', fassung);
+    case 'elemental': return nachSchadensart(w, 'magie', fassung);
     case 'magic': {
-      const p = nachSchadensart(w, 'magie');
+      const p = nachSchadensart(w, 'magie', fassung);
       return p === 'rakete' ? 'magie' : p;
     }
-    case 'tech': return nachSchadensart(w, 'laser');
-    case 'utility': return nachSchadensart(w, 'selbst');
+    case 'tech': return nachSchadensart(w, 'laser', fassung);
+    case 'utility': return nachSchadensart(w, 'selbst', fassung);
     default: return 'pistole';
   }
 }

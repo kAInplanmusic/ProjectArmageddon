@@ -40,6 +40,7 @@ import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, applyRemoveToTerrain, applyAddToTerrain, applySlumpToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
 import { getWeapon, orderInventoryBySubcategory, WINDFAKTOR_JE_WAFFE } from '../shared/config/weapons.js';
+import { WAFFEN_STANDARD, getWaffe } from '../shared/config/waffen-fassung.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { getBackdropNeu } from '../shared/config/backdrops-neu.js';
@@ -204,7 +205,7 @@ class Game {
      * gibt es nichts zu zeigen.
      */
     this.kamera = null;
-    this.hud = new Hud(document);
+    this.hud = new Hud(document, { getFassung: () => this.match?.waffen ?? WAFFEN_STANDARD });
     this.figurenKarte = new FigurenKarte(document);
     // Hält Figuren und Schilder frei vom HUD (gemessene Ränder, siehe hudAusweichen.js).
     this.hudAusweichen = new HudAusweichen({ doc: document, canvas: this.canvas, renderer: this.renderer });
@@ -223,6 +224,9 @@ class Game {
     this.seilSteuerung = new SeilSteuerung({ modus: () => this.mode, match: () => this.match, network: () => this.network, zustand: () => this.currentState(), winkel: () => this.aim.angle, log: (text, art) => this.hud.log(text, art) });
     this.waffenMenue = new WaffenMenue(document, {
       getFigur: () => this.#aktiveFigur(),
+      // W02/W03: Kachel und Detailzeile lesen die Fassung der laufenden Partie,
+      // nicht den Grundkatalog. Alte Replays behalten ihre Namen und Werte.
+      getFassung: () => this.match?.waffen ?? WAFFEN_STANDARD,
       onSelect: weaponId => this.selectWeaponById(weaponId),
       seil: { verfuegbar: () => this.seilSteuerung.verfuegbar(), gewaehlt: () => this.seilSteuerung.gewaehlt, waehle: an => this.seilSteuerung.waehle(an) },
     });
@@ -739,6 +743,9 @@ class Game {
     this.network?.disconnect();
     this.network = null;
     this.match = null;
+    // Keine Partie mehr: Der Renderer fällt auf den Standard zurück, damit
+    // eine spätere Online-Partie nicht die Fassung des alten Replays erbt.
+    this.renderer.setzeWaffenFassung(WAFFEN_STANDARD);
     this.#setzeZugpauseZurueck();
     this.mode = 'local';
     this.endOverlay.hidden = true;
@@ -1369,6 +1376,8 @@ class Game {
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
     this.match.start();
+    // W02/W19: Dieselbe Waffenfassung für Renderer, HUD und Menü.
+    this.renderer.setzeWaffenFassung(this.match.waffen);
     // Darstellung: Fraktion je Team (nur Anzeige, wirkt nicht auf den Motor).
     this.renderer.fraktionJeTeam = loeseFraktionen(fraktionen, teams, this.match.seedManager.baseSeed);
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
@@ -2293,7 +2302,7 @@ class Game {
         return false;
       }
       this.network?.selectWeapon(weaponId);
-      this.hud.log(`Waffe: ${getWeapon(weaponId)?.displayName ?? weaponId}`);
+      this.hud.log(`Waffe: ${getWaffe(weaponId, this.match?.waffen ?? WAFFEN_STANDARD)?.displayName ?? weaponId}`);
       this.sound?.verarbeite({ type: 'waffenwechsel' });
       return true;
     }
@@ -3498,7 +3507,7 @@ class Game {
       const aktive = state.entities?.find(e => e.entityId === state.activePlayerId) ?? null;
       const fraktion = aktive ? this.renderer.fraktionVon(aktive) : null;
       const platz = state.entities?.indexOf(aktive) % 3;
-      this.figurenKarte.aktualisiere(aktive, fraktion, aktive ? TEAM_COLORS[aktive.teamId % TEAM_COLORS.length] : '', { klassen: state.klassen, platz });
+      this.figurenKarte.aktualisiere(aktive, fraktion, aktive ? TEAM_COLORS[aktive.teamId % TEAM_COLORS.length] : '', { klassen: state.klassen, platz, waffen: this.match?.waffen ?? WAFFEN_STANDARD });
     }
     // Bei geschlossenem Menü ein No-op; offen: nur bei Änderung wird etwas angefasst.
     this.waffenMenue.aktualisiere(state.entities?.find(e => e.entityId === state.activePlayerId) ?? null);
@@ -3555,6 +3564,8 @@ class Game {
     this.#setzeZugpauseZurueck();
     this.mode = 'replay';
     this.match = this.replayPlayer.match;
+    // Alte Aufzeichnungen behalten ihre Waffenfassung — nie ungefragt F15.
+    this.renderer.setzeWaffenFassung(this.match.waffen);
     this.replayPlaying = false;
     this.accumulator = 0;
     this.lastFrameTime = 0;
@@ -3643,7 +3654,12 @@ class Game {
    * das nie aufgefallen — die Anzeige sah nur falsch aus, ohne Fehler zu werfen.
    */
   #syncReplayMatch() {
-    if (this.replayPlayer) this.match = this.replayPlayer.match;
+    if (this.replayPlayer) {
+      this.match = this.replayPlayer.match;
+      // `ReplayPlayer.reset()` baut den MatchController neu; die Fassung kann
+      // dieselbe sein, wird aber aus DEMSELBEN Objekt gelesen wie die Anzeige.
+      this.renderer.setzeWaffenFassung(this.match?.waffen);
+    }
   }
 
   /** Verarbeitet die Ereignisse des letzten Wiedergabeschritts. */

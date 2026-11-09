@@ -17,14 +17,14 @@
  * @module waffenMenue
  */
 import {
-  getWeapon,
   iconUrlFor,
   orderInventoryBySubcategory,
   displayGroupFor,
   displayGroupLabel,
 } from '../shared/config/weapons.js';
 import { artLabel } from '../shared/config/wirkungstexte.js';
-import { getWaffe } from '../shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_STANDARD } from '../shared/config/waffen-fassung.js';
+import { waffeFuerAnzeige, wirkungsKennzahl } from './waffenSicht.js';
 import { munitionsKlasse } from '../shared/config/munition.js';
 
 const STUFEN_NAMEN = Object.freeze({
@@ -36,20 +36,26 @@ const STUFEN_NAMEN = Object.freeze({
  * Die EINE Stelle, die die Datenform der Engine kennt.
  *
  * @param {object|null|undefined} figur Figur aus dem State
- * @returns {{weaponId:string, weapon:object|null, nummer:number, ammo:number,
+ * @param {number} [fassung] Waffenfassung der Partie
+ * @returns {{weaponId:string, weapon:object|null, sicht:object|null, nummer:number, ammo:number,
  *   maxAmmo:number, unbegrenzt:boolean, cooldown:number, aktiv:boolean, waehlbar:boolean, gruppe:string}[]}
  */
-function bestandVon(figur) {
+function bestandVon(figur, fassung = WAFFEN_STANDARD) {
   const ids = Array.isArray(figur?.inventory) ? figur.inventory : [];
   return orderInventoryBySubcategory(ids).map((index, position) => {
     const weaponId = ids[index];
-    const weapon = getWeapon(weaponId);
+    // EINE Sicht für Kachel und Detailzeile: Name, Beschreibung, Schaden und
+    // Schadensart kommen aus derselben Partiefassung (W02/W03). Vorher stand
+    // auf der Kachel der Grundkatalog und in der Zeile die aktuelle Fassung.
+    const sicht = waffeFuerAnzeige(weaponId, fassung);
+    const weapon = sicht?.waffe ?? getWaffe(weaponId, fassung);
     const roh = figur?.ammo?.[weaponId];
     const unbegrenzt = roh === 'unbegrenzt' || roh === Infinity;
     const ammo = unbegrenzt ? Infinity : Math.max(0, Number(roh) || 0);
     return {
       weaponId,
       weapon,
+      sicht,
       nummer: position + 1,
       ammo,
       maxAmmo: unbegrenzt ? Infinity : Math.max(munitionsKlasse(weapon), ammo), // Waffenfassung 11: Klasse der Waffe (1 bis 3), Kisten füllen bis 5
@@ -98,6 +104,7 @@ export class WaffenMenue {
    * @param {object} opts
    * @param {function():object|null} opts.getFigur - Figur am Zug (State-Form)
    * @param {function(string):boolean} opts.onSelect - wählt die Waffe; true = angenommen
+   * @param {function():number} [opts.getFassung] - Waffenfassung der laufenden Partie (fehlt sie: Standard)
    * @param {{verfuegbar:function():boolean, gewaehlt:function():boolean, waehle:function(boolean):boolean}} [opts.seil] - Seil
    */
   constructor(doc, opts) {
@@ -175,14 +182,15 @@ export class WaffenMenue {
   // ------------------------------------------------------------------
 
   #render(figur) {
-    const bestand = bestandVon(figur);
+    const fassung = this.#opts.getFassung?.() ?? WAFFEN_STANDARD;
+    const bestand = bestandVon(figur, fassung);
     const seil = this.#opts.seil;
     if (seil?.verfuegbar()) {
       const gewaehlt = seil.gewaehlt();
       if (gewaehlt) for (const b of bestand) b.aktiv = false;
       bestand.push(seilEintrag(gewaehlt));
     }
-    const signatur = bestand
+    const signatur = `${fassung}|` + bestand
       .map(b => `${b.weaponId}:${zahl(b.ammo)}:${b.cooldown}:${b.aktiv ? 1 : 0}`).join('|');
     if (signatur === this.#signatur) return;
     this.#signatur = signatur;
@@ -350,20 +358,28 @@ export class WaffenMenue {
     const b = this.#eintraege.find(x => x.weaponId === id);
     if (!b?.weapon) { info.textContent = ''; return; }
     if (b.werkzeug) { info.textContent = `${b.weapon.displayName}: ${b.weapon.description}`; info.dataset.weaponId = id; return; }
-    // Werte der geltenden Waffenfassung statt der Katalogzahlen (Stärke, Rückstoß, Art …).
-    const w = { ...b.weapon, ...getWaffe(b.weapon.weaponId ?? b.weapon.id) };
+    // Die Zeile liest DIESELBE Sicht wie die Kachel (W02/W03): Name und
+    // Beschreibung der Partiefassung, z. B. pa_127 ab Fassung 12 „Mine“.
+    const w = b.weapon;
+    const effekt = b.sicht?.effekt ?? null;
+    const rolle = b.sicht?.rolle ?? 'hand';
+    const wirkung = wirkungsKennzahl(w, effekt);
+    const selbstOderWelt = rolle === 'selbst' || rolle === 'weltobjekt';
     info.textContent = [
       w.description ? `${w.displayName}: ${w.description}` : w.displayName,
       `Art ${artLabel(w.damageType)}`,
-      `Schaden ${w.damage ?? 0}`,
-      w.blastRadius > 0 ? `Radius ${Math.round(w.blastRadius)}` : 'kein Flächenschaden',
-      `Reichweite ${w.maxRange ?? 0}`,
-      w.knockback > 0 ? `Rückstoß ${w.knockback}${Number.isFinite(w.stossRichtung) ? ` (${Math.round(w.stossRichtung)}°)` : ''}` : '',
+      // W09: Heilung/Schild/Bewegung/Mine nie als „Schaden“ ausgeben. Der
+      // Katalogwert positiver Selbstwirkungen ist nur ein abgeleiteter Parameter.
+      selbstOderWelt && wirkung ? wirkung : `Schaden ${w.damage ?? 0}`,
+      !selbstOderWelt && w.blastRadius > 0 ? `Radius ${Math.round(w.blastRadius)}` : '',
+      !selbstOderWelt ? `Reichweite ${w.maxRange ?? 0}` : '',
+      !selbstOderWelt && w.knockback > 0 ? `Rückstoß ${w.knockback}${Number.isFinite(w.stossRichtung) ? ` (${Math.round(w.stossRichtung)}°)` : ''}` : '',
       w.cooldown > 0 ? `Nachladen ${w.cooldown} ${w.cooldown === 1 ? 'Zug' : 'Züge'}` : 'kein Nachladen',
       `Munition ${b.unbegrenzt ? '∞' : `${zahl(b.ammo)}/${zahl(b.maxAmmo)}`}`,
       STUFEN_NAMEN[w.powerTier] ?? '',
     ].filter(Boolean).join(' · ');
     info.dataset.weaponId = id;
+    info.dataset.rolle = rolle;
   }
 }
 
