@@ -32,6 +32,8 @@
  * @module config/schaden
  */
 
+import { istKlassenfassungNeu, KLASSEN_ALT } from './klassen-fassung.js';
+
 export const SCHADEN_ALT = 1;
 export const SCHADEN_STATUS = 2;
 export const SCHADEN_STANDARD = SCHADEN_STATUS;
@@ -186,11 +188,29 @@ export const ART_REGEL = Object.freeze({
  * Die Klassenwerte in `classes.js` bleiben unverändert; hier steht nur, was zusätzlich
  * gilt. Jede Klasse hat eine Stärke und eine Schwäche, ungefähr ±10-15 %.
  * `dauer`: Abzug in Zügen auf die Dauer des genannten Malus (nie unter `mindestDauer`).
+ *
+ * ## Fassung 3: bewusst neutral (BAL-03)
+ *
+ * Die drei neuen Klassen erben KEINEN Archetyp-Bonus. Sie stehen hier ausdrücklich
+ * mit leeren Regeln, damit die Entscheidung sichtbar ist und nicht als Lücke gilt:
+ *
+ *   - Gift und Säure laufen mit voller Dauer (`MALUS.gift.dauer` 3, `MALUS.saeure.dauer` 2);
+ *   - Magie und Schatten haben Faktor 1,0 (kein `okkultist`-Erbe von 0,9);
+ *   - eine spätere bewusste Resistenz wird HIER als Wert eingetragen, nicht über den
+ *     Archetyp-Index 0, den `spawnManager.js` in Fassung 3 nur als Platzhalter setzt.
+ *
+ * `resistenzFaktor()` und `dauerAbzug()` ignorieren den Archetyp in Fassung ≥ 3. Ohne
+ * diese Sperre bekäme jede neue Klasse den `brawler`-Abzug von einem Zug auf Gift und
+ * Säure — der gespeicherte Index 0 ist dort „kein Archetyp", nicht „Brawler".
  */
 const RESISTENZ_KLASSE = Object.freeze({
   scout: Object.freeze({ gift: 0.85, energie: 1.1 }),
   heavy: Object.freeze({ koerper: 0.9, elektro: 1.15 }),
   artillery: Object.freeze({ feuer: 0.9, magie: 1.1 }),
+  // Fassung 3 — bewusst ohne Zusatzresistenz (siehe Kommentar oben).
+  nahkampf: Object.freeze({}),
+  fernkampf: Object.freeze({}),
+  okkultist: Object.freeze({}),
 });
 
 const RESISTENZ_ARCHETYP = Object.freeze({
@@ -244,17 +264,32 @@ export function maskeZuMali(maske) {
 /** Wert der Leitung für `dotsCount` bei Fassung 2: Bit 7 + Maske. */
 export const MALI_LEITUNGSMARKE = 0x80;
 
+/**
+ * Archetyp, dessen Zusatzregeln gelten — in Fassung ≥ 3 gibt es keinen.
+ *
+ * Der Motor speichert dort den Index 0 (`spawnManager.js`), weil das Komponentenfeld
+ * eine Zahl ist. Diese 0 ist ein Platzhalter, kein „brawler": Sie darf weder Gift und
+ * Säure verkürzen noch Magie/Schatten absenken.
+ *
+ * @param {string|null|undefined} archetypeId
+ * @param {number} [klassen]
+ * @returns {string|null}
+ */
+function wirkenderArchetyp(archetypeId, klassen = KLASSEN_ALT) {
+  return istKlassenfassungNeu(klassen) ? null : (archetypeId ?? null);
+}
+
 /** Schadensfaktor einer Familie für eine Klasse / einen Archetyp (Zusatztabelle). */
-export function resistenzFaktor(classId, archetypeId, art) {
+export function resistenzFaktor(classId, archetypeId, art, klassen = KLASSEN_ALT) {
   const familie = familieVonArt(art);
   const klasse = RESISTENZ_KLASSE[classId]?.[familie] ?? 1;
-  const archetyp = RESISTENZ_ARCHETYP[archetypeId]?.faktor?.[familie] ?? 1;
+  const archetyp = RESISTENZ_ARCHETYP[wirkenderArchetyp(archetypeId, klassen)]?.faktor?.[familie] ?? 1;
   return klasse * archetyp;
 }
 
-/** Abzug (Züge) auf die Dauer eines Malus durch den Archetyp. */
-export function dauerAbzug(archetypeId, malus) {
-  return RESISTENZ_ARCHETYP[archetypeId]?.dauer?.[malus] ?? 0;
+/** Abzug (Züge) auf die Dauer eines Malus durch den Archetyp (Fassung ≥ 3: 0). */
+export function dauerAbzug(archetypeId, malus, klassen = KLASSEN_ALT) {
+  return RESISTENZ_ARCHETYP[wirkenderArchetyp(archetypeId, klassen)]?.dauer?.[malus] ?? 0;
 }
 
 /** Die Markenliste einer Figur für die Anzeige: `[{schluessel, label, symbol, farbe, turns, kurz}]`. */

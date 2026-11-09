@@ -28,6 +28,8 @@ Geprüfter Vorschlag und Belege: [Waffenbalancing-Bericht](waffenbalance-2026-11
 | BAL-16 | P1 | Namen und Bildversprechen gegen tatsächlich vorhandene Mechanik abgleichen | Cluster-/Schrot-/Salvenmarkierung nur für belegte Mechanik oder eindeutig anders benannt. Pa_127 hat Mine in Name, Icon und Weltobjekt; Zauberrolle/Buch identisch erkennbar. Zielsuche, Multihit und Beschwörung durch echte Ereignisse belegt. |
 | BAL-17 | P2 | Karten-, Fraktions- und Partienabdeckung staffeln | Nicht ausgeführte Zellen explizit offen. Volles 150×5×7×20×3-Seed-Kreuzprodukt umfasst bereits 315000 Aufbauten; keine Vollabdeckung aus wenigen Beispielen behaupten. Winrates erst mit Stichprobenumfang, Seedliste und Unsicherheit veröffentlichen. |
 
+**BAL-03 erledigt 2026-11-09 (bg/bal-03):** Fassung 3 erbt keinen Archetyp-Bonus mehr — Gift 3 Züge, Säure 2 Züge, Magie/Schatten Faktor 1,0 für alle drei neuen Klassen; Fassungen 1/2 unverändert. Beleg: `tests/klassen-resistenz-boni.test.js`, 8 Fälle grün.
+
 ## INT-2026-11-09 — Abnahmen des Integrationsbranches
 
 | ID | Arbeit | Konkrete Abnahme |
