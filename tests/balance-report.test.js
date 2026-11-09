@@ -55,6 +55,31 @@ test('Ohne --distance wird auf der Startentfernung des Spiels gemessen', async (
     `Die Startentfernung (${gemessen} px) ist unrealistisch kurz — wird wieder bei 90 gemessen?`);
 });
 
+test('Der Bericht misst den aktuellen Spielvertrag, nicht den Grundkatalog', async () => {
+  /*
+   * BAL-06: Der Bericht zog seine Waffen bisher direkt aus `WEAPONS` und
+   * startete die Matches ohne Fassungen. Dann hieß pa_127 „Teleportplattform“,
+   * der F15-Schaden fehlte, und `maxAmmo` galt als Munition. Geprüft wird die
+   * Fassung, der aktuelle Name und die frische Munition aus dem Inventar.
+   */
+  const report = await bericht('--only=pa_127');
+  const zeile = report.staerkste[0] ?? report.schwaechste[0];
+  assert.ok(zeile, 'Keine Messzeile für pa_127');
+  assert.equal(report.konfiguration.waffenfassung, 16);
+  assert.equal(report.konfiguration.klassenfassung, 3);
+  assert.deepEqual(report.konfiguration.klassenLeben, { nahkampf: 130, fernkampf: 100, okkultist: 70 });
+  assert.equal(zeile.name, 'Mine', 'pa_127 trägt noch den alten Plattformnamen');
+  assert.equal(typeof zeile.munition, 'number');
+  assert.equal(zeile.maxAmmoKatalog, 5);
+
+  // Startwaffe: Das Inventar gibt unbegrenzt, der alte Katalog nennt 8.
+  const start = await bericht('--only=pa_040');
+  const startZeile = start.staerkste[0] ?? start.schwaechste[0];
+  assert.equal(startZeile.name, 'Maschinenpistole');
+  assert.equal(startZeile.munition, 'unbegrenzt');
+  assert.equal(startZeile.maxAmmoKatalog, 8);
+});
+
 test('--sweep misst über die Kartenbreite', async () => {
   const report = await bericht('--only=pa_001', '--sweep');
   const { messdistanzen, startentfernung } = report.konfiguration;

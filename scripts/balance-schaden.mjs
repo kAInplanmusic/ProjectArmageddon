@@ -15,28 +15,41 @@
  *
  *   node scripts/balance-schaden.mjs [--fassung=1|2] [--json] [--schnell]
  */
-import { MatchController } from '../src/engine/match.js';
+import { MatchController, BASE_HEALTH } from '../src/engine/match.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
+import { getWaffe, WAFFEN_STANDARD } from '../src/shared/config/waffen-fassung.js';
 import { KIT_FLAECHE } from '../src/shared/config/loadouts.js';
 import { SCHADEN_ALT, SCHADEN_STATUS } from '../src/shared/config/schaden.js';
 import { buildEffect, elementalEffectFor, SELF_TARGET_KINDS } from '../src/engine/specials.js';
-import { CLASS_IDS } from '../src/shared/config/classes.js';
+import { CLASS_IDS, combatProfile } from '../src/shared/config/classes.js';
+import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
+import { WIND_STANDARD } from '../src/shared/config/wind.js';
+import { BODENOBJEKTE_STANDARD } from '../src/shared/config/bodenobjekte.js';
 
 const KLASSEN = CLASS_IDS;
+/** Der gemessene Waffenkatalog: Standardfassung mit allen Werteschichten (BAL-06). */
+const KATALOG = WEAPONS.map(waffe => getWaffe(waffe.id, WAFFEN_STANDARD));
+/** Klassenleben des aktuellen Vertrags — 130/100/70. */
+const KLASSEN_LEBEN = Object.fromEntries(KLASSEN.map(klasse => [klasse,
+  Math.round(BASE_HEALTH * combatProfile(klasse, null, null, KLASSEN_STANDARD).healthMultiplier)]));
 /** Die Klasse mit neutralem Schadensfaktor (1,0) — Bezugswert der DoT-Anteile und der Schütze im Messaufbau. */
 const NEUTRALE_KLASSE = 'fernkampf';
 const SEED = 31337;
 const OPFER_LEBEN = 1000;
 
 function neuesMatch(fassung, opferKlasse = null, extra = {}) {
-  const probe = new MatchController({ seed: SEED, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, schaden: fassung });
+  const vertrag = {
+    klassen: KLASSEN_STANDARD, waffen: WAFFEN_STANDARD,
+    wind: WIND_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD,
+  };
+  const probe = new MatchController({ seed: SEED, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, schaden: fassung, ...vertrag });
   probe.start();
   const schuetzeIndex = probe.getState().entities.findIndex(e => e.entityId === probe.activePlayerId);
   const loadouts = opferKlasse
     ? [0, 1].map(i => ({ classId: i === schuetzeIndex ? NEUTRALE_KLASSE : opferKlasse, archetypeId: null }))
     : null;
   const match = new MatchController({
-    seed: SEED, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, schaden: fassung,
+    seed: SEED, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, schaden: fassung, ...vertrag,
     ...(loadouts ? { loadouts } : {}), ...extra,
   });
   match.start();
@@ -115,7 +128,7 @@ function zeitBisKill(fassung, waffe) {
 }
 
 function stapelTest(fassung, id) {
-  const waffe = WEAPONS.find(w => w.id === id);
+  const waffe = KATALOG.find(w => w.id === id);
   const { match, schuetze, opfer } = neuesMatch(fassung, NEUTRALE_KLASSE);
   match.world.setComponent(opfer, 'Health', 'max', OPFER_LEBEN);
   match.world.setComponent(opfer, 'Health', 'current', OPFER_LEBEN);
@@ -145,7 +158,7 @@ function stapelTest(fassung, id) {
 
 export function messeAlles(fassung, { schnell = false } = {}) {
   const gruppen = new Map();
-  for (const waffe of WEAPONS.filter(wirkt)) {
+  for (const waffe of KATALOG.filter(wirkt)) {
     if (!gruppen.has(waffe.damageType)) gruppen.set(waffe.damageType, []);
     gruppen.get(waffe.damageType).push(waffe);
   }
@@ -174,7 +187,7 @@ export function messeAlles(fassung, { schnell = false } = {}) {
     });
   }
   const stapel = ['pa_072', 'pa_070', 'pa_071', 'pa_008', 'pa_097'].map(id => stapelTest(fassung, id));
-  return { fassung, arten, stapel };
+  return { fassung, klassenLeben: KLASSEN_LEBEN, arten, stapel };
 }
 
 function ausgeben(e) {

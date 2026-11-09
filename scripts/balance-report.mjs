@@ -34,10 +34,16 @@
  *   node scripts/balance-report.mjs [--top=N] [--worst=N] [--json] [--tier=NAME]
  *                                   [--only=pa_001] [--preset=NAME] [--distance=N]
  *                                   [--distances=90,426,800] [--sweep]
- *                                   [--samples=N]
+ *                                   [--samples=N] [--waffen=N]
  */
-import { MatchController, MAP_WIDTH } from '../src/engine/match.js';
+import { MatchController, MAP_WIDTH, BASE_HEALTH } from '../src/engine/match.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
+import { getWaffe, normalisiereWaffen, WAFFEN_STANDARD } from '../src/shared/config/waffen-fassung.js';
+import { CLASS_IDS, combatProfile } from '../src/shared/config/classes.js';
+import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
+import { SCHADEN_STANDARD } from '../src/shared/config/schaden.js';
+import { WIND_STANDARD } from '../src/shared/config/wind.js';
+import { BODENOBJEKTE_STANDARD } from '../src/shared/config/bodenobjekte.js';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 
 function parseArgs(argv) {
@@ -64,6 +70,20 @@ const tierFilter = args.tier ?? null;
 const only = args.only ?? null;
 /** Nur für `--distance=N`: ein einzelner Wert. Sonst siehe `messdistanzen`. */
 const distance = num(args.distance, 90);
+
+/**
+ * Waffenfassung der Messung (BAL-06). Ohne Angabe der Standardvertrag des
+ * Motors; `--waffen=11` misst eine alte Fassung separat. Jede Waffe kommt aus
+ * `getWaffe`, damit Namen und Werte die Fassungsschichten wirklich tragen —
+ * `pa_127` heißt ab Fassung 12 „Mine“, davor „Teleportplattform“.
+ */
+const gewaehlteFassung = args.waffen !== undefined ? Number(args.waffen) : WAFFEN_STANDARD;
+const waffenFassung = normalisiereWaffen(gewaehlteFassung);
+if (waffenFassung !== gewaehlteFassung) {
+  console.error(`Unbekannte Waffenfassung: ${args.waffen}. Erwartet: 1 bis ${WAFFEN_STANDARD}.`);
+  process.exit(2);
+}
+const KATALOG = WEAPONS.map(waffe => getWaffe(waffe.id, waffenFassung));
 
 /**
  * Die zu messenden Entfernungen.
@@ -158,7 +178,11 @@ function messdistanzen(startEntfernung) {
  * nach Kartenbreite und Spielerzahl unterschiedlich weit auseinander.
  */
 function startEntfernung(presetName, teams = 2, playersPerTeam = 1) {
-  const probe = new MatchController({ seed: 4242, teams, playersPerTeam, preset: presetName });
+  const probe = new MatchController({
+    seed: 4242, teams, playersPerTeam, preset: presetName,
+    klassen: KLASSEN_STANDARD, waffen: waffenFassung,
+    schaden: SCHADEN_STANDARD, wind: WIND_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD,
+  });
   probe.start();
   const figuren = probe.getState().entities;
   if (figuren.length < 2) return 90;
@@ -223,6 +247,13 @@ function fireOnce(weapon, { seed, shooterX = 160, distance: dist = distance, ang
     playersPerTeam: 1,
     preset,
     turnDurationMs: 1_000_000,
+    klassen: KLASSEN_STANDARD,
+    waffen: waffenFassung,
+    schaden: SCHADEN_STANDARD,
+    wind: WIND_STANDARD,
+    bodenobjekte: BODENOBJEKTE_STANDARD,
+    /* Neutraler Angreifer (Fernkampf, Faktor 1,0): die Zahl gilt der Waffe, nicht der Klasse. */
+    loadouts: [{ classId: 'fernkampf', archetypeId: null }, { classId: 'fernkampf', archetypeId: null }],
   });
   match.start();
 
@@ -252,6 +283,8 @@ function fireOnce(weapon, { seed, shooterX = 160, distance: dist = distance, ang
   // Nur die zu messende Waffe im Inventar.
   match.inventory.register(shooter.entityId, [weapon.id]);
   match.inventory.selectWeapon(shooter.entityId, weapon.id);
+  // Frische Munition aus dem Inventar — nicht der alte Katalogwert `maxAmmo`.
+  const freshAmmo = match.inventory.getAmmo(shooter.entityId, weapon.id);
 
   const terrainBefore = match.terrain.remainingSolidCount?.() ?? null;
   const healthBefore = match.world.getComponent(target.entityId, 'Health', 'current');
@@ -280,6 +313,7 @@ function fireOnce(weapon, { seed, shooterX = 160, distance: dist = distance, ang
   return {
     fired: result.ok,
     errors: result.errors ?? [],
+    freshAmmo: Number.isFinite(freshAmmo) ? freshAmmo : 'unbegrenzt',
     // Die TATSÄCHLICH gemessene Entfernung. `findClearLineAdaptive` verkürzt bei
     // hügeligem Gelände stillschweigend — ohne diesen Wert würde eine 800-px-
     // Messung, die in Wahrheit bei 400 px stattfand, als 800-px-Messung gelten.
@@ -469,7 +503,9 @@ function measureAtDistance(weapon, index, dist, { proben = samples, winkel = TES
     declaredDamage: weapon.damage,
     blastRadius: weapon.blastRadius,
     terrainDamage: weapon.terrainDamage,
-    maxAmmo: weapon.maxAmmo,
+    /* Frische Munition aus dem Inventar (fassungstreu), nicht der alte `maxAmmo`-Wert. */
+    munition: runs[0].freshAmmo,
+    maxAmmoKatalog: weapon.maxAmmo,
     powerScore: weapon.powerScore,
     special: weapon.special ?? null,
     specialKind: effect?.kind ?? null,
@@ -507,9 +543,15 @@ function measureAtDistance(weapon, index, dist, { proben = samples, winkel = TES
  */
 function measureWeapon(weapon, index, distanzen, startDist) {
   const proDistanz = [];
+  const nichtGemessen = [];
   for (const dist of distanzen) {
     const row = measureAtDistance(weapon, index, dist);
     if (row) proDistanz.push(row);
+    /*
+     * Keine freie Schusslinie ist KEINE Messung. Die angefragte Entfernung
+     * bleibt trotzdem sichtbar, statt still aus der Abdeckung zu fallen.
+     */
+    else nichtGemessen.push({ angefragt: dist, gemessen: null, grund: 'keine freie Schusslinie' });
   }
   if (proDistanz.length === 0) return null;
 
@@ -558,6 +600,7 @@ function measureWeapon(weapon, index, distanzen, startDist) {
       toedlich: row.toedlich,
       selbstGewirkt: row.selbstGewirkt,
     })),
+    nichtGemessen,
     distanzenGemessen: proDistanz.length,
     schadenAufStartdistanz: aufStart ? aufStart.schaden : null,
     wirksameDistanzen,
@@ -575,7 +618,7 @@ function measureWeapon(weapon, index, distanzen, startDist) {
   };
 }
 
-const indexed = WEAPONS.map((weapon, index) => ({ weapon, index }));
+const indexed = KATALOG.map((weapon, index) => ({ weapon, index }));
 const pool = only
   ? indexed.filter(entry => entry.weapon.id === only)
   : tierFilter
@@ -620,7 +663,7 @@ for (const { weapon, index } of pool) {
  * von 150), je Entfernung mit EINEM Schuss und einer kürzeren Winkelliste. Ein
  * voller Sweep über alle 150 Waffen wäre ein Vielfaches davon.
  */
-const weaponById = new Map(WEAPONS.map(weapon => [weapon.id, weapon]));
+const weaponById = new Map(KATALOG.map(weapon => [weapon.id, weapon]));
 const indexNachId = new Map(indexed.map(eintrag => [eintrag.weapon.id, eintrag.index]));
 
 /** Die kurzen Entfernungen der zweiten Messung — ohne eine, die schon gemessen wurde. */
@@ -724,6 +767,14 @@ const naeherWirksam = wirktNurNaeher.map(row => {
 const report = {
   konfiguration: {
     preset,
+    /** Der gemessene Spielvertrag — nicht der Grundkatalog (BAL-06). */
+    waffenfassung: waffenFassung,
+    klassenfassung: KLASSEN_STANDARD,
+    schadenfassung: SCHADEN_STANDARD,
+    windfassung: WIND_STANDARD,
+    bodenobjektfassung: BODENOBJEKTE_STANDARD,
+    klassenLeben: Object.fromEntries(CLASS_IDS.map(klasse => [klasse,
+      Math.round(BASE_HEALTH * combatProfile(klasse, null, null, KLASSEN_STANDARD).healthMultiplier)])),
     startentfernung: startDist,
     messdistanzen: distanzen,
     probenProWaffe: samples,
