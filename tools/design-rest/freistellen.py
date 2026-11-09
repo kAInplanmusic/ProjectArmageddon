@@ -15,10 +15,10 @@ ROOT = Path(__file__).resolve().parents[2]
 CHARACTERS = json.loads((ROOT / "tools/design-rest/characters.json").read_text())
 
 
-def frame_paths(run_dir: Path, character_id: str):
+def frame_paths(run_dir: Path, character_id: str, animation: str):
     paths = []
     for frame in range(8):
-        matches = sorted(run_dir.glob(f"{character_id}-walk-{frame}-*.png"))
+        matches = sorted(run_dir.glob(f"{character_id}-{animation}-{frame}-*.png"))
         if len(matches) != 1:
             raise SystemExit(f"Frame {frame}: erwartet 1 Datei, gefunden {len(matches)}")
         paths.append(matches[0])
@@ -26,13 +26,14 @@ def frame_paths(run_dir: Path, character_id: str):
 
 
 def main() -> None:
-    if len(sys.argv) != 4:
-        raise SystemExit("Aufruf: freistellen.py <figuren-id> <run-verzeichnis> <zielverzeichnis>")
+    if len(sys.argv) not in (4, 5):
+        raise SystemExit("Aufruf: freistellen.py <figuren-id> <run-verzeichnis> <zielverzeichnis> [walk|action]")
     character_id, run_dir, out_dir = sys.argv[1], Path(sys.argv[2]).resolve(), Path(sys.argv[3]).resolve()
+    animation = sys.argv[4] if len(sys.argv) == 5 else "walk"
     out_dir.mkdir(parents=True, exist_ok=True)
     session = new_session("u2net")
     cutouts, boxes = [], []
-    for path in frame_paths(run_dir, character_id):
+    for path in frame_paths(run_dir, character_id, animation):
         image = Image.open(path).convert("RGBA")
         cut = remove(image, session=session)
         box = cut.getchannel("A").getbbox()
@@ -79,7 +80,7 @@ def main() -> None:
         bbox = canvas.getchannel("A").getbbox()
         if not bbox or min(bbox[0], bbox[1]) < 8 or max(bbox[2], bbox[3]) > 1016:
             raise SystemExit(f"Frame {frame} berührt den Rand nach Normalisierung: {bbox}")
-        target = out_dir / f"walk{frame}.png"
+        target = out_dir / f"{animation}{frame}.png"
         canvas.save(target)
         print(target.name, bbox)
 

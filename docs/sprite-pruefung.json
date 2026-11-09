@@ -1,7 +1,7 @@
 {
   "werkzeug": "check-sprites",
-  "zeit": "2026-11-08T18:56:53.989Z",
-  "dauerSekunden": 16.6,
+  "zeit": "2026-11-09T08:23:14.588Z",
+  "dauerSekunden": 34.9,
   "figuren": {
     "figuren": 81,
     "fraktionen": 9,
@@ -29,6 +29,31 @@
     "cookie": 14
   },
   "befunde": [
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: machina/11_heavy-battery-moerser-bot__aktion.webp Zelle 7",
+      "detail": "4 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: machina/20_grid-drifter-datastream__aktion.webp Zelle 1",
+      "detail": "4 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: machina/20_grid-drifter-datastream__aktion.webp Zelle 2",
+      "detail": "4 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: machina/22_overlord-kernel-panic__aktion.webp Zelle 3",
+      "detail": "4 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: machina/22_overlord-kernel-panic__aktion.webp Zelle 7",
+      "detail": "6 zusammenhängende Flächen (normal ≤ 3)"
+    },
     {
       "bereich": "namensdublette",
       "titel": "Figurenname 00_nullpointer-exception in 2 Fraktionen",

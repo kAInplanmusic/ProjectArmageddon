@@ -433,7 +433,15 @@
       "walk:4": "artifacts/design-rest/guides/chassis-endo-t8/walk-4-sheet.png",
       "walk:5": "artifacts/design-rest/guides/chassis-endo-t8/walk-5-sheet.png",
       "walk:6": "artifacts/design-rest/guides/chassis-endo-t8/walk-6-sheet.png",
-      "walk:7": "artifacts/design-rest/guides/chassis-endo-t8/walk-7-sheet.png"
+      "walk:7": "artifacts/design-rest/guides/chassis-endo-t8/walk-7-sheet.png",
+      "action:0": "artifacts/design-rest/guides/chassis-endo-t8/aktion-0-sheet.png",
+      "action:1": "artifacts/design-rest/guides/chassis-endo-t8/aktion-1-sheet.png",
+      "action:2": "artifacts/design-rest/guides/chassis-endo-t8/aktion-2-sheet.png",
+      "action:3": "artifacts/design-rest/guides/chassis-endo-t8/aktion-3-sheet.png",
+      "action:4": "artifacts/design-rest/guides/chassis-endo-t8/aktion-4-sheet.png",
+      "action:5": "artifacts/design-rest/guides/chassis-endo-t8/aktion-5-sheet.png",
+      "action:6": "artifacts/design-rest/guides/chassis-endo-t8/aktion-6-sheet.png",
+      "action:7": "artifacts/design-rest/guides/chassis-endo-t8/aktion-7-sheet.png"
     },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
@@ -457,7 +465,15 @@
       "walk:4": "artifacts/design-rest/guides/slasher-cyber-jax/walk-4-sheet.png",
       "walk:5": "artifacts/design-rest/guides/slasher-cyber-jax/walk-5-sheet.png",
       "walk:6": "artifacts/design-rest/guides/slasher-cyber-jax/walk-6-sheet.png",
-      "walk:7": "artifacts/design-rest/guides/slasher-cyber-jax/walk-7-sheet.png"
+      "walk:7": "artifacts/design-rest/guides/slasher-cyber-jax/walk-7-sheet.png",
+      "action:0": "artifacts/design-rest/guides/slasher-cyber-jax/aktion-0-sheet.png",
+      "action:1": "artifacts/design-rest/guides/slasher-cyber-jax/aktion-1-sheet.png",
+      "action:2": "artifacts/design-rest/guides/slasher-cyber-jax/aktion-2-sheet.png",
+      "action:3": "artifacts/design-rest/guides/slasher-cyber-jax/aktion-3-sheet.png",
+      "action:4": "artifacts/design-rest/guides/slasher-cyber-jax/aktion-4-sheet.png",
+      "action:5": "artifacts/design-rest/guides/slasher-cyber-jax/aktion-5-sheet.png",
+      "action:6": "artifacts/design-rest/guides/slasher-cyber-jax/aktion-6-sheet.png",
+      "action:7": "artifacts/design-rest/guides/slasher-cyber-jax/aktion-7-sheet.png"
     },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
@@ -481,7 +497,15 @@
       "walk:4": "artifacts/design-rest/guides/hydra-titan-mech/walk-4-sheet.png",
       "walk:5": "artifacts/design-rest/guides/hydra-titan-mech/walk-5-sheet.png",
       "walk:6": "artifacts/design-rest/guides/hydra-titan-mech/walk-6-sheet.png",
-      "walk:7": "artifacts/design-rest/guides/hydra-titan-mech/walk-7-sheet.png"
+      "walk:7": "artifacts/design-rest/guides/hydra-titan-mech/walk-7-sheet.png",
+      "action:0": "artifacts/design-rest/guides/hydra-titan-mech/aktion-0-sheet.png",
+      "action:1": "artifacts/design-rest/guides/hydra-titan-mech/aktion-1-sheet.png",
+      "action:2": "artifacts/design-rest/guides/hydra-titan-mech/aktion-2-sheet.png",
+      "action:3": "artifacts/design-rest/guides/hydra-titan-mech/aktion-3-sheet.png",
+      "action:4": "artifacts/design-rest/guides/hydra-titan-mech/aktion-4-sheet.png",
+      "action:5": "artifacts/design-rest/guides/hydra-titan-mech/aktion-5-sheet.png",
+      "action:6": "artifacts/design-rest/guides/hydra-titan-mech/aktion-6-sheet.png",
+      "action:7": "artifacts/design-rest/guides/hydra-titan-mech/aktion-7-sheet.png"
     },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
@@ -505,7 +529,15 @@
       "walk:4": "artifacts/design-rest/guides/recon-luchs-01/walk-4-sheet.png",
       "walk:5": "artifacts/design-rest/guides/recon-luchs-01/walk-5-sheet.png",
       "walk:6": "artifacts/design-rest/guides/recon-luchs-01/walk-6-sheet.png",
-      "walk:7": "artifacts/design-rest/guides/recon-luchs-01/walk-7-sheet.png"
+      "walk:7": "artifacts/design-rest/guides/recon-luchs-01/walk-7-sheet.png",
+      "action:0": "artifacts/design-rest/guides/recon-luchs-01/aktion-0-sheet.png",
+      "action:1": "artifacts/design-rest/guides/recon-luchs-01/aktion-1-sheet.png",
+      "action:2": "artifacts/design-rest/guides/recon-luchs-01/aktion-2-sheet.png",
+      "action:3": "artifacts/design-rest/guides/recon-luchs-01/aktion-3-sheet.png",
+      "action:4": "artifacts/design-rest/guides/recon-luchs-01/aktion-4-sheet.png",
+      "action:5": "artifacts/design-rest/guides/recon-luchs-01/aktion-5-sheet.png",
+      "action:6": "artifacts/design-rest/guides/recon-luchs-01/aktion-6-sheet.png",
+      "action:7": "artifacts/design-rest/guides/recon-luchs-01/aktion-7-sheet.png"
     },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
@@ -529,7 +561,15 @@
       "walk:4": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-4-sheet.png",
       "walk:5": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-5-sheet.png",
       "walk:6": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-6-sheet.png",
-      "walk:7": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-7-sheet.png"
+      "walk:7": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-7-sheet.png",
+      "action:0": "artifacts/design-rest/guides/heavy-battery-moerser-bot/aktion-0-sheet.png",
+      "action:1": "artifacts/design-rest/guides/heavy-battery-moerser-bot/aktion-1-sheet.png",
+      "action:2": "artifacts/design-rest/guides/heavy-battery-moerser-bot/aktion-2-sheet.png",
+      "action:3": "artifacts/design-rest/guides/heavy-battery-moerser-bot/aktion-3-sheet.png",
+      "action:4": "artifacts/design-rest/guides/heavy-battery-moerser-bot/aktion-4-sheet.png",
+      "action:5": "artifacts/design-rest/guides/heavy-battery-moerser-bot/aktion-5-sheet.png",
+      "action:6": "artifacts/design-rest/guides/heavy-battery-moerser-bot/aktion-6-sheet.png",
+      "action:7": "artifacts/design-rest/guides/heavy-battery-moerser-bot/aktion-7-sheet.png"
     },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
@@ -553,7 +593,15 @@
       "walk:4": "artifacts/design-rest/guides/ordnance-rail-viper/walk-4-sheet.png",
       "walk:5": "artifacts/design-rest/guides/ordnance-rail-viper/walk-5-sheet.png",
       "walk:6": "artifacts/design-rest/guides/ordnance-rail-viper/walk-6-sheet.png",
-      "walk:7": "artifacts/design-rest/guides/ordnance-rail-viper/walk-7-sheet.png"
+      "walk:7": "artifacts/design-rest/guides/ordnance-rail-viper/walk-7-sheet.png",
+      "action:0": "artifacts/design-rest/guides/ordnance-rail-viper/aktion-0-sheet.png",
+      "action:1": "artifacts/design-rest/guides/ordnance-rail-viper/aktion-1-sheet.png",
+      "action:2": "artifacts/design-rest/guides/ordnance-rail-viper/aktion-2-sheet.png",
+      "action:3": "artifacts/design-rest/guides/ordnance-rail-viper/aktion-3-sheet.png",
+      "action:4": "artifacts/design-rest/guides/ordnance-rail-viper/aktion-4-sheet.png",
+      "action:5": "artifacts/design-rest/guides/ordnance-rail-viper/aktion-5-sheet.png",
+      "action:6": "artifacts/design-rest/guides/ordnance-rail-viper/aktion-6-sheet.png",
+      "action:7": "artifacts/design-rest/guides/ordnance-rail-viper/aktion-7-sheet.png"
     },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
@@ -577,7 +625,15 @@
       "walk:4": "artifacts/design-rest/guides/grid-drifter-datastream/walk-4-sheet.png",
       "walk:5": "artifacts/design-rest/guides/grid-drifter-datastream/walk-5-sheet.png",
       "walk:6": "artifacts/design-rest/guides/grid-drifter-datastream/walk-6-sheet.png",
-      "walk:7": "artifacts/design-rest/guides/grid-drifter-datastream/walk-7-sheet.png"
+      "walk:7": "artifacts/design-rest/guides/grid-drifter-datastream/walk-7-sheet.png",
+      "action:0": "artifacts/design-rest/guides/grid-drifter-datastream/aktion-0-sheet.png",
+      "action:1": "artifacts/design-rest/guides/grid-drifter-datastream/aktion-1-sheet.png",
+      "action:2": "artifacts/design-rest/guides/grid-drifter-datastream/aktion-2-sheet.png",
+      "action:3": "artifacts/design-rest/guides/grid-drifter-datastream/aktion-3-sheet.png",
+      "action:4": "artifacts/design-rest/guides/grid-drifter-datastream/aktion-4-sheet.png",
+      "action:5": "artifacts/design-rest/guides/grid-drifter-datastream/aktion-5-sheet.png",
+      "action:6": "artifacts/design-rest/guides/grid-drifter-datastream/aktion-6-sheet.png",
+      "action:7": "artifacts/design-rest/guides/grid-drifter-datastream/aktion-7-sheet.png"
     },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
@@ -601,7 +657,15 @@
       "walk:4": "artifacts/design-rest/guides/proxy-glitch-hack/walk-4-sheet.png",
       "walk:5": "artifacts/design-rest/guides/proxy-glitch-hack/walk-5-sheet.png",
       "walk:6": "artifacts/design-rest/guides/proxy-glitch-hack/walk-6-sheet.png",
-      "walk:7": "artifacts/design-rest/guides/proxy-glitch-hack/walk-7-sheet.png"
+      "walk:7": "artifacts/design-rest/guides/proxy-glitch-hack/walk-7-sheet.png",
+      "action:0": "artifacts/design-rest/guides/proxy-glitch-hack/aktion-0-sheet.png",
+      "action:1": "artifacts/design-rest/guides/proxy-glitch-hack/aktion-1-sheet.png",
+      "action:2": "artifacts/design-rest/guides/proxy-glitch-hack/aktion-2-sheet.png",
+      "action:3": "artifacts/design-rest/guides/proxy-glitch-hack/aktion-3-sheet.png",
+      "action:4": "artifacts/design-rest/guides/proxy-glitch-hack/aktion-4-sheet.png",
+      "action:5": "artifacts/design-rest/guides/proxy-glitch-hack/aktion-5-sheet.png",
+      "action:6": "artifacts/design-rest/guides/proxy-glitch-hack/aktion-6-sheet.png",
+      "action:7": "artifacts/design-rest/guides/proxy-glitch-hack/aktion-7-sheet.png"
     },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
@@ -625,7 +689,15 @@
       "walk:4": "artifacts/design-rest/guides/overlord-kernel-panic/walk-4-sheet.png",
       "walk:5": "artifacts/design-rest/guides/overlord-kernel-panic/walk-5-sheet.png",
       "walk:6": "artifacts/design-rest/guides/overlord-kernel-panic/walk-6-sheet.png",
-      "walk:7": "artifacts/design-rest/guides/overlord-kernel-panic/walk-7-sheet.png"
+      "walk:7": "artifacts/design-rest/guides/overlord-kernel-panic/walk-7-sheet.png",
+      "action:0": "artifacts/design-rest/guides/overlord-kernel-panic/aktion-0-sheet.png",
+      "action:1": "artifacts/design-rest/guides/overlord-kernel-panic/aktion-1-sheet.png",
+      "action:2": "artifacts/design-rest/guides/overlord-kernel-panic/aktion-2-sheet.png",
+      "action:3": "artifacts/design-rest/guides/overlord-kernel-panic/aktion-3-sheet.png",
+      "action:4": "artifacts/design-rest/guides/overlord-kernel-panic/aktion-4-sheet.png",
+      "action:5": "artifacts/design-rest/guides/overlord-kernel-panic/aktion-5-sheet.png",
+      "action:6": "artifacts/design-rest/guides/overlord-kernel-panic/aktion-6-sheet.png",
+      "action:7": "artifacts/design-rest/guides/overlord-kernel-panic/aktion-7-sheet.png"
     },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
