@@ -42,21 +42,16 @@ function bilderTabelle() {
 }
 
 /**
- * Die HD-Porträts, LAZY: Vite macht daraus Lade-Funktionen statt sofort aufgelöster
- * URLs, die Bilder landen als eigene Dateien im Bundle und werden erst geholt, wenn
- * eine große Anzeige sie verlangt.
+ * Die HD-Porträts, NACHGELADEN: Die Adresstabelle liegt in `figurenHdDaten.js` und
+ * kommt mit einem `import()` bei der ersten großen Anzeige. Vorher stand hier ein
+ * Lazy-Glob; Vite baute daraus je Bild ein eigenes JS-Modul von rund 90 Byte (81
+ * Zwergdateien, je HD-Bild eine Anfrage mehr). Ohne Vite (`node --test`) schlägt der
+ * Import fehl und die Tabelle bleibt leer.
+ *
+ * @returns {Promise<Record<string, string>>}
  */
 function hdBilderTabelle() {
-  if (hdBilder === null) {
-    try {
-      hdBilder = import.meta.glob('./assets/characters-hd/*/*.png', {
-        query: '?url',
-        import: 'default',
-      });
-    } catch {
-      hdBilder = {};
-    }
-  }
+  hdBilder ??= import('./figurenHdDaten.js').then(m => m.hdBilder, () => ({}));
   return hdBilder;
 }
 
@@ -82,8 +77,8 @@ export function spriteUrl(character) {
  */
 export async function hdUrl(character) {
   if (!character) return null;
-  const lader = hdBilderTabelle()[`./assets/characters-hd/${character.faction}/${character.sprite}`];
-  return lader ? lader() : spriteUrl(character);
+  const tabelle = await hdBilderTabelle();
+  return tabelle[`./assets/characters-hd/${character.faction}/${character.sprite}`] ?? spriteUrl(character);
 }
 
 /** Wie viele Bilder tatsächlich geladen wurden. */

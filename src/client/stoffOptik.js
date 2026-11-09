@@ -88,7 +88,18 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
   const texMittel = new Float64Array(STOFFE.length * 3);
   const texFarbe = new Uint8Array(STOFFE.length);
   let erdeTextur = false;
+  /*
+   * LADEZEIT: Nur Stoffe, die auf DIESER Karte vorkommen, fragen ihre Textur an. `stoffTextur`
+   * merkt sich jede Anfrage ohne Treffer und lädt genau diese Dateien nach (siehe
+   * `stoffTexturen.js`); eine Karte braucht eine Handvoll der rund 110 Texturen. Stoff 0 (Erde) ist
+   * der Grund jeder Zelle ohne Eintrag und gilt immer als vorhanden. Für das Bild ändert die
+   * Einschränkung nichts: `texPixel[id]` wird nur für Stoffe gelesen, die im Feld stehen.
+   */
+  const vorhanden = new Uint8Array(STOFFE.length);
+  vorhanden[0] = 1;
+  for (let i = 0; i < feld.length; i += 1) if (feld[i] < vorhanden.length) vorhanden[feld[i]] = 1;
   for (let id = 0; id < STOFFE.length; id += 1) {
+    if (!vorhanden[id]) continue;
     const t = stoffTextur(STOFF_TEXTUR[STOFFE[id]?.key]);
     if (!t) continue;
     texPixel[id] = t.rgba;

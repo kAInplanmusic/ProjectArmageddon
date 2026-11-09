@@ -58,7 +58,7 @@ import { waehleStimmung } from './musikStimmung.js';
 import { bindeDrehHinweis } from './drehHinweis.js';
 import { bindeGrafikBedienung } from './grafikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
-import { ladeStoffTexturen } from './stoffTexturen.js';
+import { setzeStoffTexturUrls, beiNeuenStoffTexturen, stoffTexturenBereit } from './stoffTexturen.js';
 import { planetenBilder } from './planetenKulisse.js';
 import HYMNEN_MANIFEST from './assets/music/fraktionen/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
@@ -153,7 +153,7 @@ const MUSIK_URLEN = Object.fromEntries([
     .map(([pfad, url]) => [`fraktionen/${pfad.split('/').pop()}`, url]),
 ]);
 
-/** Material-Texturen der Stoffe (Client-Optik): Name → URL, geladen beim Start. */
+/** Material-Texturen der Stoffe (Client-Optik): Name → URL. Nur die Zuordnung; geladen wird je Karte nach Bedarf (`stoffTexturen.js`). */
 const STOFF_TEXTUR_URLEN = {
   // Biom-Materialien (`stoff-texturen-neu`), dann die Basisstoffe (gleiche Namen: die Basisstoffe gewinnen).
   ...Object.fromEntries(
@@ -179,16 +179,14 @@ const PLANETEN_KULISSE_URLEN = Object.fromEntries(
 );
 
 class Game {
-  /** LADEZEIT: Lauf von Stofftexturen und Effekt-Sheets (einmal; siehe `#ladeMatchBilder`). */
-  #matchBilderLauf = null;
-
   constructor() {
     planetenBilder.setzeUrls(PLANETEN_KULISSE_URLEN);
     this.canvas = document.getElementById('game-canvas');
     this.renderer = new Renderer(this.canvas);
     this.renderer.sheets.setzeUrls(EFFEKT_SHEET_URLEN);
-    // Erst wenn der Browser nach dem Menüaufbau ruht (spätestens nach 1,5 s), sonst beim Matchstart.
-    (globalThis.requestIdleCallback ?? (f => setTimeout(f, 200)))(() => this.#ladeMatchBilder(), { timeout: 1500 });
+    // LADEZEIT: Das Menü lädt keine Match-Bilder mehr; Texturen kommen je Karte nach Bedarf, danach färbt der Renderer einmal nach.
+    setzeStoffTexturUrls(STOFF_TEXTUR_URLEN);
+    beiNeuenStoffTexturen(() => this.renderer.faerbeNachTexturen());
 
     /*
      * Die Kamera zeigt einen Ausschnitt der Karte.
@@ -1340,16 +1338,18 @@ class Game {
   }
 
   /**
-   * LADEZEIT: Bilder, die erst das Match braucht — rund 90 Stofftexturen (~7 MB) und die Effekt-Sheets
-   * (~1,2 MB). Sie luden früher im Konstruktor, gleichzeitig mit dem Menü. Jetzt im Leerlauf nach dem
-   * Menüaufbau oder beim Matchstart. Reine Darstellung; das Versprechen trägt das Ladebild (A11).
+   * LADEZEIT: Bilder, die erst das Match braucht. Bis 2026-11-09 lud dieser Schritt im Leerlauf
+   * nach dem Menü alle Stofftexturen (gemessen 7,3 MB) und die Effekt-Sheets (0,7 MB) — auch ohne
+   * Match. Jetzt beginnt er erst mit dem Matchstart: die Effekt-Sheets hier, die Texturen der
+   * Karte über die Wünsche des Geländeaufbaus. Reine Darstellung; das Versprechen trägt das
+   * Ladebild (A11).
+   *
+   * @returns {Promise<void>} löst sich auf, wenn die Texturen der gerade gebauten Karte da sind
    */
   #ladeMatchBilder() {
-    if (!this.#matchBilderLauf) {
-      this.#matchBilderLauf = ladeStoffTexturen(STOFF_TEXTUR_URLEN).then(() => this.renderer.faerbeNachTexturen()).catch(() => 0); // ggf. nachfärben
-    }
     this.renderer.sheets.vorladen();
-    return this.#matchBilderLauf;
+    // Eine Mikroaufgabe später: Der Matchstart baut das Gelände synchron, erst dann stehen die Wünsche fest.
+    return Promise.resolve().then(() => stoffTexturenBereit());
   }
 
   startMatch({

@@ -347,3 +347,49 @@ abwechselnd). Eine neue Lighthouse-Reihe auf ruhiger Maschine bleibt offen.
 - **Lighthouse auf ruhiger Maschine**: Die Reihe aus §6.5 ist lastbedingt unbrauchbar; für
   einen belastbaren Score die drei Läufe mobil und drei desktop auf einem unbelasteten
   Rechner wiederholen (Vorgabe aus §1).
+
+## 7. Startpfad am 2026-11-09: Laden nach Bedarf
+
+Messung im Produktionsbau (`vite build`, `vite preview`, Chrome, 1280x720, lokal ohne Drossel;
+Zahlen aus Resource-Timing nach `networkidle` plus 1,5 s, **vor** dem ersten Klick):
+
+| | vorher | nachher |
+|---|---|---|
+| Anfragen bis das Menü ruht | 121 | 10 |
+| übertragene Bytes | 7 796 984 | 585 416 |
+| davon Bilder | 112 Stofftexturen und Effekt-Sheets, 7,34 MB | nur das Logo, 0,13 MB |
+| Hauptbündel roh / gzip | 1 323 113 / 369 396 | 1 204 317 / 356 027 |
+| Start (HTML, JS, CSS) roh / gzip | 1 433 246 / 392 733 | 1 314 450 / 379 364 |
+| Dateien in `dist` | 1437 | 1034 |
+| `check:bundle` | rot | grün |
+
+Was sich geändert hat:
+
+1. **Stofftexturen nach Bedarf** (`src/client/stoffTexturen.js`, `stoffOptik.js`). Der Start holte
+   alle rund 110 Texturen im Leerlauf nach dem Menü — auch ohne Match, und obwohl eine Karte nur
+   eine Handvoll zeigt (Menüvorgabe, gemessen: 3). Jetzt fragt die Färbung nur die Stoffe an, die
+   auf der Karte vorkommen; ein Fehlgriff wird vorgemerkt, alle Wünsche eines Geländeaufbaus gehen
+   in einen Ladelauf, danach färbt der Renderer einmal nach. Das Ladebild wartet auf genau diesen
+   Lauf. Stoffe, die erst im Match entstehen (Brand, Erstarren), lösen denselben Weg aus, sobald
+   das Gelände neu gefärbt wird; ob jede solche Stelle im Match neu färbt, ist nicht einzeln geprüft.
+2. **Effekt-Sheets erst beim Matchstart** (`main.js`, `#ladeMatchBilder`), nicht mehr im Leerlauf.
+3. **Figurendaten als ein Baustein** (`figurenDaten.js`, 100 kB, kommt beim ersten Figurenbild).
+   Drei Manifeste standen eager im Startbündel; die Bildtabellen waren lazy je Datei, wofür Vite je
+   Bild ein JS-Modul von rund 90 Byte baute (324 Zwergdateien, je Figurenbild eine Anfrage vor dem
+   Bild). Dasselbe für die HD-Porträts (`figurenHdDaten.js`, 81 Zwergdateien).
+
+Geprüft: `tests/ladezeit-nach-bedarf.test.js` (Wunschweg; nur die nötigen Texturen färben
+pixelgleich wie alle; kein statischer Import der Bausteine; Grenzen des Gates),
+`tests/e2e/ladezeit-nach-bedarf.spec.mjs` (Menü ohne Match-Bilder; Matchstart holt genau die
+Texturen der Karte; angezeigtes Gelände gleich einem frischen Aufbau mit Texturen).
+
+Grenzen der Messung: lokal, ohne Drossel, ein Lauf, ein Gerät. Die Byte- und Anfragezahlen sind
+belastbar, eine Zeit bis zum ersten Bild auf einem Mobilgerät ist damit **nicht** gemessen.
+
+Bewusste Folge: Das erste Match holt seine Texturen unter dem Ladebild statt vorab; die nächste
+Karte mit anderen Stoffen holt die fehlenden nach. Der HTTP-Cache hält sie danach.
+
+Offen im Startpfad (größte Posten des Hauptbündels, `vite build`, gerenderte Bytes):
+`shared/config/weapons.js` 176 kB, `client/main.js` 98 kB, `shared/config/factions.js` 70 kB,
+`client/renderer.js` 57 kB, `shared/config/backdrops.js` 50 kB. Ein echter Schnitt „Menü zuerst,
+Match-Code nachladen" verlangt, `main.js` zu zerlegen (siehe `docs/TODO.md` OPT-1/OPT-4).

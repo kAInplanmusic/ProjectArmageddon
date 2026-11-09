@@ -68,11 +68,77 @@ export function registriereStoffTextur(name, rgba) {
 /** Zahl der geladenen Texturen (Renderer: Gelände nachfärben, wenn beim Aufbau welche fehlten). */
 export function anzahlStoffTexturen() { return geladen.size; }
 
-/** Verwirft alle Texturen (Tests). */
-export function leereStoffTexturen() { geladen.clear(); }
+/** Verwirft alle Texturen und offenen Anfragen (Tests). */
+export function leereStoffTexturen() { geladen.clear(); gewuenscht.clear(); versucht.clear(); }
 
-/** @returns {{rgba: Uint8ClampedArray, mittel: number[]}|null} */
-export function stoffTextur(name) { return geladen.get(name) ?? null; }
+/*
+ * LADEZEIT (2026-11-09): Texturen laden NACH BEDARF.
+ *
+ * Vorher holte der Start alle rund 110 Texturen (gemessen 7,3 MB in 112 Anfragen), im Leerlauf
+ * nach dem Menü — auch wenn nie ein Match begann, und obwohl eine Karte nur eine Handvoll davon
+ * zeigt. Jetzt meldet `stoffTextur` jede Anfrage ohne Treffer als Wunsch; die Wünsche eines
+ * Geländeaufbaus gehen gesammelt in EINEN Ladelauf, danach erfahren die Hörer davon (der Renderer
+ * färbt das Gelände einmal nach). Ohne angemeldete Adressen (`node --test`, Werkzeuge) entsteht nie
+ * ein Wunsch: `stoffTextur` bleibt dort ein reiner Nachschlag.
+ */
+let urlTabelle = {};
+const gewuenscht = new Set();
+const versucht = new Set();
+const hoerer = new Set();
+let geplant = false;
+let lauf = Promise.resolve(0);
+
+/**
+ * Meldet die ausgelieferten Texturdateien an (Name → URL). Geladen wird dadurch nichts.
+ * @param {Record<string,string>} urls
+ */
+export function setzeStoffTexturUrls(urls) { urlTabelle = { ...urls }; }
+
+/**
+ * Ruft `f(anzahl)` nach jedem Ladelauf, der mindestens eine Textur gebracht hat.
+ * @param {(anzahl: number) => void} f
+ * @returns {() => void} Abmelden
+ */
+export function beiNeuenStoffTexturen(f) { hoerer.add(f); return () => hoerer.delete(f); }
+
+/** Zahl der Wünsche, die noch auf ihren Ladelauf warten. */
+export function offeneStoffTexturen() { return gewuenscht.size; }
+
+/**
+ * Löst sich auf, sobald kein Wunsch mehr offen und kein Ladelauf mehr unterwegs ist
+ * (Ladebild beim Matchstart). Schlägt nie fehl.
+ * @returns {Promise<void>}
+ */
+export function stoffTexturenBereit() {
+  return lauf.then(() => (geplant ? stoffTexturenBereit() : undefined));
+}
+
+function planeLadung() {
+  if (geplant) return;
+  geplant = true;
+  // Der Lauf beginnt in einer Mikroaufgabe: alle Wünsche desselben Geländeaufbaus sind dann beisammen.
+  lauf = lauf.then(async () => {
+    geplant = false;
+    const urls = {};
+    for (const name of gewuenscht) { urls[name] = urlTabelle[name]; versucht.add(name); }
+    gewuenscht.clear();
+    const anzahl = await ladeStoffTexturen(urls).catch(() => 0);
+    if (anzahl > 0) for (const f of hoerer) { try { f(anzahl); } catch { /* Hörer stört den Lauf nicht */ } }
+    return anzahl;
+  });
+}
+
+/**
+ * Die Textur eines Namens oder `null`. Ein Fehlgriff auf eine angemeldete, noch nicht versuchte
+ * Datei merkt sie zum Nachladen vor (einmal je Datei; eine fehlende Datei wird nicht erneut geholt).
+ * @returns {{rgba: Uint8ClampedArray, mittel: number[]}|null}
+ */
+export function stoffTextur(name) {
+  const t = geladen.get(name);
+  if (t) return t;
+  if (name !== undefined && urlTabelle[name] && !versucht.has(name)) { gewuenscht.add(name); planeLadung(); }
+  return null;
+}
 
 /** Gleichzeitig geladene Texturbilder (LADEZEIT). */
 const GLEICHZEITIG = 6;
