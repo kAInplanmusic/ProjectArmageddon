@@ -91,3 +91,31 @@ Keine Testgrenzen lockern und keine Baselines ungeprüft ersetzen.
 Anschließend Foto-Erzeugung reproduzierbar machen und die Kistenweg-Diagnose
 mit tatsächlichen Sprung-/Seilwegen bewerten. Die historischen Designberichte
 beschreiben ihren jeweiligen Prüfstand, keine automatische aktuelle Freigabe.
+
+## Veröffentlichung über die GitHub-Anbindung
+
+Der gemeinsame Quellstand wurde als `0b7ac1d` veröffentlicht. Sein Git-Tree
+`57ad945d93adb0e98a84605d5486e02387287aca` stimmt exakt mit dem lokal geprüften
+Stand `9d374ee` überein. Die GitHub-Veröffentlichung verwendet neue Commit-IDs,
+weil dem direkten Git-Transport Zugangsdaten fehlen. Die beiden bestehenden
+PR-Spitzen sind Eltern des Veröffentlichungscommits. Die lokalen Ursprungsstände
+bleiben zusätzlich über folgende Sicherungs-Eltern des abschließenden Commits
+auf GitHub erreichbar:
+
+| Lokaler Ursprungscommit | GitHub-Sicherungscommit mit identischem Tree |
+|---|---|
+| `45a2d1d7904627a89284267767333c72d5e3172a` | `5172fad2b56b520e1f9fd84a722bbc887cd4d908` |
+| `f08dd47b436a4c9c637547e0efa2d11abe4be2f0` | `549e74934f215a8a6e7bcf7f83dd685eb86313ce` |
+
+Die ursprünglichen lokalen Commit-IDs aus der Bestandsaufnahme sind historische
+Referenzen der lokalen Checkouts; für die Veröffentlichung gelten die obigen
+Zuordnungen. Beim Weiterarbeiten den Remote-Branch frisch auschecken. Einen
+bestehenden lokalen Integrationsbranch mit abweichender Historie zuerst sichern
+und nicht gewaltsam überschreiben.
+
+Erneute Prüfung bei Veröffentlichung am 9. November 2026: 2422/2422 Tests,
+22/22 Gates einschließlich Produktionsbau und Ladebudget, Lint, Importprüfung
+und `git diff --check` erfolgreich. Chromium scheitert weiterhin schon beim
+Start an `socket() failed: Operation not permitted`; daher keine zusätzliche
+lokale E2E- oder Bildfreigabe. CI und die verbleibenden Abnahmen in der
+TODO-SSOT bleiben maßgeblich.
