@@ -10,12 +10,12 @@
  *
  * @module kaderansicht
  */
-import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
+import { CLASS_IDS } from '../engine/match.js';
 import { RARITY_IDS, STUFEN } from '../engine/systems/lootSystem.js';
 import { NEUE_BIOME } from '../shared/config/biome-neu.js';
 import { PLANET_BIOM_IDS } from '../shared/config/biome-planet.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
-import { uebersichtFuerHilfe, classCounterplay, combatProfile } from '../shared/config/classes.js';
+import { uebersichtFuerHilfe, classCounterplay } from '../shared/config/classes.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import { KISTEN_STUFEN_GEWICHT, KISTEN_MUNITION_STUFE } from '../shared/config/kisten.js';
 import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js';
@@ -336,47 +336,8 @@ function balken(container, beschriftung, wert, maxWert) {
 }
 
 /** Reiter „Klassen" — die wirksamen Werte samt Archetypen und Startaufgebot. */
-/**
- * Beschreibt einen Klassen- oder Archetypwert für die Auswahlliste.
- *
- * ## Warum das nötig war
- *
- * Ein User-Flow-Audit stellte fest: Die Auswahlfelder im Menü zeigten nur die
- * nackten Kennungen („scout", „brawler"). Der wirksame Unterschied ist aber
- * gross — das Leben schwankt je Klasse um Faktor 0,56 bis 1,56. Wer wählt,
- * ohne die Folge zu kennen, wählt nicht.
- *
- * ## Woher die Zahlen kommen
- *
- * Aus `combatProfile()` — der Quelle, die der Motor liest. Eine eigene Rechnung
- * hier wäre eine zweite Regel, die bei einer Balance-Änderung auseinanderliefe.
- *
- * ## Was je Achse gezeigt wird
- *
- * - **Klasse:** das wirksame Leben und den wirksamen Schaden. Beides sind
- *   Multiplikatoren auf den Grundwert.
- * - **Archetyp:** das wirksame TEMPO (Absprung- und Fluggeschwindigkeit). Der
- *   Archetyp wirkt nicht auf den Schaden — das Feld hieß früher irreführend
- *   `damage` und wurde in `launch` umbenannt.
- *
- * @param {'Klasse'|'Archetyp'} art
- * @param {string} wert - Kennung, z. B. 'scout'
- * @returns {string} Kurztext wie „Leben 0,96 · Schaden 0,70" oder „Tempo 0,64"
- */
-export function beschreibeWert(art, wert) {
-  // Der jeweils andere Teil bleibt auf dem Rückfallwert — die Zahlen sind
-  // Eigenschaften des EINZELNEN Parameters, nicht der Kombination.
-  const profil = art === 'Klasse'
-    ? combatProfile(wert, ARCHETYPE_IDS[0], null, KLASSEN_STANDARD)
-    : combatProfile(CLASS_IDS[0], wert, null, KLASSEN_STANDARD);
-
-  const zahl = n => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : '—');
-
-  if (art === 'Klasse') {
-    return `Leben ${zahl(profil.healthMultiplier)} · Schaden ${zahl(profil.damageMultiplier)}`;
-  }
-  return `Tempo ${zahl(profil.launchSpeedMultiplier)}`;
-}
+// `beschreibeWert()` liegt seit 2026-11-09 in `client/wertBeschreibung.js`: Das Menü
+// braucht sie schon beim Füllen der Loadout-Auswahl, also vor diesem (lazy geladenen) Chunk.
 
 function zeichneKlassen(container) {
   const u = uebersichtFuerHilfe();

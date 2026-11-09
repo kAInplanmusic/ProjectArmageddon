@@ -117,7 +117,7 @@ import {
   neueErfolge as neueErfolgeFuer,
   emblem,
 } from '../shared/achievements.js';
-import { buildRosterView, buildHilfeView, beschreibeWert } from './kaderansicht.js';
+import { beschreibeWert } from './wertBeschreibung.js';
 import { wirkungLabel } from '../shared/config/wirkungstexte.js';
 
 /** Schlüssel des Profils im lokalen Speicher des Browsers. */
@@ -3957,9 +3957,13 @@ class Game {
 }
 
 const game = new Game();
-// Kader- und Hilfeansicht einmalig aufbauen (eigenes Modul, siehe kaderansicht.js).
-buildRosterView();
-buildHilfeView();
+/*
+ * Kader- und Hilfeansicht per `import()`: beide hängen an zugeklappten
+ * `details`-Elementen; ihr Code und Fraktions-CSS gehören nicht in den Start-Chunk.
+ */
+import('./kaderansicht.js')
+  .then(m => { m.buildRosterView(); m.buildHilfeView(); })
+  .catch(fehler => console.warn('Kader- und Hilfeansicht nicht geladen', fehler));
 // Kulissenauswahl füllen, sobald das DOM steht. Der Katalog ist die einzige
 // Quelle; die Liste im HTML bleibt bewusst leer.
 if (typeof document !== 'undefined') {

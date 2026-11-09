@@ -73,16 +73,50 @@ nicht die Größe des Gewinns.
 `npm run check:bundle` (= `node scripts/bundle-gate.mjs --bauen`, Gate 22 in `npm run checks`
 und damit in der CI). Grenzen in `scripts/bundle-grenzen.json`, gzip Stufe 9.
 
-| Größe | gemessen 2026-11-05 | Grenze |
+| Größe | gemessen 2026-11-09 | Grenze |
 |---|---|---|
-| Haupt-Bundle roh | 1217,4 KiB | 1269,5 KiB |
-| Haupt-Bundle gzip | 333,5 KiB | 348,6 KiB |
-| Start (HTML + JS + CSS) roh | 1318,5 KiB | 1372,1 KiB |
-| Start gzip | 359,2 KiB | 376,0 KiB |
-| `dist/` gesamt | 95,57 MiB | 100,14 MiB |
+| Haupt-Bundle roh | 1231,8 KiB | 1269,5 KiB |
+| Haupt-Bundle gzip | 337,1 KiB | 348,6 KiB |
+| Start (HTML + JS + CSS) roh | 1339,1 KiB | 1372,1 KiB |
+| Start gzip | 364,2 KiB | 376,0 KiB |
+| `dist/` gesamt | 97,36 MiB | 100,14 MiB |
 | Sourcemaps | 0 | 0 |
 
 Probe: eine untergeschobene `.map` in `dist/` lässt das Gate mit Exit 1 fehlschlagen.
+
+### 3.1 Kader-Split: Grenze blieb, Bau wurde kleiner
+
+Am 2026-11-09 war das Gate auf `main` rot: Haupt-Bundle 1273,6 KiB roh
+(Grenze 1269,5), Start 1383,7 KiB roh (Grenze 1372,1); gzip lag mit 347,9 und
+375,7 KiB noch darunter. Die Ursache war Wachstum aus dem DesignRest-Zweig
+(`darstellung.js`, Stoff-/Biomdaten, Figuren-Manifeste), nicht ein einzelner
+Fehler.
+
+Gemessen und behoben, ohne die Grenze anzufassen:
+
+- **Die neun `@fontsource`-Fraktionsschriften lagen NICHT im Haupt-Bundle.**
+  Sie sind WOFF2-Dateien in `dist/assets` (zählen in keine der beiden Grenzen);
+  im Start-CSS standen nur ihre `@font-face`-Regeln. Der gesamte Anteil von
+  `fraktionen.css` an der Start-CSS betrug 2,9 KiB — allein damit war das Gate
+  nicht zu retten.
+- **Kader- und Hilfeansicht sind jetzt ein eigener, lazy geladener Chunk.**
+  `main.js` ruft `import('./kaderansicht.js')` statt eines statischen Imports.
+  Das verschiebt 43,8 KiB JS und 2,9 KiB CSS (samt der neun Schriften) aus dem
+  Startpfad. `beschreibeWert()` liegt dafür als eigenes Modul
+  `client/wertBeschreibung.js` im Startpfad — das Menü braucht die Funktion
+  schon beim Füllen der Loadout-Auswahl. Beide Ansichten zeichnen weiterhin
+  sofort, wenn ihr `details`-Element beim Laden bereits offen ist.
+
+| Größe | vorher | nachher | Δ |
+|---|---|---|---|
+| Haupt-Bundle roh | 1304132 B (1273,6 KiB) | 1261391 B (1231,8 KiB) | −41,7 KiB |
+| Haupt-Bundle gzip | 347,9 KiB | 337,1 KiB | −10,8 KiB |
+| Start roh | 1416861 B (1383,7 KiB) | 1371239 B (1339,1 KiB) | −44,6 KiB |
+| Start gzip | 375,7 KiB | 364,2 KiB | −11,5 KiB |
+
+Die Grenzen in `scripts/bundle-grenzen.json` sind **unverändert**; der Spielraum
+liegt jetzt bei +3,1 % (haupt roh) und +2,5 % (Start roh) statt bei −0,3 % und
+−0,8 %.
 
 ## 4. Sourcemaps
 
@@ -113,5 +147,7 @@ Ersparnis ≈ 0,7 % gzip. Dagegen steht:
 - Die Profilanzeige wird im Konstruktor für das sichtbare Menü gefüllt; `profil.spec`
   liest `#profil-werte` per `textContent()` ohne Wiederholung, `visuell.spec` fotografiert das Menü.
 
-Größere Hebel (nicht in diesem Auftrag): 175 KiB ungenutztes JS (Replay, Kaderansicht,
-Online-Teile lazy), die ~7,6 MB Texturbilder beim Start (nur laden, was das erste Bild braucht).
+Größere Hebel (nicht in diesem Auftrag): 175 KiB ungenutztes JS (Replay,
+Online-Teile lazy), die ~7,6 MB Texturbilder beim Start (nur laden, was das
+erste Bild braucht). Die **Kaderansicht** ist seit 2026-11-09 ausgelagert
+(Abschnitt 3.1) — der verbleibende Startpfad enthält sie nicht mehr.

@@ -1,5 +1,5 @@
 {
-  "_hinweis": "Grenzen für scripts/bundle-gate.mjs (Bytes; gzip Stufe 9). Stand 2026-11-04 gemessen: haupt 1246626/341460, start 1350190/367820, dist 100216007. Spielraum etwa 4-5 %. Anheben nur mit Begründung im Commit, senken jederzeit. Messwerte und Verlauf: docs/ladezeit.md.",
+  "_hinweis": "Grenzen für scripts/bundle-gate.mjs (Bytes; gzip Stufe 9). Gemessen 2026-11-09 nach dem Kader-Split: haupt 1261391/345178, start 1371239/372991, dist 102090064. Die Grenzen sind gegenüber 2026-11-04 UNVERÄNDERT — der Bau liegt durch das lazy geladene Kader-Modul (eigenes JS + eigenes CSS mit den neun Fraktionsschriften) wieder unter ihnen. Spielraum jetzt: haupt +3,1 % roh, start +2,5 % roh. Anheben nur mit Begründung im Commit, senken jederzeit. Messwerte und Verlauf: docs/ladezeit.md.",
   "haupt": { "roh": 1300000, "gzip": 357000 },
   "start": { "roh": 1405000, "gzip": 385000 },
   "dist": { "roh": 105000000 },
