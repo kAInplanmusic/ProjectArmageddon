@@ -12,10 +12,19 @@ import assert from 'node:assert/strict';
 import { MatchController } from '../src/engine/match.js';
 import { buildEffect, EFFECT_KIND, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
+import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 
 function neuesMatch(spieler = 2) {
+  /*
+   * Der Schütze ist ausdrücklich Fernkämpfer (Klassenfaktor 1,0, BAL-02): Seit
+   * Waffenfassung 17 gilt der Klassenfaktor auch für Strahlwaffen. Diese Tests
+   * prüfen die WIRKUNG (Kettenblitz, Bohrkanone), nicht die Klasse — mit dem
+   * neutralen Faktor bleibt `weapon.damage` der erwartete Rohschaden.
+   */
   const match = new MatchController({
     seed: 4242, teams: spieler, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, schaden: 1,
+    klassen: KLASSEN_STANDARD,
+    loadouts: Array.from({ length: spieler }, () => ({ classId: 'fernkampf' })),
   });
   match.start();
   return match;

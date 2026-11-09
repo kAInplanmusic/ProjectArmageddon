@@ -35,7 +35,7 @@ import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaRound, valhallaTickForRound, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
 import { getTurnDurationForSize } from './systems/turnSystem.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout, klassenKennung } from '../shared/config/classes.js';
-import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
+import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_KLASSE, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
 import { wendeStossAn } from './stoss.js';
 import { GELAENDE_STANDARD, GELAENDE_BIOME, loeseGelaende } from '../shared/config/gelaende.js';
@@ -1540,7 +1540,21 @@ export class MatchController {
 
     const target = this.#playerAt(result.hitX, result.hitY, shooterId);
     if (target !== null && !nurZiel) { // `nurZiel`: Vorstrahl eines Anflugschlags bestimmt nur den Zielpunkt (Waffenfassung 9)
-      const damage = weapon.damage * this.#statuses.damageMultiplier(shooterId);
+      /*
+       * EIN Schadensvertrag für Strahl und Projektil (Waffenfassung 17, BAL-02).
+       *
+       * FUND (belegt): Hier stand `weapon.damage * statuses.damageMultiplier` — der
+       * Klassenfaktor fehlte, während `shooting.js` ihn beim Projektilspawn längst
+       * multiplizierte. Ein neutraler Treffer mit `pa_083` ergab dadurch für
+       * Nahkampf, Fernkampf und Okkultist dreimal 46 Rohschaden statt 34,5 / 46 / 57,5.
+       *
+       * Gelesen wird das Kampfprofil (`combatProfile().damageMultiplier`) — die eine
+       * Stelle, an der Klasse, Archetyp und Sidegrade verrechnet werden. Jeder Faktor
+       * wirkt genau einmal: Klasse hier, Buff danach, Schild/Rüstung erst im
+       * `DamageSystem`. Fassungen ≤ 16 behalten den alten Wert (bitgleiche Replays).
+       */
+      const klassenFaktor = this.waffen >= WAFFEN_KLASSE ? this.#klassenSchadensFaktor(shooterId) : 1;
+      const damage = weapon.damage * klassenFaktor * this.#statuses.damageMultiplier(shooterId);
       this.#world.getSystem('damage')?.applyDamage(this.#world, target, damage, shooterId, {
         damageType: damageTypeId(weapon.damageType),
       });
@@ -1558,6 +1572,28 @@ export class MatchController {
     }
 
     return { hitX: result.hitX, hitY: result.hitY, hit: result.hit, target };
+  }
+
+  /**
+   * Klassenfaktor eines Schützen für den Schadensvertrag der Waffenfassung 17.
+   *
+   * Das Profil kommt aus `combatProfile()` (Klasse × Sidegrade, in Altreplays
+   * zusätzlich der Archetyp) — dieselbe Quelle, aus der `shooting.js` den
+   * Projektilschaden bildet. `shooterId === null` (Vorstrahl eines Anflugschlags,
+   * Weltwirkung) ist neutral: Es gibt keinen Schützen, also keinen Klassenfaktor.
+   *
+   * @param {number|null} shooterId
+   * @returns {number}
+   */
+  #klassenSchadensFaktor(shooterId) {
+    if (shooterId === null || shooterId === undefined) return 1;
+    const player = this.#players.find(entry => entry.entityId === shooterId);
+    const profil = combatProfile(
+      klassenKennung(player?.classId ?? 0, this.klassen),
+      player?.archetypeId ?? 0,
+      player?.sidegradeId ?? null, this.klassen,
+    );
+    return profil.damageMultiplier;
   }
 
   /**

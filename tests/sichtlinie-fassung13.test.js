@@ -14,7 +14,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { MatchController } from '../src/engine/match.js';
-import { WAFFEN_MINE, WAFFEN_SICHT, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER, WAFFEN_WIND } from '../src/shared/config/waffen-fassung.js';
+import { WAFFEN_KLASSE, WAFFEN_MINE, WAFFEN_SICHT, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER, WAFFEN_WIND } from '../src/shared/config/waffen-fassung.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
 
 /** Flache Karte, Schütze bei x=1000, Ziel 90 px rechts, eine Wand 6 px hinter dem Ziel (oder davor). */
@@ -42,8 +42,9 @@ function schiesse({ match, schuetze }, waffeId) {
   return match.fire(schuetze, 0, 100, waffeId);
 }
 
-test('Standard ist Waffenfassung 16 (W01-Trefferfenster), Fassung 14 bleibt der AERO-Windfaktor', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_TREFFER);
+test('Standard ist Waffenfassung 17 (BAL-02 Klassenfaktor im Strahl), Fassung 14 bleibt der AERO-Windfaktor', () => {
+  assert.equal(WAFFEN_STANDARD, WAFFEN_KLASSE);
+  assert.equal(WAFFEN_KLASSE, WAFFEN_TREFFER + 1);
   assert.equal(WAFFEN_TREFFER, WAFFEN_TEMPO + 1);
   assert.equal(WAFFEN_TEMPO, WAFFEN_WIND + 1);
   assert.equal(WAFFEN_WIND, WAFFEN_SICHT + 1);
