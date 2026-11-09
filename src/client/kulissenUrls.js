@@ -9,6 +9,11 @@
  * weniger Bytes bei SSIM-belegter Gleichwertigkeit, Messung in `docs/ladezeit.md`,
  * Umwandlung mit `scripts/kulissen-webp.py`.
  *
+ * Die native 4K-Fassung liegt unter `assets/backdrops-4k/` und trägt die Breite im
+ * Dateinamen (`maritime_calm_day-2560.webp`, `…-3840.webp`). Der Ordner ist bis zur
+ * Bildproduktion leer; fehlt eine Fassung, fällt der Speicher auf die Basisdatei
+ * zurück (`kulissenQuelle.js`).
+ *
  * @module kulissenUrls
  */
 
@@ -28,9 +33,31 @@ const BACKDROP_URLS_NEU = import.meta.glob('./assets/backdrops-neu/*.webp', {
   import: 'default',
 });
 
+/** Native Großfassungen (1920/2560/3840), sobald produziert. */
+const BACKDROP_URLS_4K = import.meta.glob('./assets/backdrops-4k/*.webp', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+
 /** URL einer neuen Kulisse (Dateiname aus `BACKDROPS_NEU`), sonst `undefined`. */
 export function kulissenUrlNeu(datei) {
   return BACKDROP_URLS_NEU[`./assets/backdrops-neu/${datei}`];
+}
+
+/** URL einer 4K-Fassung (Dateiname mit Breite), sonst `undefined`. */
+export function kulissenUrl4k(datei) {
+  return BACKDROP_URLS_4K[`./assets/backdrops-4k/${datei}`];
+}
+
+/**
+ * Eine URL für einen Kulissennamen, in fester Reihenfolge: klassische Kulissen,
+ * neue Biome, native Großfassung. `undefined`, wenn keine Datei existiert.
+ */
+export function kulissenUrl(datei) {
+  return BACKDROP_URLS[`./assets/backdrops/${datei}`]
+    ?? kulissenUrlNeu(datei)
+    ?? kulissenUrl4k(datei);
 }
 
 export default BACKDROP_URLS;

@@ -14,8 +14,9 @@
  * @module kulisseUndWasser
  */
 import { WATER_SCALE } from '../engine/match.js';
-import { BACKDROP_URLS, kulissenUrlNeu } from './kulissenUrls.js';
+import { kulissenUrl } from './kulissenUrls.js';
 import { coverZuschnitt, glutStaerke } from './kulissenZuschnitt.js';
+import { lichtFuerKulisse, saettigungsFaktorAusMessung } from './kulissenLicht.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import { zeichneWetterHinten } from './wetterLicht.js';
 import { SPIEGEL_TIEFE, spiegelFarbe, spiegelGewicht } from './wasserSpiegel.js';
@@ -89,7 +90,7 @@ function zeichneKulisse(r) {
   /** Lädt die Hochkant-Fassung der Kulisse einmalig und nur bei Bedarf. */
 function ladeHochBild(r, backdrop) {
     if (r.backdropHochBild?.key === backdrop.key) return;
-    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.fileHoch}`] ?? kulissenUrlNeu(backdrop.fileHoch);
+    const url = kulissenUrl(backdrop.fileHoch);
     const eintrag = { key: backdrop.key, bild: null, bereit: false };
     r.backdropHochBild = eintrag;
     if (!url) return;
@@ -118,16 +119,16 @@ function ladeHochBild(r, backdrop) {
  * Sättigung liegt zwischen 0,28 (Kloster) und 0,87 (abstrakt-psychedelisch).
  * Die hohen Werte konkurrieren mit dem Gelände. Deshalb wird NICHT pauschal
  * entsättigt (das macht Fotokulissen tot), sondern nur so weit, bis der Deckel
- * erreicht ist — Faktor 1,0 für Bilder, die schon darunter liegen.
+ * der Lichtklasse erreicht ist — Faktor 1,0 für Bilder, die schon darunter
+ * liegen (A19, siehe `kulissenLicht.js`).
  */
-const SAETTIGUNG_DECKEL = 0.45;
-const SAETTIGUNGS_FAKTOR = new WeakMap();
+const SAETTIGUNG_MESSUNG = new WeakMap();
 
-/** Sättigungsfaktor je Bild, einmal aus einer 64×36-Probe gerechnet. */
-function saettigungsFaktor(img) {
-  const bekannt = SAETTIGUNGS_FAKTOR.get(img);
+/** Mittlere Sättigung je Bild (0…1), einmal aus einer 64×36-Probe gerechnet. */
+function saettigungsMessung(img) {
+  const bekannt = SAETTIGUNG_MESSUNG.get(img);
   if (bekannt !== undefined) return bekannt;
-  let faktor = 1;
+  let s = 0;
   try {
     const probe = document.createElement('canvas');
     probe.width = 64;
@@ -148,34 +149,36 @@ function saettigungsFaktor(img) {
         summe += (max - min) / max;
         n += 1;
       }
-      const s = n > 0 ? summe / n : 0;
-      if (s > SAETTIGUNG_DECKEL) faktor = SAETTIGUNG_DECKEL / s;
+      s = n > 0 ? summe / n : 0;
     }
   } catch {
     // Ohne Bilddaten (z. B. Canvas gesperrt) bleibt die Kulisse unverändert.
-    faktor = 1;
+    s = 0;
   }
-  SAETTIGUNGS_FAKTOR.set(img, faktor);
-  return faktor;
+  SAETTIGUNG_MESSUNG.set(img, s);
+  return s;
 }
 
 /**
  * Baut (und merkt sich) die fertige Kulissenfläche: Zuschnitt für Stimmungsbilder,
- * Sättigungsdeckel (LOOK-2), Glut der Ragnarök-Stimmungen und Abdunkelung nach unten.
- * Neu gebaut wird nur bei anderem Bild, anderer Größe oder anderer Glutstufe.
+ * Sättigungsdeckel der Lichtklasse (LOOK-2/A19), Glut der Ragnarök-Stimmungen und
+ * Abdunkelung nach unten.
+ * Neu gebaut wird nur bei anderem Bild, anderer Größe, Glutstufe oder Lichtklasse.
  *
  * @param {object} r Renderer (Breite, Höhe, Cache)
  * @param {HTMLImageElement} img geladene Kulisse
  * @param {boolean} stimmung Stimmungsbild (cover-Zuschnitt) oder Vollbild
  * @param {number} glut Glutstärke 0…1
+ * @param {object} licht Lichtklasse aus `lichtFuerKulisse`
  * @returns {{canvas: HTMLCanvasElement, breite: number}}
  */
-function kulissenBild(r, img, stimmung, glut) {
+function kulissenBild(r, img, stimmung, glut, licht) {
     const w = r.width;
     const h = r.height;
     const glutKey = glut > 0 ? glut.toFixed(3) : '';
     const c = r.kulissenCache;
-    if (c && c.img === img && c.w === w && c.h === h && c.stimmung === stimmung && c.glutKey === glutKey) return c;
+    if (c && c.img === img && c.w === w && c.h === h && c.stimmung === stimmung
+      && c.glutKey === glutKey && c.lichtKlasse === licht.klasse) return c;
 
     const bw = img.naturalWidth || img.width;
     const bh = img.naturalHeight || img.height;
@@ -185,8 +188,8 @@ function kulissenBild(r, img, stimmung, glut) {
     canvas.width = breite;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
-    // LOOK-2: Kulisse hinter das Gelände legen (Sättigungsdeckel, s. o.).
-    const saettigung = saettigungsFaktor(img);
+    // LOOK-2: Kulisse hinter das Gelände legen (Sättigungsdeckel der Lichtklasse).
+    const saettigung = saettigungsFaktorAusMessung(saettigungsMessung(img), licht.saettigungDeckel);
     if (saettigung < 1) ctx.filter = `saturate(${saettigung.toFixed(3)})`;
     if (z) ctx.drawImage(img, 0, z.sy, bw, z.sh, 0, 0, breite, h);
     else ctx.drawImage(img, 0, 0, w, h);
@@ -196,21 +199,22 @@ function kulissenBild(r, img, stimmung, glut) {
       ctx.fillRect(0, 0, breite, h);
     }
     /*
-     * Abdunkelung nach unten.
+     * Abdunkelung nach unten (A19, je Biom kalibriert).
      *
      * Ohne sie verschwinden Figuren, Lebensbalken und Munitionsanzeige vor
      * hellen Kulissen (Schnee, Wüste, Sonnenuntergang) — das Spiel wäre dort
      * spielbar, aber nicht lesbar. Der Verlauf ist unten am stärksten, weil
      * dort die Figuren stehen, und oben fast durchsichtig, damit die Kulisse
-     * sichtbar bleibt.
+     * sichtbar bleibt. Schnee und Wüste dunkeln stärker ab, Nacht weniger.
      */
-    const daempfung = ctx.createLinearGradient(0, h * 0.35, 0, h);
-    daempfung.addColorStop(0, 'rgba(8,14,24,0)');
-    daempfung.addColorStop(0.55, 'rgba(8,14,24,0.28)');
-    daempfung.addColorStop(1, 'rgba(8,14,24,0.55)');
+    const d = licht.daempfung;
+    const daempfung = ctx.createLinearGradient(0, h * d.start, 0, h);
+    for (const stufe of d.stops) {
+      daempfung.addColorStop(stufe.offset, `rgba(8,14,24,${stufe.alpha})`);
+    }
     ctx.fillStyle = daempfung;
     ctx.fillRect(0, 0, breite, h);
-    return (r.kulissenCache = { img, w, h, stimmung, glutKey, canvas, breite });
+    return (r.kulissenCache = { img, w, h, stimmung, glutKey, lichtKlasse: licht.klasse, canvas, breite });
   }
 
 export function zeichneHimmel(r) {
@@ -246,7 +250,8 @@ export function zeichneHimmel(r) {
         if (String(r.backdrop.id).includes('ragnarok')) glut = glutStaerke(r.rundeFuerKulisse);
       }
       // Zuschnitt, Glut und Abdunkelung sind je Bild gleich: einmal vorgerechnet, je Bild nur ein 1:1-Ausschnitt.
-      const fertig = kulissenBild(r, img, stimmung, glut);
+      const licht = lichtFuerKulisse(r.backdrop, r.scenery);
+      const fertig = kulissenBild(r, img, stimmung, glut, licht);
       const sx = Math.round(Math.max(0, fertig.breite - r.width) * Math.min(1, Math.max(0, pan)));
       r.ctx.drawImage(fertig.canvas, sx, 0, r.width, r.height, 0, 0, r.width, r.height);
       r.kulissenSx = sx;

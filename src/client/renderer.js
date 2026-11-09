@@ -93,20 +93,18 @@ import { LOOT_DROP_RULES } from '../shared/config/loot.js';
 import { KISTE_KANTE } from '../shared/config/kisten.js';
 
 /**
- * Kulissen-URLs, von Vite aufgelöst.
+ * Kulissen-URLs kommen aus `kulissenUrls.js` (Vite-Glob).
  *
  * `import.meta.glob` statt eines selbstgebauten Pfades: Vite vergibt im Build
  * einen Hash-Namen und legt die Datei unter `/assets/` ab. Ein hart notierter
  * Pfad wie `assets/backdrops/maritime_calm_day.webp` würde im Build ins Leere
  * zeigen — genau der Fehler, an dem die Waffen-Icons schon einmal scheiterten.
  *
- * Der Pfad ist RELATIV ZU DIESER DATEI (`./assets/...`, nicht `../assets/...`):
- * `../` führte von `src/client/` nach `src/` und damit an den Bildern vorbei. Das
- * Glob-Muster liefert dann stillschweigend eine leere Liste — kein Fehler, nur
- * ein leerer Hintergrund. Der Selbsttest in `tests/backdrops.test.js` prüft die
- * Anzahl deshalb gegen die Dateien auf der Platte.
+ * Die Schlüsselbildung liegt seit A18 an EINER Stelle (`kulissenUrl`); der
+ * Selbsttest in `tests/backdrops.test.js` prüft die Präfixe aller Globs.
  */
-import { BACKDROP_URLS, kulissenUrlNeu } from './kulissenUrls.js';
+import { kulissenUrl } from './kulissenUrls.js';
+import { KulissenBildspeicher, waehleKulissenBreite } from './kulissenQuelle.js';
 import { zeichneSeil } from './seilZeichnen.js';
 
 /*
@@ -262,6 +260,9 @@ export class Renderer {
     this.backdropKey = null;
     /** true, sobald das Bild gezeichnet werden kann. */
     this.backdropReady = false;
+    /** Quellbreite der gewählten Kulisse (1280/1920/2560/3840) und ihr Bildspeicher. */
+    this.backdropBreite = 1280;
+    this.kulissenBilder = null;
     /**
      * Bodenfarben der aktuellen Kulisse.
      *
@@ -347,7 +348,16 @@ export class Renderer {
   #beobachteAnzeigegroesse() {
     this.#liesAnzeigefaktor();
     if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(() => this.#liesAnzeigefaktor()).observe(this.canvas);
+      new ResizeObserver(() => {
+        this.#liesAnzeigefaktor();
+        const sichtbar = this.canvas.clientWidth || this.width;
+        // Fenster deutlich verändert: Quellstufe neu wählen (A18). 32 px Hysterese
+        // gegen Layout-Zittern; das alte Bild bleibt bis zum neuen stehen.
+        if (this.backdrop && this.backdropSichtbar && Math.abs(sichtbar - this.backdropSichtbar) > 32) {
+          this.backdropKey = null;
+          this.setBackdrop(this.backdrop);
+        }
+      }).observe(this.canvas);
     }
   }
 
@@ -388,44 +398,43 @@ export class Renderer {
       this.backdrop = null;
       this.backdropKey = null;
       this.backdropReady = false;
+      this.kulissenBilder?.leere();
+      this.kulissenCache = null;
       this.palette = DEFAULT_TERRAIN_PALETTE;
       return;
     }
     if (backdrop.key === this.backdropKey) return;
 
     this.backdropKey = backdrop.key;
-    // Der Schlüssel muss dem des Glob-Musters entsprechen: `./assets/backdrops/...`
-    // — nicht `../`, und nicht nur der Dateiname. Bei einem abweichenden
-    // Schlüssel bleibt die Liste leer und es wird still kein Bild geladen.
-    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.file}`] ?? kulissenUrlNeu(backdrop.file);
-    if (!url) {
-      // Fehlt die Datei, ist der Katalog und die Ablage auseinandergelaufen.
-      // Der Farbverlauf bleibt stehen, damit das Spiel spielbar bleibt.
-      this.backdrop = null;
-      this.backdropReady = false;
-      const fehler = new Error(`Kulisse nicht gefunden: ${backdrop.file}`);
-      onError?.(fehler);
-      return;
-    }
-
     this.backdrop = backdrop;
     this.backdropReady = false;
+    // Die zusammengesetzte Fläche (Zuschnitt, Sättigung, Verlauf) gehört zur alten Kulisse.
+    this.kulissenCache = null;
     // Die Bodenfarbe gilt sofort, nicht erst nach dem Laden des Bildes: sonst
     // zeigte der Boden kurz die vorige Farbe.
     this.palette = paletteFor(backdrop);
-    const bild = new Image();
-    bild.decoding = 'async';
-    bild.onload = () => {
-      // Nur übernehmen, wenn inzwischen keine andere Kulisse gesetzt wurde.
-      if (this.backdropKey !== backdrop.key) return;
-      this.backdropImage = bild;
-      this.backdropReady = true;
-    };
-    bild.onerror = () => {
-      this.backdropReady = false;
-      onError?.(new Error(`Kulisse lädt nicht: ${backdrop.file}`));
-    };
-    bild.src = url;
+    // Quellbreite nach sichtbarer Größe, DPR-Deckel und Geräteleistung (A18).
+    const sichtbareBreite = this.canvas.clientWidth || this.width;
+    this.backdropSichtbar = sichtbareBreite;
+    this.backdropBreite = waehleKulissenBreite({
+      sichtbareBreite,
+      dpr: globalThis.devicePixelRatio,
+      leistung: this.leistung ?? {},
+    }).breite;
+    this.kulissenBilder ??= new KulissenBildspeicher({ urlFuer: kulissenUrl });
+    this.kulissenBilder.hole(backdrop, this.backdropBreite, {
+      onBild: (bild, datei) => {
+        // Nur übernehmen, wenn inzwischen keine andere Kulisse gesetzt wurde.
+        if (this.backdropKey !== backdrop.key) return;
+        this.backdropImage = bild;
+        this.backdropDatei = datei;
+        this.backdropReady = true;
+      },
+      onFehler: () => {
+        this.backdropReady = false;
+        onError?.(new Error(`Kulisse nicht gefunden oder lädt nicht: ${backdrop.file}`));
+      },
+    });
   }
 
   /**
