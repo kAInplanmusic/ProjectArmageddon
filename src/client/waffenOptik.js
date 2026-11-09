@@ -164,12 +164,23 @@ const SCHWEIF_JE_GESCHOSS = Object.freeze({
 /** Alle Schweifarten. */
 export const SCHWEIF_ARTEN = Object.freeze(['linie', 'rauch', 'duenn', 'leuchtspur', 'staub', 'flamme', 'tropfen', 'frost', 'funkeln']);
 
+/** Eigene Spur der Signaturgeschosse (W13): Form und Schweif sollen zusammengehören. */
+const SIGNATUR_SCHWEIF = Object.freeze({ daemon: 'rauch', phoenix: 'flamme', drache: 'funkeln' });
+
 /**
  * Schweifart eines Geschosses: aus seiner Geschossart, bei Wurfdingen (`ding`) aus der Familie.
  * @param {string|undefined} geschossArt - `projectile.art` im Manifest
  * @param {object|null} waffe
  */
 export function schweifArt(geschossArt, waffe) {
+  /*
+   * Signaturgeschosse (W13) behalten ihre eigene Spur, auch wenn ihre Familie
+   * „Feuer" ist: Der Feuerdämon zieht Rauch, der Phönix eine Flamme, der
+   * Weltendrache Funken. Ohne diese Ausnahme fielen alle drei auf `flamme` —
+   * dieselbe Spur bei drei verschiedenen Formen.
+   */
+  const signatur = SIGNATUR_SCHWEIF[geschossArt];
+  if (signatur) return signatur;
   const familie = familieVonWaffe(waffe);
   if (familie === 'feuer') return 'flamme';
   if (familie === 'eis') return 'frost';

@@ -3152,10 +3152,10 @@
     "source": "geometrie"
    },
    "projectile": {
-    "art": "feuer",
+    "art": "phoenix",
     "size": {
-     "w": 28,
-     "h": 16
+     "w": 30,
+     "h": 28
     },
     "angle": 0,
     "spin": false,
@@ -4359,10 +4359,10 @@
     "source": "geometrie"
    },
    "projectile": {
-    "art": "feuer",
+    "art": "daemon",
     "size": {
-     "w": 28,
-     "h": 16
+     "w": 29,
+     "h": 30
     },
     "angle": 0,
     "spin": false,
@@ -9797,10 +9797,10 @@
     "source": "geometrie"
    },
    "projectile": {
-    "art": "feuer",
+    "art": "drache",
     "size": {
-     "w": 28,
-     "h": 16
+     "w": 29,
+     "h": 19
     },
     "angle": 0,
     "spin": false,

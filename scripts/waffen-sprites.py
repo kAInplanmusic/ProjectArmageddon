@@ -470,17 +470,17 @@ GESCHOSS_ART = {
     "pa_022": "plasma", "pa_033": "zauber", "pa_034": "zauber", "pa_035": "plasma",
     "pa_036": "rakete", "pa_037": "rakete", "pa_038": "ding", "pa_039": "granate",
     "pa_040": "kugel", "pa_041": "rakete", "pa_042": "rakete", "pa_043": "granate",
-    "pa_044": "feuer", "pa_045": "rakete", "pa_046": "ding", "pa_047": "ding",
+    "pa_044": "phoenix", "pa_045": "rakete", "pa_046": "ding", "pa_047": "ding",
     "pa_048": "ding", "pa_049": "ding", "pa_050": "ding", "pa_051": "ding",
     "pa_052": "ding", "pa_053": "ding", "pa_054": "kugel", "pa_055": "kugel",
     "pa_056": "kugel", "pa_057": "kugel", "pa_058": "pfeil", "pa_059": "pfeil",
-    "pa_060": "kugel", "pa_061": "feuer", "pa_062": "feuer", "pa_063": "wasser",
+    "pa_060": "kugel", "pa_061": "daemon", "pa_062": "feuer", "pa_063": "wasser",
     "pa_064": "stein", "pa_065": "ding", "pa_066": "granate", "pa_067": "gift",
     "pa_068": "plasma", "pa_069": "rakete", "pa_070": "gift", "pa_071": "eis",
     "pa_072": "feuer", "pa_073": "gift", "pa_074": "zauber", "pa_075": "zauber",
     "pa_077": "zauber", "pa_078": "zauber", "pa_080": "zauber", "pa_082": "zauber",
     "pa_104": "plasma", "pa_133": "ding", "pa_140": "plasma", "pa_142": "zauber",
-    "pa_144": "ding", "pa_145": "stein", "pa_146": "ding", "pa_147": "feuer",
+    "pa_144": "ding", "pa_145": "stein", "pa_146": "ding", "pa_147": "drache",
     "pa_150": "zauber",
     # Platzierungs-/Selbstwirkungs-Waffen mit Projektil-Lieferung: Fluggeschoss statt Rueckfallkreis
     "pa_032": "rakete", "pa_076": "zauber", "pa_079": "zauber", "pa_105": "zauber", "pa_124": "plasma",
@@ -533,6 +533,37 @@ def geschoss_generiert(art, farbe):
         d.polygon([(2 * s, 16 * s), (11 * s, 9 * s), (22 * s, 8 * s), (30 * s, 16 * s),
                    (22 * s, 24 * s), (11 * s, 23 * s)], fill=(255, 120, 20, 230))
         d.polygon([(9 * s, 16 * s), (16 * s, 12 * s), (25 * s, 16 * s), (16 * s, 20 * s)], fill=(255, 220, 80, 255))
+    elif art == "daemon":
+        # Gehoernter Daemonenkopf (W13): eigene Silhouette fuer den Feuerdaemon.
+        # Breiter Schaedel mit zwei langen Hoernern, gluehenden Augen und Glutschweif.
+        d.polygon([(1 * s, 16 * s), (8 * s, 11 * s), (8 * s, 21 * s)], fill=(255, 130, 30, 200))
+        d.polygon([(13 * s, 11 * s), (5 * s, 1 * s), (17 * s, 7 * s)], fill=(48, 12, 12, 255))
+        d.polygon([(13 * s, 21 * s), (5 * s, 31 * s), (17 * s, 25 * s)], fill=(48, 12, 12, 255))
+        ell(10, 8, 30, 24, (48, 12, 12, 255))
+        ell(11, 9, 29, 23, (150, 40, 34, 255))
+        ell(14, 11, 19, 16, (255, 222, 90, 255))
+        ell(21, 11, 26, 16, (255, 222, 90, 255))
+        d.rectangle((15 * s, 19 * s, 25 * s, 21 * s), fill=(40, 10, 10, 255))
+    elif art == "phoenix":
+        # Feuervogel (W13): aufgestellte und gesenkte Schwinge, langer Schweif, Schnabel.
+        d.polygon([(1 * s, 16 * s), (8 * s, 11 * s), (6 * s, 16 * s), (8 * s, 21 * s)], fill=(255, 226, 120, 235))
+        d.polygon([(12 * s, 14 * s), (7 * s, 2 * s), (19 * s, 10 * s)], fill=c + (245,))
+        d.polygon([(12 * s, 18 * s), (7 * s, 30 * s), (19 * s, 22 * s)], fill=c + (245,))
+        ell(11, 12, 23, 21, (236, 104, 26, 255))
+        d.line((21 * s, 12 * s, 23 * s, 12 * s), fill=(90, 34, 10, 255), width=2 * s)
+        ell(22, 11, 28, 18, (246, 140, 38, 255))
+        d.polygon([(27 * s, 12 * s), (31 * s, 15 * s), (27 * s, 17 * s)], fill=(255, 236, 140, 255))
+        ell(24, 12, 26, 14, (255, 255, 235, 255))
+    elif art == "drache":
+        # Weltendrache (W13): langgestreckter Kopf mit Schnauze, Nackenkamm und Fluegel.
+        d.polygon([(1 * s, 16 * s), (10 * s, 12 * s), (10 * s, 20 * s)], fill=(40, 88, 50, 220))
+        d.polygon([(9 * s, 15 * s), (4 * s, 4 * s), (16 * s, 11 * s)], fill=(52, 116, 66, 240))
+        ell(9, 11, 31, 22, (46, 26, 26, 255))
+        ell(10, 12, 30, 21, (70, 146, 84, 255))
+        d.polygon([(26 * s, 13 * s), (31 * s, 16 * s), (26 * s, 19 * s)], fill=(92, 172, 100, 255))
+        d.polygon([(15 * s, 13 * s), (18 * s, 2 * s), (21 * s, 13 * s)], fill=(198, 222, 120, 255))
+        d.polygon([(20 * s, 13 * s), (23 * s, 6 * s), (25 * s, 13 * s)], fill=(198, 222, 120, 255))
+        ell(24, 14, 28, 18, (255, 236, 110, 255))
     elif art == "gift":
         ell(6, 8, 26, 24, (110, 200, 50, 235))
         ell(10, 10, 16, 15, (200, 255, 140, 255))
