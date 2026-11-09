@@ -1,0 +1,2213 @@
+{
+ "version": 1,
+ "stand": "BAL-09",
+ "waffen": {
+  "pa_012": {
+   "name": "Katana",
+   "rollen": {
+    "menue64": {
+     "modus": "aus128",
+     "grund": "64er-Menuebild traegt eine graue Rundrechteckplatte; 128er Zelle ist bereits freigestellt.",
+     "datei": "src/client/assets/icons/IMG_9047_icon.png",
+     "zelle": null,
+     "entferntePixel": 2730,
+     "bboxVorher": [
+      1,
+      1,
+      62,
+      62
+     ],
+     "bboxNachher": [
+      2,
+      3,
+      60,
+      60
+     ],
+     "kantenVorher": 0.968,
+     "kantenNachher": 0.0,
+     "komponentenVorher": [
+      {
+       "px": 3779,
+       "bbox": [
+        1,
+        1,
+        62,
+        62
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 443,
+       "bbox": [
+        3,
+        4,
+        57,
+        55
+       ]
+      },
+      {
+       "px": 232,
+       "bbox": [
+        12,
+        29,
+        35,
+        31
+       ]
+      }
+     ],
+     "hashVorher": "f1bd509d03e58ceb059f5c98cf37736dabb69b5f44332c7a6fa8a6c9b097574a",
+     "hashNachher": "9344fe266be42fb29a9aab98faefbb495fe6d909044307b4ec0725339916b329",
+     "geaendert": true,
+     "dateiHashNachher": "35387e3a4f939e0ee6a378153f90c449a50a98c310e9cc3e07b59282485990de"
+    }
+   },
+   "geaendert": true
+  },
+  "pa_050": {
+   "name": "Doppelkopfaxt",
+   "rollen": {
+    "menue64": {
+     "modus": "aus128",
+     "grund": "weisser Plattenhintergrund im 64er-Bild, Handatlas freigestellt.",
+     "datei": "src/client/assets/icons/IMG_9092_icon.png",
+     "zelle": null,
+     "entferntePixel": 1515,
+     "bboxVorher": [
+      2,
+      2,
+      61,
+      61
+     ],
+     "bboxNachher": [
+      2,
+      2,
+      60,
+      60
+     ],
+     "kantenVorher": 1.0,
+     "kantenNachher": 0.0,
+     "komponentenVorher": [
+      {
+       "px": 3456,
+       "bbox": [
+        2,
+        2,
+        60,
+        60
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 1512,
+       "bbox": [
+        3,
+        3,
+        57,
+        57
+       ]
+      }
+     ],
+     "hashVorher": "68cf8209531586525fff647e05ee5c905fc5866a7d6e856fe49c72737ecbeee2",
+     "hashNachher": "1611477b12daf4a8d20a732d38526db8f1adbbd6a21634206effa7c01d872f6a",
+     "geaendert": true,
+     "dateiHashNachher": "ceeee03f0ca2f2359d9d22ba8054da985519e6902362086f15daa2524c7fc782"
+    }
+   },
+   "geaendert": true
+  },
+  "pa_054": {
+   "name": "Schrotflinte",
+   "rollen": {
+    "menue64": {
+     "modus": "aus128",
+     "grund": "braune Rechteckflaeche im 64er-Bild.",
+     "datei": "src/client/assets/icons/IMG_9096_icon.png",
+     "zelle": null,
+     "entferntePixel": 2003,
+     "bboxVorher": [
+      3,
+      3,
+      60,
+      60
+     ],
+     "bboxNachher": [
+      2,
+      4,
+      60,
+      58
+     ],
+     "kantenVorher": 0.897,
+     "kantenNachher": 0.034,
+     "komponentenVorher": [
+      {
+       "px": 3225,
+       "bbox": [
+        3,
+        3,
+        58,
+        58
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 938,
+       "bbox": [
+        3,
+        5,
+        57,
+        54
+       ]
+      }
+     ],
+     "hashVorher": "443a0639cc796e11018f51e70f07bb844532a18c8921fc1f7c97fae0ba9a8e96",
+     "hashNachher": "cebde1dfcb71e0e03e7814a67ebe9c45062cea728c7ec287b7dd299685a5edc8",
+     "geaendert": true,
+     "dateiHashNachher": "c83a611edd624ca587be9882bf7ca21c57cf3d9d95cbcd505a2cc0ccebc335a3"
+    }
+   },
+   "geaendert": true
+  },
+  "pa_066": {
+   "name": "Haubitze",
+   "rollen": {
+    "icon": {
+     "modus": "rahmen",
+     "grund": "heller Zierrahmen um die Zelle; Rohr und Lafette bleiben.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 128,
+      "y": 512,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 1980,
+     "bboxVorher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "bboxNachher": [
+      16,
+      6,
+      114,
+      118
+     ],
+     "kantenVorher": 0.929,
+     "kantenNachher": 0.081,
+     "komponentenVorher": [
+      {
+       "px": 7799,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 6050,
+       "bbox": [
+        17,
+        11,
+        97,
+        103
+       ]
+      }
+     ],
+     "hashVorher": "8b92e0dbd226dcfb81cbe9a9aebbd4212e00729dfcd82212f8af7959b7ee65f4",
+     "hashNachher": "95290d0447e00982b4b7ba657209e0a1a56623d47286fbe4773993c653442880",
+     "geaendert": true,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "held": {
+     "modus": "rahmen",
+     "grund": "Rahmenlinie auch im Handatlas.",
+     "datei": "src/client/assets/weapon-sprites/atlas_elemental.png",
+     "zelle": {
+      "x": 640,
+      "y": 0,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 2357,
+     "bboxVorher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "bboxNachher": [
+      16,
+      13,
+      111,
+      111
+     ],
+     "kantenVorher": 0.929,
+     "kantenNachher": 0.042,
+     "komponentenVorher": [
+      {
+       "px": 7748,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 5952,
+       "bbox": [
+        17,
+        13,
+        93,
+        99
+       ]
+      }
+     ],
+     "hashVorher": "146c97537307a6c8637b497e645a7bb7ecfdc3efc819a3a1d50c0bf20cd0a3d8",
+     "hashNachher": "f23fdcd5f1b42e2380bfa7808cbde1a7473a13d5ad4cb44b3de302141c95c356",
+     "geaendert": true,
+     "dateiHashNachher": "b8294bd135c0ec92de5fcc8b8a31feda1ea82d285eb9a977a62ae08cde087e0b"
+    },
+    "silhouette": {
+     "modus": "heldmaske",
+     "grund": "Silhouette muss dieselbe Deckflaeche wie das Handbild haben.",
+     "datei": "src/client/assets/weapon-sprites/atlas_elemental.png",
+     "zelle": {
+      "x": 640,
+      "y": 384,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 2357,
+     "bboxVorher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "bboxNachher": [
+      16,
+      13,
+      111,
+      111
+     ],
+     "kantenVorher": 0.929,
+     "kantenNachher": 0.042,
+     "komponentenVorher": [
+      {
+       "px": 7748,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 5952,
+       "bbox": [
+        17,
+        13,
+        93,
+        99
+       ]
+      }
+     ],
+     "hashVorher": "363fa63c512169386d53fe3e54aa641bfcdebac991b1b38aaa60a190273cca89",
+     "hashNachher": "ec92158be605457c49814803b04ad4be85b872c5c38be2ef63090d00ddec3904",
+     "geaendert": true,
+     "dateiHashNachher": "b8294bd135c0ec92de5fcc8b8a31feda1ea82d285eb9a977a62ae08cde087e0b"
+    }
+   },
+   "geaendert": true
+  },
+  "pa_075": {
+   "name": "Tornado",
+   "rollen": {
+    "menue64": {
+     "modus": "aus128",
+     "grund": "weisser Plattenhintergrund im 64er-Bild.",
+     "datei": "src/client/assets/icons/IMG_9130_icon.png",
+     "zelle": null,
+     "entferntePixel": 799,
+     "bboxVorher": [
+      2,
+      2,
+      61,
+      61
+     ],
+     "bboxNachher": [
+      4,
+      2,
+      58,
+      60
+     ],
+     "kantenVorher": 0.9,
+     "kantenNachher": 0.0,
+     "komponentenVorher": [
+      {
+       "px": 3443,
+       "bbox": [
+        2,
+        2,
+        60,
+        60
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 2164,
+       "bbox": [
+        5,
+        3,
+        53,
+        57
+       ]
+      }
+     ],
+     "hashVorher": "fcb0ae39f3efd5c3da9a1b8e3c2e93d5ad3289b04a15dfb07d226b6bb351f636",
+     "hashNachher": "7c976013152a09501459b5d634e8bc77df3d00c71716ff207584dcd4b7f889c2",
+     "geaendert": true,
+     "dateiHashNachher": "c3964216d525083310b104fbb7129d22228484e6974115432d119492fdf6461a"
+    }
+   },
+   "geaendert": true
+  },
+  "pa_080": {
+   "name": "Psionischer Tentakel",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "Motiv ist eine organische Flaeche ohne Rechteckrahmen; Zelle bereits freigestellt.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 1920,
+      "y": 512,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      6,
+      7,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      6,
+      7,
+      120,
+      120
+     ],
+     "kantenVorher": 0.351,
+     "kantenNachher": 0.351,
+     "komponentenVorher": [
+      {
+       "px": 11900,
+       "bbox": [
+        6,
+        7,
+        115,
+        114
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 11900,
+       "bbox": [
+        6,
+        7,
+        115,
+        114
+       ]
+      }
+     ],
+     "hashVorher": "929ba3d26ae3ff3096b903823ab5b734045339f37b06cafc724cf50f1d3a6f48",
+     "hashNachher": "929ba3d26ae3ff3096b903823ab5b734045339f37b06cafc724cf50f1d3a6f48",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "menue64": {
+     "modus": "keine",
+     "grund": "bereits freigestellt (Alpha 0,34, keine gerade Kante).",
+     "datei": "src/client/assets/icons/IMG_9135_icon.png",
+     "zelle": null,
+     "entferntePixel": 0,
+     "bboxVorher": [
+      11,
+      12,
+      51,
+      52
+     ],
+     "bboxNachher": [
+      11,
+      12,
+      51,
+      52
+     ],
+     "kantenVorher": 0.732,
+     "kantenNachher": 0.732,
+     "komponentenVorher": [
+      {
+       "px": 1541,
+       "bbox": [
+        11,
+        12,
+        41,
+        41
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 1541,
+       "bbox": [
+        11,
+        12,
+        41,
+        41
+       ]
+      }
+     ],
+     "hashVorher": "00ff8d51eb9235279876952186aafe3d6bafa486eca5e04ade57d10508dd1ebf",
+     "hashNachher": "00ff8d51eb9235279876952186aafe3d6bafa486eca5e04ade57d10508dd1ebf",
+     "geaendert": false,
+     "dateiHashNachher": "fca8b24ae9b0f996daea3e01c7d2c2f98b5017bf9510da1cdd91e93684ca0030"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_082": {
+   "name": "Goldene Zauberrolle",
+   "rollen": {
+    "icon": {
+     "modus": "rahmen",
+     "grund": "dunkler Rahmen um die Zelle; Schriftrolle und Muenzen bleiben.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 128,
+      "y": 640,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 2787,
+     "bboxVorher": [
+      6,
+      6,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      13,
+      13,
+      113,
+      113
+     ],
+     "kantenVorher": 0.861,
+     "kantenNachher": 0.05,
+     "komponentenVorher": [
+      {
+       "px": 8634,
+       "bbox": [
+        6,
+        6,
+        115,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 6307,
+       "bbox": [
+        13,
+        13,
+        101,
+        101
+       ]
+      }
+     ],
+     "hashVorher": "b3b476d46ed26ac591eb4b517bf303df317d3c6fbb34a3be4ee305afbfb2c8bc",
+     "hashNachher": "0576a782503be946cd9e00546a1538bb118675de37e115026c23231c9a7e8d85",
+     "geaendert": true,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "menue64": {
+     "modus": "aus128",
+     "grund": "weisse Platte im 64er-Bild.",
+     "datei": "src/client/assets/icons/IMG_9137_icon.png",
+     "zelle": null,
+     "entferntePixel": 389,
+     "bboxVorher": [
+      9,
+      9,
+      54,
+      54
+     ],
+     "bboxNachher": [
+      6,
+      6,
+      57,
+      57
+     ],
+     "kantenVorher": 0.826,
+     "kantenNachher": 0.0,
+     "komponentenVorher": [
+      {
+       "px": 2034,
+       "bbox": [
+        9,
+        9,
+        46,
+        46
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 1528,
+       "bbox": [
+        7,
+        7,
+        49,
+        49
+       ]
+      }
+     ],
+     "hashVorher": "39a9347c2a8eaf13a791e47766c75e3b610b3b6fc14fbba26e25409b2813ffb1",
+     "hashNachher": "68d875716d7ae585a28be523787bcb4debd31a4b8fd8aefb3d6d693847e0cfa8",
+     "geaendert": true,
+     "dateiHashNachher": "7cd489c76bed63fe89e22ad895d6d5c0c91515f6071b9628686acba0e889811a"
+    }
+   },
+   "geaendert": true
+  },
+  "pa_086": {
+   "name": "Windkrieger",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Beschwoerungsszene mit Himmel), Hintergrund ist Teil des Motivs.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 640,
+      "y": 640,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      8,
+      6,
+      118,
+      120
+     ],
+     "bboxNachher": [
+      8,
+      6,
+      118,
+      120
+     ],
+     "kantenVorher": 0.817,
+     "kantenNachher": 0.817,
+     "komponentenVorher": [
+      {
+       "px": 11443,
+       "bbox": [
+        8,
+        6,
+        111,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 11443,
+       "bbox": [
+        8,
+        6,
+        111,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "c4de762b9b298957eacd2558cd25a92a1ad555137c21561d4ff1cb8bda58b704",
+     "hashNachher": "c4de762b9b298957eacd2558cd25a92a1ad555137c21561d4ff1cb8bda58b704",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "held": {
+     "modus": "keine",
+     "grund": "Figur mit Wirbel ist das Motiv selbst.",
+     "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
+     "zelle": {
+      "x": 640,
+      "y": 0,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      9,
+      6,
+      117,
+      120
+     ],
+     "bboxNachher": [
+      9,
+      6,
+      117,
+      120
+     ],
+     "kantenVorher": 0.248,
+     "kantenNachher": 0.248,
+     "komponentenVorher": [
+      {
+       "px": 7058,
+       "bbox": [
+        9,
+        6,
+        99,
+        115
+       ]
+      },
+      {
+       "px": 415,
+       "bbox": [
+        91,
+        21,
+        27,
+        35
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 7058,
+       "bbox": [
+        9,
+        6,
+        99,
+        115
+       ]
+      },
+      {
+       "px": 415,
+       "bbox": [
+        91,
+        21,
+        27,
+        35
+       ]
+      }
+     ],
+     "hashVorher": "e6f973ccb8340e7b33f495d2b73b29a4858a54ab715201e29ea4822d3e4a975f",
+     "hashNachher": "e6f973ccb8340e7b33f495d2b73b29a4858a54ab715201e29ea4822d3e4a975f",
+     "geaendert": false,
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_089": {
+   "name": "Zauberstiefel",
+   "rollen": {
+    "icon": {
+     "modus": "rahmen",
+     "grund": "helle Standlinie und Rahmenreste am unteren Zellrand.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 1024,
+      "y": 640,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 1340,
+     "bboxVorher": [
+      6,
+      8,
+      120,
+      119
+     ],
+     "bboxNachher": [
+      16,
+      10,
+      113,
+      116
+     ],
+     "kantenVorher": 0.913,
+     "kantenNachher": 0.075,
+     "komponentenVorher": [
+      {
+       "px": 8468,
+       "bbox": [
+        6,
+        8,
+        115,
+        112
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 7622,
+       "bbox": [
+        16,
+        10,
+        98,
+        107
+       ]
+      }
+     ],
+     "hashVorher": "3a30bbfbd136b3e795e64dc5e046c057829cbc95c4b9879800ffcf4ef3118b52",
+     "hashNachher": "7402551dcb5e90c139aa3a3874908d2edc749521292c514843702bb28442b11a",
+     "geaendert": true,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "held": {
+     "modus": "rahmen",
+     "grund": "dieselbe Standlinie im Handatlas.",
+     "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
+     "zelle": {
+      "x": 0,
+      "y": 128,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 1652,
+     "bboxVorher": [
+      6,
+      8,
+      120,
+      119
+     ],
+     "bboxNachher": [
+      17,
+      9,
+      112,
+      116
+     ],
+     "kantenVorher": 0.896,
+     "kantenNachher": 0.065,
+     "komponentenVorher": [
+      {
+       "px": 8399,
+       "bbox": [
+        6,
+        8,
+        115,
+        112
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 7430,
+       "bbox": [
+        17,
+        9,
+        96,
+        108
+       ]
+      }
+     ],
+     "hashVorher": "df7659492a5ecf692f4c2411bfd79897fc70cfb52b827337aeb79a295bda368f",
+     "hashNachher": "292b432475f4173a890ed49c6abe54268d091b0705023d82222633662ca6102a",
+     "geaendert": true,
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+    },
+    "silhouette": {
+     "modus": "heldmaske",
+     "grund": "Deckflaeche der Silhouette angleichen.",
+     "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
+     "zelle": {
+      "x": 0,
+      "y": 640,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 1652,
+     "bboxVorher": [
+      6,
+      8,
+      120,
+      119
+     ],
+     "bboxNachher": [
+      17,
+      9,
+      112,
+      116
+     ],
+     "kantenVorher": 0.896,
+     "kantenNachher": 0.065,
+     "komponentenVorher": [
+      {
+       "px": 8399,
+       "bbox": [
+        6,
+        8,
+        115,
+        112
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 7430,
+       "bbox": [
+        17,
+        9,
+        96,
+        108
+       ]
+      }
+     ],
+     "hashVorher": "424f53e4ebb5ab0c7560503babc1c01502fbe9d70139659bff6245406c572f52",
+     "hashNachher": "7e99ebb57091cc0bec7221e240ae6add95c843db29dc4bb87d71e0e7f200d1a4",
+     "geaendert": true,
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+    }
+   },
+   "geaendert": true
+  },
+  "pa_096": {
+   "name": "Mutationselixier",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "Flasche mit eigenem Leuchtsaum, keine gerade Platte; Zelle bereits freigestellt.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 1920,
+      "y": 640,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      28,
+      6,
+      99,
+      120
+     ],
+     "bboxNachher": [
+      28,
+      6,
+      99,
+      120
+     ],
+     "kantenVorher": 0.139,
+     "kantenNachher": 0.139,
+     "komponentenVorher": [
+      {
+       "px": 5845,
+       "bbox": [
+        28,
+        6,
+        72,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 5845,
+       "bbox": [
+        28,
+        6,
+        72,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "06309ba36598821512223ab1267be8fbbbe8f6e60153d20c4c23eef6419a160d",
+     "hashNachher": "06309ba36598821512223ab1267be8fbbbe8f6e60153d20c4c23eef6419a160d",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "held": {
+     "modus": "keine",
+     "grund": "Leuchtsaum gehoert zum Motiv, keine Rechteckkante.",
+     "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
+     "zelle": {
+      "x": 896,
+      "y": 128,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      6,
+      28,
+      120,
+      98
+     ],
+     "bboxNachher": [
+      6,
+      28,
+      120,
+      98
+     ],
+     "kantenVorher": 0.085,
+     "kantenNachher": 0.085,
+     "komponentenVorher": [
+      {
+       "px": 5765,
+       "bbox": [
+        6,
+        28,
+        115,
+        71
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 5765,
+       "bbox": [
+        6,
+        28,
+        115,
+        71
+       ]
+      }
+     ],
+     "hashVorher": "53d2f9526a75dc0e86f9b49e54447b23dce84a1e539229a946704b6bad420f86",
+     "hashNachher": "53d2f9526a75dc0e86f9b49e54447b23dce84a1e539229a946704b6bad420f86",
+     "geaendert": false,
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_101": {
+   "name": "Eisschild",
+   "rollen": {
+    "icon": {
+     "modus": "platte",
+     "grund": "helle Plattenkomponente neben dem Schild (eigene Komponente, kein Waffenteil).",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 512,
+      "y": 768,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 1056,
+     "bboxVorher": [
+      6,
+      7,
+      120,
+      119
+     ],
+     "bboxNachher": [
+      6,
+      7,
+      120,
+      119
+     ],
+     "kantenVorher": 0.858,
+     "kantenNachher": 0.017,
+     "komponentenVorher": [
+      {
+       "px": 6510,
+       "bbox": [
+        22,
+        7,
+        86,
+        103
+       ]
+      },
+      {
+       "px": 1053,
+       "bbox": [
+        6,
+        13,
+        115,
+        107
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 6510,
+       "bbox": [
+        22,
+        7,
+        86,
+        103
+       ]
+      }
+     ],
+     "hashVorher": "6646c311d1b36ab091de7cc961ee613057070c588c0e862f2a6fd07e74961a80",
+     "hashNachher": "e863617a7819cc3535c67cbb8dc18c1dc0d178b60ee953bc9e8f758cf69782b7",
+     "geaendert": true,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "held": {
+     "modus": "platte",
+     "grund": "dieselbe Platte im Handatlas.",
+     "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
+     "zelle": {
+      "x": 512,
+      "y": 256,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 1045,
+     "bboxVorher": [
+      6,
+      7,
+      120,
+      119
+     ],
+     "bboxNachher": [
+      6,
+      7,
+      120,
+      119
+     ],
+     "kantenVorher": 0.85,
+     "kantenNachher": 0.017,
+     "komponentenVorher": [
+      {
+       "px": 6476,
+       "bbox": [
+        22,
+        7,
+        86,
+        103
+       ]
+      },
+      {
+       "px": 1044,
+       "bbox": [
+        6,
+        13,
+        115,
+        107
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 6476,
+       "bbox": [
+        22,
+        7,
+        86,
+        103
+       ]
+      }
+     ],
+     "hashVorher": "6feea67eab608921b44c79a01aa976331882468b05bcb9369014ce4cb8bc4cc8",
+     "hashNachher": "2927b60dab40d478810aba8a706aeb4fb047dd22570fa05eb3260923c3c5a8d5",
+     "geaendert": true,
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+    },
+    "silhouette": {
+     "modus": "heldmaske",
+     "grund": "Deckflaeche der Silhouette angleichen.",
+     "datei": "src/client/assets/weapon-sprites/atlas_magic.png",
+     "zelle": {
+      "x": 512,
+      "y": 768,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 1045,
+     "bboxVorher": [
+      6,
+      7,
+      120,
+      119
+     ],
+     "bboxNachher": [
+      6,
+      7,
+      120,
+      119
+     ],
+     "kantenVorher": 0.85,
+     "kantenNachher": 0.017,
+     "komponentenVorher": [
+      {
+       "px": 6476,
+       "bbox": [
+        22,
+        7,
+        86,
+        103
+       ]
+      },
+      {
+       "px": 1044,
+       "bbox": [
+        6,
+        13,
+        115,
+        107
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 6476,
+       "bbox": [
+        22,
+        7,
+        86,
+        103
+       ]
+      }
+     ],
+     "hashVorher": "d5109602006825452cf34a0aef0d3ab62fe543f7ea301253508f161e6a843262",
+     "hashNachher": "a1f34ff499a47ffd53112429d2adbd0e85bf2ce339fb0eb1356ce1096a3d924d",
+     "geaendert": true,
+     "dateiHashNachher": "0d565aeb624c4c09057fe923525bb69e6d1edf42e90ad802eb3772b578039c67"
+    }
+   },
+   "geaendert": true
+  },
+  "pa_105": {
+   "name": "Frostrolle",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Farbkarte: Schriftrolle vor blauem Verlaufshimmel; eine Trennung ohne Neuerzeugung wuerde die Rolle beschaedigen.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 1024,
+      "y": 768,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      6,
+      9,
+      120,
+      117
+     ],
+     "bboxNachher": [
+      6,
+      9,
+      120,
+      117
+     ],
+     "kantenVorher": 0.037,
+     "kantenNachher": 0.037,
+     "komponentenVorher": [
+      {
+       "px": 10666,
+       "bbox": [
+        6,
+        9,
+        115,
+        109
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 10666,
+       "bbox": [
+        6,
+        9,
+        115,
+        109
+       ]
+      }
+     ],
+     "hashVorher": "3f5c9e502b4affafe7b74f0f06c49531f195ad983c131512a58df27223120d4e",
+     "hashNachher": "3f5c9e502b4affafe7b74f0f06c49531f195ad983c131512a58df27223120d4e",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "menue64": {
+     "modus": "keine",
+     "grund": "dieselbe Farbkarte im 64er-Bild.",
+     "datei": "src/client/assets/icons/IMG_9335_icon.png",
+     "zelle": null,
+     "entferntePixel": 0,
+     "bboxVorher": [
+      7,
+      9,
+      56,
+      55
+     ],
+     "bboxNachher": [
+      7,
+      9,
+      56,
+      55
+     ],
+     "kantenVorher": 0.76,
+     "kantenNachher": 0.76,
+     "komponentenVorher": [
+      {
+       "px": 2106,
+       "bbox": [
+        7,
+        9,
+        50,
+        47
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 2106,
+       "bbox": [
+        7,
+        9,
+        50,
+        47
+       ]
+      }
+     ],
+     "hashVorher": "9b2946ed3082a4e15568019ec933efc3fb756de3b810d3940e37228c922894a4",
+     "hashNachher": "9b2946ed3082a4e15568019ec933efc3fb756de3b810d3940e37228c922894a4",
+     "geaendert": false,
+     "dateiHashNachher": "4367479176a9279fef0c476c28f3e3e8e1dbb13bf4857ef613b3a54c88ee9f6d"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_118": {
+   "name": "Feuerwesen",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Kreatur in Landschaft).",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 640,
+      "y": 896,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      7,
+      6,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      7,
+      6,
+      120,
+      120
+     ],
+     "kantenVorher": 0.965,
+     "kantenNachher": 0.965,
+     "komponentenVorher": [
+      {
+       "px": 13096,
+       "bbox": [
+        7,
+        6,
+        114,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 13096,
+       "bbox": [
+        7,
+        6,
+        114,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "5a050a8d42e0947fcb4b4f66a7b0d6e690fc2021d8ceb54b62468519e0f1a928",
+     "hashNachher": "5a050a8d42e0947fcb4b4f66a7b0d6e690fc2021d8ceb54b62468519e0f1a928",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "held": {
+     "modus": "keine",
+     "grund": "Kreatur samt Boden ist das Motiv.",
+     "datei": "src/client/assets/weapon-sprites/atlas_utility.png",
+     "zelle": {
+      "x": 896,
+      "y": 0,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      7,
+      6,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      7,
+      6,
+      120,
+      120
+     ],
+     "kantenVorher": 0.965,
+     "kantenNachher": 0.965,
+     "komponentenVorher": [
+      {
+       "px": 13094,
+       "bbox": [
+        7,
+        6,
+        114,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 13094,
+       "bbox": [
+        7,
+        6,
+        114,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "a23935f3eab542af5b8ce7989b6d9811fdb56f4e3613b18eae0f7ae81d5bba45",
+     "hashNachher": "a23935f3eab542af5b8ce7989b6d9811fdb56f4e3613b18eae0f7ae81d5bba45",
+     "geaendert": false,
+     "dateiHashNachher": "1fdb0e2c170b3ae9c7a0da5f617104451a5e1103ff0602cb547d6c53cc632069"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_135": {
+   "name": "Meteorregen",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Nachthimmel mit Meteoren).",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 768,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      6,
+      6,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      6,
+      6,
+      120,
+      120
+     ],
+     "kantenVorher": 0.887,
+     "kantenNachher": 0.887,
+     "komponentenVorher": [
+      {
+       "px": 13112,
+       "bbox": [
+        6,
+        6,
+        115,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 13112,
+       "bbox": [
+        6,
+        6,
+        115,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "ab9200c3c8ab43ab368bd1fe033fab9f03a9691e2aa70b686036ef395ae47cf3",
+     "hashNachher": "ab9200c3c8ab43ab368bd1fe033fab9f03a9691e2aa70b686036ef395ae47cf3",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_137": {
+   "name": "Flammenklinge",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "Zelle bereits freigestellt; Flammen sind Motiv, kein Rahmen.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 1024,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "bboxNachher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "kantenVorher": 0.07,
+     "kantenNachher": 0.07,
+     "komponentenVorher": [
+      {
+       "px": 9093,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 9093,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "c44db44e5616fe149e7bb50442bf71b3a63a146acae68ba8059d174f09b1d37f",
+     "hashNachher": "c44db44e5616fe149e7bb50442bf71b3a63a146acae68ba8059d174f09b1d37f",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "held": {
+     "modus": "keine",
+     "grund": "bereits freigestellt.",
+     "datei": "src/client/assets/weapon-sprites/atlas_tech.png",
+     "zelle": {
+      "x": 0,
+      "y": 256,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "bboxNachher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "kantenVorher": 0.052,
+     "kantenNachher": 0.052,
+     "komponentenVorher": [
+      {
+       "px": 9025,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 9025,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "aba04f00a4d757c59b0090ccb4d76f3dc9c08a9180c85e5a2e67d01c005ef533",
+     "hashNachher": "aba04f00a4d757c59b0090ccb4d76f3dc9c08a9180c85e5a2e67d01c005ef533",
+     "geaendert": false,
+     "dateiHashNachher": "ea7404b702b5ca64e5675ab37a7030ea1b713aa5783f2f83ca2baaef60b02e55"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_138": {
+   "name": "Arkanhammer",
+   "rollen": {
+    "icon": {
+     "modus": "rahmen",
+     "grund": "rechteckiger Zierrahmen mit Eckwinkeln um die Zelle.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 1152,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 2579,
+     "bboxVorher": [
+      6,
+      7,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      14,
+      13,
+      113,
+      112
+     ],
+     "kantenVorher": 0.018,
+     "kantenNachher": 0.05,
+     "komponentenVorher": [
+      {
+       "px": 6238,
+       "bbox": [
+        6,
+        7,
+        115,
+        114
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 4516,
+       "bbox": [
+        17,
+        13,
+        97,
+        99
+       ]
+      }
+     ],
+     "hashVorher": "ec9cea0add4341264a5f43782fe194c76d74d9cb9ca56c3ab0233fabec55a559",
+     "hashNachher": "76c0dabeeb48523e89088c02e54327d5cb92926483335ae3b97d234be3885c8d",
+     "geaendert": true,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    },
+    "held": {
+     "modus": "rahmen",
+     "grund": "derselbe Rahmen im Handatlas.",
+     "datei": "src/client/assets/weapon-sprites/atlas_tech.png",
+     "zelle": {
+      "x": 128,
+      "y": 256,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 3266,
+     "bboxVorher": [
+      6,
+      7,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      14,
+      13,
+      113,
+      111
+     ],
+     "kantenVorher": 0.009,
+     "kantenNachher": 0.08,
+     "komponentenVorher": [
+      {
+       "px": 6161,
+       "bbox": [
+        6,
+        7,
+        115,
+        114
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 4464,
+       "bbox": [
+        17,
+        13,
+        97,
+        99
+       ]
+      }
+     ],
+     "hashVorher": "15248755801bd7f1fefb74a6ac681b8a751333204bdc535a29145f191a64fcd3",
+     "hashNachher": "fbdc10d5fd10045626996f89f2abc8aefa6dd34556b9a7971356b2177a027ec1",
+     "geaendert": true,
+     "dateiHashNachher": "ea7404b702b5ca64e5675ab37a7030ea1b713aa5783f2f83ca2baaef60b02e55"
+    },
+    "silhouette": {
+     "modus": "heldmaske",
+     "grund": "Deckflaeche der Silhouette angleichen.",
+     "datei": "src/client/assets/weapon-sprites/atlas_tech.png",
+     "zelle": {
+      "x": 128,
+      "y": 640,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 3266,
+     "bboxVorher": [
+      6,
+      7,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      14,
+      13,
+      113,
+      111
+     ],
+     "kantenVorher": 0.009,
+     "kantenNachher": 0.08,
+     "komponentenVorher": [
+      {
+       "px": 6161,
+       "bbox": [
+        6,
+        7,
+        115,
+        114
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 4464,
+       "bbox": [
+        17,
+        13,
+        97,
+        99
+       ]
+      }
+     ],
+     "hashVorher": "1c2436d0ae4ea614bf2a4f7f2a350d4c478ecd44c5c2eecec5af8ae5da99267e",
+     "hashNachher": "48e1e366d74a1ed54edaae091be3f85c53ef3e11ea8fa88d541f951f19e06bc9",
+     "geaendert": true,
+     "dateiHashNachher": "ea7404b702b5ca64e5675ab37a7030ea1b713aa5783f2f83ca2baaef60b02e55"
+    },
+    "menue64": {
+     "modus": "aus128",
+     "grund": "64er-Bild mit Platte und Rahmen.",
+     "datei": "src/client/assets/icons/IMG_9388_icon.png",
+     "zelle": null,
+     "entferntePixel": 1360,
+     "bboxVorher": [
+      4,
+      4,
+      59,
+      59
+     ],
+     "bboxNachher": [
+      6,
+      6,
+      57,
+      56
+     ],
+     "kantenVorher": 0.393,
+     "kantenNachher": 0.0,
+     "komponentenVorher": [
+      {
+       "px": 2876,
+       "bbox": [
+        4,
+        4,
+        56,
+        56
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 1101,
+       "bbox": [
+        9,
+        7,
+        48,
+        49
+       ]
+      }
+     ],
+     "hashVorher": "2404680fa977741fc041f39841dde9b17c94965a50241589ab25fc8d92925382",
+     "hashNachher": "a75a2840bc1f6c7048135d76e8ef02a719ff7bf9d1eb42474a0708e74c7755fc",
+     "geaendert": true,
+     "dateiHashNachher": "e0159ea747ac09426c5a36e3163432da126f3605ae9049f30af0ed11c53d7086"
+    }
+   },
+   "geaendert": true
+  },
+  "pa_141": {
+   "name": "Astralkrieger",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Astralfigur mit Sternenhimmel).",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 1536,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "bboxNachher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "kantenVorher": 1.0,
+     "kantenNachher": 1.0,
+     "komponentenVorher": [
+      {
+       "px": 12994,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 12994,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "4bbac46f41fb69962f2ac4009838a933c5316be00cded35c2bba9b82c798feda",
+     "hashNachher": "4bbac46f41fb69962f2ac4009838a933c5316be00cded35c2bba9b82c798feda",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_144": {
+   "name": "Kosmische Wassermelone",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Weltraum-Melone).",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 1920,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "bboxNachher": [
+      7,
+      6,
+      119,
+      120
+     ],
+     "kantenVorher": 0.896,
+     "kantenNachher": 0.896,
+     "komponentenVorher": [
+      {
+       "px": 12927,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 12927,
+       "bbox": [
+        7,
+        6,
+        113,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "d91576a7a0db10e9946bead006c26b9db0aa4aa589e03275890ebbc6c817ad98",
+     "hashNachher": "d91576a7a0db10e9946bead006c26b9db0aa4aa589e03275890ebbc6c817ad98",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_145": {
+   "name": "Erdspalter",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "Wirkflaeche ist das Motiv (aufbrechender Boden), bewusste Illustrationskachel.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 0,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      9,
+      6,
+      118,
+      120
+     ],
+     "bboxNachher": [
+      9,
+      6,
+      118,
+      120
+     ],
+     "kantenVorher": 0.913,
+     "kantenNachher": 0.913,
+     "komponentenVorher": [
+      {
+       "px": 12591,
+       "bbox": [
+        9,
+        6,
+        110,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 12591,
+       "bbox": [
+        9,
+        6,
+        110,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "84cdb0c985ff0ba41fb331676452e8331e9fa92843c4321a090e5f28938c242b",
+     "hashNachher": "84cdb0c985ff0ba41fb331676452e8331e9fa92843c4321a090e5f28938c242b",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_146": {
+   "name": "Giftige Weltenflasche",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Flasche mit Lichtkegel und Sternenhimmel).",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 128,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      7,
+      6,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      7,
+      6,
+      120,
+      120
+     ],
+     "kantenVorher": 0.957,
+     "kantenNachher": 0.957,
+     "komponentenVorher": [
+      {
+       "px": 13092,
+       "bbox": [
+        7,
+        6,
+        114,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 13092,
+       "bbox": [
+        7,
+        6,
+        114,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "cb6224aa532b8ee31a23b585b6b32a7b7422ed056eb9beddf85d5411e35d0200",
+     "hashNachher": "cb6224aa532b8ee31a23b585b6b32a7b7422ed056eb9beddf85d5411e35d0200",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_147": {
+   "name": "Weltendrache",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Drache vor Sternenhimmel).",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 256,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      6,
+      6,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      6,
+      6,
+      120,
+      120
+     ],
+     "kantenVorher": 0.965,
+     "kantenNachher": 0.965,
+     "komponentenVorher": [
+      {
+       "px": 13213,
+       "bbox": [
+        6,
+        6,
+        115,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 13213,
+       "bbox": [
+        6,
+        6,
+        115,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "5facf9f58231780b9cf93bc86c80fccd5791309a568cad88d602dedff4957e70",
+     "hashNachher": "5facf9f58231780b9cf93bc86c80fccd5791309a568cad88d602dedff4957e70",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_148": {
+   "name": "Feuerschild",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "goldener Schild auf dunkler Karte; Standkante ist Teil der Illustrationskachel.",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 384,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      7,
+      6,
+      120,
+      120
+     ],
+     "bboxNachher": [
+      7,
+      6,
+      120,
+      120
+     ],
+     "kantenVorher": 0.843,
+     "kantenNachher": 0.843,
+     "komponentenVorher": [
+      {
+       "px": 12974,
+       "bbox": [
+        7,
+        6,
+        114,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 12974,
+       "bbox": [
+        7,
+        6,
+        114,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "5a18bbfc4debb7d984688433765569b0ee31f391401e8c25554194f1d844513c",
+     "hashNachher": "5a18bbfc4debb7d984688433765569b0ee31f391401e8c25554194f1d844513c",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    }
+   },
+   "geaendert": false
+  },
+  "pa_149": {
+   "name": "Goldene Reliktkugel",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Reliktkugel im Sternenraum).",
+     "datei": "src/client/assets/weapon-sprites/atlas_icons.png",
+     "zelle": {
+      "x": 512,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+     },
+     "entferntePixel": 0,
+     "bboxVorher": [
+      8,
+      6,
+      119,
+      120
+     ],
+     "bboxNachher": [
+      8,
+      6,
+      119,
+      120
+     ],
+     "kantenVorher": 0.913,
+     "kantenNachher": 0.913,
+     "komponentenVorher": [
+      {
+       "px": 12832,
+       "bbox": [
+        8,
+        6,
+        112,
+        115
+       ]
+      }
+     ],
+     "komponentenNachher": [
+      {
+       "px": 12832,
+       "bbox": [
+        8,
+        6,
+        112,
+        115
+       ]
+      }
+     ],
+     "hashVorher": "b82cc5e09e0496aac4d63526288571b914c94dd62e0d08ebd957e2cf97adbad1",
+     "hashNachher": "b82cc5e09e0496aac4d63526288571b914c94dd62e0d08ebd957e2cf97adbad1",
+     "geaendert": false,
+     "dateiHashNachher": "a1c4ed62bbcfcce9d3345fa4afcd9e2c3d78b40f496444971988f5f26bfc18c8"
+    }
+   },
+   "geaendert": false
+  }
+ },
+ "dauereffekt": {
+  "hinweis": "15 Handbilder mit eingebranntem Effekt bleiben unveraendert: eine Trennung ohne Neuerzeugung wuerde Waffenbestandteile zerstoeren. Der Renderer zeichnet fuer diese IDs keinen zusaetzlichen Dauer-Glanz im Ruhezustand.",
+  "ids": [
+   "pa_002",
+   "pa_018",
+   "pa_022",
+   "pa_027",
+   "pa_035",
+   "pa_036",
+   "pa_037",
+   "pa_044",
+   "pa_052",
+   "pa_062",
+   "pa_067",
+   "pa_072",
+   "pa_112",
+   "pa_137",
+   "pa_139"
+  ]
+ },
+ "regeln": {
+  "rahmen": "Duenne, farbgleiche Linie am Rand der Zelle (Rundrechteck-Rahmen des Quellbilds). Nur Linie und ihr 1-px-Saum werden entfernt; Waffenpixel mit anderer Farbe bleiben.",
+  "platte": "Vom Motiv getrennte, randstaendige Plattenkomponente (Pale-Wash/Restflaeche). Nur Komponenten ausserhalb des Hauptmotivs werden entfernt.",
+  "keine": "Bewusste Illustrationskachel oder bereits freigestellt: keine Aenderung, Grund dokumentiert.",
+  "heldmaske": "Silhouette uebernimmt exakt die Deckflaeche des bereinigten Handbilds; ein eigener Rahmen fehlt dort, die Silhouette ist einfarbig.",
+  "aus128": "64-px-Menuebild wird aus der bereinigten 128er-Icon-Zelle neu abgeleitet (gleiches Motiv, keine Platte)."
+ }
+}

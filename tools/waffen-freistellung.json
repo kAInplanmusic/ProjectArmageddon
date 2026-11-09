@@ -1,0 +1,304 @@
+{
+ "version": 1,
+ "hinweis": "Gezielte Freistellung (BAL-09): entfernt nur belegte Rahmenlinien, Platten und Randreste an den genannten Rollen. Bewusste Illustrationskacheln bleiben unangetastet. Quelle der Entscheidungen: docs/waffenbalance-2026-11-09/sichtbefunde-150.json (Tags Freistellung/Dauereffekt).",
+ "regeln": {
+  "rahmen": "Duenne, farbgleiche Linie am Rand der Zelle (Rundrechteck-Rahmen des Quellbilds). Nur Linie und ihr 1-px-Saum werden entfernt; Waffenpixel mit anderer Farbe bleiben.",
+  "platte": "Vom Motiv getrennte, randstaendige Plattenkomponente (Pale-Wash/Restflaeche). Nur Komponenten ausserhalb des Hauptmotivs werden entfernt.",
+  "keine": "Bewusste Illustrationskachel oder bereits freigestellt: keine Aenderung, Grund dokumentiert.",
+  "heldmaske": "Silhouette uebernimmt exakt die Deckflaeche des bereinigten Handbilds; ein eigener Rahmen fehlt dort, die Silhouette ist einfarbig.",
+  "aus128": "64-px-Menuebild wird aus der bereinigten 128er-Icon-Zelle neu abgeleitet (gleiches Motiv, keine Platte)."
+ },
+ "waffen": {
+  "pa_012": {
+   "name": "Katana",
+   "rollen": {
+    "menue64": {
+     "modus": "aus128",
+     "grund": "64er-Menuebild traegt eine graue Rundrechteckplatte; 128er Zelle ist bereits freigestellt."
+    }
+   }
+  },
+  "pa_050": {
+   "name": "Doppelkopfaxt",
+   "rollen": {
+    "menue64": {
+     "modus": "aus128",
+     "grund": "weisser Plattenhintergrund im 64er-Bild, Handatlas freigestellt."
+    }
+   }
+  },
+  "pa_054": {
+   "name": "Schrotflinte",
+   "rollen": {
+    "menue64": {
+     "modus": "aus128",
+     "grund": "braune Rechteckflaeche im 64er-Bild."
+    }
+   }
+  },
+  "pa_066": {
+   "name": "Haubitze",
+   "rollen": {
+    "icon": {
+     "modus": "rahmen",
+     "grund": "heller Zierrahmen um die Zelle; Rohr und Lafette bleiben."
+    },
+    "held": {
+     "modus": "rahmen",
+     "grund": "Rahmenlinie auch im Handatlas."
+    },
+    "silhouette": {
+     "modus": "heldmaske",
+     "grund": "Silhouette muss dieselbe Deckflaeche wie das Handbild haben."
+    }
+   }
+  },
+  "pa_075": {
+   "name": "Tornado",
+   "rollen": {
+    "menue64": {
+     "modus": "aus128",
+     "grund": "weisser Plattenhintergrund im 64er-Bild."
+    }
+   }
+  },
+  "pa_080": {
+   "name": "Psionischer Tentakel",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "Motiv ist eine organische Flaeche ohne Rechteckrahmen; Zelle bereits freigestellt."
+    },
+    "menue64": {
+     "modus": "keine",
+     "grund": "bereits freigestellt (Alpha 0,34, keine gerade Kante)."
+    }
+   }
+  },
+  "pa_082": {
+   "name": "Goldene Zauberrolle",
+   "rollen": {
+    "icon": {
+     "modus": "rahmen",
+     "grund": "dunkler Rahmen um die Zelle; Schriftrolle und Muenzen bleiben."
+    },
+    "menue64": {
+     "modus": "aus128",
+     "grund": "weisse Platte im 64er-Bild."
+    }
+   }
+  },
+  "pa_086": {
+   "name": "Windkrieger",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Beschwoerungsszene mit Himmel), Hintergrund ist Teil des Motivs."
+    },
+    "held": {
+     "modus": "keine",
+     "grund": "Figur mit Wirbel ist das Motiv selbst."
+    }
+   }
+  },
+  "pa_089": {
+   "name": "Zauberstiefel",
+   "rollen": {
+    "icon": {
+     "modus": "rahmen",
+     "grund": "helle Standlinie und Rahmenreste am unteren Zellrand."
+    },
+    "held": {
+     "modus": "rahmen",
+     "grund": "dieselbe Standlinie im Handatlas."
+    },
+    "silhouette": {
+     "modus": "heldmaske",
+     "grund": "Deckflaeche der Silhouette angleichen."
+    }
+   }
+  },
+  "pa_096": {
+   "name": "Mutationselixier",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "Flasche mit eigenem Leuchtsaum, keine gerade Platte; Zelle bereits freigestellt."
+    },
+    "held": {
+     "modus": "keine",
+     "grund": "Leuchtsaum gehoert zum Motiv, keine Rechteckkante."
+    }
+   }
+  },
+  "pa_101": {
+   "name": "Eisschild",
+   "rollen": {
+    "icon": {
+     "modus": "platte",
+     "grund": "helle Plattenkomponente neben dem Schild (eigene Komponente, kein Waffenteil)."
+    },
+    "held": {
+     "modus": "platte",
+     "grund": "dieselbe Platte im Handatlas."
+    },
+    "silhouette": {
+     "modus": "heldmaske",
+     "grund": "Deckflaeche der Silhouette angleichen."
+    }
+   }
+  },
+  "pa_105": {
+   "name": "Frostrolle",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Farbkarte: Schriftrolle vor blauem Verlaufshimmel; eine Trennung ohne Neuerzeugung wuerde die Rolle beschaedigen."
+    },
+    "menue64": {
+     "modus": "keine",
+     "grund": "dieselbe Farbkarte im 64er-Bild."
+    }
+   }
+  },
+  "pa_118": {
+   "name": "Feuerwesen",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Kreatur in Landschaft)."
+    },
+    "held": {
+     "modus": "keine",
+     "grund": "Kreatur samt Boden ist das Motiv."
+    }
+   }
+  },
+  "pa_135": {
+   "name": "Meteorregen",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Nachthimmel mit Meteoren)."
+    }
+   }
+  },
+  "pa_137": {
+   "name": "Flammenklinge",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "Zelle bereits freigestellt; Flammen sind Motiv, kein Rahmen."
+    },
+    "held": {
+     "modus": "keine",
+     "grund": "bereits freigestellt."
+    }
+   }
+  },
+  "pa_138": {
+   "name": "Arkanhammer",
+   "rollen": {
+    "icon": {
+     "modus": "rahmen",
+     "grund": "rechteckiger Zierrahmen mit Eckwinkeln um die Zelle."
+    },
+    "held": {
+     "modus": "rahmen",
+     "grund": "derselbe Rahmen im Handatlas."
+    },
+    "silhouette": {
+     "modus": "heldmaske",
+     "grund": "Deckflaeche der Silhouette angleichen."
+    },
+    "menue64": {
+     "modus": "aus128",
+     "grund": "64er-Bild mit Platte und Rahmen."
+    }
+   }
+  },
+  "pa_141": {
+   "name": "Astralkrieger",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Astralfigur mit Sternenhimmel)."
+    }
+   }
+  },
+  "pa_144": {
+   "name": "Kosmische Wassermelone",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Weltraum-Melone)."
+    }
+   }
+  },
+  "pa_145": {
+   "name": "Erdspalter",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "Wirkflaeche ist das Motiv (aufbrechender Boden), bewusste Illustrationskachel."
+    }
+   }
+  },
+  "pa_146": {
+   "name": "Giftige Weltenflasche",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Flasche mit Lichtkegel und Sternenhimmel)."
+    }
+   }
+  },
+  "pa_147": {
+   "name": "Weltendrache",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Drache vor Sternenhimmel)."
+    }
+   }
+  },
+  "pa_148": {
+   "name": "Feuerschild",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "goldener Schild auf dunkler Karte; Standkante ist Teil der Illustrationskachel."
+    }
+   }
+  },
+  "pa_149": {
+   "name": "Goldene Reliktkugel",
+   "rollen": {
+    "icon": {
+     "modus": "keine",
+     "grund": "bewusste Illustrationskachel (Reliktkugel im Sternenraum)."
+    }
+   }
+  }
+ },
+ "dauereffekt": {
+  "hinweis": "15 Handbilder mit eingebranntem Effekt bleiben unveraendert: eine Trennung ohne Neuerzeugung wuerde Waffenbestandteile zerstoeren. Der Renderer zeichnet fuer diese IDs keinen zusaetzlichen Dauer-Glanz im Ruhezustand.",
+  "ids": [
+   "pa_002",
+   "pa_018",
+   "pa_022",
+   "pa_027",
+   "pa_035",
+   "pa_036",
+   "pa_037",
+   "pa_044",
+   "pa_052",
+   "pa_062",
+   "pa_067",
+   "pa_072",
+   "pa_112",
+   "pa_137",
+   "pa_139"
+  ]
+ }
+}
