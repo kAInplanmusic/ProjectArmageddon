@@ -1,7 +1,16 @@
 {
-  "_hinweis": "Grenzen für scripts/bundle-gate.mjs (Bytes; gzip Stufe 9). Gemessen 2026-11-09 nach der Integration der zehn Vorarbeiter-Branches mit dem lokalen Panorama-/UI-Stand: haupt 1294305/360613, start 1392658/383498, dist 99064202. Gegenüber dem Kader-Split bleiben haupt.roh (1300000) und start.gzip (385000) unverändert; nur haupt.gzip (+5 KiB auf 362000) und start.roh (+28 KiB auf 1400000) wurden angehoben. Grund: Die Integration bringt Embleme/Teamfarben (A11), Figurenkarte, Waffen-HUD, Hymnensteuerung (A14), 4K-Kulissenwahl und Zustandssheets in den Startpfad; gleichzeitig hat der lokale Stand ungenutzte Zustand-Sheets aus dem Bau genommen. Eine weitere Lazy-Zerlegung der Anzeige-Module würde den Start verzögern und den Fraktionszustand über mehrere Chunks verteilen. Anheben nur mit Begründung im Commit, senken jederzeit. Messwerte und Verlauf: docs/ladezeit.md.",
-  "haupt": { "roh": 1300000, "gzip": 362000 },
-  "start": { "roh": 1400000, "gzip": 385000 },
-  "dist": { "roh": 105000000 },
-  "sourcemaps": 0
+  "_hinweis": "Grenzen für scripts/bundle-gate.mjs (Bytes; gzip Stufe 9). Gemessen 2026-11-09 auf bg/ag-a9-build (BUILD-1): haupt 1304711/363261, start 1403143/386177, dist 122466487, Sourcemaps 0, Sourcemapping-URLs 0. Gegenüber dem Stand aus der Integration der zehn Vorarbeiter-Branches (haupt 1294305/360613, start 1392658/383498, dist 99064202) ist das Wachstum gemessen und begründet: BAL-10 bis BAL-13 bringen Waffenrollen und -manifests in den Startpfad (+10,9 KiB haupt roh, davon ~7,7 KiB waffen-rollen.js), DesignRest a1bb346 liefert 144 Figuren-Zustands-Sheets (der größte Posten der +23,4 MiB dist). Gleichzeitig senken BUILD-1-Maßnahmen die Werte: Modul-Preload-Polyfill aus (−528 B roh / −336 B gzip im Einstieg) und 22 Stofftexturen von JPG auf WebP q82 (−300 kB, SSIM 0,9718; zwei Sonderfälle bleiben JPG, weil ihre Nahtprüfung sonst über 4,5 läge). Die neuen Grenzen liegen ~0,6 % über den Messwerten; sie sind kein Ziel, nur die Regressionsschwelle. Senken jederzeit, Anheben nur mit neuen Messwerten und Begründung. Messwerte und Verlauf: docs/ladezeit.md.",
+  "haupt": {
+    "roh": 1312000,
+    "gzip": 365500
+  },
+  "start": {
+    "roh": 1411000,
+    "gzip": 388000
+  },
+  "dist": {
+    "roh": 123000000
+  },
+  "sourcemaps": 0,
+  "sourcemapVerweise": 0
 }

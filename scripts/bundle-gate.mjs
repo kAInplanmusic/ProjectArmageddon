@@ -14,6 +14,8 @@
  *  - `dist`   Summe aller Dateien im Bau (roh), damit z. B. ein versehentlich
  *             wieder eingeschaltetes Sourcemap oder ein PNG statt WebP auffällt.
  *  - `sourcemaps` Anzahl `*.map` im Bau; Grenze 0 (Auslieferung ohne Sourcemaps).
+ *  - `sourcemapVerweise` Anzahl JS/CSS-Dateien mit `sourceMappingURL`; Grenze 0
+ *             (ein Verweis ohne Map erzeugt eine 404 und falsche DevTools-Angaben).
  *
  * gzip mit Stufe 9, wie Vite es in seiner Bauausgabe anzeigt.
  *
@@ -100,6 +102,10 @@ export function miss(distOrdner) {
     start: { dateien: startDateien.length, roh: startRoh, gzip: startGzip },
     dist: { dateien: dateien.length, roh: dateien.reduce((s, d) => s + statSync(d).size, 0) },
     sourcemaps: dateien.filter(d => d.endsWith('.map')).length,
+    // Ein Verweis ohne Datei ist genauso falsch wie eine ausgelieferte Map: Der Browser
+    // fragt dann eine 404 an, und DevTools bietet Quellcode an, den es nicht gibt.
+    sourcemapVerweise: dateien.filter(d => /\.(js|css)$/.test(d)
+      && readFileSync(d, 'utf8').includes('sourceMappingURL')).length,
   };
 }
 
@@ -116,6 +122,7 @@ export function pruefe(werte, grenzen) {
   vergleich('start.gzip', werte.start.gzip, grenzen.start?.gzip);
   vergleich('dist.roh', werte.dist.roh, grenzen.dist?.roh);
   vergleich('sourcemaps', werte.sourcemaps, grenzen.sourcemaps);
+  vergleich('sourcemapVerweise', werte.sourcemapVerweise, grenzen.sourcemapVerweise);
   return verstoesse;
 }
 
@@ -148,7 +155,8 @@ function main() {
     console.log(`Start (${werte.start.dateien} Dateien: HTML, JS, CSS): ${kb(werte.start.roh)} roh / ${kb(werte.start.gzip)} gzip`
       + ` (Grenze ${kb(grenzen.start.roh)} / ${kb(grenzen.start.gzip)})`);
     console.log(`dist gesamt (${werte.dist.dateien} Dateien): ${mb(werte.dist.roh)} (Grenze ${mb(grenzen.dist.roh)})`);
-    console.log(`Sourcemaps: ${werte.sourcemaps} (Grenze ${grenzen.sourcemaps})`);
+    console.log(`Sourcemaps: ${werte.sourcemaps} (Grenze ${grenzen.sourcemaps}),`
+      + ` sourceMappingURL-Verweise: ${werte.sourcemapVerweise} (Grenze ${grenzen.sourcemapVerweise})`);
     for (const v of verstoesse) console.error(`ÜBER DER GRENZE: ${v}`);
   }
   process.exit(verstoesse.length > 0 ? 1 : 0);

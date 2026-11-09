@@ -13,6 +13,9 @@ Aufruf:
   python3 scripts/kulissen-webp.py --schreiben [--q 82] WebP schreiben, JPG löschen
   python3 scripts/kulissen-webp.py --sweep              Qualitätsstufen vergleichen
 
+  Mit `--ordner` gilt derselbe Messweg für andere JPG-Bestände, z. B. den Rest der
+  Stofftexturen: `--ordner src/client/assets/stoff-texturen-neu`.
+
 Das Ergebnis der Messung steht in `docs/ladezeit.md` (Abschnitt Kulissen).
 `--schreiben` braucht die JPG-Originale; nach dem Lauf liegen nur noch WebP im Baum.
 """
@@ -66,7 +69,11 @@ def webp_bytes(bild: Image.Image, q: int) -> bytes:
 
 
 def dateien() -> list[Path]:
-    return sorted(ORDNER.glob("*.jpg")) + sorted((ORDNER / "stimmung").glob("*.jpg"))
+    liste = sorted(ORDNER.glob("*.jpg"))
+    unterordner = ORDNER / "stimmung"
+    if unterordner.is_dir():
+        liste += sorted(unterordner.glob("*.jpg"))
+    return liste
 
 
 def messe(q: int, schreiben: bool) -> int:
@@ -108,11 +115,16 @@ def messe(q: int, schreiben: bool) -> int:
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--q", type=int, default=WEBP_QUALITAET)
+    p.add_argument("--ordner", default=None,
+                   help="JPG-Ordner relativ zum Repo (Standard: src/client/assets/backdrops)")
     modus = p.add_mutually_exclusive_group(required=True)
     modus.add_argument("--messen", action="store_true")
     modus.add_argument("--schreiben", action="store_true")
     modus.add_argument("--sweep", action="store_true")
     a = p.parse_args()
+    if a.ordner:
+        global ORDNER
+        ORDNER = WURZEL / a.ordner
     if a.sweep:
         for q in (70, 75, 80, 85, 90):
             messe(q, False)

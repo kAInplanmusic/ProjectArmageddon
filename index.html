@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Project Armageddon — rundenbasiertes 2D-Artillerie-Taktikspiel mit zerstörbarem Terrain." />
   <!--
+    LADEZEIT (BUILD-1): Das Menü-Logo ist das LCP-Element (Lighthouse, mobil 84 px,
+    desktop 250 px breit). Es steckt als CSS-Hintergrund in design.css und wurde
+    deshalb erst nach dem Parsen des Stylesheets entdeckt (Lighthouse: 1,28 s
+    „resource load delay“). Der Preload startet die Anfrage schon beim Lesen des
+    Kopfs; `fetchpriority="high"` hält sie vor den Match-Texturen. Dasselbe Bild
+    (public/logo.webp) wird dabei zweimal referenziert — der Browser lädt es einmal.
+  -->
+  <link rel="preload" as="image" href="/logo.webp" fetchpriority="high" />
+  <!--
     Tab-Icon. Ohne diesen Verweis fragt der Browser /favicon.ico an und bekommt
     einen 404 — bei jedem Besuch. Die Datei liegt in public/, damit Vite sie im
     Build mitkopiert.

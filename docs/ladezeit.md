@@ -1,8 +1,9 @@
 # Ladezeit und Auslieferungsgröße (BLD-1 / BUILD-1)
 
-Stand 2026-11-05. Gemessen auf dem Produktionsbau (`npm run build` + `vite preview`),
+Stand: 2026-11-09. Gemessen auf dem Produktionsbau (`npm run build` + `vite preview`),
 Chromium 1194 unter `/opt/pw-browsers/chromium` (`--headless=new --no-sandbox`), 4 Kerne,
 Container ohne GPU. „Vorher“ = `2413c4f` (JPG-Kulissen), „Nachher“ = WebP-Kulissen + Gate.
+Die BUILD-1-Messungen von 2026-11-09 (Preload, Rest-JPG, ungenutztes JS) stehen in §6.
 
 ## 1. Lighthouse (Startseite)
 
@@ -83,6 +84,8 @@ und damit in der CI). Grenzen in `scripts/bundle-grenzen.json`, gzip Stufe 9.
 | Sourcemaps | 0 | 0 |
 
 Probe: eine untergeschobene `.map` in `dist/` lässt das Gate mit Exit 1 fehlschlagen.
+(Die Werte dieser Tabelle sind der Stand vor §6; die aktuellen Grenzen und Messwerte
+stehen in §6.1.)
 
 ### 3.1 Kader-Split: Grenze blieb, Bau wurde kleiner
 
@@ -147,8 +150,8 @@ die Summe der Branches. Die Zerlegung aus 3.1 bleibt bestehen; `main.js` und
 ## 4. Sourcemaps
 
 `vite.config.mjs` setzt `build.sourcemap: false`; im Bau liegt keine `*.map`, kein Chunk trägt
-`sourceMappingURL`. Das Gate hält das fest (Grenze 0), `tests/bundle-gate.test.js` prüft die
-Einstellung.
+`sourceMappingURL`. Das Gate hält beides fest (Grenzen 0), `tests/bundle-gate.test.js` prüft die
+Einstellung und einen untergeschobenen Verweis ohne Map.
 
 ## 5. Debug-API und Profil lazy splitten: bewusst nicht
 
@@ -177,3 +180,170 @@ Größere Hebel (nicht in diesem Auftrag): 175 KiB ungenutztes JS (Replay,
 Online-Teile lazy), die ~7,6 MB Texturbilder beim Start (nur laden, was das
 erste Bild braucht). Die **Kaderansicht** ist seit 2026-11-09 ausgelagert
 (Abschnitt 3.1) — der verbleibende Startpfad enthält sie nicht mehr.
+
+## 6. BUILD-1 am 2026-11-09: Menü-LCP, Rest-JPG, ungenutztes JS
+
+Ausgangspunkt war das Gate auf `origin/main` (5181f82): alle vier Größen über der Grenze
+(`haupt` 1 305 195 / 363 612 B, `start` 1 403 548 / 386 498 B, `dist` 122 767 096 B).
+Die Ursache war Inhalt, kein Fehler: BAL-10 bis BAL-13 bringen Waffenrollen und -manifests
+in den Startpfad, DesignRest (`a1bb346`) 144 Figuren-Zustands-Sheets in den Bau. Gemessen
+und behoben wurde, was ohne Änderung an `main.js`/`renderer.js` geht; die große Zerlegung
+bleibt offen (§6.3).
+
+### 6.1 Vorher/Nachher
+
+`node scripts/bundle-gate.mjs` auf demselben Arbeitsstand, gleiche Maschine, gzip Stufe 9.
+
+| Größe | vorher | nachher | Δ |
+|---|---|---|---|
+| Haupt-Bundle roh | 1 305 195 B | 1 304 711 B | −484 B |
+| Haupt-Bundle gzip | 363 612 B | 363 261 B | −351 B |
+| Start roh | 1 403 548 B | 1 403 143 B | −405 B |
+| Start gzip | 386 498 B | 386 177 B | −321 B |
+| `dist/` gesamt | 122 767 096 B | 122 466 487 B | −300 609 B |
+| Sourcemaps / Verweise | 0 / – | 0 / 0 | – |
+
+Maßnahmen:
+
+1. **Modul-Preload-Polyfill aus** (`vite.config.mjs`, `build.modulePreload.polyfill: false`).
+   Bei `target: es2022` unterstützt jedes Ziel `rel="modulepreload"`; das Polyfill war
+   toter Ballast im Einstieg. Gemessene Wirkung: −528 B roh / −336 B gzip (Einzelbau).
+2. **Menü-Logo vorgeladen** (`index.html`): `<link rel="preload" as="image"
+   href="/logo.webp" fetchpriority="high">`. Siehe §6.2.
+3. **22 Stofftexturen von JPG auf WebP q82** (`scripts/kulissen-webp.py --ordner
+   src/client/assets/stoff-texturen-neu --schreiben`): siehe §6.4.
+4. **Gate um `sourceMappingURL`-Verweise erweitert**: eine ausgelieferte Map ist verboten,
+   ein Verweis auf eine fehlende Map aber genauso falsch (404, irreführende DevTools).
+   `miss()` zählt beides, die Grenzen stehen auf 0, ein Test schiebt einen Verweis unter.
+
+Die Grenzen in `scripts/bundle-grenzen.json` liegen jetzt ~0,6 % über den Messwerten
+(`haupt` 1 312 000 / 365 500, `start` 1 411 000 / 388 000, `dist` 123 000 000). Das ist
+keine Leistungsbehauptung, sondern die Regressionsschwelle nach dem gemessenen
+Inhaltswachstum; die Begründung steht auch im `_hinweis` der Datei.
+
+### 6.2 LCP: das Menü-Logo
+
+Das LCP-Element der Startseite ist `div.menu-logo` (CSS-Hintergrund `url('/logo.webp')`,
+560×730 px, 132 514 B). Als CSS-Hintergrund wird es erst nach dem Parsen von `design.css`
+entdeckt — Lighthouse 13.6.0 maß dafür 1 279 ms `resourceLoadDelay` (Lauf vor der Änderung).
+Der Preload im Kopf startet die Anfrage, bevor das Stylesheet da ist.
+
+A/B mit dem Produktionsbau, Chromium 141 (Playwright), Viewport 390×844 bei DPR 2, je drei
+Runden à drei kalte Ladevorgänge (Cache geleert), 3 s Beobachtung nach `load`; Zahlen sind
+die Mediane der Runden:
+
+| Runde | Logo-Anfrage beginnt (ohne Preload) | LCP ohne | Logo-Anfrage beginnt (mit Preload) | LCP mit |
+|---|---|---|---|---|
+| 1 | 230 ms | 2 600 ms | 71 ms | 1 592 ms |
+| 2 | 528 ms | 2 268 ms | 80 ms | 2 008 ms |
+| 3 | 562 ms | 2 424 ms | 138 ms | 1 568 ms |
+| **Median** | **528 ms** | **2 424 ms** | **80 ms** | **1 592 ms** |
+
+Die Logo-Anfrage beginnt 448 ms früher, das LCP fällt um 832 ms (−34 %). Beide Fassungen
+sind bitgleich bis auf den Preload-Eintrag in `index.html`; die Runden liefen abwechselnd,
+damit Lastspitzen beide Seiten treffen. Die absoluten Zeiten sind auf dieser Maschine hoch
+(Lastavg. 55 bei 8 Kernen), die Richtung ist in allen drei Runden gleich.
+
+### 6.3 Ungenutztes JavaScript im Startpfad
+
+`node scripts/ladezeit-messung.mjs --bauen --laeufe=3` (CDP-Precise-Coverage beim
+Menüaufbau, Zuordnung der Bytes über die Sourcemap): **650,0 KiB von 1 272,2 KiB
+(51,1 %)** des Einstiegs-Chunks werden beim Menü nie ausgeführt. Lighthouse nennt für
+denselben Bau 181 KiB gzip „ungenutzt“ — dieselbe Größe in komprimierter Form.
+
+Größte ungenutzte Quellmodule (Bytes im minifizierten Chunk):
+
+| Bytes | Modul |
+|---|---|
+| 46 949 | `src/client/main.js` |
+| 33 331 | `src/client/figurenBilder.js` |
+| 33 232 | `src/client/renderer.js` |
+| 25 747 | `src/engine/match.js` |
+| 19 367 | `src/shared/terrainKomposition.js` |
+| 17 885 | `src/client/sceneryPainter.js` |
+| 16 382 | `src/engine/zerstoerung.js` |
+| 16 290 | `src/client/ereignisse.js` |
+| 16 066 | `src/shared/terrainGen3.js` |
+| 13 217 | `src/client/gelaendeStil.js` |
+
+Das ist Match-Code, kein toter Code: Menü und Partie teilen sich heute einen Einstieg.
+Eine Zerlegung scheitert nicht an fehlenden Kandidaten, sondern am Importgraph:
+`engine/match.js` wird von `renderer.js`, `hud.js`, `terrainPreview.js`, `teamFarben.js`
+und `kulisseUndWasser.js` statisch importiert, `figurenBilder.js`/`sceneryPainter.js`/
+`gelaendeStil.js` von `renderer.js`. Alle diese Dateien sind in A9 gesperrt (Parallelarbeit).
+Der wirksame Weg ist ein Zwei-Phasen-Start: Menü-Bundle ohne Renderer/Engine, Partie-Code
+per `import()` beim Klick auf „Start“ (oder ein dynamischer Bootstrap in `main.js`).
+Obergrenze des Gewinns: die 650 KiB roh / ~181 KiB gzip oben. Als Vorschlag für den
+Eigentümer von `main.js`/`renderer.js`, nicht in diesem Branch gebaut.
+
+`scripts/ladezeit-messung.mjs` ist der Messweg dazu (baut mit Map in einen
+Zwischenordner, startet selbst einen statischen Server, misst Kaltstart-Coverage und
+FCP/LCP, `--json` für Maschinen). Es ist ein Messwerkzeug, kein Gate.
+
+### 6.4 Kulissen und der Rest der JPG
+
+Die Kulissen sind vollständig WebP: `src/client/assets/backdrops/`, 224 Dateien, 19 MB,
+**0 JPG** im Quellbaum und im Bau. Die frühere JPG-Ersparnis (q82, −31,2 % Basis /
+−27,9 % Stimmungen, SSIM ≥ 0,955) steht in §2 und wird hier nicht erneut gemessen.
+
+Die verbliebenen JPG waren Stofftexturen. 24 unter `stoff-texturen-neu/` (1,25 MB) laufen
+durch denselben Messweg wie die Kulissen, q82. Zwei davon bleiben JPG: Bei
+`tiefseeschlamm` und `leuchtalgen` stieg das Nahtverhältnis aus
+`scripts/stoff-naht.py` von unter 4,5 auf 5,54 bzw. 4,62 — die WebP-Fassung betont das
+Korn an der Kachelkante. Sie sind zurückgestellt, nicht repariert (Reparatur wäre eine
+Sichtänderung). Die übrigen 22:
+
+| Größe | Wert |
+|---|---|
+| JPG → WebP q82 (22 Dateien) | 1 176 279 B → 876 076 B (−25,5 %) |
+| SSIM Mittel / Min | 0,9718 / 0,9591 (`magnetgestein`) |
+| PSNR Mittel / Min | 38,1 dB / 35,4 dB |
+
+Die Texturen werden auf 512 px gekachelt und mit der Stofffarbe multipliziert; der
+Unterschied liegt im Korn, nicht in Kanten oder Farbe. Der Bau fällt um 300 609 B; im
+Ladepfad wirken 0,29 MB, weil `moos` schon vorher von der Basis-Textur
+(`stoff-texturen/moos.jpg`) überschrieben wurde und ungenutzt bleibt.
+`scripts/stoff-naht.py messwerte` wurde neu geschrieben (SHA-256 je Datei).
+
+Offen: 16 JPG (892 627 B) unter `stoff-texturen/` (Basisstoffe) und die zwei genannten
+Sonderfälle. Der Glob für die Basisstoffe in `main.js` lautet `./assets/stoff-texturen/*.jpg`;
+eine Umwandlung ohne Änderung an `main.js` würde sie aus dem Bau werfen. Vorschlag: Glob
+auf `*.{jpg,webp}` erweitern, dann dieselbe Umwandlung (−~25 %, ≈ 0,22 MB).
+
+### 6.5 Lighthouse: Reproduktion und Grenzen der Aussage
+
+Lighthouse 13.6.0 (`npm install lighthouse` in einem Zwischenordner), Chromium 141
+headless, Vorgabe-Profil mobil, nur Kategorie Performance, je drei Läufe, abwechselnd
+ohne/mit Preload auf demselben Bau.
+
+| Profil | FCP Median | LCP | TBT | Score |
+|---|---|---|---|---|
+| ohne Preload | 1 516 ms | 9 636–9 979 ms | 3 047–8 981 ms | 0,35–0,36 |
+| mit Preload | 1 205 ms | 10 137–10 212 ms | 6 334–15 035 ms | 0,35 |
+
+Diese Absolutwerte sind **nicht verwendbar**: Die Maschine lief während der Messung unter
+Lastavg. 55 bei 8 Kernen, Lighthouse selbst warnt „The tested device appears to have a
+slower CPU than Lighthouse expects“. TBT und LCP streuen um den Faktor 3–5, der
+LCP-Breakdown summiert 0,1–1,5 s, während die Metrik 10 s meldet — der Beobachter wird
+von der Hauptthread-Last überholt. Die früheren 73/74 Punkte (§1) stammen von einer ruhigen
+Maschine und wurden heute nicht reproduziert. Belastbar sind an diesem Tag nur die
+Byte-Werte (deterministisch) und der Playwright-A/B in §6.2 (gleiche Bedingungen,
+abwechselnd). Eine neue Lighthouse-Reihe auf ruhiger Maschine bleibt offen.
+
+### 6.6 Offene Punkte (gemessen, nicht gebaut)
+
+- **Code-Splitting Menü/Partie** (§6.3): 650 KiB roh / ~181 KiB gzip liegen als Match-Code im
+  Start-Chunk. Der Importgraph zieht `engine/match.js` und die Renderer-Module statisch über
+  `main.js`/`renderer.js`; beide Dateien sind in A9 gesperrt. Nötig ist ein Zwei-Phasen-Start
+  (Menü ohne Engine, Partie per `import()`), geschätzte Obergrenze siehe §6.3.
+- **Figuren-Zustands-Sheets**: 243 WebP, 46 MB unter `src/client/assets/sprite-sheets/` —
+  der größte Posten des Baus. Stichprobe der acht größten, q82, SSIM auf Schwarz komponiert:
+  3 174 304 B → 1 087 662 B (−65,7 %), SSIM 0,995–0,996. Hochgerechnet wären das ~28 MB
+  weniger `dist/` (122 → ~94 MB, also unter die alte 105-MB-Grenze). **Nicht angewendet:**
+  SSIM misst keine Alphakanten, die Sheets gehören der Sprite-Abnahme, und eine
+  Sichtprüfung bei Spielgröße (64–192 px) steht aus. Nur mit deren Freigabe umsetzen.
+- **Basis-Stofftexturen**: 16 JPG, 892 627 B unter `stoff-texturen/`; der Glob in `main.js`
+  ist auf `*.jpg` festgelegt. Nach `*.{jpg,webp}` und derselben q82-Umwandlung ≈ −0,22 MB.
+- **Lighthouse auf ruhiger Maschine**: Die Reihe aus §6.5 ist lastbedingt unbrauchbar; für
+  einen belastbaren Score die drei Läufe mobil und drei desktop auf einem unbelasteten
+  Rechner wiederholen (Vorgabe aus §1).
