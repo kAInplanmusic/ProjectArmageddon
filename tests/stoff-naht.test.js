@@ -58,8 +58,10 @@ test('keine Stofftextur hat eine Naht über der Schwelle (außer gewollten Fugen
 
 test('N-28: die fünf Texturen aus dem Audit sind nahtlos (Verhältnis unter 2)', () => {
   for (const name of N28) {
-    const eintrag = MESSWERTE.texturen.find(t => t.datei === `stoff-texturen-neu/${name}.jpg`);
+    // Nach dem WebP-Wechsel (BUILD-1) hängt die Endung vom Einzelfall ab; der Name ist stabil.
+    const eintrag = MESSWERTE.texturen.find(t => t.name === name);
     assert.ok(eintrag, `${name} fehlt`);
+    assert.match(eintrag.datei, /\.(jpg|webp)$/);
     assert.ok(eintrag.verhaeltnis < 2, `${name}: ${eintrag.verhaeltnis}`);
   }
 });

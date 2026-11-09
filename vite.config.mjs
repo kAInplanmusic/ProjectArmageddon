@@ -41,6 +41,10 @@ export default defineConfig({
     target: 'es2022',
     // Kleine Bilddateien bleiben URLs: Base64 würde den Start-JavaScript-Block aufblähen.
     assetsInlineLimit: 0,
+    // BUILD-1: Das Modul-Preload-Polyfill (~0,5 KiB) ist für `target: es2022` unnötig —
+    // jedes Ziel unterstützt `rel="modulepreload"`. Ohne Polyfill bleibt nur der
+    // eigentliche Preload-Mechanismus; gemessen −528 B roh / −336 B gzip im Einstieg.
+    modulePreload: { polyfill: false },
     // Auftragswarteschlange 3.4: Die Sourcemap ist ein Entwicklungs-Artefakt
     // (~2 MB im dist/) und gehört nicht in die Auslieferung.
     sourcemap: false,
