@@ -33,6 +33,7 @@ Geprüfter Vorschlag und Belege: [Waffenbalancing-Bericht](waffenbalance-2026-11
 Status BAL-04 (2026-11-09, `bg/bal-04`): DoT-Takt führt den Urheber bis ins `damage`-Ereignis und trägt `dot: true`; `dot_tick` bleibt reine Zusammenfassung. Belegt in `tests/schadensarten.test.js` (pa_137 33+36, zwei Urheber, DoT-Kill) und `tools/waffenbalance-audit.mjs` (pa_137: 33 direkt / 36 DoT).
 BAL-06 ist auf `bg/bal-06` umgesetzt (nur Werkzeuge/Tests, keine Spielwerte): Abnahme in [BAL-06-ABNAHME](waffenbalance-2026-11-09/BAL-06-ABNAHME.md).
 BAL-07-Stand 2026-11-09: umgesetzt auf `bg/bal-07` — Menü, HUD, Beschreibung, Figurenkarte, Schussklang und Renderer lesen `match.waffen`; `tests/waffen-anzeige-fassung.test.js` belegt 16 Fälle (pa_127 F11/F12, pa_040 21/42, Heilung/Schild/Bewegung F9 gegen F10). Zeile bleibt bis zum Merge stehen.
+BAL-13-Stand 2026-11-09: auf `bg/bal-13` mit echten 70/100/130 LP gemessen — 22 Fälle in `tests/status-oekonomie.test.js`, Beleg [BAL-13-ABNAHME](waffenbalance-2026-11-09/BAL-13-ABNAHME.md).
 
 ## INT-2026-11-09 — Abnahmen des Integrationsbranches
 
