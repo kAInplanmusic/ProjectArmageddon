@@ -4,7 +4,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { MatchController } from '../src/engine/match.js';
+import { MatchController, BASE_HEALTH } from '../src/engine/match.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
 import { getWaffe, WAFFEN_STANDARD } from '../src/shared/config/waffen-fassung.js';
 import { CLASS_IDS, combatProfile } from '../src/shared/config/classes.js';
@@ -83,6 +83,10 @@ function shot(weapon, { attackerClass = 'fernkampf', targetClass = 'fernkampf', 
     for (let da = -0.08; da <= 0.08; da += 0.02) for (const dp of [-10, 0, 10]) evaluate(coarse.angle + da, Math.max(10, Math.min(100, coarse.power + dp)));
     angle = best.angle; power = best.power; nearestPreview = round(best.d);
   }
+  /* Die tatsächlich aufgebaute Entfernung, nicht nur die angefragte. */
+  const distanceMeasured = round(Math.abs(
+    m.world.getComponent(target, 'Position', 'x') - m.world.getComponent(shooter, 'Position', 'x'),
+  ));
   const r = m.fire(shooter, angle, power, weapon.id);
   const spawned = r.projectileId == null ? null : Object.fromEntries(['damage', 'blastRadius', 'damageType', 'lifetime', 'fuseTicks', 'weaponId', 'owner', 'knockback', 'terrainDamage'].map(k => [k, m.world.getComponent(r.projectileId, 'Projectile', k)]));
   const directEvents = [], delayedEvents = [];
@@ -102,7 +106,8 @@ function shot(weapon, { attackerClass = 'fernkampf', targetClass = 'fernkampf', 
   const sum = (events, id) => round(events.filter(e => e.type === 'damage' && e.payload.entityId === id && e.payload.attackerId === shooter).reduce((n, e) => n + e.payload.amount, 0));
   const relevant = e => ['damage', 'dot_tick', 'special_effect', 'mine_placed', 'mine_exploded', 'turret_deployed', 'turn_skipped', 'heal', 'shield_absorbed'].includes(e.type);
   return {
-    distance, attackerClass, targetClass, targetNaturalHP: f.targetHP, shooterNaturalHP: f.shooterHP,
+    distance, distanceRequested: distance, distanceMeasured,
+    attackerClass, targetClass, targetNaturalHP: f.targetHP, shooterNaturalHP: f.shooterHP,
     ok: r.ok, errors: r.errors ?? [], angle: round(angle), power, nearestPreview,
     route: r.special ? 'selbst' : r.projectileId != null ? 'projektil' : 'strahl',
     special: r.special ?? null, spawned,
@@ -170,7 +175,32 @@ for (const base of WEAPONS.filter(w => !ONLY || ONLY.includes(w.id))) {
 const controlWeapon = getWaffe('pa_040');
 const a = shot(controlWeapon, { distance: 90 }), b = shot(controlWeapon, { distance: 90 });
 assert.deepEqual(a, b, 'Identische Inputs müssen identische Messungen ergeben');
-result.controls = { repeatedShotIdentical: true, fixtureHealth: CLASS_IDS.map(klass => { const f = fixture('pa_040', klass, klass); return { klass, hp: f.shooterHP, expectedHP: Math.round(100 * combatProfile(klass, null, null, KLASSEN_STANDARD).healthMultiplier) }; }) };
+/*
+ * Der gemessene Vertrag als eigene Zusammenfassung: 150 aktuelle Namen/Werte,
+ * Klassenleben und frische Munition. So ist die Abnahme ohne Auszählen der
+ * großen Messdatei prüfbar (BAL-06).
+ */
+const munition = result.weapons.reduce((z, w) => {
+  const key = Number.isFinite(w.freshAmmo) ? String(w.freshAmmo) : 'unbegrenzt';
+  z[key] = (z[key] ?? 0) + 1;
+  return z;
+}, {});
+result.contract = {
+  waffenfassung: WAFFEN_STANDARD,
+  klassenfassung: KLASSEN_STANDARD,
+  katalog: result.weapons.length,
+  eindeutigeNamen: new Set(result.weapons.map(w => w.current.displayName)).size,
+  klassenLeben: Object.fromEntries(CLASS_IDS.map(klass => [klass, Math.round(BASE_HEALTH * combatProfile(klass, null, null, KLASSEN_STANDARD).healthMultiplier)])),
+  munition,
+};
+if (!ONLY) {
+  assert.equal(result.contract.katalog, 150);
+  assert.equal(munition.unbegrenzt, 9);
+  assert.equal(munition['3'], 73);
+  assert.equal(munition['2'], 48);
+  assert.equal(munition['1'], 20);
+}
+result.controls = { repeatedShotIdentical: true, fixtureHealth: CLASS_IDS.map(klass => { const f = fixture('pa_040', klass, klass); return { klass, hp: f.shooterHP, expectedHP: Math.round(BASE_HEALTH * combatProfile(klass, null, null, KLASSEN_STANDARD).healthMultiplier) }; }) };
 for (const c of result.controls.fixtureHealth) assert.equal(c.hp, c.expectedHP);
 assert.equal(new Set(result.weapons.map(w => w.id)).size, ONLY ? ONLY.length : 150);
 fs.writeFileSync(path.join(OUT, 'messung-150.json'), JSON.stringify(result, null, 2) + '\n');

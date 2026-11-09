@@ -57,6 +57,7 @@
     "balance": "node scripts/balance-report.mjs",
     "balance:sweep": "node scripts/balance-report.mjs --sweep",
     "balance:waffen": "node scripts/waffen-balance.mjs",
+    "balance:vertrag": "node scripts/waffen-balance.mjs --vertrag",
     "balance:schaden": "PA_ZUGPAUSE_SEKUNDEN=0 node scripts/balance-schaden.mjs",
     "balance:tempo": "node scripts/balance-tempo-vergleich.mjs",
     "balance:kisten": "node scripts/kisten-zaehlung.mjs",
