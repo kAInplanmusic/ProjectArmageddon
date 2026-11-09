@@ -1,0 +1,18 @@
+npm test
+✔ HTTP: Form und Größe kommen durch die Lobby-API, Unbekanntes fällt zurück (50.89146ms)
+ℹ tests 2422
+ℹ suites 10
+ℹ pass 2422
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111495.280823
+
+npm run lint: grün.
+npm run check:docs: grün.
+git diff --check: grün.
+HTML: 150 eindeutige Einzelkarten, alle Bildpfade vorhanden, eigenständiger Export vollständig eingebettet.
+Berichtsfilter: alle Waffen, Rolle, Kategorie, exakte ID und Namenssuche grün.
+Browser: Chromium-Start bereits am 09.11.2026 mit socket() failed: Operation not permitted blockiert.
+Keine neue Laufzeit-Bildabnahme.

@@ -1,0 +1,196 @@
+[
+  {
+    "id": "BAL-01",
+    "priority": "P0",
+    "title": "Trefferfenster und echten Flächenradius trennen",
+    "evidence": "src/engine/shooting.js: feuere; src/engine/explosion.js: wendeExplosionAn; 33 Radiusabweichungen in messung-150.json",
+    "implementation": "Neue Waffen-/Mechanikfassung vorbereiten. Radius 0 bleibt als expliziter Wert erhalten; Trefferhilfe bekommt eine eigene Bedeutung. Produktkollision, Direkttreffer, Krater und Splash gemeinsam prüfen.",
+    "acceptance": "33 betroffene IDs: Nahvorbeiflug ohne Direkttreffer macht bei Radius 0 keinen Flächenschaden. Direkttreffer bleibt wirksam. Radius > 0 behält Abfallkurve. Altreplays bis F15 bleiben bitgleich.",
+    "dependsOn": []
+  },
+  {
+    "id": "BAL-02",
+    "priority": "P0",
+    "title": "Klassenfaktor in Strahl- und Projektilpfad vereinheitlichen",
+    "evidence": "src/engine/match.js: #resolveHitscan; src/engine/shooting.js: feuere; 25 Strahlwaffen in neun Klassenpaarungen",
+    "implementation": "Verbindlich festlegen, ob der Klassenfaktor auch Strahlen betrifft. Empfehlung: gleicher Schadensvertrag für beide Pfade, separat von klassenspezifischer Fluggeschwindigkeit. Änderung versionieren.",
+    "acceptance": "Neutraler Testtreffer für pa_083 liefert bei gewollter Gleichbehandlung 34,5 / 46 / 57,5 Rohschaden statt dreimal 46. Buff, Schild, Rüstung und Mehrfachwirkung werden genau einmal verrechnet. F15 unverändert.",
+    "dependsOn": []
+  },
+  {
+    "id": "BAL-03",
+    "priority": "P0",
+    "title": "Alte Archetypenboni aus neuen Klassen entfernen oder bewusst definieren",
+    "evidence": "src/engine/schadenMali.js: wende und schaden; sonderproben.json: legacyArchetype",
+    "implementation": "Bei Klassenfassung 3 keine versteckte Ableitung von archetypeId 0 zu brawler. Empfehlung: explizit neutraler Archetyp bei neuen Klassen; Altklassen weiter unverändert.",
+    "acceptance": "Giftregel 3 Züge bleibt ohne bewusst gewählte neue Resistenz 3 Züge statt 2. Alle drei neuen Klassen, Gift/Säure und Magie-/Schattenwiderstand getrennt prüfen. Altklassen 1/2 behalten ihre Boni.",
+    "dependsOn": []
+  },
+  {
+    "id": "BAL-04",
+    "priority": "P0",
+    "title": "Urheber von Schaden über Zeit bis Schadensereignis erhalten",
+    "evidence": "src/engine/schadenMali.js: Zugtick/applyDamage; pa_137 Ereignisse in messung-150.json",
+    "implementation": "p.by liegt vor, applyDamage erhält null. Zurechnung und Killvertrag explizit bestimmen; Ereignisauswertung darf nicht alle DoT-Schäden als Umwelt behandeln. Änderung mit Replay-/Statistikvertrag abstimmen.",
+    "acceptance": "Pa_137: 33 direkter Schaden und 36 nachgewiesener Brand im Kontrollaufbau werden dem richtigen Angreifer zugerechnet; kein Doppelzählen von damage und dot_tick. Zwei Urheber und ein DoT-Kill erhalten eigene Gegenproben.",
+    "dependsOn": []
+  },
+  {
+    "id": "BAL-05",
+    "priority": "P1",
+    "title": "Selbstauffüllenden Nachschub als Ökonomieregel entscheiden",
+    "evidence": "src/engine/shooting.js: restoreAmmo; sonderproben.json: 10 Anwendungen pro Nachschubwaffe",
+    "implementation": "pa_119, pa_122, pa_125 können sich selbst auffüllen. Empfehlung: auslösende Nachschubwaffe vom Auffüllen ausschließen oder Ressourcenerzeugung ausdrücklich als Rolle bepreisen. Zufallsmunition bei pa_085/pa_100 einbeziehen.",
+    "acceptance": "Mindestens 20 eigene Anwendungen mit Inventar nur aus Reserve/Nachschub und mit zusätzlicher endlicher Waffe. Munitionsbilanz, Cooldowns, Inventarreihenfolge und Obergrenze 5 dokumentiert; keine unbeabsichtigte positive Rückkopplung.",
+    "dependsOn": [
+      "BAL-06"
+    ]
+  },
+  {
+    "id": "BAL-06",
+    "priority": "P0",
+    "title": "Bestehende Balancewerkzeuge auf den tatsächlichen Spielvertrag bringen",
+    "evidence": "scripts/waffen-balance.mjs: main/aufbau/ausreichend; scripts/balance-schaden.mjs; MatchController-Konstruktor",
+    "implementation": "getWaffe für Auswahl, Klassifikation und Vorschau verwenden. Klassenfassung, Schaden, Wind, Bodenobjekte und Munition explizit angeben. Frischmunition aus Inventar statt maxAmmo; verkürzte Distanzen und nicht treffende Proben nicht still als Vollabdeckung behandeln.",
+    "acceptance": "Alle 150 aktuelle Namen/Werte; Klassenleben 130/100/70; 9 unbegrenzte, 73 Drei-, 48 Zwei-, 20 Einschusswaffen. Alte Fassung separat reproduzierbar. Jede Distanz bleibt als angefragt/gemessen sichtbar.",
+    "dependsOn": []
+  },
+  {
+    "id": "BAL-07",
+    "priority": "P1",
+    "title": "Menü, HUD, Beschreibung und Renderer an dieselbe Partiefassung binden",
+    "evidence": "src/client/waffenMenue.js: getWeapon/getWaffe; src/client/hud.js; src/client/renderer.js",
+    "implementation": "Partiefassung ausdrücklich weiterreichen statt im Detail Standardfassung und in Kacheln Grundkatalog zu mischen. Mine pa_127 sowie Schadens-, Farb- und Munitionsanzeige gemeinsam abnehmen.",
+    "acceptance": "F11 zeigt historische Teleportplattform, F12/F15 die aktuelle Mine. Maschinenpistole zeigt zur Partie passende 21/42 Werte. Heilung/Schild/Bewegung zeigen reale Nutzwerte; Altreplays erhalten ihre Darstellung.",
+    "dependsOn": [
+      "BAL-06"
+    ]
+  },
+  {
+    "id": "BAL-08",
+    "priority": "P1",
+    "title": "Griffe und Wirkspitzen semantisch korrigieren",
+    "evidence": "sichtbefunde-150.json: Anker/Ankerprüfung; sichtpruefung-01 bis -10.jpg",
+    "implementation": "Jede markierte Waffe in nativer Orientierung prüfen. Mindestens pa_001/003/004/009/012/018/023/031/034/038/040/051/055/068/136 haben klare Richtungs-/Griffkonflikte; weitere Ankerprüfungen stehen pro ID im Befund.",
+    "acceptance": "Links/rechts, drei Zielwinkel, Ruhe/Ziehen/Schuss und drei Figurengrößen im echten Renderer. Griff sitzt am nutzbaren Heft, Wirkspitze am tatsächlichen Ende, Spiegelung bleibt korrekt. Keine geometrische Randheuristik als Freigabe.",
+    "dependsOn": []
+  },
+  {
+    "id": "BAL-09",
+    "priority": "P1",
+    "title": "Freistellung und Ruheeffekte gezielt bereinigen",
+    "evidence": "sichtbefunde-150.json: Freistellung/Dauereffekt; bilddaten-150.json",
+    "implementation": "Weiße/braune Flächen, Restkanten und fremde Rahmen nur bei betroffenen Rollen entfernen. Bewusste UI-Kacheln nicht pauschal entrahmen. Aktive Flammen, Mündungsblitze und Schweife von ruhenden Körperbildern trennen.",
+    "acceptance": "Dunkler/heller Spielgrund; Menü 24/64, HiDPI und native Handgröße. Jede Änderung mit Vorher/Nachher pro ID und ohne Verlust von Waffenbestandteilen.",
+    "dependsOn": [
+      "BAL-08"
+    ]
+  },
+  {
+    "id": "BAL-10",
+    "priority": "P1",
+    "title": "26 Zusatzanimationen vor Produktanschluss neu abnehmen",
+    "evidence": "Unveränderte drei Animationsübersichten im Audit vom 8.11.; src/client/assets/weapon-sprites/anim",
+    "implementation": "Nicht geladene Sheets nicht als fertige Animationen zählen. Fremde Identitäten ersetzen, insbesondere Bumerang, Tentakelgift, Endlosschleife, Alte Dame, Astralkrieger, Wassermelone, Weltendrache und Feuerschild. pa_112/114 sind bytegleich.",
+    "acceptance": "Je Blatt Identität aller acht Frames, Alpha, Richtung, Bewegung und Rolle prüfen. Freigabe vor Loaderanschluss. Schlechte Sheets bleiben ausgeschaltet; starre Werkzeuge dürfen prozedurale Animation behalten.",
+    "dependsOn": [
+      "BAL-08",
+      "BAL-09"
+    ]
+  },
+  {
+    "id": "BAL-11",
+    "priority": "P1",
+    "title": "Hand-, Rücken-, Aufstell-, Beschwörungs- und Symbolrollen festlegen",
+    "evidence": "38 echte Selbstwirkungen, 87 Projektilstarts, 25 Strahlpfade; 150 individuelle Sichtbefunde",
+    "implementation": "Eigene Bildrolle pro Waffe ableiten. Ganze Figuren, Pferde, Geschütze und Bäume nicht ungeprüft als normale Handwaffen führen. Menüauslöser, Weltobjekt und Projektil dürfen verschiedene passende Bilder erhalten.",
+    "acceptance": "Alle 150 IDs haben dokumentierte Rolle; Spezialfälle Rucksack, Gleitschirm, Statue, Boot, Mine und Beschwörung sind im Spiel semantisch verständlich. 96 vorhandene Geschossbilder werden nicht als 96 echte Projektilpfade ausgegeben.",
+    "dependsOn": [
+      "BAL-07"
+    ]
+  },
+  {
+    "id": "BAL-12",
+    "priority": "P1",
+    "title": "Reale Treffer- und Kollisionsmatrix vervollständigen",
+    "evidence": "messung-150.json: fünf Distanzen; bodenprobe.json: zwei Seeds, 1392 Versuche",
+    "implementation": "Pa_039/065/066 bekommen passende Boden-/Anflugszenarien: Null im Luftzielaufbau ist kein Defektnachweis. Zusätzlich zwei Ziele, Wanddeckung, Randtreffer, Durchschlag, Zielsuche, Landung, Zünder, Seil und Wasser prüfen.",
+    "acceptance": "Jede der 112 Angriffswaffen hat mindestens einen vollständigen zielgerichteten Kollisions-/Schadensnachweis in ihrer echten Rolle; 38 Selbstwirkungen haben ihren Nutzen separat belegt. Kontrollierter Explosionsaufruf ersetzt keinen Kollisionsfall.",
+    "dependsOn": [
+      "BAL-01",
+      "BAL-02",
+      "BAL-06"
+    ]
+  },
+  {
+    "id": "BAL-13",
+    "priority": "P1",
+    "title": "Status-, Schild-, Heil- und Buffökonomie mit echten LP testen",
+    "evidence": "messung-150.json: Effekte/Statusverläufe; sonderproben.json",
+    "implementation": "1000 LP dient der unbeschnittenen Direktmessung und verändert den 20%-DoT-Deckel. Deshalb echte 70/100/130 LP, wiederholte Treffer, zwei Urheber, Reinigung, Wasser, Schildrückwirkung und Buffdauer getrennt messen.",
+    "acceptance": "Kein unbeabsichtigtes Dauerstun oder unendliches Stapeln. Heilgrenze, 40/55/75 Schildpunkte, 20%/35% Rüstung, Überlappungen und ablaufende Verstärkung jeweils mit Gegenprobe. Nachschub und Turrets mit wirklichen Inventaren/Zielen.",
+    "dependsOn": [
+      "BAL-03",
+      "BAL-04",
+      "BAL-05"
+    ]
+  },
+  {
+    "id": "BAL-14",
+    "priority": "P2",
+    "title": "Feinbalancing pro Rolle statt globaler Schadensfaktoren",
+    "evidence": "Bericht: 109 Trefferwaffen im Luftzielaufbau; direkter 100-LP-STK als Rechenmodell",
+    "implementation": "Erst nach Korrektheit neue Balancefassung bewerten. Pro Rolle direkten Schaden, DoT, Kontrolle, Trefferbreite, Terrainnutzen, Weggewinn, Risiko, Munition und Pause gegen gleichartige Seltenheit vergleichen. Bestehendes Ziel 3–4 gute Treffer als Ausgang, Ultimates/Spezialrollen begründet ausnehmen.",
+    "acceptance": "Vorher/Nachher mit identischen Seeds, aktuellem Klassenvertrag und echten LP. Änderungen einzeln begründet, kein pauschaler Nerf aus einem Besttreffer. Seltenheit, Loot und Magazin-Killpotenzial sind zusammen bewertet.",
+    "dependsOn": [
+      "BAL-01",
+      "BAL-02",
+      "BAL-03",
+      "BAL-04",
+      "BAL-05",
+      "BAL-06",
+      "BAL-12",
+      "BAL-13"
+    ]
+  },
+  {
+    "id": "BAL-15",
+    "priority": "P1",
+    "title": "Browser-, Touch- und Bewegungsabnahme nachholen",
+    "evidence": "Lokaler Chromium-Start weiterhin durch System-Socket-EPERM blockiert",
+    "implementation": "Waffenmenü, HUD, Animation und Schadenanzeige im startfähigen Chromium sowie iPhone/Safari sichten. Alle 150 statischen Sichtbefunde sind durchgeführt; laufende Animation, Handkontakt und Touch-Hitflächen sind eigene Abnahme.",
+    "acceptance": "Betroffene E2E-Specs waffenmenue/waffen-animation und vollständige Suite grün; keine ungeprüften Baselineupdates. 24/64/128 px, geringe Bewegung, Kontrast, Links-/Rechtszielung und klares Nutzenfeedback pro Rolle.",
+    "dependsOn": [
+      "BAL-07",
+      "BAL-08",
+      "BAL-09",
+      "BAL-11"
+    ]
+  },
+  {
+    "id": "BAL-16",
+    "priority": "P1",
+    "title": "Namen und Bildversprechen gegen tatsächlich vorhandene Mechanik abgleichen",
+    "evidence": "Pa_049 Rückkehr, pa_054 Streuschuss, pa_042/045 Salven, pa_127 Mine; Einzelbefunde",
+    "implementation": "Bewusst entscheiden, welche Signaturmechanik benötigt wird und welche nur bildliche Benennung ist. Empfehlung: erst ehrliche Anzeige, dann gezielte Individualisierung; keine neuen Mechaniken in einem Zahlenpatch verstecken.",
+    "acceptance": "Cluster-/Schrot-/Salvenmarkierung nur für belegte Mechanik oder eindeutig anders benannt. Pa_127 hat Mine in Name, Icon und Weltobjekt; Zauberrolle/Buch identisch erkennbar. Zielsuche, Multihit und Beschwörung durch echte Ereignisse belegt.",
+    "dependsOn": [
+      "BAL-07",
+      "BAL-11",
+      "BAL-12"
+    ]
+  },
+  {
+    "id": "BAL-17",
+    "priority": "P2",
+    "title": "Karten-, Fraktions- und Partienabdeckung staffeln",
+    "evidence": "Bisher keine Winrate-Erhebung aus diesem Audit",
+    "implementation": "Schnelle deterministische Grenzfälle zuerst, dann repräsentative Partien in 2/4-Spieler-Konfigurationen. Fünf Größen, sieben Formate, 20 Biome und Wind-/Wasser-/Materialfälle als Abdeckungsmatrix führen; Fraktionsgrafik getrennt vom Klassenvertrag halten.",
+    "acceptance": "Nicht ausgeführte Zellen explizit offen. Volles 150×5×7×20×3-Seed-Kreuzprodukt umfasst bereits 315000 Aufbauten; keine Vollabdeckung aus wenigen Beispielen behaupten. Winrates erst mit Stichprobenumfang, Seedliste und Unsicherheit veröffentlichen.",
+    "dependsOn": [
+      "BAL-14",
+      "BAL-15",
+      "BAL-16"
+    ]
+  }
+]

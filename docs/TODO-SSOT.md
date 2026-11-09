@@ -4,6 +4,30 @@
 
 Regeln: Nichts erfinden. „Status ungeprüft“ heißt: aus einem älteren Bericht übernommen, noch nicht gegen den Code belegt. Entscheidungen des Auftraggebers stehen in Abschnitt 0.
 
+## BAL-2026-11-09 — Waffenbalancing vorbereiten
+
+Geprüfter Vorschlag und Belege: [Waffenbalancing-Bericht](waffenbalance-2026-11-09/BERICHT.md), [150 Einzelprüfungen](waffenbalance-2026-11-09/EINZELPRUEFUNG-150.md). Keine Spielwerte geändert. Fortschritt ausschließlich hier führen; Umsetzungsvorschlag mit Abhängigkeiten in `waffenbalance-2026-11-09/massnahmen-17.json`.
+
+| ID | Priorität | Offene Arbeit | Abnahme |
+|---|---|---|---|
+| BAL-01 | P0 | Trefferfenster und echten Flächenradius trennen | 33 betroffene IDs: Nahvorbeiflug ohne Direkttreffer macht bei Radius 0 keinen Flächenschaden. Direkttreffer bleibt wirksam. Radius > 0 behält Abfallkurve. Altreplays bis F15 bleiben bitgleich. |
+| BAL-02 | P0 | Klassenfaktor in Strahl- und Projektilpfad vereinheitlichen | Neutraler Testtreffer für pa_083 liefert bei gewollter Gleichbehandlung 34,5 / 46 / 57,5 Rohschaden statt dreimal 46. Buff, Schild, Rüstung und Mehrfachwirkung werden genau einmal verrechnet. F15 unverändert. |
+| BAL-03 | P0 | Alte Archetypenboni aus neuen Klassen entfernen oder bewusst definieren | Giftregel 3 Züge bleibt ohne bewusst gewählte neue Resistenz 3 Züge statt 2. Alle drei neuen Klassen, Gift/Säure und Magie-/Schattenwiderstand getrennt prüfen. Altklassen 1/2 behalten ihre Boni. |
+| BAL-04 | P0 | Urheber von Schaden über Zeit bis Schadensereignis erhalten | Pa_137: 33 direkter Schaden und 36 nachgewiesener Brand im Kontrollaufbau werden dem richtigen Angreifer zugerechnet; kein Doppelzählen von damage und dot_tick. Zwei Urheber und ein DoT-Kill erhalten eigene Gegenproben. |
+| BAL-05 | P1 | Selbstauffüllenden Nachschub als Ökonomieregel entscheiden | Mindestens 20 eigene Anwendungen mit Inventar nur aus Reserve/Nachschub und mit zusätzlicher endlicher Waffe. Munitionsbilanz, Cooldowns, Inventarreihenfolge und Obergrenze 5 dokumentiert; keine unbeabsichtigte positive Rückkopplung. |
+| BAL-06 | P0 | Bestehende Balancewerkzeuge auf den tatsächlichen Spielvertrag bringen | Alle 150 aktuelle Namen/Werte; Klassenleben 130/100/70; 9 unbegrenzte, 73 Drei-, 48 Zwei-, 20 Einschusswaffen. Alte Fassung separat reproduzierbar. Jede Distanz bleibt als angefragt/gemessen sichtbar. |
+| BAL-07 | P1 | Menü, HUD, Beschreibung und Renderer an dieselbe Partiefassung binden | F11 zeigt historische Teleportplattform, F12/F15 die aktuelle Mine. Maschinenpistole zeigt zur Partie passende 21/42 Werte. Heilung/Schild/Bewegung zeigen reale Nutzwerte; Altreplays erhalten ihre Darstellung. |
+| BAL-08 | P1 | Griffe und Wirkspitzen semantisch korrigieren | Links/rechts, drei Zielwinkel, Ruhe/Ziehen/Schuss und drei Figurengrößen im echten Renderer. Griff sitzt am nutzbaren Heft, Wirkspitze am tatsächlichen Ende, Spiegelung bleibt korrekt. Keine geometrische Randheuristik als Freigabe. |
+| BAL-09 | P1 | Freistellung und Ruheeffekte gezielt bereinigen | Dunkler/heller Spielgrund; Menü 24/64, HiDPI und native Handgröße. Jede Änderung mit Vorher/Nachher pro ID und ohne Verlust von Waffenbestandteilen. |
+| BAL-10 | P1 | 26 Zusatzanimationen vor Produktanschluss neu abnehmen | Je Blatt Identität aller acht Frames, Alpha, Richtung, Bewegung und Rolle prüfen. Freigabe vor Loaderanschluss. Schlechte Sheets bleiben ausgeschaltet; starre Werkzeuge dürfen prozedurale Animation behalten. |
+| BAL-11 | P1 | Hand-, Rücken-, Aufstell-, Beschwörungs- und Symbolrollen festlegen | Alle 150 IDs haben dokumentierte Rolle; Spezialfälle Rucksack, Gleitschirm, Statue, Boot, Mine und Beschwörung sind im Spiel semantisch verständlich. 96 vorhandene Geschossbilder werden nicht als 96 echte Projektilpfade ausgegeben. |
+| BAL-12 | P1 | Reale Treffer- und Kollisionsmatrix vervollständigen | Jede der 112 Angriffswaffen hat mindestens einen vollständigen zielgerichteten Kollisions-/Schadensnachweis in ihrer echten Rolle; 38 Selbstwirkungen haben ihren Nutzen separat belegt. Kontrollierter Explosionsaufruf ersetzt keinen Kollisionsfall. |
+| BAL-13 | P1 | Status-, Schild-, Heil- und Buffökonomie mit echten LP testen | Kein unbeabsichtigtes Dauerstun oder unendliches Stapeln. Heilgrenze, 40/55/75 Schildpunkte, 20%/35% Rüstung, Überlappungen und ablaufende Verstärkung jeweils mit Gegenprobe. Nachschub und Turrets mit wirklichen Inventaren/Zielen. |
+| BAL-14 | P2 | Feinbalancing pro Rolle statt globaler Schadensfaktoren | Vorher/Nachher mit identischen Seeds, aktuellem Klassenvertrag und echten LP. Änderungen einzeln begründet, kein pauschaler Nerf aus einem Besttreffer. Seltenheit, Loot und Magazin-Killpotenzial sind zusammen bewertet. |
+| BAL-15 | P1 | Browser-, Touch- und Bewegungsabnahme nachholen | Betroffene E2E-Specs waffenmenue/waffen-animation und vollständige Suite grün; keine ungeprüften Baselineupdates. 24/64/128 px, geringe Bewegung, Kontrast, Links-/Rechtszielung und klares Nutzenfeedback pro Rolle. |
+| BAL-16 | P1 | Namen und Bildversprechen gegen tatsächlich vorhandene Mechanik abgleichen | Cluster-/Schrot-/Salvenmarkierung nur für belegte Mechanik oder eindeutig anders benannt. Pa_127 hat Mine in Name, Icon und Weltobjekt; Zauberrolle/Buch identisch erkennbar. Zielsuche, Multihit und Beschwörung durch echte Ereignisse belegt. |
+| BAL-17 | P2 | Karten-, Fraktions- und Partienabdeckung staffeln | Nicht ausgeführte Zellen explizit offen. Volles 150×5×7×20×3-Seed-Kreuzprodukt umfasst bereits 315000 Aufbauten; keine Vollabdeckung aus wenigen Beispielen behaupten. Winrates erst mit Stichprobenumfang, Seedliste und Unsicherheit veröffentlichen. |
+
 ## INT-2026-11-09 — Abnahmen des Integrationsbranches
 
 | ID | Arbeit | Konkrete Abnahme |
