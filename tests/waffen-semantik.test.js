@@ -223,8 +223,7 @@ test('W12: faellt der Atlas aus, bleibt es dauerhaft beim 64er-Bild', async () =
     ladeManifest: async () => { throw new Error('kein Manifest'); },
     ladeAtlasUrl: async () => 'atlas_icons.png',
   });
-  let gemeldet = 0;
-  assert.equal(lader.hole({ id: 'pa_001' }, () => { gemeldet += 1; }), null);
+  assert.equal(lader.hole({ id: 'pa_001' }, () => {}), null);
   await new Promise(r => setTimeout(r, 10));
   assert.equal(lader.zustand().manifest, 'fehlt');
   assert.equal(lader.hole({ id: 'pa_001' }), null);

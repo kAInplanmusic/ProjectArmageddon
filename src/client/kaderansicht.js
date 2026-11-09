@@ -15,7 +15,7 @@ import { RARITY_IDS, STUFEN } from '../engine/systems/lootSystem.js';
 import { NEUE_BIOME } from '../shared/config/biome-neu.js';
 import { PLANET_BIOM_IDS } from '../shared/config/biome-planet.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
-import { uebersichtFuerHilfe, classCounterplay, combatProfile } from '../shared/config/classes.js';
+import { uebersichtFuerHilfe, classCounterplay } from '../shared/config/classes.js';
 import { COMBAT_ROLES, classOf, CHARAKTER_PROFIL_HINWEIS } from '../shared/config/factions.js';
 import { KISTEN_STUFEN_GEWICHT, KISTEN_MUNITION_STUFE } from '../shared/config/kisten.js';
 import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js';
