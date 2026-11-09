@@ -49,7 +49,7 @@
  */
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT } from '../shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE } from '../shared/config/waffen-fassung.js';
 import { WIND_JE_ZUG, WIND_FAKTOR_MAX } from '../shared/config/wind.js';
 import { combatProfile, klassenKennung } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
@@ -251,7 +251,15 @@ function feuere(quelle, playerId, angle, power, weaponId) {
   if (weapon.delivery === 'hitscan') {
     const hit = quelle.resolveHitscan(x, y, angle, power, weapon, playerId);
     quelle.events.emit('hitscan', { playerId, weaponId: weapon.id, ...hit });
-    nachStrahl(quelle, special, playerId, weapon, angle, hit);
+    /*
+     * Waffenfassung 17 (BAL-02): Der strahlgebundene Zusatzschaden (Kettenblitz)
+     * folgt demselben Klassenvertrag wie der Direkttreffer. `combatProfile()`
+     * liefert den Faktor; er wirkt EINMAL auf den Basisschaden, davor der Buff —
+     * der Sprungabfall (`falloff`) kommt erst danach. Bis Fassung 16 bleibt der
+     * Kettenblitz beim alten Wert (bitgleiche Replays).
+     */
+    const klassenFaktor = quelle.waffenFassung >= WAFFEN_KLASSE ? profile.damageMultiplier : 1;
+    nachStrahl(quelle, special, playerId, weapon, angle, hit, klassenFaktor);
     quelle.applyCooldown(playerId, weapon);
     return { ok: true, projectileId: null, hit };
   }
@@ -382,8 +390,8 @@ function feuere(quelle, playerId, angle, power, weaponId) {
  * Wirkungen eines Strahls, die über den Treffer hinausgehen: Kettenblitz (Sprung
  * auf nahe Gegner) und Bohrstrahl (Tunnel im Gelände).
  */
-function nachStrahl(quelle, effekt, schuetzeId, weapon, winkel, hit) {
-  if (effekt?.kind === EFFECT_KIND.CHAIN && hit.target !== null) kettenblitz(quelle, effekt, schuetzeId, weapon, hit.target);
+function nachStrahl(quelle, effekt, schuetzeId, weapon, winkel, hit, klassenFaktor = 1) {
+  if (effekt?.kind === EFFECT_KIND.CHAIN && hit.target !== null) kettenblitz(quelle, effekt, schuetzeId, weapon, hit.target, klassenFaktor);
   if (effekt?.kind === EFFECT_KIND.DRILL && hit.target === null && hit.hit && !hit.blocked) bohre(quelle, effekt, winkel, hit);
 }
 
@@ -393,12 +401,18 @@ function nachStrahl(quelle, effekt, schuetzeId, weapon, winkel, hit) {
  * auf `falloff` des vorigen. Gleichstände entscheidet die kleinere Kennung —
  * kein Zufall, gleiche Lage ergibt denselben Blitz.
  */
-function kettenblitz(quelle, effekt, schuetzeId, weapon, erstesZiel) {
+function kettenblitz(quelle, effekt, schuetzeId, weapon, erstesZiel, klassenFaktor = 1) {
   const schuetze = quelle.players.find(entry => entry.entityId === schuetzeId);
   const reichweite = effekt.range * weitenFaktor(quelle.width);
   const getroffen = new Set([schuetzeId, erstesZiel]);
   let aktuell = erstesZiel;
-  let schaden = weapon.damage * quelle.statuses.damageMultiplier(schuetzeId);
+  /*
+   * Der Klassenfaktor kommt von `feuere` (Waffenfassung 17, BAL-02) und wirkt
+   * EINMAL auf den Basisschaden; der Sprungabfall multipliziert danach. So ist
+   * die Mehrfachwirkung derselbe Vertrag wie der Direkttreffer und nicht ein
+   * zweiter, unabhängiger Schadenspfad.
+   */
+  let schaden = weapon.damage * klassenFaktor * quelle.statuses.damageMultiplier(schuetzeId);
   for (let sprung = 0; sprung < effekt.jumps; sprung++) {
     const ax = quelle.world.getComponent(aktuell, 'Position', 'x') ?? 0;
     const ay = quelle.world.getComponent(aktuell, 'Position', 'y') ?? 0;

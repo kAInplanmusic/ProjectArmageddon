@@ -25,7 +25,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { MatchController } from '../src/engine/match.js';
-import { getWaffe, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER } from '../src/shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_KLASSE, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER } from '../src/shared/config/waffen-fassung.js';
 
 /** Die 33 im Audit W01 belegten IDs (Katalogradius 0, im Motor aber 24). */
 const BETROFFENE_IDS = Object.freeze([
@@ -83,9 +83,10 @@ function schiessen(match, schuetze, weaponId, winkel = 0, kraft = 100) {
   return { schuss, ereignisse };
 }
 
-test('Waffenfassung 16 ist Standard; 15 bleibt gültig und bitgleich', () => {
+test('Waffenfassung 17 ist Standard; 16 und 15 bleiben gültig und bitgleich', () => {
   assert.equal(WAFFEN_TREFFER, 16);
-  assert.equal(WAFFEN_STANDARD, WAFFEN_TREFFER);
+  assert.equal(WAFFEN_KLASSE, 17);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_KLASSE);
   assert.equal(WAFFEN_TEMPO, 15);
 });
 

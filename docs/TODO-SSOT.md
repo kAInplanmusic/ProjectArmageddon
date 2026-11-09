@@ -457,3 +457,7 @@ Legende: "nur erledigt" = alle Punkte behoben/belegt, sonst nichts Offenes; "üb
 | verkabelung.md | nur erledigt (Fünf-Stellen-Liste: kartentyp, crateType, dots/boost, t.roundsLeft, rules.js alle im Code behoben); Verdacht Barrels erledigt. Wissen: A-H-Verdrahtungsklassifikation und Pipeline-Stationen 1-5 (Ausgangsstand 2d365d3) |
 | verkabelung-p1-terrain-2026-10-02.md | nur erledigt (Client nutzt kartentyp; 34 % Abweichung Befund behoben). |
 | waffen-verkabelung.md | übernommen (ENG-8). Wissen: Feldweise Tabelle 41 Waffenfelder / Leser / Gate, Begründungen der 12 bewusst leseroseren Felder (auch im Generator `FELDER_OHNE_PRODUKTLESER_BEWUSST`) |
+
+## Statusvermerk BAL-02 (2026-11-09, Branch `bg/bal-02`)
+
+Umgesetzt als Waffenfassung 17 (`WAFFEN_KLASSE`): `match.js#resolveHitscan` und der Kettenblitz rechnen den Strahlschaden jetzt wie der Projektilpfad (`weapon.damage × Klassenfaktor × Buff`, jeder Faktor genau einmal); Schild/Rüstung bleiben allein im `DamageSystem`. Belegt in `tests/klassenfaktor-pfade.test.js`: pa_083 liefert neutral 34,5 / 46 / 57,5 statt dreimal 46, die Mehrfachwirkung nimmt den Klassenfaktor einmal vor dem Sprungabfall, und F15/F16 bleiben bitgleich (Zustandshash `8b36dc7a`). Nur der Strahlpfad ist betroffen; die übrigen BAL-Punkte bleiben offen.
