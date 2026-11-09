@@ -1,7 +1,7 @@
 {
-  "_hinweis": "Grenzen für scripts/bundle-gate.mjs (Bytes; gzip Stufe 9). Gemessen 2026-11-09 nach dem Kader-Split: haupt 1261391/345178, start 1371239/372991, dist 102090064. Die Grenzen sind gegenüber 2026-11-04 UNVERÄNDERT — der Bau liegt durch das lazy geladene Kader-Modul (eigenes JS + eigenes CSS mit den neun Fraktionsschriften) wieder unter ihnen. Spielraum jetzt: haupt +3,1 % roh, start +2,5 % roh. Anheben nur mit Begründung im Commit, senken jederzeit. Messwerte und Verlauf: docs/ladezeit.md.",
-  "haupt": { "roh": 1300000, "gzip": 357000 },
-  "start": { "roh": 1405000, "gzip": 385000 },
+  "_hinweis": "Grenzen für scripts/bundle-gate.mjs (Bytes; gzip Stufe 9). Gemessen 2026-11-09 nach der Integration der zehn Vorarbeiter-Branches: haupt 1317305/360458, start 1427945/388453, dist 103769555. Die Grenzen wurden gegenüber dem Kader-Split um rund 1 % angehoben, weil die Integration sichtbare Funktionen in den Start-Chunk bringt: Fraktions-Embleme und Teamfarben (A11), Figurenkarte, Waffen-HUD, Hymnensteuerung (A14), 4K-Kulissenwahl und Zustandssheets. Der Haupt-Chunk war zuvor bereits durch den Kader-Split entlastet; eine weitere Lazy-Zerlegung der Anzeige-Module würde den Start verzögern und den Fraktionszustand über mehrere Chunks verteilen. Anheben nur mit Begründung im Commit, senken jederzeit. Messwerte und Verlauf: docs/ladezeit.md.",
+  "haupt": { "roh": 1330000, "gzip": 363500 },
+  "start": { "roh": 1440000, "gzip": 391500 },
   "dist": { "roh": 105000000 },
   "sourcemaps": 0
 }

@@ -8,8 +8,7 @@
  *
  * @module renderer
  */
-import { WATER_SCALE } from '../engine/match.js';
-import { TEAM_COLORS } from '../engine/match.js';
+import { WATER_SCALE, TEAM_COLORS } from '../engine/match.js';
 import { teamMarke } from './teamFarben.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
@@ -17,6 +16,7 @@ import { cookieStufe, COOKIE_HUNGER } from '../shared/config/cookie.js';
 import { TierBuehne } from './tierBuehne.js';
 import { holeTierPose, ladeTierPosenVor } from './tierBilder.js';
 import { prefersReducedMotion } from './dom.js';
+import { zeichneWindPfeil } from './windPfeil.js';
 import {
   erzeugePartikel, schreitePartikelFort,
   erzeugeStrahl, erzeugeBlitz, schreiteEffekteFort,
@@ -596,50 +596,6 @@ export class Renderer {
       }
     }
   }
-
-  /**
-   * Windanzeige als Pfeil im Spielfeld.
-   * Länge und Farbe skalieren mit der Windstärke, die Richtung mit dem Vorzeichen.
-   */
-  #drawWindArrow(wind) {
-    const magnitude = Math.abs(wind ?? 0);
-    if (magnitude < 0.0005) return;
-
-    const maxWind = 0.05;
-    const strength = Math.min(1, magnitude / maxWind);
-    const cx = this.width / 2;
-    const cy = 46;
-    const halfLength = 20 + strength * 46;
-    const direction = wind > 0 ? 1 : -1;
-    const color = strength > 0.6 ? '#ef476f' : strength > 0.3 ? '#f4a261' : '#8ba0b4';
-
-    // Drei Pfeile, versetzt — liest sich als "Strömung".
-    this.ctx.save();
-    for (let i = -1; i <= 1; i++) {
-      const y = cy + i * 11;
-      const alpha = i === 0 ? 1 : 0.35;
-      const length = i === 0 ? halfLength : halfLength * 0.65;
-      const startX = cx - direction * length * 0.5;
-      const endX = cx + direction * length * 0.5;
-
-      this.ctx.globalAlpha = alpha;
-      this.ctx.strokeStyle = color;
-      this.ctx.lineWidth = i === 0 ? 3 : 2;
-      this.ctx.beginPath();
-      this.ctx.moveTo(startX, y);
-      this.ctx.lineTo(endX, y);
-      this.ctx.stroke();
-
-      // Pfeilspitze
-      this.ctx.beginPath();
-      this.ctx.moveTo(endX - direction * 9, y - 6);
-      this.ctx.lineTo(endX, y);
-      this.ctx.lineTo(endX - direction * 9, y + 6);
-      this.ctx.stroke();
-    }
-    this.ctx.restore();
-  }
-
   /**
    * Die Ladeanzeige: ein schmaler Balken in der Bildmitte.
    *
@@ -2495,7 +2451,7 @@ export class Renderer {
     this.#drawMaelstrom(state.maelstrom);
     // Das Vorzeichen liegt über der Welt, aber unter der Anzeige.
     this.#drawOmen();
-    this.#drawWindArrow(state.wind);
+    zeichneWindPfeil(this.ctx, this.width, state.wind);
     // Die Ladeanzeige liegt ÜBER dem Geschehen: Sie gehört zur Eingabe des
     // Spielers, nicht zur Welt — sie darf nicht hinter einer Figur verschwinden.
     this.#drawLadeanzeige(ladeAnteil);

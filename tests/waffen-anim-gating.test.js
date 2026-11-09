@@ -20,6 +20,7 @@ import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
+import { ohneKommentare } from './helfer/ohne-kommentare.js';
 import {
   ANIM_FREIGABE,
   ANIM_ROLLEN_NAMEN,
@@ -57,16 +58,6 @@ function produktdateien() {
 
 function sha256(datei) {
   return createHash('sha256').update(readFileSync(datei)).digest('hex');
-}
-
-/** Entfernt Kommentare, damit ein Pfad in einer Dokumentation nicht als Lader gilt. */
-function ohneKommentare(text, datei) {
-  if (/\.html$/.test(datei)) return text.replace(/<!--[\s\S]*?-->/g, '');
-  const ohneBlock = text.replace(/\/\*[\s\S]*?\*\//g, '');
-  return ohneBlock
-    .split('\n')
-    .filter(zeile => !/^\s*(\/\/|\*)/.test(zeile))
-    .join('\n');
 }
 
 test('kein Produktpfad verweist auf die Zusatzanimationen', () => {

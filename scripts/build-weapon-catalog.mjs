@@ -764,8 +764,6 @@ export const FELDER_OHNE_PRODUKTLESER_BEWUSST = Object.freeze({
     + 'Absicht bleibt daneben stehen, weil ohne sie nicht pruefbar waere, ob die Ableitung '
     + 'stimmt (`npm run check:fuses` vergleicht beide und schlaegt bei Widerspruch fehl). '
     + 'In `src/engine/shooting.js` steht der Name nur in einem Kommentar.',
-  icon: 'Dateiname des Quell-Assets (z.B. IMG_9033.PNG). Er ist die EINGABE der '
-    + 'Pfadableitung `iconPathFor` -> `iconPath`; das ist der Pfad, den der Client laedt.',
   iconPath: 'Wird von `iconUrlFor` IN DIESER DATEI gelesen (der Client ruft nur '
     + '`iconUrlFor(weapon)`), und `iconUrlFor` loest ihn gegen diese Datei auf. '
     + 'Ein Pfad ausserhalb dieser Datei aufzuloesen war der Fehler, der die Icons ins Leere '

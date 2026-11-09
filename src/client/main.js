@@ -80,11 +80,11 @@ import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
 import { klassifiziereEinschlag, wasserAusLinie } from '../shared/einschlag.js';
 import { baueProfilAnzeige, baueErfolgsAnzeige } from './profilanzeige.js';
+import { sichereProfilDatei } from './profilDatei.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import {
   PROFIL_SCHLUESSEL,
   geraeteKennung,
-  sicherungAlsText,
   sicherungAusText,
 } from '../shared/identity.js';
 import { FACTIONS } from '../shared/config/factions.js';
@@ -3906,37 +3906,9 @@ class Game {
     return this.profil;
   }
 
-  /**
-   * Schreibt eine Profilsicherung als Datei — der Ausweg aus „nur im Browser".
-   *
-   * ENTSCHEIDUNG (2026-09-20): Es gibt keine Serverkonten (kein Personenbezug,
-   * keine Anmeldung, keine Speicherfrist zu überwachen). Der reale Schaden war
-   * aber der Verlust bei einem Browserwechsel. Die Datei löst genau den, ohne
-   * ein Konto zu brauchen.
-   *
-   * @returns {{ok: boolean, text: string|null, fehler: string|null}}
-   */
+  /** Schreibt eine Profilsicherung als Datei; Einzelheiten in `profilDatei.js`. */
   profilSichern() {
-    try {
-      const text = sicherungAlsText(this.profil.toJSON(), {
-        erstelltAm: new Date().toISOString(),
-      });
-      const blob = new Blob([text], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const anker = document.createElement('a');
-      anker.href = url;
-      anker.download = 'projectarmageddon-profil.json';
-      document.body.append(anker);
-      anker.click();
-      anker.remove();
-      // Erst nach dem Klick freigeben: sonst kann der Download leer ankommen.
-      URL.revokeObjectURL(url);
-      this.hud?.log('Profilsicherung heruntergeladen', 'active');
-      return { ok: true, text, fehler: null };
-    } catch (error) {
-      this.hud?.log(`Sicherung fehlgeschlagen: ${error.message}`, 'danger');
-      return { ok: false, text: null, fehler: error.message };
-    }
+    return sichereProfilDatei({ document, profil: this.profil, hud: this.hud });
   }
 
   /**

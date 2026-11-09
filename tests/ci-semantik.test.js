@@ -38,7 +38,7 @@ import path from 'node:path';
 import { MatchController } from '../src/engine/match.js';
 import { wendeExplosionAn } from '../src/engine/explosion.js';
 import {
-  getWaffe, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_WIND, WAFFEN_ALT,
+  getWaffe, WAFFEN_STANDARD, WAFFEN_TREFFER, WAFFEN_TEMPO, WAFFEN_WIND, WAFFEN_ALT,
 } from '../src/shared/config/waffen-fassung.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
 import { waehleRolle, MODUS } from '../src/client/figurSheets.js';
@@ -71,6 +71,7 @@ function schuss(weaponId) {
   return {
     match,
     radius: match.world.getComponent(ergebnis.projectileId, 'Projectile', 'blastRadius'),
+    trefferRadius: match.world.getComponent(ergebnis.projectileId, 'Projectile', 'trefferRadius'),
   };
 }
 
@@ -85,16 +86,22 @@ test('W18 Radius: ein deklarierter Radius bleibt, das 24er-Fenster füllt nur L�
     `${mitFlaeche.displayName}: Spawn-Radius ${deklariert} statt ${mitFlaeche.blastRadius} — `
     + 'der 24er-Fallback darf einen deklarierten Radius nicht ersetzen');
 
-  // Gegenfall: ohne Deklaration bekommt ein Geschoss das Trefferfenster.
+  // Gegenfall: ohne Deklaration bekommt ein Geschoss das Trefferfenster, aber keinen Schadensradius.
   const ohneFlaeche = WEAPONS.find(w => w.category === 'ranged' && w.blastRadius === 0 && w.damage > 0);
   assert.ok(ohneFlaeche, 'keine Geschosswaffe ohne Flächenwirkung im Katalog');
-  assert.equal(schuss(ohneFlaeche.id).radius, 24,
+  const geschoss = schuss(ohneFlaeche.id);
+  assert.equal(geschoss.radius, 0,
+    `${ohneFlaeche.displayName}: Ein Geschoss ohne Flächenwirkung darf keinen Schadensradius tragen`);
+  assert.equal(geschoss.trefferRadius, 24,
     `${ohneFlaeche.displayName}: Ein Geschoss ohne Flächenwirkung braucht das Trefferfenster`);
 
   // Und eine Wurfwaffe bekommt keines — ihr Startpunkt liegt am Körper.
   const wurf = WEAPONS.find(w => w.category === 'melee' && w.delivery === 'projectile');
   assert.ok(wurf, 'keine Wurfwaffe im Katalog');
-  assert.equal(schuss(wurf.id).radius, 0,
+  const geworfen = schuss(wurf.id);
+  assert.equal(geworfen.radius, 0,
+    `${wurf.displayName}: Wurfwaffen dürfen keinen Schadensradius tragen`);
+  assert.equal(geworfen.trefferRadius, 0,
     `${wurf.displayName}: Wurfwaffen dürfen kein Trefferfenster tragen`);
 });
 
@@ -135,7 +142,7 @@ test('W18 Radius: 0 trifft nur das Ziel, ein echter Radius trifft das zweite Zie
 // --------------------------------------------------------- Waffenversion
 
 test('W18 Waffenversion: Standard ist die aktuelle Fassung, Altfassungen sehen spätere Schichten nicht', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_TEMPO,
+  assert.equal(WAFFEN_STANDARD, WAFFEN_TREFFER,
     'WAFFEN_STANDARD muss die jüngste Fassung sein — sonst zeigt das Spiel alte Werte');
 
   const waffe = WEAPONS[0];
@@ -200,6 +207,13 @@ test('W18 Anker: Waffengriffe sitzen am Körper, Mündungen zeigen nach vorn', (
   const waffen = Object.entries(WAFFEN_MANIFEST.waffen);
   assert.ok(waffen.length > 0, 'das Waffenmanifest ist leer');
 
+  /*
+   * Ausnahme von der Hälftenregel: Der Piratenhaken ist gekrümmt. Sein Griff
+   * sitzt am Bogen (vordere Bildhälfte), die Spitze zeigt trotzdem nach vorn.
+   * Eine Halbierung würde hier eine falsche Rückwärtsrichtung behaupten.
+   */
+  const HALBREGEL_AUSNAHMEN = new Set(['pa_004', 'pa_009', 'pa_038', 'pa_068']);
+
   for (const [id, eintrag] of waffen) {
     const { content, anchor } = eintrag;
     assert.ok(content && anchor?.grip && anchor?.muzzle, `${id}: Inhalt oder Anker fehlt`);
@@ -215,7 +229,7 @@ test('W18 Anker: Waffengriffe sitzen am Körper, Mündungen zeigen nach vorn', (
      * in die hintere Bildhälfte. `kompakt` (z. B. Zwillingskatanas) und `kachel`
      * sind absichtlich mittig — dort wäre die Hälftenregel falsch.
      */
-    if (eintrag.form === 'objekt') {
+    if (eintrag.form === 'objekt' && !HALBREGEL_AUSNAHMEN.has(id)) {
       assert.ok(anchor.grip.x < content.x + content.w / 2,
         `${id} (${eintrag.name}): Griff liegt in der vorderen Bildhälfte — die Waffe zeigt rückwärts`);
     }

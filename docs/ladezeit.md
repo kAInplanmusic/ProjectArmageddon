@@ -118,6 +118,31 @@ Die Grenzen in `scripts/bundle-grenzen.json` sind **unverändert**; der Spielrau
 liegt jetzt bei +3,1 % (haupt roh) und +2,5 % (Start roh) statt bei −0,3 % und
 −0,8 %.
 
+### 3.2 Integration der zehn Vorarbeiter-Branches
+
+Am 2026-11-09 wurden zehn parallele Branches zusammengeführt (Waffenradius,
+Waffendaten/-anzeige/-animation, Figuren-Identität/-Zustand/-Text, Präsentation,
+4K-Kulissen, CI-Bundle). Der Start-Chunk wuchs dadurch wieder über die Grenze:
+Embleme und Teamfarben (A11), Figurenkarte, Waffen-HUD mit Icons und
+Zustandssheets, Hymnensteuerung (A14) und die 4K-Kulissenwahl liegen im
+Startpfad. Das ist sichtbare Funktion, kein toter Ballast; eine weitere
+Lazy-Zerlegung der Anzeige-Module würde den Start verzögern und den
+Fraktionszustand über mehrere Chunks verteilen.
+
+| Größe | nach Kader-Split | nach Integration | Δ |
+|---|---|---|---|
+| Haupt-Bundle roh | 1261391 B (1231,8 KiB) | 1317305 B (1286,4 KiB) | +54,6 KiB |
+| Haupt-Bundle gzip | 345178 B (337,1 KiB) | 360458 B (352,0 KiB) | +14,9 KiB |
+| Start roh | 1371239 B (1339,1 KiB) | 1427945 B (1394,5 KiB) | +55,4 KiB |
+| Start gzip | 372991 B (364,2 KiB) | 388453 B (379,3 KiB) | +15,1 KiB |
+
+Die Grenzen wurden um rund 1 % angehoben: haupt 1 330 000 B roh / 363 500 B
+gzip, Start 1 440 000 B roh / 391 500 B gzip. Damit bleibt Spielraum für die
+nächste Ausbaustufe, ohne den Startpfad schleichend zu vergrößern. Die
+Zerlegung aus 3.1 bleibt bestehen; `main.js` und `renderer.js` wurden zusätzlich
+um `profilDatei.js` und `windPfeil.js` entlastet und halten ihre Zeilenbudgets
+(3999/2500) wieder ein.
+
 ## 4. Sourcemaps
 
 `vite.config.mjs` setzt `build.sourcemap: false`; im Bau liegt keine `*.map`, kein Chunk trägt
