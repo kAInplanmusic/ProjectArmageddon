@@ -27,6 +27,15 @@
  * Zuordnung nicht; eine Figur, die nie von einem Gegner getroffen wurde, stirbt
  * ohne Kill für irgendwen. Jede Figur zählt höchstens einmal.
  *
+ * ## Schaden über Zeit
+ *
+ * Ein DoT-Takt kommt als `damage` mit `attackerId` und `dot: true` an — der
+ * Urheber bleibt also bis zum Schadensereignis erhalten. Er zählt beim Angreifer
+ * und setzt `letzterGegner`, sodass auch ein tödlicher Brand den richtigen Kill
+ * ergibt. `dot_tick` ist nur die Zusammenfassung DESSELBEN Takts; dieses Modul
+ * verarbeitet es bewusst nicht, damit `damage` und `dot_tick` nicht doppelt
+ * gezählt werden. `dot: true` trennt den Takt zugleich vom Direktschaden.
+ *
  * ## Kein Zufall, keine Zeitmessung von außen
  *
  * Die Spielzeit kommt aus `match_over.ticks` — nicht aus der Uhr des Rechners.

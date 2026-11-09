@@ -29,6 +29,7 @@ Geprüfter Vorschlag und Belege: [Waffenbalancing-Bericht](waffenbalance-2026-11
 | BAL-17 | P2 | Karten-, Fraktions- und Partienabdeckung staffeln | Nicht ausgeführte Zellen explizit offen. Volles 150×5×7×20×3-Seed-Kreuzprodukt umfasst bereits 315000 Aufbauten; keine Vollabdeckung aus wenigen Beispielen behaupten. Winrates erst mit Stichprobenumfang, Seedliste und Unsicherheit veröffentlichen. |
 
 **BAL-03 erledigt 2026-11-09 (bg/bal-03):** Fassung 3 erbt keinen Archetyp-Bonus mehr — Gift 3 Züge, Säure 2 Züge, Magie/Schatten Faktor 1,0 für alle drei neuen Klassen; Fassungen 1/2 unverändert. Beleg: `tests/klassen-resistenz-boni.test.js`, 8 Fälle grün.
+Status BAL-04 (2026-11-09, `bg/bal-04`): DoT-Takt führt den Urheber bis ins `damage`-Ereignis und trägt `dot: true`; `dot_tick` bleibt reine Zusammenfassung. Belegt in `tests/schadensarten.test.js` (pa_137 33+36, zwei Urheber, DoT-Kill) und `tools/waffenbalance-audit.mjs` (pa_137: 33 direkt / 36 DoT).
 
 ## INT-2026-11-09 — Abnahmen des Integrationsbranches
 

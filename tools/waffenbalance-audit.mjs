@@ -99,7 +99,13 @@ function shot(weapon, { attackerClass = 'fernkampf', targetClass = 'fernkampf', 
     m.endTurn(); pin(); collect(delayedEvents);
     for (let i = 0; i < 4; i++) { pin(); m.step(); pin(); collect(delayedEvents); }
   }
-  const sum = (events, id) => round(events.filter(e => e.type === 'damage' && e.payload.entityId === id && e.payload.attackerId === shooter).reduce((n, e) => n + e.payload.amount, 0));
+  const sum = (events, id, { dot = null } = {}) => round(events.filter(e => e.type === 'damage'
+    && e.payload.entityId === id && e.payload.attackerId === shooter
+    && (dot === null || (e.payload.dot === true) === dot))
+    .reduce((n, e) => n + e.payload.amount, 0));
+  const alle = [...directEvents, ...delayedEvents];
+  const dotTicks = alle.filter(e => e.type === 'dot_tick' && e.payload.playerId === target)
+    .flatMap(e => e.payload.eintraege ?? []).filter(e => e.by === shooter);
   const relevant = e => ['damage', 'dot_tick', 'special_effect', 'mine_placed', 'mine_exploded', 'turret_deployed', 'turn_skipped', 'heal', 'shield_absorbed'].includes(e.type);
   return {
     distance, attackerClass, targetClass, targetNaturalHP: f.targetHP, shooterNaturalHP: f.shooterHP,
@@ -108,11 +114,19 @@ function shot(weapon, { attackerClass = 'fernkampf', targetClass = 'fernkampf', 
     special: r.special ?? null, spawned,
     ammoBefore, ammoAfter: finite(m.inventory.getAmmo(shooter, weapon.id)),
     cooldownAfterFire: stateAfterFire.entities.find(e => e.entityId === shooter)?.cooldowns?.[weapon.id] ?? 0,
-    directTargetDamage: sum(directEvents, target), directTargetHealthLoss: directLoss,
-    delayedAttributedDamage: sum(delayedEvents, target), totalTargetHealthLoss: round(1000 - health(m, target)),
+    /*
+     * Direkt und DoT getrennt, beide aus DEN Schadensereignissen (`damage`).
+     * `dot: true` setzt der Zugtick seit BAL-04; der Urheber steht im selben
+     * Ereignis. `dotDamageWithSourceInTick` liest die Zusammenfassung `dot_tick`
+     * als Gegenprobe — beide Zahlen sind dieselben Takte und dürfen NICHT
+     * addiert werden.
+     */
+    directTargetDamage: sum(directEvents, target, { dot: false }), directTargetHealthLoss: directLoss,
+    dotTargetDamage: sum(alle, target, { dot: true }),
+    delayedAttributedDamage: sum(delayedEvents, target, { dot: true }),
+    totalTargetHealthLoss: round(1000 - health(m, target)),
     delayedTargetHealthLoss: round(1000 - health(m, target) - directLoss),
-    dotDamageWithSourceInTick: round(delayedEvents.filter(e => e.type === 'dot_tick' && e.payload.playerId === target)
-      .flatMap(e => e.payload.eintraege ?? []).filter(e => e.by === shooter).reduce((n, e) => n + e.schaden, 0)),
+    dotDamageWithSourceInTick: round(dotTicks.reduce((n, e) => n + e.schaden, 0)),
     directSelfDamage: sum(directEvents, shooter), shooterHealthChangeAfterResolution: round(health(m, shooter) - before),
     shooterPositionAfterFire,
     statusAfterFire: stateAfterFire.statuses, statusBeforeTurns: beforeTurns.statuses,
