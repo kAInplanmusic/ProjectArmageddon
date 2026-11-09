@@ -34,3 +34,27 @@ export function kulissenUrlNeu(datei) {
 }
 
 export default BACKDROP_URLS;
+
+const PANORAMEN = import.meta.glob('./assets/panoramen/*.{avif,webp}', {
+  eager: true, query: '?url', import: 'default',
+});
+
+export function panoramaUrls(id, hdr) {
+  const klein = globalThis.matchMedia?.('(max-width: 1280px)').matches;
+  const pfad = './assets/panoramen/' + id + (klein ? '-1280' : '');
+  return [hdr && PANORAMEN[pfad + '.avif'], PANORAMEN[pfad + '.webp']].filter(Boolean);
+}
+
+/** Nur ein tatsächlich unterstützter erweiterter Zeichenpuffer bekommt PQ-Bilder. */
+export function spielKontext(canvas) {
+  if (globalThis.matchMedia?.('(dynamic-range: high)').matches && canvas.configureHighDynamicRange) {
+    try {
+      const ctx = canvas.getContext('2d', { colorType: 'float16', colorSpace: 'display-p3' });
+      if (ctx?.getContextAttributes?.().colorType === 'float16') {
+        canvas.configureHighDynamicRange({ mode: 'extended' });
+        return { ctx, hdr: true };
+      }
+    } catch { /* SDR auf diesem Gerät */ }
+  }
+  return { ctx: canvas.getContext('2d'), hdr: false };
+}

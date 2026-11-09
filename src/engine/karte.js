@@ -59,7 +59,7 @@ export const MAP_FORMAT_VORGABE = '16:9';
 /** Vorgabestufe, wenn keine Größe gewählt ist. */
 export const MAP_GROESSE_VORGABE = 'mittel';
 /** Die wählbaren Größenstufen, klein nach groß (ohne die Altstufe `krieg`). */
-export const MAP_GROESSEN = Object.freeze(['klein', 'mittel', 'gross']);
+export const MAP_GROESSEN = Object.freeze(['klein', 'kompakt', 'mittel', 'weit', 'gross']);
 /** Alle Stufen der Tabelle — `krieg` nur noch zum Lesen alter Aufzeichnungen. */
 export const MAP_GROESSEN_ALLE = Object.freeze([...MAP_GROESSEN, 'krieg']);
 
@@ -71,7 +71,14 @@ export const MAP_FORMAT_ALIASE = Object.freeze({ landscape: '16:9', portrait: '9
 
 const KARTEN = Object.freeze(Object.fromEntries(
   Object.entries(FORMATE).map(([format, liste]) => [format, Object.freeze(Object.fromEntries(
-    liste.map(([width, height], index) => [MAP_GROESSEN_ALLE[index], Object.freeze({ width, height })]),
+    MAP_GROESSEN_ALLE.map((stufe, index) => {
+      const [width, height] = index === 5 ? liste[3] : liste[Math.floor(index / 2)];
+      if (index === 1 || index === 3) {
+        const [w, h] = liste[Math.ceil(index / 2)];
+        return [stufe, Object.freeze({ width: Math.round((width + w) / 2), height: Math.round((height + h) / 2) })];
+      }
+      return [stufe, Object.freeze({ width, height })];
+    }),
   ))]),
 ));
 

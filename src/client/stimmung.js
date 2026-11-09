@@ -32,6 +32,7 @@ export const WETTER_WAHL = Object.freeze({
   regen: 'Regen',
   sturm: 'Sturm',
   schnee: 'Schnee',
+  hagel: 'Hagel',
   nebel: 'Nebel',
   laub: 'Laubfall',
 });
@@ -57,6 +58,7 @@ export function wetterMit(basis, wetter = 'auto', zeit = 'auto') {
     if (w === 'sonne') aus.sonne = 1;
     if (w === 'regen') aus.regen = 0.7;
     if (w === 'sturm') Object.assign(aus, { regen: 1, gewitter: true, wind: 1 });
+    if (w === 'hagel') Object.assign(aus, { hagel: 1, wind: 0.6 });
     if (w === 'schnee') aus.schnee = 0.8;
     if (w === 'nebel') aus.nebel = 0.8;
     if (w === 'laub') aus.laub = 0.8;

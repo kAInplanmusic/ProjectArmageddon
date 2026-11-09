@@ -51,7 +51,9 @@ export const MATCH_RULES = Object.freeze({
    */
   turnTimers: Object.freeze({
     klein: Object.freeze({ seconds: 30 }),
+    kompakt: Object.freeze({ seconds: 35 }),
     mittel: Object.freeze({ seconds: 40 }),
+    weit: Object.freeze({ seconds: 45 }),
     gross: Object.freeze({ seconds: 50 }),
   }),
   /*

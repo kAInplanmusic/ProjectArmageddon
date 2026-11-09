@@ -1,3 +1,4 @@
+import { BIOMOBJEKTE } from '../shared/config/bodenobjekte.js';
 /**
  * Wirkungen der Ereignisse — EINE Zuordnungstabelle für beide Betriebsarten.
  *
@@ -668,13 +669,13 @@ export const EREIGNIS_WIRKUNGEN = {
 
   // Fässer (Bodenobjektfassung 3): liegen von Anfang an; die Explosion kommt als `explosion` (Krater, Blitz, Klang).
   fass_placed: beide((k, n) => {
-    k.fernzustand?.minen?.()?.set(n.fassId, { id: n.fassId, typ: 'fass', x: n.x, y: n.y, ownerId: null, teamId: null, art: 'liegend', blindgaenger: false, ausgeloest: false });
+    k.fernzustand?.minen?.()?.set(n.fassId, { id: n.fassId, ...(n.biomobjekt ? { biomobjekt: n.biomobjekt } : {}), typ: 'fass', x: n.x, y: n.y, ownerId: null, teamId: null, art: 'liegend', blindgaenger: false, ausgeloest: false });
   }),
 
   // Abwurf (Bodenobjektfassung 4): das Fass fällt wie eine Kiste; die Landung steht sofort fest, gezeichnet wird der Fall.
   fass_abgeworfen: beide((k, n) => {
     k.fernzustand?.minen?.()?.set(n.fassId, {
-      id: n.fassId, typ: 'fass', x: n.x, y: n.y, ownerId: null, teamId: null, art: 'liegend', blindgaenger: false,
+      id: n.fassId, ...(n.biomobjekt ? { biomobjekt: n.biomobjekt } : {}), typ: 'fass', x: n.x, y: n.y, ownerId: null, teamId: null, art: 'liegend', blindgaenger: false,
       ausgeloest: false, fallend: true, abwurfBeginn: Date.now(), flugMs: Math.round(n.flugTicks * 1000 / 60),
     });
     k.hud?.log('Ein Fass wird abgeworfen', 'neutral');
@@ -688,7 +689,7 @@ export const EREIGNIS_WIRKUNGEN = {
 
   fass_exploded: beide((k, n) => {
     k.fernzustand?.minen?.()?.delete(n.fassId);
-    k.hud?.log('Ein Fass explodiert', 'accent');
+    k.hud?.log(BIOMOBJEKTE[n.biomobjekt]?.label ? BIOMOBJEKTE[n.biomobjekt].label + ' ausgelöst' : 'Ein Fass explodiert', 'accent');
     k.renderer?.addFlash(n.x, n.y, 30, { color: '#ff9a3d' });
   }),
 

@@ -24,6 +24,8 @@ import {
 /** Die Fläche je Stufe, wie sie in docs/anforderungen-2026-11-05.md steht. */
 const FLAECHEN = Object.freeze({
   klein: 1280 * 720,
+  kompakt: 1920 * 1080,
+  weit: 3200 * 1800,
   mittel: 2560 * 1440,
   gross: 3840 * 2160,
   krieg: 5120 * 2880,
@@ -32,6 +34,8 @@ const FLAECHEN = Object.freeze({
 /** Die bisherigen 16:9-Maße — bitgleich, nicht verhandelbar. */
 const ALT_16_9 = Object.freeze({
   klein: { width: 1280, height: 720 },
+  kompakt: { width: 1920, height: 1080 },
+  weit: { width: 3200, height: 1800 },
   mittel: { width: 2560, height: 1440 },
   gross: { width: 3840, height: 2160 },
   krieg: { width: 5120, height: 2880 },
@@ -42,9 +46,9 @@ test('Es gibt genau die sieben geforderten Formate', () => {
   assert.equal(MAP_FORMAT_VORGABE, '16:9', 'Vorgabe bleibt das bisherige Querformat');
 });
 
-test('Drei wählbare Stufen; `krieg` nur noch lesbar', () => {
-  assert.deepEqual([...MAP_GROESSEN], ['klein', 'mittel', 'gross']);
-  assert.deepEqual([...MAP_GROESSEN_ALLE], ['klein', 'mittel', 'gross', 'krieg']);
+test('Fünf wählbare Stufen; `krieg` nur noch lesbar', () => {
+  assert.deepEqual([...MAP_GROESSEN], ['klein', 'kompakt', 'mittel', 'weit', 'gross']);
+  assert.deepEqual([...MAP_GROESSEN_ALLE], ['klein', 'kompakt', 'mittel', 'weit', 'gross', 'krieg']);
   assert.equal(MAP_GROESSE_VORGABE, 'mittel');
 });
 

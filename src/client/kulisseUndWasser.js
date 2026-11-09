@@ -184,7 +184,7 @@ function kulissenBild(r, img, stimmung, glut) {
     const canvas = c?.canvas ?? document.createElement('canvas');
     canvas.width = breite;
     canvas.height = h;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', r.hdr ? { colorType: 'float16', colorSpace: 'display-p3' } : {});
     // LOOK-2: Kulisse hinter das Gelände legen (Sättigungsdeckel, s. o.).
     const saettigung = saettigungsFaktor(img);
     if (saettigung < 1) ctx.filter = `saturate(${saettigung.toFixed(3)})`;

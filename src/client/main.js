@@ -1,3 +1,4 @@
+import { FOTOS, panorama, fotoFuerBiom } from './panoramen.js';
 /**
  * Browser-Einstiegspunkt für Project Armageddon.
  *
@@ -825,6 +826,8 @@ class Game {
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
     // Biomwahl (leer = der Seed entscheidet; `klassisch` = Biom folgt der Karte; sonst ein Sonderbiom).
     const biom = document.getElementById('cfg-biom')?.value || null;
+    const mapSize = document.getElementById('cfg-kartengroesse')?.value ?? 'mittel';
+    const mapFormat = document.getElementById('cfg-kartenformat')?.value ?? '16:9';
     const kartenart = document.getElementById('cfg-kartenart')?.value || null;
     // Keine Ausrichtung mehr: neue Partien sind immer Querformat (Entscheidung 2026-11-04, „nur quer").
     // Tageszeit und Wetter: nur Darstellung, nicht Teil der Match-Konfiguration.
@@ -843,11 +846,11 @@ class Game {
     if (serverUrl) {
       return this.startOnline({
         serverUrl, lobbyId, teams, playersPerTeam, unitsPerPlayer, preset, kartentyp, seed,
-        backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
+        backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart, mapSize, mapFormat,
       });
     }
     return this.startMatch({
-      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
+      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart, mapSize, mapFormat,
     });
   }
 
@@ -1263,7 +1266,7 @@ class Game {
     const feste = Array.from(auswahl.options).filter(o => o.value === 'generativ' || o.value === 'automatisch' || o.value === '');
     auswahl.replaceChildren(...feste);
     let anzahl = 0;
-    for (const biome of BACKDROP_BIOMES) {
+    for (const biome of [...BACKDROP_BIOMES, { id: 'foto', label: 'Panoramafotografien', variants: Object.entries(FOTOS).map(([id, foto]) => ({ id, label: foto.label })) }]) {
       const gruppe = document.createElement('optgroup');
       gruppe.label = biome.label;
       for (const variante of biome.variants) {
@@ -1342,7 +1345,7 @@ class Game {
   startMatch({
     teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null,
     seed = undefined, backdropKey = '',
-    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null,
+    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, mapSize = 'mittel', mapFormat = '16:9',
   } = {}) {
     /*
      * Die Konfiguration dieser Partie merken — die Revanche (UI-4) braucht sie.
@@ -1350,7 +1353,7 @@ class Game {
      * anders stehen). `seed` fehlt bewusst; den liefert `#seedFuerRevanche`.
      */
     this.letzteMatchKonfiguration = {
-      teams, playersPerTeam, preset, kartentyp, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
+      teams, playersPerTeam, preset, kartentyp, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart, mapSize, mapFormat,
     };
     this.#ladeMatchBilder();
     this.network?.disconnect();
@@ -1363,7 +1366,7 @@ class Game {
     // nach dem Start. Eine Ausrichtung gibt es nicht mehr: neue Partien sind
     // immer Querformat (2026-11-04); Hochformat kennt nur noch die Wiedergabe alter Replays.
     this.match = new MatchController({
-      seed, teams, playersPerTeam, preset, kartentyp, orientation: 'landscape', sidegrades, loadouts, biom, kartenart,
+      seed, teams, playersPerTeam, preset, kartentyp, mapFormat, groesse: mapSize, sidegrades, loadouts, biom, kartenart,
       guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, wind: WIND_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
@@ -1568,7 +1571,7 @@ class Game {
   async startOnline({
     serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
-    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, token = null,
+    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, mapSize = 'mittel', mapFormat = '16:9', token = null,
     resumeToken = null,
   } = {}) {
     this.#ladeMatchBilder();
@@ -1618,7 +1621,7 @@ class Game {
           // Sidegrades gehen als Teil der Match-Konfiguration mit — der Server
           // validiert sie und rechnet autoritativ.
           body: JSON.stringify({
-            teams, preset, kartentyp, seed, ...(biom ? { biom } : {}), ...(kartenart ? { kartenart } : {}),
+            teams, preset, kartentyp, seed, mapSize, mapFormat, ...(biom ? { biom } : {}), ...(kartenart ? { kartenart } : {}),
             /*
              * Genau EINE der beiden Angaben — sie widersprechen sich sonst.
              *
@@ -3076,7 +3079,7 @@ class Game {
     let kulisse = null;
     if (auswahl) {
       const [biomId, variantenId] = String(auswahl).split('/');
-      kulisse = getBackdrop(biomId, variantenId) ?? getBackdropNeu(biomId, variantenId);
+      kulisse = biomId === 'foto' ? panorama(variantenId) : getBackdrop(biomId, variantenId) ?? getBackdropNeu(biomId, variantenId);
       if (!kulisse) this.hud.log(`Kulisse „${auswahl}" unbekannt — nehme automatisch`, 'neutral');
     }
     /*
@@ -3095,7 +3098,8 @@ class Game {
     // Sonderbiome (Schrott, Riff, Kristallhöhle, ...) haben passende gemalte Bilder (`sonderKulissen.js`).
     if (!kulisse && sonder && SONDER_KULISSEN[sonder] && !gewaehlt?.includes?.('/')) {
       const [b, v] = String(sonderKulisseFuer(sonder, seed, charakter?.kartenart)).split('/');
-      kulisse = getBackdrop(b, v) ?? getBackdropNeu(b, v);
+      const foto = fotoFuerBiom(sonder, charakter?.kartenart);
+      kulisse = (foto && (seed >>> 0) % 3 === 0 ? panorama(foto) : null) ?? getBackdrop(b, v) ?? getBackdropNeu(b, v);
     }
     if (!kulisse && charakter) {
       const biomId = motivFamilieFuerArt(charakter.kartenart) ?? biomFuerCharakter(charakter);
