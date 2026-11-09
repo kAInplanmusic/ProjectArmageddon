@@ -149,8 +149,8 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 78 | Voodoopuppe | elemental | 45 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 79 | Kosmisches Portal | elemental | 20 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 80 | Psionischer Tentakel | elemental | 44 | 52 | 31 px | 3 | 60 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
-| 81 | Zauberbuch der Leere | magic | 55 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 82 | Goldene Zauberrolle | magic | 44 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 81 | Siegel der Leere | magic | 55 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 82 | Goldener Münzstab | magic | 44 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 83 | Goldene Hand | magic | 46 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 84 | Glutelixier | magic | 34 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 85 | Feuermagier | magic | 45 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |

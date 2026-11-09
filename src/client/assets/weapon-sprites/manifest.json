@@ -78,8 +78,8 @@
     "datei": "IMG_9033.PNG",
     "aufloesung": 1024
    },
-   "rotation": 48.9,
-   "gespiegelt": true,
+   "rotation": -48.9,
+   "gespiegelt": false,
    "streckung": 5.14,
    "content": {
     "x": 6,
@@ -96,7 +96,7 @@
      "x": 120,
      "y": 63
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -220,8 +220,8 @@
     "datei": "IMG_9036.PNG",
     "aufloesung": 1024
    },
-   "rotation": 46.6,
-   "gespiegelt": true,
+   "rotation": -46.6,
+   "gespiegelt": false,
    "streckung": 4.04,
    "content": {
     "x": 6,
@@ -231,14 +231,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 25,
-     "y": 72
+     "x": 50,
+     "y": 63
     },
     "muzzle": {
-     "x": 120,
-     "y": 67
+     "x": 119,
+     "y": 60
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -256,7 +256,7 @@
     "h": 32
    },
    "flashColor": "#eba55e",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 256,
@@ -291,8 +291,8 @@
     "datei": "IMG_9037.PNG",
     "aufloesung": 1024
    },
-   "rotation": 47.3,
-   "gespiegelt": true,
+   "rotation": -47.3,
+   "gespiegelt": false,
    "streckung": 3.79,
    "content": {
     "x": 6,
@@ -302,14 +302,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 26,
-     "y": 63
+     "x": 70,
+     "y": 55
     },
     "muzzle": {
-     "x": 120,
-     "y": 60
+     "x": 119,
+     "y": 52
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -327,7 +327,7 @@
     "h": 32
    },
    "flashColor": "#eb9453",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 384,
@@ -657,14 +657,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 21,
-     "y": 62
+     "x": 65,
+     "y": 58
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 63
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -859,8 +859,8 @@
     "datei": "IMG_9047.PNG",
     "aufloesung": 1024
    },
-   "rotation": -47.4,
-   "gespiegelt": true,
+   "rotation": 47.4,
+   "gespiegelt": false,
    "streckung": 4.04,
    "content": {
     "x": 6,
@@ -871,13 +871,13 @@
    "anchor": {
     "grip": {
      "x": 29,
-     "y": 58
+     "y": 56
     },
     "muzzle": {
      "x": 120,
-     "y": 58
+     "y": 49
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -1083,14 +1083,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 30,
-     "y": 60
+     "x": 24,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 60
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -1108,7 +1108,7 @@
     "h": 32
    },
    "flashColor": "#eba356",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 768,
@@ -1154,14 +1154,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 30,
+     "x": 22,
      "y": 65
     },
     "muzzle": {
      "x": 119,
      "y": 65
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -1179,7 +1179,7 @@
     "h": 32
    },
    "flashColor": "#57a3eb",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 896,
@@ -1286,21 +1286,21 @@
     "aufloesung": 1024
    },
    "rotation": -46.2,
-   "gespiegelt": true,
+   "gespiegelt": false,
    "streckung": 5.34,
    "content": {
-    "x": 7,
+    "x": 6,
     "y": 50,
     "w": 114,
     "h": 27
    },
    "anchor": {
     "grip": {
-     "x": 29,
+     "x": 27,
      "y": 64
     },
     "muzzle": {
-     "x": 120,
+     "x": 119,
      "y": 64
     },
     "source": "geometrie"
@@ -2705,8 +2705,8 @@
     "datei": "IMG_9078.PNG",
     "aufloesung": 1024
    },
-   "rotation": 40.6,
-   "gespiegelt": true,
+   "rotation": -40.6,
+   "gespiegelt": false,
    "streckung": 1.9,
    "content": {
     "x": 6,
@@ -2716,14 +2716,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 29,
+     "x": 70,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 65
+     "y": 62
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -2741,7 +2741,7 @@
     "h": 32
    },
    "flashColor": "#eb8329",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "ranged",
     "x": 0,
@@ -2848,7 +2848,7 @@
     "aufloesung": 1024
    },
    "rotation": 28.5,
-   "gespiegelt": false,
+   "gespiegelt": true,
    "streckung": 1.54,
    "content": {
     "x": 6,
@@ -2858,14 +2858,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 30,
-     "y": 44
+     "x": 58,
+     "y": 50
     },
     "muzzle": {
      "x": 120,
-     "y": 44
+     "y": 46
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "kugel",
@@ -3152,10 +3152,10 @@
     "source": "geometrie"
    },
    "projectile": {
-    "art": "feuer",
+    "art": "phoenix",
     "size": {
-     "w": 28,
-     "h": 16
+     "w": 30,
+     "h": 28
     },
     "angle": 0,
     "spin": false,
@@ -3628,8 +3628,8 @@
     "datei": "IMG_9093.PNG",
     "aufloesung": 1024
    },
-   "rotation": -39.0,
-   "gespiegelt": false,
+   "rotation": 39.0,
+   "gespiegelt": true,
    "streckung": 1.96,
    "content": {
     "x": 6,
@@ -3639,14 +3639,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 32,
-     "y": 64
+     "x": 27,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -3664,7 +3664,7 @@
     "h": 32
    },
    "flashColor": "#6ab0eb",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "heavy_ranged",
     "x": 256,
@@ -3923,14 +3923,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 27,
+     "x": 58,
      "y": 52
     },
     "muzzle": {
-     "x": 120,
+     "x": 119,
      "y": 53
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "kugel",
@@ -3948,7 +3948,7 @@
     "h": 32
    },
    "flashColor": "#eba86a",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "heavy_ranged",
     "x": 768,
@@ -4359,10 +4359,10 @@
     "source": "geometrie"
    },
    "projectile": {
-    "art": "feuer",
+    "art": "daemon",
     "size": {
-     "w": 28,
-     "h": 16
+     "w": 29,
+     "h": 30
     },
     "angle": 0,
     "spin": false,
@@ -4846,14 +4846,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 30,
-     "y": 63
+     "x": 98,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 61
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "plasma",
@@ -4871,7 +4871,7 @@
     "h": 32
    },
    "flashColor": "#56d1eb",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "elemental",
     "x": 896,
@@ -5768,7 +5768,7 @@
   },
   "pa_081": {
    "id": "pa_081",
-   "name": "Zauberbuch der Leere",
+   "name": "Siegel der Leere",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -5829,7 +5829,7 @@
   },
   "pa_082": {
    "id": "pa_082",
-   "name": "Goldene Zauberrolle",
+   "name": "Goldener Münzstab",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -9797,10 +9797,10 @@
     "source": "geometrie"
    },
    "projectile": {
-    "art": "feuer",
+    "art": "drache",
     "size": {
-     "w": 28,
-     "h": 16
+     "w": 29,
+     "h": 19
     },
     "angle": 0,
     "spin": false,

@@ -26,6 +26,7 @@ import {
 import { artLabel } from '../shared/config/wirkungstexte.js';
 import { getWaffe } from '../shared/config/waffen-fassung.js';
 import { munitionsKlasse } from '../shared/config/munition.js';
+import { holeWaffenIcon, atlasAusschnitt } from './waffenIcons.js';
 
 const STUFEN_NAMEN = Object.freeze({
   common: 'gewöhnlich', uncommon: 'ungewöhnlich', rare: 'selten', epic: 'episch', legendary: 'legendär',
@@ -174,6 +175,15 @@ export class WaffenMenue {
 
   // ------------------------------------------------------------------
 
+  /** Der 128er-Iconatlas ist geladen: die Kacheln einmal mit Atlasbildern neu aufbauen. */
+  #iconBereit() {
+    if (!this.#offen) return;
+    const figur = this.#opts.getFigur();
+    if (!figur) return;
+    this.#signatur = null;
+    this.#render(figur);
+  }
+
   #render(figur) {
     const bestand = bestandVon(figur);
     const seil = this.#opts.seil;
@@ -239,7 +249,21 @@ export class WaffenMenue {
     if (!b.waehlbar) { zeile.classList.add('is-leer'); zeile.setAttribute('aria-disabled', 'true'); }
 
     const url = iconUrlFor(w);
-    if (url) {
+    // 128er-Iconatlas zuerst (W12): dieselben Bilder in doppelter Auflösung.
+    // Solange Manifest/Atlas laden, bleibt das bisherige 64-px-Bild stehen.
+    const zelle = holeWaffenIcon(w, () => this.#iconBereit());
+    if (zelle) {
+      const bild = doc.createElement('span');
+      bild.className = 'wm-icon wm-icon-atlas';
+      bild.setAttribute('role', 'presentation');
+      const sti = atlasAusschnitt(zelle.zelle, zelle.atlas);
+      if (sti) {
+        bild.style.backgroundImage = `url("${zelle.url}")`;
+        bild.style.backgroundSize = sti.backgroundSize;
+        bild.style.backgroundPosition = sti.backgroundPosition;
+      }
+      zeile.append(bild);
+    } else if (url) {
       const bild = doc.createElement('img');
       bild.className = 'wm-icon';
       bild.alt = '';

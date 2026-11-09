@@ -160,7 +160,12 @@
  },
  "pa_012": {
   "ringAbstand": 40,
-  "schwelle": 60
+  "schwelle": 60,
+  "spitzeWechseln": true,
+  "muzzle": [
+   120,
+   49
+  ]
  },
  "pa_054": {
   "ringAbstand": 90
@@ -213,7 +218,6 @@
   "schwelle": 60
  },
  "pa_018": {
-  "umkehren": true,
   "schwelle": 60
  },
  "pa_019": {
@@ -242,9 +246,6 @@
  "pa_033": {
   "umkehren": true,
   "art": "stab"
- },
- "pa_040": {
-  "umkehren": true
  },
  "pa_057": {
   "umkehren": true
@@ -482,10 +483,27 @@
   "schwelle": 60
  },
  "pa_009": {
-  "schwelle": 60
+  "schwelle": 60,
+  "grip": [
+   65,
+   58
+  ],
+  "muzzle": [
+   120,
+   63
+  ]
  },
  "pa_001": {
-  "schwelle": 60
+  "schwelle": 60,
+  "spitzeWechseln": true,
+  "grip": [
+   26,
+   63
+  ],
+  "muzzle": [
+   120,
+   63
+  ]
  },
  "pa_017": {
   "schwelle": 60
@@ -501,6 +519,100 @@
   "muzzle": [
    120,
    48
+  ]
+ },
+ "pa_003": {
+  "spitzeWechseln": true,
+  "grip": [
+   50,
+   63
+  ],
+  "muzzle": [
+   119,
+   60
+  ]
+ },
+ "pa_004": {
+  "spitzeWechseln": true,
+  "grip": [
+   70,
+   55
+  ],
+  "muzzle": [
+   119,
+   52
+  ]
+ },
+ "pa_038": {
+  "spitzeWechseln": true,
+  "grip": [
+   70,
+   64
+  ],
+  "muzzle": [
+   120,
+   62
+  ]
+ },
+ "pa_051": {
+  "spitzeWechseln": true,
+  "grip": [
+   27,
+   66
+  ],
+  "muzzle": [
+   120,
+   66
+  ]
+ },
+ "pa_015": {
+  "grip": [
+   24,
+   63
+  ],
+  "muzzle": [
+   120,
+   60
+  ]
+ },
+ "pa_016": {
+  "grip": [
+   22,
+   65
+  ],
+  "muzzle": [
+   119,
+   65
+  ]
+ },
+ "pa_040": {
+  "grip": [
+   58,
+   50
+  ],
+  "muzzle": [
+   120,
+   46
+  ]
+ },
+ "pa_055": {
+  "grip": [
+   58,
+   52
+  ],
+  "muzzle": [
+   119,
+   53
+  ]
+ },
+ "pa_068": {
+  "grip": [
+   98,
+   66
+  ],
+  "muzzle": [
+   120,
+   61
   ]
  }
 }
