@@ -10,6 +10,18 @@
  * Jeder Frame ist ein figurähnliches Objekt (`quelle`, `stufen`), damit die Mip-Kette aus
  * `figurStufen.js` unverändert greift. Ohne Bundler und Canvas prüfbar (die Leinwand kommt von außen).
  *
+ * ZUSTAND-SHEETS SIND QUELLMATERIAL (Audit A05).
+ * Jede Figur besitzt zusätzlich `__zustand.webp` (8 Zellen: Hocke, Fallen, Schwimmen A/B,
+ * Ertrinken, Jubeln, Winken, Posieren). Diese Blätter werden **nicht** als Animation geladen:
+ * sie enthalten Anatomieabweichungen gegenüber der Seitenansicht (Kleidung, Rüstung, Gliedmaßen)
+ * und in den Schwimmzellen fest eingebrannte Wasserspritzer. Ein blindes Verdrahten würde also
+ * eine tote Datei als spielbare Animation ausgeben.
+ *
+ * Einzige Ausnahme: eine **geprüfte** Hocke-Zelle. `zustandHockeZelle()` liefert sie nur, wenn der
+ * Manifesteintrag sie ausdrücklich als geprüft markiert (`hockeQuelle.geprueft === true`);
+ * `figurenBilder.ladeBlatt` lädt das Zustand-Sheet ausschließlich dann. Ohne Markierung bleibt
+ * die Datei unangetastet und die fehlende Rolle fällt sichtbar auf das Seitenbild zurück.
+ *
  * @module figurSheets
  */
 
@@ -50,15 +62,43 @@ function blattMassOk(bild) {
 const zelleOk = i => Number.isInteger(i) && i >= 0 && i < SPALTEN * ZEILEN;
 
 /**
+ * Zellen des Zustand-Sheets in Reihenfolge (Quellmaterial, keine Spielanimation).
+ * Reihenfolge aus der Erzeugung; je Figur nicht garantiert und deshalb nur nach
+ * ausdrücklicher Sichtprüfung einer einzelnen Zelle verwendbar.
+ */
+export const ZUSTAND_ZELLEN = Object.freeze([
+  'hocke', 'fallen', 'schwimmenA', 'schwimmenB', 'ertrinken', 'jubeln', 'winken', 'posieren',
+]);
+
+/**
+ * Geprüfte Hocke-Zelle aus dem Zustand-Sheet oder `null`.
+ *
+ * Liefert nur dann einen Zellenindex, wenn der Manifesteintrag die Zelle
+ * ausdrücklich freigibt: `hockeQuelle: { blatt: 'zustand', zelle: 0, geprueft: true }`.
+ * Ohne `geprueft === true` gilt das Zustand-Sheet als ungeprüftes Quellmaterial —
+ * dann wird es weder geladen noch als Animation ausgegeben.
+ *
+ * @param {{hockeQuelle?: {blatt?: string, zelle?: number, geprueft?: boolean}}|null} eintrag
+ * @returns {number|null}
+ */
+export function zustandHockeZelle(eintrag) {
+  const q = eintrag?.hockeQuelle;
+  if (!q || q.blatt !== 'zustand' || q.geprueft !== true) return null;
+  return zelleOk(q.zelle) ? q.zelle : null;
+}
+
+/**
  * Baut die Frames einer Figur aus Manifesteintrag und geladenen Blättern.
  *
- * @param {{rollen?: object, gehen?: number[]}} eintrag - Eintrag aus `sprite-sheets/manifest.json`
+ * @param {{rollen?: object, gehen?: number[], hockeQuelle?: object}} eintrag - Eintrag aus `sprite-sheets/manifest.json`
  * @param {CanvasImageSource|null} walkBild
  * @param {CanvasImageSource|null} aktionBild
+ * @param {Function} [neueLeinwand]
+ * @param {CanvasImageSource|null} [zustandBild] - nur übergeben, wenn `zustandHockeZelle()` sie freigibt
  * @returns {{walk: object[]|null, idle: object[]|null, luft: object|null, hocke: object|null,
  *   treffer: object|null, tod: object|null}}
  */
-export function blattBauen(eintrag, walkBild, aktionBild, neueLeinwand = standardLeinwand) {
+export function blattBauen(eintrag, walkBild, aktionBild, neueLeinwand = standardLeinwand, zustandBild = null) {
   const blatt = { walk: null, idle: null, luft: null, hocke: null, treffer: null, tod: null };
   if (walkBild && blattMassOk(walkBild) && Array.isArray(eintrag?.gehen) && eintrag.gehen.length === 8
     && eintrag.gehen.every(zelleOk)) {
@@ -81,6 +121,12 @@ export function blattBauen(eintrag, walkBild, aktionBild, neueLeinwand = standar
     blatt.hocke = hole(r.hocke);
     blatt.treffer = hole(r.treffer);
     blatt.tod = hole(r.tod);
+  }
+  // Fehlt die Hocke im Aktionsblatt, ist aber eine Zustand-Zelle ausdrücklich geprüft, gilt diese.
+  // Ungeprüftes Quellmaterial wird nie ersatzweise eingesetzt (Audit A05/A06).
+  if (!blatt.hocke && zustandBild && blattMassOk(zustandBild)) {
+    const zelle = zustandHockeZelle(eintrag);
+    if (zelle !== null) blatt.hocke = frameAusZelle(zustandBild, zelle, neueLeinwand);
   }
   return blatt;
 }

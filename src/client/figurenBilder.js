@@ -20,7 +20,7 @@
 import { iconUrlFor } from '../shared/config/weapons.js';
 import { spriteUrl } from './roster.js';
 import { CACHE_KANTE, STUFEN, stufeBauen } from './figurStufen.js';
-import { blattBauen, emotionBauen } from './figurSheets.js';
+import { blattBauen, emotionBauen, zustandHockeZelle } from './figurSheets.js';
 import { ladeBild } from './dom.js';
 
 export { STUFEN, stufeFuer, tonung, verkleinere } from './figurStufen.js';
@@ -90,15 +90,21 @@ async function lade(eintraege, charakter) {
 /**
  * Lädt die Sheets einer Figur (nur der Figuren, die im Spiel vorkommen) und setzt `fig.blatt`.
  * Fehlt etwas oder schlägt das Laden fehl, bleibt `fig.blatt` `null` — das Seitenbild gilt weiter.
+ *
+ * `__zustand.webp` ist Quellmaterial (Anatomieabweichungen, eingebrannte Wasserspritzer) und wird
+ * nur angefasst, wenn das Manifest eine Hocke-Zelle ausdrücklich freigegeben hat. Ohne Freigabe
+ * entsteht kein Request — eine tote Datei wird so nicht als Animation ausgegeben (Audit A05).
  */
 async function ladeBlatt(fig, charakter) {
   try {
     const m = Object.values(BLATT_MANIFEST)[0];
     const e = m?.figuren?.[`${charakter.faction}/${charakter.sprite.replace(/\.png$/, '')}`];
     if (!e) return;
+    const zustandZelle = zustandHockeZelle(e);
     const urls = [BLATT_BILDER[`./assets/sprite-sheets/${e.walk}`], BLATT_BILDER[`./assets/sprite-sheets/${e.aktion}`]];
-    const [walk, aktion] = await Promise.all(urls.map(async (l) => (l ? ladeBild(await l()).catch(() => null) : null)));
-    const blatt = blattBauen(e, walk, aktion);
+    if (zustandZelle !== null) urls.push(BLATT_BILDER[`./assets/sprite-sheets/${e.zustand}`]);
+    const [walk, aktion, zustand] = await Promise.all(urls.map(async (l) => (l ? ladeBild(await l()).catch(() => null) : null)));
+    const blatt = blattBauen(e, walk, aktion, undefined, zustand ?? null);
     if (blatt.walk || blatt.idle) fig.blatt = blatt;
     // Nur Figuren mit Prüfergebnis im Manifest und mindestens einer gültigen Zelle bekommen Emotionen.
     const name = charakter.sprite.replace(/\.png$/, '');
