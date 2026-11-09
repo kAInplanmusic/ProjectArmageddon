@@ -42,7 +42,9 @@ const SEITEN = import.meta.glob('./assets/characters-side/*/*.png', { query: '?u
 const MANIFEST = import.meta.glob('./assets/characters-side/manifest.json', { eager: true, import: 'default' });
 // Sprite-Sheets (Gehzyklus, Aktionen): Manifest samt Rollen eager (klein), die Bilder lazy je Figur.
 const BLATT_MANIFEST = import.meta.glob('./assets/sprite-sheets/manifest.json', { eager: true, import: 'default' });
-const BLATT_BILDER = import.meta.glob('./assets/sprite-sheets/*/*.webp', { query: '?url', import: 'default' });
+// ladeBlatt liest ausschließlich walk und aktion. Die historischen Zustand-Sheets
+// bleiben als Quellen erhalten, gehören aber nicht in die Browser-Auslieferung.
+const BLATT_BILDER = import.meta.glob('./assets/sprite-sheets/*/*__{walk,aktion}.webp', { query: '?url', import: 'default' });
 /** Emotions-Sheets (`<fraktion>/<figur>__emotion.webp`): kommen nach dem Hauptblatt dazu, ihr Fehlen ändert nichts. */
 const EMOTION_BILDER = import.meta.glob('./assets/sprite-sheets-emotion/*/*.webp', { query: '?url', import: 'default' });
 /** Prüfergebnis je Emotions-Sheet (`gueltig` = Zellen mit passender Identität). */
