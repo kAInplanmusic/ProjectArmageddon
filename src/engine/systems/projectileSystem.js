@@ -267,7 +267,8 @@ export class ProjectileSystem {
         }
       }
 
-      const hit = this.#raycast(terrain, targets, startX, startY, nextX, nextY);
+      const hit = this.#raycast(terrain, targets, startX, startY, nextX, nextY,
+        world.getComponent(entityId, 'Projectile', 'trefferRadius') || 0);
 
       if (hit && fuseTicks > 0) {
         // Zünderwaffe: Der Aufprall stoppt sie, zündet sie aber nicht. Sie
@@ -421,13 +422,30 @@ export class ProjectileSystem {
    *
    * @returns {{x:number,y:number,target:number|null}|null}
    */
-  #raycast(terrain, targets, startX, startY, endX, endY) {
+  #raycast(terrain, targets, startX, startY, endX, endY, trefferRadius = 0) {
     const treffer = raycastSegment(startX, startY, endX, endY, {
       isSolid: terrain ? (x, y) => terrain.isSolid(x, y) : null,
       hitTest: (x, y) => {
         for (const target of targets) {
           if (Math.abs(x - target.x) <= PLAYER_HALF_WIDTH && Math.abs(y - target.y) <= PLAYER_HALF_HEIGHT) {
             return target.id;
+          }
+        }
+        /*
+         * TREFFERFENSTER (Waffenfassung 16, W01).
+         *
+         * Ein schnelles Geschoss soll eine Figur nicht verfehlen, nur weil der
+         * Abtastpunkt zwischen zwei Takten neben ihr liegt. Das Fenster ist ein
+         * Kreis um die Figur und vergrößert AUSSCHLIESSLICH die Kollision; der
+         * Schaden bleibt ein Direkttreffer an genau dieser Figur (kein Splash,
+         * siehe `explosion.js`). Flächenwaffen tragen 0 — ihr Radius wirkt als
+         * Explosion, nicht als Fangradius.
+         */
+        if (trefferRadius > 0) {
+          for (const target of targets) {
+            if ((x - target.x) ** 2 + (y - target.y) ** 2 <= trefferRadius * trefferRadius) {
+              return target.id;
+            }
           }
         }
         return null;

@@ -27,7 +27,16 @@
  *     der Fassungsschicht `WINDFAKTOR_JE_WAFFE` (`config/weapons.js`, erzeugt von
  *     `scripts/build-weapon-catalog.mjs`). Der Motor liest ihn nur mit `config.wind` 2 (`shooting.js`,
  *     `windFaktorFuerWaffe`); Fassungen 1 bis 13 sehen das Feld nicht und bleiben bitgleich.
- *   - `WAFFEN_TEMPO` (15, Standard, GP-4): wie 14, dazu `WAFFEN_F15_WERTE` (`config/waffen-f15.js`): Schaden je
+ *   - `WAFFEN_TREFFER` (16, Standard): wie 15; das 24-px-Trefferfenster der
+ *     Projektilwaffen ist vom Schadensradius getrennt (`W01`, docs/waffen-audit-2026-11-08).
+ *     Bis Fassung 15 setzte `shooting.js` für jede Nicht-Nahkampfwaffe ohne Katalogsradius
+ *     `blastRadius = 24`; dieser Wert wirkte über `explosion.js` als echter Flächenschaden
+ *     (33 Projektile, u. a. Maschinenpistole `pa_040`, trafen damit im Umkreis). Ab Fassung 16
+ *     bleibt `blastRadius` der Katalogwert (0 = keine Fläche), und die Kollision liest das
+ *     eigene Feld `trefferRadius` (24 px nur um die Figur, kein Schaden an Dritten). Nahkampf-
+ *     und Wurfwaffen behalten kein Trefferfenster, echte Flächenwaffen bleiben unverändert.
+ *     Fassungen 1 bis 15 spawnen bitgleich wie zuvor (Goldwerte in `tests/w01-trefferfenster.test.js`).
+ *   - `WAFFEN_TEMPO` (15): wie 14, dazu `WAFFEN_F15_WERTE` (`config/waffen-f15.js`): Schaden je
  *     Katalogkategorie angehoben, damit eine Figur nach 3 bis 4 Treffern fällt (Median gemessen, siehe
  *     `docs/balance-tempo-2026-11-05.md`). Der Katalog bleibt unverändert; Fassungen 1 bis 14 lesen die Schicht
  *     nicht und bleiben bitgleich (Prüfsummen in `tests/waffen-fassung.test.js`).
@@ -90,7 +99,15 @@ export const WAFFEN_WIND = 14;
  * unverändert, die Fassungen 1 bis 14 sehen die Schicht nicht.
  */
 export const WAFFEN_TEMPO = 15;
-export const WAFFEN_STANDARD = WAFFEN_TEMPO;
+/**
+ * Fassung 16 (W01, Trefferfenster): Das 24-px-Trefferfenster der Projektilwaffen
+ * ist vom Schadensradius getrennt. `blastRadius` trägt nur noch die echte
+ * Flächenwirkung des Katalogs; die Kollision liest `trefferRadius` (nur Treffer,
+ * kein Schaden an Dritten). Bis Fassung 15 wirkte dasselbe Fenster als
+ * Flächenschaden (`shooting.js`, `explosion.js`); diese Fassungen bleiben bitgleich.
+ */
+export const WAFFEN_TREFFER = 16;
+export const WAFFEN_STANDARD = WAFFEN_TREFFER;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -103,7 +120,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT || fassung === WAFFEN_WIND || fassung === WAFFEN_TEMPO ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT || fassung === WAFFEN_WIND || fassung === WAFFEN_TEMPO || fassung === WAFFEN_TREFFER ? fassung : WAFFEN_STANDARD;
 }
 
 /**
