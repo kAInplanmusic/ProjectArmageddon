@@ -39,18 +39,28 @@ export function isTextEntry(target) {
 /**
  * Sollen Spieltasten (Leertaste, Pfeile, Enter, Ziffern …) gerade NICHT die Figur steuern?
  *
- * Zwei Fälle neben der Texteingabe (2026-11-04):
+ * Drei Fälle neben der Texteingabe:
  * - Der Fokus liegt im Einstellungs-Dropdown des HUD oder auf seinem Knopf (`[data-spieltasten-aus]`):
  *   Leertaste/Enter drücken dort den Knopf, Pfeile wandern durch die Einträge — ein Schuss nebenbei
  *   wäre ein Fehlgriff.
  * - Der Dreh-Hinweis deckt das Spiel ab (Telefon hochkant, `body.dreh-hinweis-aktiv`).
+ * - Der Fokus liegt auf einem nativen Bedienelement (Knopf, `summary`, Link, Tab): Enter und
+ *   Leertaste gehören dort dem Element. Die Spielsteuerung hängt global am Fenster und rief sonst
+ *   `preventDefault()` auf — damit ließ sich im Menü kein `details` per Tastatur öffnen und kein
+ *   Knopf auslösen (erster Befund beim Erstkontakt-E2E, `tests/e2e/onboarding-erstkontakt.spec.mjs`).
  *
  * @param {EventTarget|null} target - typischerweise `event.target`
+ * @param {string} [key] - `event.key`; ohne Angabe gelten nur die alten Fälle
  * @returns {boolean} true, wenn das Spiel die Taste ignorieren soll
  */
-export function spielTastenAus(target) {
+export function spielTastenAus(target, key = '') {
   if (isTextEntry(target)) return true;
-  if (typeof target?.closest === 'function' && target.closest('[data-spieltasten-aus]')) return true;
+  if (typeof target?.closest === 'function') {
+    if (target.closest('[data-spieltasten-aus]')) return true;
+    if ((key === 'Enter' || key === ' ') && target.closest(
+      'button, summary, a[href], [role="button"], [role="tab"], [role="option"]',
+    )) return true;
+  }
   const body = globalThis.document?.body;
   return Boolean(body?.classList?.contains('dreh-hinweis-aktiv'));
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isTextEntry, prefersReducedMotion, REDUCED_MOTION_QUERY } from '../src/client/dom.js';
+import { isTextEntry, spielTastenAus, prefersReducedMotion, REDUCED_MOTION_QUERY } from '../src/client/dom.js';
 
 /**
  * Der Helfer entscheidet, ob eine Taste ins Spiel oder in ein Formularfeld
@@ -60,6 +60,51 @@ test('isContentEditable gewinnt gegen den Tag-Namen', () => {
   // Ein bearbeitbares DIV verhält sich wie ein Textfeld.
   assert.equal(isTextEntry(fakeElement('DIV', { isContentEditable: true })), true);
   assert.equal(isTextEntry(fakeElement('DIV', { isContentEditable: false })), false);
+});
+
+// ------------------------------------------------- Spieltasten auf Bedienelementen
+
+/**
+ * Baut ein Ziel, dessen `closest`-Abfragen gezielt antworten. Geprüft wird
+ * die Entscheidung, nicht ein DOM-Baum: Der Aufrufer fragt nach
+ * `[data-spieltasten-aus]` und nach der Liste nativer Bedienelemente.
+ */
+function fakeZiel({ spieltastenAus = false, bedienelement = false } = {}) {
+  return {
+    closest(auswahl) {
+      if (auswahl.includes('data-spieltasten-aus')) return spieltastenAus ? {} : null;
+      if (auswahl.includes('button') || auswahl.includes('summary')) return bedienelement ? {} : null;
+      return null;
+    },
+  };
+}
+
+test('Enter und Leertaste gehören einem fokussierten Bedienelement', () => {
+  /*
+   * Der Befund aus dem Erstkontakt-E2E: Die globale Spielsteuerung rief
+   * `preventDefault()` auf, bevor der Browser `summary` oder `button`
+   * auslösen konnte. Tastaturnutzer konnten die Hilfe nicht öffnen und das
+   * Match nicht starten.
+   */
+  assert.equal(spielTastenAus(fakeZiel({ bedienelement: true }), 'Enter'), true);
+  assert.equal(spielTastenAus(fakeZiel({ bedienelement: true }), ' '), true);
+});
+
+test('Andere Spieltasten bleiben auf einem Knopf wirksam', () => {
+  // A/D und W/S dürfen weiterlaufen, auch wenn ein HUD-Knopf den Fokus hat.
+  for (const taste of ['a', 'd', 'w', 's', 'ArrowLeft', '1', 'p']) {
+    assert.equal(spielTastenAus(fakeZiel({ bedienelement: true }), taste), false, taste);
+  }
+});
+
+test('Spielfeld und freie Flächen behalten Enter für den Sprung', () => {
+  assert.equal(spielTastenAus(fakeZiel(), 'Enter'), false);
+  assert.equal(spielTastenAus(fakeZiel(), ' '), false);
+});
+
+test('Das Einstellungs-Dropdown schaltet alle Spieltasten ab', () => {
+  assert.equal(spielTastenAus(fakeZiel({ spieltastenAus: true }), 'a'), true);
+  assert.equal(spielTastenAus(fakeZiel({ spieltastenAus: true }), 'Enter'), true);
 });
 
 // ------------------------------------------------------- Bewegung reduzieren

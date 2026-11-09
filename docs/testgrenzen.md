@@ -262,3 +262,25 @@ sie und erneuert das Dossier — bewusst, nicht als Nebenwirkung jedes Laufs.
 Der Bilder-Zweig fällt damit in der CI weg; die Mindestzusagen (Seite lädt,
 Menü öffnet, HUD steht, keine Seitenfehler) decken die übrigen Spezifikationen
 dort weiter ab.
+
+---
+
+## Zoom, Fokusfallen und Erstkontakt (Stand 2026-11-09)
+
+Drei Lücken aus `TESTLUECKE-1` sind mit echten Browserläufen geschlossen. Alle
+drei arbeiten **ohne Baseline** und ohne echtes Gerät; sie prüfen Bedienbarkeit,
+nicht ein Pixelbild.
+
+| Datei | Was sie zusichert | Bewusste Grenze |
+|---|---|---|
+| `tests/e2e/zoom-200-prozent.spec.mjs` | 200 % Zoom als 720×450 CSS bei DPR 2: Menükarte scrollt, Startknopf per Maus erreichbar, HUD und Waffenmenü bleiben im Fenster, Feuerknopf ist nicht verdeckt. | Emuliert den Zoom über Fenstergröße + `deviceScaleFactor`; der Browser-Zoom-Menüweg selbst wird nicht bedient. Kein Screenshot-Vergleich. |
+| `tests/e2e/fokusfallen.spec.mjs` | Rückfrage: Fokus startet auf „Ja“, Tab/Shift+Tab bleiben im Dialog, `e`/`r` erreichen das Spiel nicht, Esc gibt den Fokus an das Spielfeld zurück. Waffenmenü: Tab pendelt nur zwischen Menü und Schließen-Knopf. Hauptmenü: Tab erreicht nie `#game-canvas` oder `#hud`. | Das Hauptmenü hat **keine zyklische** Fokusfalle: Nach der letzten `summary` läuft Tab über `<body>` und den Sprunglink zurück. Geprüft ist die Sicherheitszusage (kein Spiel dahinter), nicht ein Zyklus. Ein Trap wäre eine Produktänderung an `main.js`/`index.html`. |
+| `tests/e2e/onboarding-erstkontakt.spec.mjs` | Erster Start: Spielziel und Tastenliste stehen vor der Einrichtung, Standardkonfiguration ist sichtbar, keine Vorsitzung. Tastaturweg: Sprunglink → Menüfeld → Hilfe (Enter) → Reiterwechsel → Matchstart (Enter). | Prüft die **vorhandene** Führung. UX-10 (neue Onboarding-Strecke, Tutorial, erzwungene erste Schritte) bleibt eine Content-/Designentscheidung des Auftraggebers und wird hier nicht gebaut. |
+
+**Nebenbefund, behoben:** Die globale Spielsteuerung fing `Enter` und die
+Leertaste ab, bevor ein fokussierter Knopf oder ein `summary` sie auslösen
+konnte. Tastaturnutzer konnten die Hilfe nicht öffnen und das Match nicht
+starten. `spielTastenAus` (`src/client/dom.js`) überlässt diese beiden Tasten
+jetzt nativen Bedienelementen; andere Spieltasten (A/D, W/S, Ziffern) bleiben
+dort wirksam. Abgesichert in `tests/dom.test.js`.
+
