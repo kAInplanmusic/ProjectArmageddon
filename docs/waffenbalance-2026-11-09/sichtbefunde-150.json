@@ -1,0 +1,1462 @@
+[
+  {
+    "id": "pa_001",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Baseballschläger klar erkennbar; Griffpunkt am Schlagkopf und Wirkspitze am Griffende vertauscht.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_002",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Feuerfaust erkennbar; Flammen bereits im Ruhebild eingebrannt, Nahkampf- und Trefferphase getrennt abnehmen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_003",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Hakenklinge erkennbar; Griffmarker am Haken, Wirkspitze am hinteren Griffende.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_004",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Piratenhaken erkennbar; Marker greift den Haken statt des Schafts, Wirkrichtung prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_005",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Morgenstern erkennbar; Griff am Schaft und Spitze am Schlagkopf plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_006",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Schaufel erkennbar; Griff und Blatt in sinnvoller Reihenfolge.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_007",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Ankerprüfung"
+    ],
+    "note": "Tonfa erkennbar; Handposition am Längsgriff gegen nutzbaren Quergriff im Spiel prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_008",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Kriegshammer erkennbar; Marker von Holzschaft zu Hammerkopf plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_009",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Eispickel erkennbar; grüner Griffmarker an Eis-/Kopfpartie statt am roten Stiel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_010",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Kettensäge erkennbar; Rundgriff und Sägeblatt im Handbetrieb mit tatsächlicher Handposition prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_011",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Zwillingskatanas als gekreuztes Paar; ein einzelner Handanker bildet zwei Griffe nur eingeschränkt ab.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_012",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker",
+      "Freistellung"
+    ],
+    "note": "Katana: Klinge links, Wirkspitze rechts am Griff; Menü zeigt zusätzlich eine graue Rechteckfläche.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_013",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Mehrzweckmesser erkennbar; Griff links, Klinge rechts plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_014",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Taschenmesser erkennbar; offenes Klappmesser und Spitze plausibel ausgerichtet.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_015",
+    "sheet": 1,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Runenschwert mit verziertem Heft erkennbar; Heft links und Klinge rechts plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_016",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Rapier erkennbar; Griffkorb und Spitze in plausibler Reihenfolge.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_017",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Kampfmesser erkennbar; Holzgriff links und Klinge rechts plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_018",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker",
+      "Dauereffekt"
+    ],
+    "note": "Energieschwert: leuchtende Klinge links, Wirkspitze rechts am Griff; Leuchten im Ruhebild.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_019",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Doppelaxt erkennbar; Schaft links, Axtkopf rechts plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_020",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Ankerprüfung"
+    ],
+    "note": "Kriegssense erkennbar; langer diagonaler Schaft und Sichelkopf brauchen gesonderte Hieb-Abnahme.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_021",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Krummsäbel erkennbar; Griff und gebogene Schneide plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_022",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Plasmawerfer erkennbar; Mündungsenergie bereits im ruhenden Handbild.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_023",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Boxhandschuh erkennbar; Faust zeigt nach links, deklarierte Wirkspitze liegt rechts am Handgelenk.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_024",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Mittelfinger in Menü und Handbild erkennbar; absichtliches Humormotiv konsistent.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_025",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Gerolltes Handtuch erkennbar; Wurfrolle statt klassischer Mündung festlegen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_026",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Pressluftbohrer erkennbar; Bohrspitze zeigt plausibel nach rechts.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_027",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Fackel erkennbar; Flamme ist statischer Bildbestandteil und braucht getrennte Effektbewertung.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_028",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Kaktusbombe erkennbar; Wurfobjekt ohne eigentlichen Griff, Spitze nicht als Lauf interpretieren.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_029",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Pömpel erkennbar; Holzstiel links, Saugglocke rechts plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_030",
+    "sheet": 2,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Impulsbombe als technischer Sprengkörper konsistent; Aufstell-/Wurfpose statt Laufmündung.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_031",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Kraftfaust erkennbar; Faust vorn links, deklarierte Wirkspitze liegt rechts am Handschuhabschluss.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_032",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Raketenrucksack klar erkennbar; gehört an Rücken/Flugpose, vorhandenes Projektilbild ist keine Nutzungsgarantie.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_033",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Zauberstab erkennbar; Stabgriff links und leuchtender Kopf rechts plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_034",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Zauberbolzen: Spitze im Handbild links, deklarierte Wirkspitze rechts; Flugrichtung prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_035",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Energieball konsistent; kugelförmiges Effektmotiv hat keinen mechanischen Griff.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_036",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Raketenhandschuh erkennbar; Raketen und Abschussflamme im Handbild, Ruhepose gesondert prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_037",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Raketenwerfer erkennbar; Rakete/Feuer im Ruhebild vermeiden oder bewusst als Bereitschaft markieren.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_038",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Rakete: Nase links, Feuer rechts; Wirkspitze rechts zeigt auf den Antrieb statt auf die Nase.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_039",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Feldmörser als vollständige Bodenwaffe; Platzieren/Bedienen statt frei schwebender Handpose prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_040",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Maschinenpistole zeigt Lauf nach links; Wirkspitze rechts liegt am Schaftende.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_041",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Salvengeber als Werfer erkennbar; Rohrachse und Griff plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_042",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Feuerwerkssalve als Raketenbündel; Bündelpose und tatsächliche Anzahl Geschosse ausdrücklich unterscheiden.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_043",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Kampfgeschütz als stationäre Großwaffe erkennbar; Weltobjektrolle statt kleiner Handwaffe vorsehen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_044",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung",
+      "Dauereffekt"
+    ],
+    "note": "Phönix klar erkennbar; Kreatur-/Beschwörungsrolle und flammende Ruhepose prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_045",
+    "sheet": 3,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Raketensalve als Bündel erkennbar; Bündelgrafik belegt keine Mehrfachprojektilmechanik.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_046",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Splittergranate als Granate erkennbar; statische Identität und Wurfrolle plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_047",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Handgranate als rote Granate erkennbar; Zünder/Wurfrolle plausibel, kein normaler Laufgriff.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_048",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Bananengranate erkennbar; Banane mit Sprengkörperdetails, klare Signatur.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_049",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Mechanikprüfung"
+    ],
+    "note": "Bumerang in allen statischen Rollen erkennbar; Rückkehrbewegung nicht aus dem Namen ableiten.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_050",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung"
+    ],
+    "note": "Doppelkopfaxt erkennbar; Menübild hat weißen Hintergrund, während Handatlas freigestellt ist.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_051",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Wurfklingen als gebündelte Messer; Wirkspitzen links, deklarierte Mündung rechts am Griffbündel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_052",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Molotowcocktail erkennbar; Flamme bereits im Ruhebild, Flaschen-Wurfpose prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_053",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Roboterbombe erkennbar; Boden-/Wurfobjekt statt klassischer Laufmündung.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_054",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Mechanikprüfung"
+    ],
+    "note": "Schrotflinte erkennbar; Menü hat braune Rechteckfläche, generisches Einzelgeschoss belegt keine Schrotladung.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_055",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Fernbüchse zeigt den Lauf nach links; Mündungsmarker rechts am hinteren Ende.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_056",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Präzisionsgewehr mit Lauf nach rechts plausibel; unterscheidet sich sichtbar von Fernbüchse.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_057",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Revolver mit Trommel und Lauf erkennbar; Griff/Laufposition plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_058",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Ankerprüfung"
+    ],
+    "note": "Kampfbogen erkennbar; Sehnen-/Pfeilrichtung gegen den einzelnen Achsenmarker prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_059",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Armbrust erkennbar; Griffkörper und nach rechts gerichtete Schussachse plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_060",
+    "sheet": 4,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Mechanikprüfung"
+    ],
+    "note": "Gatlingkanone erkennbar; visuelle Mehrrohrwaffe verspricht gefühlt Dauerfeuer, tatsächlichen Schussmodus klar anzeigen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_061",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Feuerdämon als Kreatur gut erkennbar; vollständige Figur ist kein plausibler Handgegenstand.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_062",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Flammenwerfer erkennbar; statische Flamme von fortlaufender Strahlmechanik getrennt halten.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_063",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Wasserwerfer erkennbar; Farbgebung und Lauföffnung passen zur Wasserrolle.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_064",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Katapult als vollständige Belagerungsmaschine; Weltobjekt-/Bedienrolle gesondert abnehmen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_065",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Meteorbrocken als Fels erkennbar; Fall-/Anflugobjekt statt Griffwaffe.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_066",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Haubitze: weißes Menürechteck, dunkler Rahmen auch im Handatlas; stationäre Großwaffe.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_067",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Säurekanone erkennbar; grüner Tropfen/aktive Säure im Ruhebild, passende Bereitschaftsdarstellung prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_068",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Plasmagewehr zeigt Lauf nach links; Wirkspitze rechts am Schaft.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_069",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Raketenkanone erkennbar; Laufrichtung nach rechts plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_070",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Giftwolke als grünes Symbol/Kachel erkennbar; Wolke und gehaltenes Auslösesymbol trennen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_071",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Eisschlag zeigt im Menü Eiskachel, in der Hand Eisformation; beides elementar stimmig, Rollen konsistent machen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_072",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Dauereffekt"
+    ],
+    "note": "Feuerball als Flammenkachel erkennbar; Effektfläche ist kein physischer Griffgegenstand.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_073",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Tentakelgift als Tentakel-/Schlangenmotiv konsistent; wirkendes Gebiet und Auslösesymbol trennen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_074",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Verderbnissiegel als grünes Siegel erkennbar; keine klassische Mündung vorhanden.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_075",
+    "sheet": 5,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Tornado: weißer Hintergrund im Menü, Wirbelmotiv erkennbar; Gebietswirkung statt Handobjekt.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_076",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Portalring als leuchtende Portalkachel erkennbar; Ziel-/Versetzrolle prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_077",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Schwarzes Loch als Vortex erkennbar; keine physische Lauf-/Griffachse.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_078",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Voodoopuppe klar erkennbar; Stoffpuppe und Nadeln konsistent.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_079",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Kosmisches Portal als Portal-/Figurmotiv erkennbar; Weltfläche und Menüauslöser trennen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_080",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Psionischer Tentakel: rechteckige Haut-/Bildflächen verbleiben; Tentakelmotiv trotzdem erkennbar.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_081",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Identität",
+      "Rollenprüfung"
+    ],
+    "note": "Zauberbuch: Menü wirkt wie Buch/Siegel, Handbild wie freischwebender Vortex; Buchidentität vereinheitlichen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_082",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Identität",
+      "Freistellung"
+    ],
+    "note": "Goldene Zauberrolle wirkt wie Stab/Münzen statt Schriftrolle; Menü weiß gerahmt.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_083",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Goldene Hand erkennbar; Effektkachel/Handsymbol ohne natürlichen mechanischen Griff.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_084",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Glutelixier als rote Flasche erkennbar; Selbstanwendungs-/Trinkpose sinnvoll.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_085",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Feuermagier als vollständige Figur; Buff-/Zufallsauslöser nicht als gehaltene Spielfigur darstellen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_086",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Windkrieger: Menü mit heller rechteckiger Fläche, Handbild volle Figur unter Wirbel; Beschwörungs-/Effektrolle prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_087",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Dimensionssprung als leuchtendes Portal-/Figurmotiv erkennbar; komplex bei 24 px.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_088",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Lesbarkeit"
+    ],
+    "note": "Dimensionsriss ähnlich pa_087, unterschiedliche Farben/Figur kaum als Funktionsunterschied bei 24 px lesbar.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_089",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Zauberstiefel erkennbar; helle Unterkante/Standplatte im Atlas nicht automatisch freigestellt.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_090",
+    "sheet": 6,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Giftpilz klar erkennbar; Weltobjekt-/Zonenrolle statt großem Pilz in der Hand.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_091",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Astralkugel als sternförmiges Siegel erkennbar; Symbolrolle statt Kugelgriff prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_092",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Heilzauber: grünes Heilsiegel erkennbar; Heileffekt und Menüauslöser auseinanderhalten.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_093",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Identität",
+      "Rollenprüfung"
+    ],
+    "note": "Funkenschild zeigt geflügelte helle Schutzfigur statt eindeutiger elektrischer Schildsprache.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_094",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Heilspritze klar erkennbar; Nadel rechts und Kolben links konsistent.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_095",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Sturmelixier als mehrfarbige Rundflasche erkennbar; Trink-/Selbstpose.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_096",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung"
+    ],
+    "note": "Mutationselixier erkennbar; helle untere Fläche/Tropfen im Handatlas auf unerwünschte Restfläche prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_097",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Traumfänger als Schmuck-/Schlafsymbol erkennbar; Funktionsrolle kein Lauf.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_098",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Lavaelixier als heiße Steinflasche erkennbar; deutlich von Glutelixier unterscheidbar.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_099",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Frostsanduhr erkennbar; liegende Handpose gegen aufrechte Uhrsemantik prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_100",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Blitzwürfel als leuchtender Würfel erkennbar; Zufallssymbol eindeutig.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_101",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Eisschild klar erkennbar; deutliche Stand-/Unterkantenreste im Handatlas.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_102",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Gedankensturm als Gehirn-/Wirbelsymbol erkennbar; kleine Details bei 24 px verlieren Kontur.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_103",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Verderbniskelch erkennbar; Menükachel und großer Kelch-/Magieeffekt brauchen klare Rollen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_104",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Quantengewehr erkennbar; Lauf rechts und Griff links plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_105",
+    "sheet": 7,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Frostrolle als Schriftrolle erkennbar; hellblaue rechteckige Fläche im Atlas-Icon, Selbstwirkungsrolle beachten.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_106",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Sonnenamulett klar erkennbar; starke Sonnensilhouette auch klein.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_107",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Allsehendes Auge erkennbar; Sockel-/Unterkantenmotiv gehört eher zum Effekt-/Aufstellbild.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_108",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Ankerprüfung"
+    ],
+    "note": "Zauberpeitsche als aufgerollte Peitsche erkennbar; Handgriff und ausgespielte Spitze im Hieb prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_109",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Giftbaum als ganzer Baum erkennbar; Buff-/Weltobjektrolle statt Baum als Handwaffe.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_110",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Dimensionskugel auf Sockel erkennbar; Effekt-/Aufstellbild vom Menüauslöser trennen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_111",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Enterhaken mit Seil klar erkennbar; Wurf-/Seilrolle plausibel, Hakenabgang im Lauf prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_112",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung",
+      "Dauereffekt"
+    ],
+    "note": "Düsenrucksack klar erkennbar; Rückenrolle und eingebrannte Flammen getrennt abnehmen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_113",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [],
+    "note": "Bohrkanone mit Bohrspitze nach rechts konsistent; Griffe plausibel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_114",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Gleitschirm-/Fallschirmmotiv erkennbar; gehört über/an die Figur, nicht als großes Handobjekt.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_115",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Wächterstatue erkennbar; vollständiges Standobjekt mit Sockel, Beschwörungs-/Buffrolle prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_116",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Blutritual zeigt Handschlag/Herzsymbol; abstrakter Auslöser statt Handgegenstand.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_117",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Ananasbombe klar erkennbar; nominaler Wurfgegenstand, tatsächlicher Strahlpfad muss sichtbar erklärt werden.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_118",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Feuerwesen als Kreatur erkennbar; weißes Menürechteck und rechteckige Bodenfläche im Handatlas.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_119",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Munitionskiste klar erkennbar; Kiste als Nachschub-/Selbstwirkung und nicht Schusswaffe darstellen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_120",
+    "sheet": 8,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Energiefaust als gepanzerte Faust erkennbar; Hand-/Faustpose statt frei gehaltener Doppelfigur prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_121",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Ankerprüfung"
+    ],
+    "note": "Raketenfaust: Boxkopf zeigt links, Feder nach rechts; Wirkspitze am Federende verlangt Rollenprüfung.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_122",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Endlosschleife als pinkes Unendlichkeitssymbol klar; Effekt-/Buffauslöser statt physischer Waffe.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_123",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Magnetkanone zeigt Hufeisenmagnet statt klassischer Kanone; Ziehrichtung und Menübeschreibung abstimmen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_124",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Wachgeschütz als Roboter/Geschütz erkennbar; Aufstellbild und Weltobjekt statt Handpose.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_125",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Nachschubkiste als orange Technikbox erkennbar; eigener Nachschubauslöser.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_126",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Bunker als ganze kleine Festung erkennbar; Schutzwirkung und Weltobjektrolle müssen übereinstimmen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_127",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Identität",
+      "Rollenprüfung"
+    ],
+    "note": "Aktueller Name Mine, Motiv weiterhin leuchtende Plattform/Teleportgerät; Minenidentität nicht eindeutig.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_128",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Lesbarkeit",
+      "Rollenprüfung"
+    ],
+    "note": "Hologrammportal mit blauem Hologramm erkennbar, im kleinen Menü ähnlich pa_127.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_129",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Tesla-Turm als ganze Säule erkennbar; Strahlwaffen-/Weltobjektrolle gesondert darstellen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_130",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Tarnnetz als Tarnquader erkennbar; Deckungs-/Buffrolle statt starrer Handkachel.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_131",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Schlauchboot eindeutig; Fahrzeug-/Schwimmrolle statt kleines gehaltenes Boot.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_132",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Alte Dame als Figur mit Gehstock klar erkennbar; vollständige Person als Handbild ist Rollenproblem.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_133",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Fliegendes Superschaf als geflügeltes Schaf klar; Signaturprojektil passt zum Motiv.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_134",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Luftangriff: Menü als Angriffskachel, Handbild Flugzeuge; Auslöser und Anflugmechanik abgleichen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_135",
+    "sheet": 9,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Meteorregen: weißer Menürahmen, Meteorbild mit Rahmenresten; tatsächlichen Schuss-/Strahlpfad kennzeichnen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_136",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Anker"
+    ],
+    "note": "Bohrkopfrakete: Bohrnase nach links, deklarierte Wirkspitze rechts am hinteren Ende.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_137",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Dauereffekt"
+    ],
+    "note": "Flammenklinge als flammendes Schwert mit Schildrahmen; Rahmen/Feuer nicht mit Ruhepose vermischen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_138",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung"
+    ],
+    "note": "Arkanhammer erkennbar; rechteckiger Zierrahmen in Icon und Handbild, Menü weiß hinterlegt.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_139",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung",
+      "Dauereffekt"
+    ],
+    "note": "Höllenkanone als dämonische Großwaffe erkennbar; eingebrannte Feuerpartikel und stationäre Rolle prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_140",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Quantenkanone mit Sockel erkennbar; stationäre Form von tatsächlichem Projektilpfad trennen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_141",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Astralkrieger als gepanzerte Figur erkennbar; Menü-/Atlasrahmen und Beschwörungsrolle prüfen.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_142",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Leerenritter als gerüstete Figur erkennbar; Charakter als Handgegenstand und generischer Energieball passen nur bedingt.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_143",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Rollenprüfung"
+    ],
+    "note": "Astralross erkennbar; Reittier-/Bewegungsrolle statt vollständigem Pferd in der Hand.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_144",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung"
+    ],
+    "note": "Kosmische Wassermelone klar erkennbar; Menü weißer Rahmen, Atlas-Icon dunkle Kartenplatte.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_145",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Erdspalter als aufbrechender Boden erkennbar; Menü-/Iconrahmen, Wirkfläche statt Handgegenstand.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_146",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung"
+    ],
+    "note": "Giftige Weltenflasche: weiße Flecken/Restflächen im Menü, komplexe Giftflasche im Handatlas erkennbar.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_147",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Weltendrache als schwarzer Drache erkennbar; Menü weiße Reste, großes Kreaturbild statt Handwaffe.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_148",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Feuerschild als goldener Schild klar; Standkantenreste, generisches blaues Projektil ist kein Wirknachweis.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_149",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Freistellung",
+      "Rollenprüfung"
+    ],
+    "note": "Goldene Reliktkugel als königliche Kugel erkennbar; weißes Menürechteck und dunkle Kartenplatte im Icon.",
+    "runtimeVisualAcceptance": false
+  },
+  {
+    "id": "pa_150",
+    "sheet": 10,
+    "review": "statisch manuell gesichtet, 9.11.2026",
+    "tags": [
+      "Lesbarkeit"
+    ],
+    "note": "Kosmischer Kern als komplexe Mechanikkugel erkennbar; kleine Details bei 24 px werden primär als blaues Leuchten wahrgenommen.",
+    "runtimeVisualAcceptance": false
+  }
+]

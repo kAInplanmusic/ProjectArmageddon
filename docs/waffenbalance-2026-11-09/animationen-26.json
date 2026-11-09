@@ -1,0 +1,314 @@
+[
+  {
+    "id": "pa_032",
+    "note": "Blauer Raketenrucksack mit Bewegungsvarianten; passendere Grundidentität, Anbau und Flugpose offen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_032.webp",
+        "sha256": "fadac26b0eb5d2236823583c29f76bba00422b7cc81198ae3a5821b43334e5a0"
+      }
+    ]
+  },
+  {
+    "id": "pa_038",
+    "note": "Rakete bleibt erkennbar; Richtungs-/Antriebsachse und Frames im Betrieb prüfen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_038.webp",
+        "sha256": "081512d9a499dee4cc1775b18c08d51dedaa8989009b4e67ad350318b2ceaaa0"
+      }
+    ]
+  },
+  {
+    "id": "pa_044",
+    "note": "Phönix bleibt erkennbar; ähnelt statischem Flackern, Dynamikabnahme offen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_044.webp",
+        "sha256": "421bd311bf9924a61751e07e944c2eb52337d6a7e0a2df5882c1d380628a041f"
+      }
+    ]
+  },
+  {
+    "id": "pa_048",
+    "note": "Bananengranate bleibt erkennbar; minimale Variationen, Laufzeitabnahme offen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_048.webp",
+        "sha256": "6f1c291f7f5c1ba61efdd258bfdad8e8f4b51ede764239b956306fc47d706e3d"
+      }
+    ]
+  },
+  {
+    "id": "pa_049",
+    "note": "Bumerang wird zu geflügeltem Tier; Identität nicht freigeben.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_049.webp",
+        "sha256": "46f45d95c6db20f12e750f9f9780275f343d237fbafaadc39cf25724428994bc"
+      }
+    ]
+  },
+  {
+    "id": "pa_053",
+    "note": "Roboterbombe in mehreren Körperzuständen; Kontinuität, Silhouette und Explosion gesondert prüfen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_053.webp",
+        "sha256": "760fcc053908eb69fc6e3cf7520464b2a4b516795cc82da8846ae021af1fb7da"
+      }
+    ]
+  },
+  {
+    "id": "pa_061",
+    "note": "Feuerdämon bleibt erkennbar; gelber Vollfarbframe auffällig, Kontinuität offen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_061.webp",
+        "sha256": "2e16896bf4b834f2791766c7e8ae99404619a74086fb24eb5a7d918b091cd7ce"
+      }
+    ]
+  },
+  {
+    "id": "pa_065",
+    "note": "Meteor mit statischen Schweifvarianten; Fallrichtung und Schweifbewegung offen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_065.webp",
+        "sha256": "2a2acdb138afabf4ff10abbe4d5ef2711cabba27d616b715b644fd9727f462bf"
+      }
+    ]
+  },
+  {
+    "id": "pa_073",
+    "note": "Tentakelgift wird zu zweibeinigem Dinosaurier; falsche Identität.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_073.webp",
+        "sha256": "4ba0b57fb93d2dbc702549d760b47d523e5ca1001780218b343106677ee0e00d"
+      }
+    ]
+  },
+  {
+    "id": "pa_112",
+    "note": "Blaues Fluggerät-/Flügelmotiv; bytegleich mit pa_114, keine getrennte Rucksackidentität.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_112.webp",
+        "sha256": "51215e68c3147220838c664c3fd53127956f295214c5532c152fe2e29081316c"
+      }
+    ]
+  },
+  {
+    "id": "pa_114",
+    "note": "Bytegleich mit pa_112; keine freigegebene Gleitschirmidentität.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_114.webp",
+        "sha256": "51215e68c3147220838c664c3fd53127956f295214c5532c152fe2e29081316c"
+      }
+    ]
+  },
+  {
+    "id": "pa_115",
+    "note": "Wächterstatue bleibt grundsätzlich erkennbar; stark ähnliche Frames, Wirkung offen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_115.webp",
+        "sha256": "691012ab700e8cd40b7f0fbf76f8de96e1d7843abc6c7cea0b2fa98ede61c591"
+      }
+    ]
+  },
+  {
+    "id": "pa_118",
+    "note": "Feuerwesen überwiegend gleiche Figur mit Flammenvarianten; Rollen-/Bewegungsabnahme offen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_118.webp",
+        "sha256": "2fe744b338db5c7db8750c6f67fda0e6698a0bcb123ae946b9f3af4b1c5822c2"
+      }
+    ]
+  },
+  {
+    "id": "pa_121",
+    "note": "Raketenfaust bleibt erkennbar; Richtungs-/Federachse im Betrieb prüfen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_121.webp",
+        "sha256": "e88e213f3c48b4610f2f0db4ddc828546cf5dcca8f85da0011fdddbab7efcfb5"
+      }
+    ]
+  },
+  {
+    "id": "pa_122",
+    "note": "Endlosschleife wechselt zwischen Unendlichzeichen und rosa Flugtier; Identitätsbruch.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_122.webp",
+        "sha256": "0556c7ba4ba571a5a6948112c6797a0a7d48e92ef618a4b0cc98c1e0a51d9458"
+      }
+    ]
+  },
+  {
+    "id": "pa_132",
+    "note": "Alte Dame wechselt in geflügeltes Wesen; Identitätsbruch.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_132.webp",
+        "sha256": "1622fc8aebd85d6999dcd85903ad4e1e1fb0e2da471caa4c5587e4c3bdad6eed"
+      }
+    ]
+  },
+  {
+    "id": "pa_133",
+    "note": "Fliegendes Superschaf bleibt erkennbar; variierende Bein-/Flügelbilder, Bewegungsabnahme offen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_133.webp",
+        "sha256": "9b239a6f0a1492d2710783289db0a0b2c2a2d6217c910910c37518378461f001"
+      }
+    ]
+  },
+  {
+    "id": "pa_134",
+    "note": "Luftangriff zeigt flammenden Klumpen statt der Menüflugzeuge; Projektil-/Auslöserrolle festlegen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_134.webp",
+        "sha256": "96796b1be50933d2501cc06f9598b9d9630d68da4595e2219b67df2ceaab5e8f"
+      }
+    ]
+  },
+  {
+    "id": "pa_135",
+    "note": "Meteorregen mit wechselnder Schweif-/Meteorform; Anflugrolle prüfen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_135.webp",
+        "sha256": "00030cda5ef2462d0da4d75fb62617f7e3a290ac0a868598720230dc19717a98"
+      }
+    ]
+  },
+  {
+    "id": "pa_136",
+    "note": "Bohrkopfrakete bleibt erkennbar; Ausrichtung und Längenänderung prüfen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_136.webp",
+        "sha256": "fc1038b8ce31cbaa812deb58fe235ffc7b8bb9d7ff21861d06e9743cf74e8706"
+      }
+    ]
+  },
+  {
+    "id": "pa_141",
+    "note": "Astralkrieger wird zu schlichtem blauem Humanoiden; falsche Identität.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_141.webp",
+        "sha256": "43bcea8f3ba8e6f0d5de5c04143edd680732b5fda2c34382dc83c273da481b76"
+      }
+    ]
+  },
+  {
+    "id": "pa_142",
+    "note": "Leerenritter ist einfacher blauer Ritter statt detaillierter Vorlage; Identitäts-/Stilkonsistenz offen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_142.webp",
+        "sha256": "d3100300fe70909a3f404ed53d3c712a46039d09fd14a06a65b2c41f2889a1fd"
+      }
+    ]
+  },
+  {
+    "id": "pa_143",
+    "note": "Astralross mit mehrfach ausgebleichten Frames; Farbstabilität und Bewegung prüfen.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_143.webp",
+        "sha256": "879f4937964980a09cff57062bcdd3763366346e14ac5ad258335405e3e6f4ce"
+      }
+    ]
+  },
+  {
+    "id": "pa_144",
+    "note": "Wassermelone wird zu geflügeltem Vogel; falsche Identität.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_144.webp",
+        "sha256": "415b71beec837c313f5f50831a4b49f2ffccac587bf8a5f01fe22b4a4f1cb579"
+      }
+    ]
+  },
+  {
+    "id": "pa_147",
+    "note": "Weltendrache wird zu rosa Flugschwein; falsche Identität.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_147.webp",
+        "sha256": "6b2a5c739b773f15e64de64d2199b4da57f50584a9633760b77c14db059a73a7"
+      }
+    ]
+  },
+  {
+    "id": "pa_148",
+    "note": "Feuerschild wird zu blauem Tier; falsche Identität.",
+    "runtimeAcceptance": false,
+    "productionLoaderFound": false,
+    "files": [
+      {
+        "path": "src/client/assets/weapon-sprites/anim/pa_148.webp",
+        "sha256": "b8919bcb7442371efac6b08bffdcf5ce8080bacd24119ba9eb047bb7cc28ea0e"
+      }
+    ]
+  }
+]

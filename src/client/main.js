@@ -1,3 +1,4 @@
+import { FOTOS, panorama, fotoFuerBiom, findeKulisse } from './panoramen.js';
 /**
  * Browser-Einstiegspunkt für Project Armageddon.
  *
@@ -41,10 +42,9 @@ import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, applyRemoveToTerrain, applyAddToTerrain, applySlumpToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
 import { getWeapon, orderInventoryBySubcategory, WINDFAKTOR_JE_WAFFE } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
-import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
-import { getBackdropNeu } from '../shared/config/backdrops-neu.js';
+import { pickBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
-import { SONDER_KULISSEN, sonderKulisseFuer } from './sonderKulissen.js'; import { ZEITEN, WETTER_WAHL, normalisiereWahl } from './stimmung.js';
+import { SONDER_KULISSEN, sonderKulisseFuer, motivFamilieFuerArt } from './sonderKulissen.js'; import { ZEITEN, WETTER_WAHL, normalisiereWahl } from './stimmung.js';
 import { SoundMixer, tonSpeicher } from './soundMixer.js';
 import { tonErlaubt } from './klangProfile.js';
 import { bindeTonBedienung } from './soundBedienung.js';
@@ -385,11 +385,11 @@ class Game {
         if (ereignis.button !== 0) return;
         ereignis.preventDefault();
         feuerKnopf.setPointerCapture?.(ereignis.pointerId);
-        this.input.ladenStarten();
+        this.input.ladenStarten(ereignis.pointerId);
       });
       const loslassen = () => this.input.ladenLoslassen();
-      feuerKnopf.addEventListener('pointerup', loslassen);
-      feuerKnopf.addEventListener('pointercancel', () => { if (this.input.isCharging) this.input.ladenLoslassen(); });
+      // Pointer-Up und -Cancel laufen zentral im InputController, auch bei Pointer-Capture.
+      // Das Loslassen eines zweiten Fingers (z. B. auf Gehen) darf die Ladung nicht beenden.
       feuerKnopf.addEventListener('keydown', ereignis => {
         if ((ereignis.key === 'Enter' || ereignis.key === ' ') && !ereignis.repeat) { ereignis.preventDefault(); ereignis.stopPropagation(); this.input.ladenStarten(); }
       });
@@ -825,8 +825,10 @@ class Game {
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
     // Biomwahl (leer = der Seed entscheidet; `klassisch` = Biom folgt der Karte; sonst ein Sonderbiom).
     const biom = document.getElementById('cfg-biom')?.value || null;
+    const mapSize = document.getElementById('cfg-kartengroesse')?.value ?? 'mittel';
+    const mapFormat = document.getElementById('cfg-kartenformat')?.value ?? '16:9';
     const kartenart = document.getElementById('cfg-kartenart')?.value || null;
-    // Keine Ausrichtung mehr: neue Partien sind immer Querformat (Entscheidung 2026-11-04, „nur quer").
+    // Das gewählte Kartenformat gilt lokal und online; ohne Wahl bleibt es bei 16:9.
     // Tageszeit und Wetter: nur Darstellung, nicht Teil der Match-Konfiguration.
     this.renderer.stimmung = {
       zeit: normalisiereWahl(document.getElementById('cfg-zeit')?.value, ZEITEN),
@@ -843,11 +845,11 @@ class Game {
     if (serverUrl) {
       return this.startOnline({
         serverUrl, lobbyId, teams, playersPerTeam, unitsPerPlayer, preset, kartentyp, seed,
-        backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
+        backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart, mapSize, mapFormat,
       });
     }
     return this.startMatch({
-      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
+      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart, mapSize, mapFormat,
     });
   }
 
@@ -1131,7 +1133,7 @@ class Game {
       return { ok: true, count: 0 };
     }
 
-    if (status) status.textContent = `${offen.length} offene Lobby(s)`;
+    if (status) status.textContent = `${offen.length} offene ${offen.length === 1 ? 'Lobby' : 'Lobbys'}`;
     list.replaceChildren(...offen.map(lobby => {
       const item = document.createElement('li');
       item.className = 'lobby-karte pa-karte';
@@ -1178,16 +1180,16 @@ class Game {
       platzZeile.append(felder, el('span', 'lk-zahl', `${belegt} Plätze`));
 
       // Bereit-Status: die Lobby ist offen, voll oder wartet auf Mitspieler.
-      const stand = voll ? 'Voll' : belegtZahl === 0 ? 'Leer — du startest' : `Wartet auf ${plaetze - belegtZahl}`;
+      const stand = voll ? 'Voll' : belegtZahl === 0 ? 'Alle Plätze frei' : `Wartet auf ${plaetze - belegtZahl}`;
       const zusatz = belegtZahl > 0 && verbunden < belegtZahl ? ` · ${belegtZahl - verbunden} getrennt` : '';
       const statusChip = el('span', `chip chip-status is-${item.dataset.zustand}`, stand + zusatz);
 
       const join = document.createElement('button');
       join.type = 'button';
       join.className = 'lk-beitreten';
-      join.textContent = voll ? 'Voll' : 'Beitreten';
+      join.textContent = voll ? 'Voll' : 'Auswählen';
       join.disabled = voll;
-      join.setAttribute('aria-label', `${voll ? 'Voll' : 'Beitreten'}: Lobby ${lobby.id}, ${belegt} Plätze`);
+      join.setAttribute('aria-label', `${voll ? 'Voll' : 'Auswählen'}: Lobby ${lobby.id}, ${belegt} Plätze`);
       join.addEventListener('click', () => {
         const lobbyInput = document.getElementById('cfg-lobby');
         if (lobbyInput) lobbyInput.value = lobby.id;
@@ -1263,7 +1265,7 @@ class Game {
     const feste = Array.from(auswahl.options).filter(o => o.value === 'generativ' || o.value === 'automatisch' || o.value === '');
     auswahl.replaceChildren(...feste);
     let anzahl = 0;
-    for (const biome of BACKDROP_BIOMES) {
+    for (const biome of [...BACKDROP_BIOMES, { id: 'foto', label: 'Panoramafotografien', variants: Object.entries(FOTOS).map(([id, foto]) => ({ id, label: foto.label })) }]) {
       const gruppe = document.createElement('optgroup');
       gruppe.label = biome.label;
       for (const variante of biome.variants) {
@@ -1342,7 +1344,7 @@ class Game {
   startMatch({
     teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null,
     seed = undefined, backdropKey = '',
-    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null,
+    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, mapSize = 'mittel', mapFormat = '16:9',
   } = {}) {
     /*
      * Die Konfiguration dieser Partie merken — die Revanche (UI-4) braucht sie.
@@ -1350,7 +1352,7 @@ class Game {
      * anders stehen). `seed` fehlt bewusst; den liefert `#seedFuerRevanche`.
      */
     this.letzteMatchKonfiguration = {
-      teams, playersPerTeam, preset, kartentyp, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
+      teams, playersPerTeam, preset, kartentyp, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart, mapSize, mapFormat,
     };
     this.#ladeMatchBilder();
     this.network?.disconnect();
@@ -1360,10 +1362,9 @@ class Game {
 
     // Sidegrades gehören in die Match-Konfiguration — sie verändern das
     // Kampfprofil und müssen deshalb schon beim Aufbau bekannt sein, nicht erst
-    // nach dem Start. Eine Ausrichtung gibt es nicht mehr: neue Partien sind
-    // immer Querformat (2026-11-04); Hochformat kennt nur noch die Wiedergabe alter Replays.
+    // nach dem Start. Die explizite Formatwahl bestimmt die Ausrichtung.
     this.match = new MatchController({
-      seed, teams, playersPerTeam, preset, kartentyp, orientation: 'landscape', sidegrades, loadouts, biom, kartenart,
+      seed, teams, playersPerTeam, preset, kartentyp, format: mapFormat, groesse: mapSize, sidegrades, loadouts, biom, kartenart,
       guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, wind: WIND_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
@@ -1568,7 +1569,7 @@ class Game {
   async startOnline({
     serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
-    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, token = null,
+    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, mapSize = 'mittel', mapFormat = '16:9', token = null,
     resumeToken = null,
   } = {}) {
     this.#ladeMatchBilder();
@@ -1618,7 +1619,7 @@ class Game {
           // Sidegrades gehen als Teil der Match-Konfiguration mit — der Server
           // validiert sie und rechnet autoritativ.
           body: JSON.stringify({
-            teams, preset, kartentyp, seed, ...(biom ? { biom } : {}), ...(kartenart ? { kartenart } : {}),
+            teams, preset, kartentyp, seed, mapSize, mapFormat, ...(biom ? { biom } : {}), ...(kartenart ? { kartenart } : {}),
             /*
              * Genau EINE der beiden Angaben — sie widersprechen sich sonst.
              *
@@ -1944,9 +1945,9 @@ class Game {
      */
     this.#applyKartengroesse(terrain.width, terrain.height);
     // Vorgabe 'automatisch': auch online das gemalte Bild passend zum Kartencharakter (Sonderbiome bleiben generativ).
-    if (this.gewaehlteKulisse === 'automatisch' && (!terrain.sonderbiom || SONDER_KULISSEN[terrain.sonderbiom]) && terrain.charakter) {
+    if (this.gewaehlteKulisse?.includes('/') || (this.gewaehlteKulisse === 'automatisch' && (!terrain.sonderbiom || SONDER_KULISSEN[terrain.sonderbiom]) && terrain.charakter)) {
       this.renderer.setScenery(null);
-      this.#applyBackdrop(seed, preset, 'automatisch', terrain.charakter, terrain.sonderbiom ?? null);
+      this.#applyBackdrop(seed, preset, this.gewaehlteKulisse, terrain.charakter, terrain.sonderbiom ?? null);
     } else {
       this.setSceneryFromSeed(seed, preset, terrain.sonderbiom);
     }
@@ -3073,12 +3074,8 @@ class Game {
     const auswahl = wahl === 'automatisch' ? '' : wahl; // 'automatisch': kein fester Schlüssel, der Kartencharakter entscheidet
     // Eine ausdrückliche Wahl des Spielers schlägt die Ableitung aus dem Seed.
     // Sonst könnte man die Kulisse im Menü wählen und bekäme trotzdem eine andere.
-    let kulisse = null;
-    if (auswahl) {
-      const [biomId, variantenId] = String(auswahl).split('/');
-      kulisse = getBackdrop(biomId, variantenId);
-      if (!kulisse) this.hud.log(`Kulisse „${auswahl}" unbekannt — nehme automatisch`, 'neutral');
-    }
+    let kulisse = auswahl ? findeKulisse(auswahl) : null;
+    if (auswahl && !kulisse) this.hud.log(`Kulisse „${auswahl}“ unbekannt — nehme automatisch`, 'neutral');
     /*
      * Ohne Wahl des Spielers entscheidet der CHARAKTER der Karte.
      *
@@ -3094,11 +3091,12 @@ class Game {
      */
     // Sonderbiome (Schrott, Riff, Kristallhöhle, ...) haben passende gemalte Bilder (`sonderKulissen.js`).
     if (!kulisse && sonder && SONDER_KULISSEN[sonder] && !gewaehlt?.includes?.('/')) {
-      const [b, v] = String(sonderKulisseFuer(sonder, seed)).split('/');
-      kulisse = getBackdrop(b, v) ?? getBackdropNeu(b, v);
+      const motiv = sonderKulisseFuer(sonder, seed, charakter?.kartenart);
+      const foto = fotoFuerBiom(sonder, charakter?.kartenart);
+      kulisse = (foto && (seed >>> 0) % 3 === 0 ? panorama(foto) : null) ?? findeKulisse(motiv);
     }
     if (!kulisse && charakter) {
-      const biomId = biomFuerCharakter(charakter);
+      const biomId = motivFamilieFuerArt(charakter.kartenart) ?? biomFuerCharakter(charakter);
       const biom = BACKDROP_BIOMES.find(b => b.id === biomId);
       kulisse = kulisseFuerBiom({ seed, biome: biom });
     }
@@ -3154,8 +3152,9 @@ class Game {
       : TEAM_COLORS[winnerTeamId % TEAM_COLORS.length];
     this.endSummary.textContent = this.mode === 'online'
       ? `Online-Match — Lobby ${this.network?.lobbyId ?? '-'}, ${this.network?.latencyMs ?? 0} ms`
-      : `${this.match.round} Runden, ${this.match.world.tickCount} Simulationsticks, Seed ${this.match.seedManager.baseSeed}`;
+      : `Karte mit Seed ${this.match.seedManager.baseSeed}`;
     this.endOverlay.hidden = false;
+    this.winnerText.focus({ preventScroll: true });
 
     /*
      * Kennzahlen verbuchen und anzeigen.
@@ -3219,7 +3218,7 @@ class Game {
     // Die Tabelle aller Spieler steht daneben — sie zeigt, wer was beigetragen hat.
     const tabelle = document.getElementById('match-tabelle');
     if (tabelle) {
-      const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Treffer', 'Kills'];
+      const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Trefferquote', 'Kills'];
       // Jede EIGENE Figur ist „du" — im Modus der Matcharten sind das mehrere.
       const zeilenAlle = figuren.map(f => [
         `P${f.playerId}${this.eigeneSpielerIds.includes(f.playerId) ? ' (du)' : ''}`,
@@ -3233,6 +3232,7 @@ class Game {
       kopfZeile.append(...kopf.map(t => {
         const th = document.createElement('th');
         th.textContent = t;
+        th.scope = 'col';
         return th;
       }));
       thead.append(kopfZeile);

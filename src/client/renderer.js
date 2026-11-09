@@ -1,3 +1,4 @@
+import { zeichneBiomobjekt } from './biomobjektBild.js';
 /**
  * Canvas-Renderer für Project Armageddon.
  *
@@ -103,7 +104,7 @@ import { KISTE_KANTE } from '../shared/config/kisten.js';
  * ein leerer Hintergrund. Der Selbsttest in `tests/backdrops.test.js` prüft die
  * Anzahl deshalb gegen die Dateien auf der Platte.
  */
-import { BACKDROP_URLS, kulissenUrlNeu } from './kulissenUrls.js';
+import { BACKDROP_URLS, kulissenUrlNeu, panoramaUrls } from './kulissenUrls.js';
 import { zeichneSeil } from './seilZeichnen.js';
 
 /*
@@ -367,7 +368,9 @@ export class Renderer {
     // — nicht `../`, und nicht nur der Dateiname. Bei einem abweichenden
     // Schlüssel bleibt die Liste leer und es wird still kein Bild geladen.
     const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.file}`] ?? kulissenUrlNeu(backdrop.file);
-    if (!url) {
+    const quellen = backdrop.foto ? panoramaUrls(backdrop.foto) : [];
+    if (url) quellen.push(url);
+    if (!quellen.length) {
       // Fehlt die Datei, ist der Katalog und die Ablage auseinandergelaufen.
       // Der Farbverlauf bleibt stehen, damit das Spiel spielbar bleibt.
       this.backdrop = null;
@@ -381,7 +384,7 @@ export class Renderer {
     this.backdropReady = false;
     // Die Bodenfarbe gilt sofort, nicht erst nach dem Laden des Bildes: sonst
     // zeigte der Boden kurz die vorige Farbe.
-    this.palette = paletteFor(backdrop);
+    this.palette = paletteFor(backdrop.foto ? { key: backdrop.biomeId + '/' + backdrop.id } : backdrop);
     const bild = new Image();
     bild.decoding = 'async';
     bild.onload = () => {
@@ -391,10 +394,12 @@ export class Renderer {
       this.backdropReady = true;
     };
     bild.onerror = () => {
+      if (this.backdropKey !== backdrop.key) return;
+      if (quellen.length) { bild.src = quellen.shift(); return; }
       this.backdropReady = false;
       onError?.(new Error(`Kulisse lädt nicht: ${backdrop.file}`));
     };
-    bild.src = url;
+    bild.src = quellen.shift();
   }
 
   /**
@@ -1079,6 +1084,7 @@ export class Renderer {
     this.ctx.beginPath();
     this.ctx.ellipse(1, 2, 11, 3, 0, 0, Math.PI * 2);
     this.ctx.fill();
+    if (zeichneBiomobjekt(this.ctx, fass.biomobjekt)) { this.ctx.restore(); return; }
     this.ctx.fillStyle = '#8a3b2a';
     this.ctx.strokeStyle = '#3a1710';
     this.ctx.lineWidth = 1.5;
@@ -2361,12 +2367,12 @@ export class Renderer {
     this.#drawBlastPreview(aimPreview, blastRadius);
     // Kackhaufen liegen auf dem Boden, Günther darüber.
     this.#drawPoopPiles(state.guenther?.haufen ?? []);
-    this.#drawCrates(state.crates ?? []);
     /*
      * Geschütze VOR den Kisten zeichnen: Lägen beide übereinander, wäre die
      * Kiste (die man aufheben kann) wichtiger als das Geschütz.
      */
     this.#drawTurrets(state.turrets ?? []);
+    this.#drawCrates(state.crates ?? []);
     this.#drawMinen(state.bodenobjekte ?? []);
     this.#drawAimPreview(aimPreview);
     /*

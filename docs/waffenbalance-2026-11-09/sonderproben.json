@@ -1,0 +1,420 @@
+{
+  "method": "Nur Nachschubwaffe und unbegrenzte Reserve im Inventar; keine Simulationsschritte und keine Kisten aufgenommen. Zugwechsel nur für aktive Figur und Cooldown. Belegt Selbstauffüllung, keine reale Matchstrategie oder Winrate.",
+  "versions": {
+    "waffen": 15,
+    "klassen": 3,
+    "schaden": 2
+  },
+  "ammoFeedback": [
+    {
+      "weaponId": "pa_119",
+      "uses": [
+        {
+          "before": 3,
+          "after": 4,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 2
+          },
+          "switches": 0
+        },
+        {
+          "before": 4,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 2
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        }
+      ]
+    },
+    {
+      "weaponId": "pa_122",
+      "uses": [
+        {
+          "before": 3,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 3
+          },
+          "switches": 0
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        }
+      ]
+    },
+    {
+      "weaponId": "pa_125",
+      "uses": [
+        {
+          "before": 3,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 3
+          },
+          "switches": 0
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        },
+        {
+          "before": 5,
+          "after": 5,
+          "ok": true,
+          "result": {
+            "kind": "ammo",
+            "restored": 1
+          },
+          "switches": 1
+        }
+      ]
+    }
+  ],
+  "legacyArchetype": [
+    {
+      "classId": "nahkampf",
+      "snapshotArchetypeId": 0,
+      "configuredTurns": 3,
+      "applied": {
+        "art": "gift",
+        "dauer": 2,
+        "stapel": 1,
+        "wert": 10
+      },
+      "status": {
+        "shield": 0,
+        "armor": 0,
+        "boostMultiplier": 1,
+        "boostTurns": 0,
+        "frozenTurns": 0,
+        "slowFactor": 1,
+        "slowTurns": 0,
+        "revealedTurns": 0,
+        "dots": [],
+        "mali": {
+          "gift": [
+            {
+              "dmg": 10,
+              "turns": 2,
+              "by": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "classId": "fernkampf",
+      "snapshotArchetypeId": 0,
+      "configuredTurns": 3,
+      "applied": {
+        "art": "gift",
+        "dauer": 2,
+        "stapel": 1,
+        "wert": 10
+      },
+      "status": {
+        "shield": 0,
+        "armor": 0,
+        "boostMultiplier": 1,
+        "boostTurns": 0,
+        "frozenTurns": 0,
+        "slowFactor": 1,
+        "slowTurns": 0,
+        "revealedTurns": 0,
+        "dots": [],
+        "mali": {
+          "gift": [
+            {
+              "dmg": 10,
+              "turns": 2,
+              "by": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "classId": "okkultist",
+      "snapshotArchetypeId": 0,
+      "configuredTurns": 3,
+      "applied": {
+        "art": "gift",
+        "dauer": 2,
+        "stapel": 1,
+        "wert": 10
+      },
+      "status": {
+        "shield": 0,
+        "armor": 0,
+        "boostMultiplier": 1,
+        "boostTurns": 0,
+        "frozenTurns": 0,
+        "slowFactor": 1,
+        "slowTurns": 0,
+        "revealedTurns": 0,
+        "dots": [],
+        "mali": {
+          "gift": [
+            {
+              "dmg": 10,
+              "turns": 2,
+              "by": 1
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

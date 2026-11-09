@@ -44,8 +44,9 @@ export function bindeReplayBedienung(spiel, {
     if (!gewaehlt) return;
     try {
       const text = await gewaehlt.text();
-      spiel.loadReplayDocument(JSON.parse(text));
-      setzeStatus(`Geladen: ${gewaehlt.name}`);
+      if (spiel.loadReplayDocument(JSON.parse(text))) {
+        setzeStatus(`Geladen: ${gewaehlt.name}`);
+      }
     } catch (error) {
       setzeStatus(`Konnte die Aufzeichnung nicht lesen: ${error.message}`);
       melde(`Replay nicht lesbar: ${error.message}`, 'danger');

@@ -2,7 +2,7 @@
  * Tests: Kartenformate und Größenstufen (Entscheidung 2026-11-05, Paket A2).
  *
  * Sieben Seitenverhältnisse — 24:9, 9:24, 16:9, 9:16, 4:3, 3:4, 1:1 — jeweils
- * in drei wählbaren Stufen `klein`/`mittel`/`gross`. Über alle Formate einer
+ * in fünf wählbaren Stufen `klein`/`mittel`/`gross`. Über alle Formate einer
  * Stufe ist die FLÄCHE gleich (klein 1280×720 = 921 600 px, mittel 2 560×1 440,
  * groß 3 840×2 160); nur der Zuschnitt ist anders. Das hält die Waffenreichweiten
  * vergleichbar: Ein Schuss über 40 % der Karte bleibt 40 % der Karte.
@@ -24,6 +24,8 @@ import {
 /** Die Fläche je Stufe, wie sie in docs/anforderungen-2026-11-05.md steht. */
 const FLAECHEN = Object.freeze({
   klein: 1280 * 720,
+  kompakt: 1920 * 1080,
+  weit: 3200 * 1800,
   mittel: 2560 * 1440,
   gross: 3840 * 2160,
   krieg: 5120 * 2880,
@@ -32,6 +34,8 @@ const FLAECHEN = Object.freeze({
 /** Die bisherigen 16:9-Maße — bitgleich, nicht verhandelbar. */
 const ALT_16_9 = Object.freeze({
   klein: { width: 1280, height: 720 },
+  kompakt: { width: 1920, height: 1080 },
+  weit: { width: 3200, height: 1800 },
   mittel: { width: 2560, height: 1440 },
   gross: { width: 3840, height: 2160 },
   krieg: { width: 5120, height: 2880 },
@@ -42,9 +46,9 @@ test('Es gibt genau die sieben geforderten Formate', () => {
   assert.equal(MAP_FORMAT_VORGABE, '16:9', 'Vorgabe bleibt das bisherige Querformat');
 });
 
-test('Drei wählbare Stufen; `krieg` nur noch lesbar', () => {
-  assert.deepEqual([...MAP_GROESSEN], ['klein', 'mittel', 'gross']);
-  assert.deepEqual([...MAP_GROESSEN_ALLE], ['klein', 'mittel', 'gross', 'krieg']);
+test('Fünf wählbare Stufen; `krieg` nur noch lesbar', () => {
+  assert.deepEqual([...MAP_GROESSEN], ['klein', 'kompakt', 'mittel', 'weit', 'gross']);
+  assert.deepEqual([...MAP_GROESSEN_ALLE], ['klein', 'kompakt', 'mittel', 'weit', 'gross', 'krieg']);
   assert.equal(MAP_GROESSE_VORGABE, 'mittel');
 });
 
@@ -57,10 +61,10 @@ test('16:9 ist in jeder Stufe bitgleich zu den bisherigen Maßen', () => {
   assert.equal(MAP_HEIGHT, 1440);
 });
 
-test('Alle 28 Maße: ganzzahlig, Fläche je Stufe gleich (±2 %), Seitenverhältnis stimmt', () => {
+test('Alle 42 Maße: ganzzahlig, Fläche je Stufe gleich (±2 %), Seitenverhältnis stimmt', () => {
   /*
-   * Die Kernzusage. Geprüft werden alle Formate × alle Stufen (7 × 4 = 28); die
-   * drei wählbaren Stufen zusätzlich gegen ihren Sollwert. Die Fläche darf um
+   * Die Kernzusage. Geprüft werden alle Formate × alle Stufen (7 × 6 = 42); die
+   * fünf wählbaren Stufen zusätzlich gegen ihren Sollwert. Die Fläche darf um
    * höchstens 2 % abweichen (ganzzahlige Pixel), das Verhältnis um 1 %.
    */
   for (const format of MAP_FORMATS) {

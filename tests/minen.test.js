@@ -9,7 +9,7 @@ import test from 'node:test';
 
 import { MatchController } from '../src/engine/match.js';
 import { BodenobjektSystem, MINEN_ART } from '../src/engine/systems/bodenobjektSystem.js';
-import { ReplayRecorder } from '../src/engine/replay.js';
+import { ReplayRecorder, ReplayPlayer } from '../src/engine/replay.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import {
   BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, BODENOBJEKTE_STANDARD, MINEN, MINEN_AUSGANG,
@@ -387,10 +387,10 @@ test('Waffenfassung 11: dieselbe Waffe ist weiter die Teleportplattform und legt
 import { FAESSER, BODENOBJEKTE_FAESSER } from '../src/shared/config/bodenobjekte.js';
 import { OBJEKT_TYP } from '../src/engine/systems/bodenobjektSystem.js';
 
-function baueFassSystem(figuren, seed = 1) {
+function baueFassSystem(figuren, seed = 1, biom = null) {
   const a = baueAttrappe(figuren);
   const system = new BodenobjektSystem({
-    rng: new SeededRandom(seed + SEED_OFFSETS.BODENOBJEKTE), world: a.welt, events: a.welt.services.events, faesser: true,
+    rng: new SeededRandom(seed + SEED_OFFSETS.BODENOBJEKTE), world: a.welt, events: a.welt.services.events, faesser: true, biom,
     q: { breite: 2560, surfaceYAt: () => 800, bodenNahe: () => 800, waterLevelAt: () => 0, startplaetze: () => figuren.map(f => ({ x: f.x, y: f.y })) },
   });
   a.welt.services.bodenobjekte = system;
@@ -507,9 +507,9 @@ function baueAbwurfSystem(seed = 1) {
   return { system, ...a };
 }
 
-test('Marke 4: Abwurf ist Standard, Marke 3 bleibt gültig', () => {
+test('Marke 5: Biomobjekte sind Standard, Marken 3 und 4 bleiben gültig', () => {
   assert.equal(BODENOBJEKTE_ABWURF, 4);
-  assert.equal(BODENOBJEKTE_STANDARD, BODENOBJEKTE_ABWURF);
+  assert.equal(BODENOBJEKTE_STANDARD, 5);
   assert.equal(normalisiereBodenobjekte(3), BODENOBJEKTE_FAESSER);
   assert.equal(normalisiereBodenobjekte(4), BODENOBJEKTE_ABWURF);
 });
@@ -638,4 +638,52 @@ test('Gleicher Seed, gleiche Eingaben: dieselbe Kettenreaktion im Match (Ereigni
   assert.ok(a.folge.filter(f => f.startsWith('fass_exploded')).length >= 2, `keine Kette ausgelöst: ${a.folge.join(' | ')}`);
   assert.deepEqual(b.folge, a.folge, 'dieselbe Kette in derselben Reihenfolge');
   assert.equal(b.hash, a.hash, 'derselbe Zustandshash');
+});
+
+test('Die drei Biomobjekte übertragen ihre Form und lösen ihre eigene Wirkung aus', () => {
+  for (const [biom, radius, schaden] of [['vulkan', 100, 12], ['eiswueste', 78, 22], ['schrott', 54, 72]]) {
+    const { system, ereignisse } = baueFassSystem([], 1, biom);
+    system.lege(320, 800, { typ: OBJEKT_TYP.FASS });
+    assert.equal(system.snapshot()[0].biomobjekt, biom);
+    system.explosionBei(320, 800, 10);
+    system.update();
+    const e = ereignisse.find(e => e.typ === 'explosion');
+    assert.equal(e.radius, radius);
+    assert.equal(e.damage, schaden);
+    assert.equal(system.anzahl, 0);
+  }
+});
+
+import { hashState } from '../src/engine/stateSnapshot.js';
+
+test('Biomobjekte sind fassungsgesteuert, im Hash sichtbar und deterministisch', () => {
+  const baue = fassung => {
+    const m = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, biom: 'schrott', bodenobjekte: fassung });
+    m.start();
+    m.bodenobjektSystem.lege(1200, m.surfaceYAt(1200) - 4, { typ: OBJEKT_TYP.FASS });
+    return m;
+  };
+  const alt = baue(4);
+  assert.ok(alt.getState().bodenobjekte.every(o => !o.biomobjekt));
+  const neu = baue(5);
+  const zustand = neu.getState();
+  assert.ok(zustand.bodenobjekte.some(o => o.biomobjekt === 'schrott'));
+  const ohneBiom = { ...zustand, bodenobjekte: zustand.bodenobjekte.map(o => ({ ...o, biomobjekt: undefined })) };
+  assert.notEqual(hashState(zustand), hashState(ohneBiom));
+  assert.equal(neu.stateHash(), baue(5).stateHash());
+});
+
+test('Replay mit Biomobjektfassung 5 reproduziert neue Größen und unveränderte Altmarke 4', () => {
+  for (const bodenobjekte of [4, 5]) {
+    const recorder = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 1, biom: 'schrott', bodenobjekte, format: '9:16', groesse: 'kompakt' });
+    recorder.finalize(60);
+    const a = new ReplayPlayer(recorder.serialize());
+    const b = new ReplayPlayer(recorder.serialize());
+    assert.equal(a.match.width, 1080);
+    assert.equal(a.match.height, 1920);
+    assert.equal(a.match.bodenobjekte, bodenobjekte);
+    for (let i = 0; i < 60; i += 1) { a.step(); b.step(); }
+    assert.equal(a.match.stateHash(), b.match.stateHash());
+    assert.ok(a.match.getState().bodenobjekte.filter(o => o.typ === 'fass').every(o => bodenobjekte === 5 ? o.biomobjekt === 'schrott' : !o.biomobjekt));
+  }
 });

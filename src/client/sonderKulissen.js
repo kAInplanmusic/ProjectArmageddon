@@ -33,13 +33,38 @@ export const SONDER_KULISSEN = Object.freeze({
   kristallwald: Object.freeze(['kristallwald/hell', 'kristallwald/dunkel', 'kristallwald/hoehle']),
 });
 
+/** Katalogfamilie für den Höhlenblick jedes klassischen Sonderbioms. */
+const HOEHLENFAMILIE = Object.freeze({
+  vulkan: 'caverns', kristallhoehle: 'caverns', dschungel: 'forest', eiswueste: 'alpine',
+  duenen: 'western', schrott: 'urban', schwebinseln: 'fantasy', riff: 'maritime',
+  pilzwald: 'fantasy', kosmos: 'cosmos', surreal: 'abstract', fabrik: 'urban', burg: 'fantasy',
+});
+
+/** Klassische Karten bekommen bei eindeutiger Geometrie eine passende Motivfamilie. */
+export function motivFamilieFuerArt(art) {
+  switch (art) {
+    case 'hoehle': case 'hoehleInsel': return 'caverns';
+    case 'insel': case 'inselgruppe': case 'archipel': return 'island';
+    case 'hochkant': case 'schlucht': return 'spires';
+    case 'ruinenstadt': return 'urban';
+    default: return null;
+  }
+}
+
 /**
  * Der Schlüssel (`biom/variante`) für ein Sonderbiom und einen Seed, oder `null` (kein Bild vorgesehen).
  * @param {string|null|undefined} sonderbiom
  * @param {number} seed
  */
-export function sonderKulisseFuer(sonderbiom, seed) {
+export function sonderKulisseFuer(sonderbiom, seed, art = null) {
   const liste = SONDER_KULISSEN[sonderbiom];
   if (!liste) return null;
-  return liste[Math.floor(hash2(seed | 0, 17, 5) * liste.length) % liste.length];
+  if (art === 'hoehle' || art === 'hoehleInsel') {
+    const familie = HOEHLENFAMILIE[sonderbiom];
+    return familie ? familie + '/stimmung_hoehle' : sonderbiom + '/hoehle';
+  }
+  const familie = motivFamilieFuerArt(art);
+  const passende = familie ? liste.filter(key => key.startsWith(familie + '/')) : [];
+  const pool = passende.length ? passende : liste;
+  return pool[Math.floor(hash2(seed | 0, 17, 5) * pool.length) % pool.length];
 }

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'integration/**']
     # Release-Tags (Konvention: docs/deploy-plan.md Abschnitt 3) bauen zusätzlich das Release-Paket.
     tags: ['v*']
   pull_request:

@@ -1,0 +1,914 @@
+{
+  "sourceCommit": "1e65efedb63a1a02629443786e901e666364d6db",
+  "auditFiles": [
+    {
+      "path": "docs/waffenbalance-2026-11-09/BERICHT.md",
+      "bytes": 8574,
+      "sha256": "b5539c48bcf39ddfddfd4cf87de576e4aa33de8bd2d33792b71da23d2310ae20"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/EINZELPRUEFUNG-150.md",
+      "bytes": 23880,
+      "sha256": "6cc5f01c583932aace64a06f12ea5bc17f9e1d84ff0b979305b5058f35bdf387"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/README.md",
+      "bytes": 677,
+      "sha256": "cda28cd9419b0aca316e365f07f838ea3657b2276504055b8cfa76ccab36057e"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/animationen-26.json",
+      "bytes": 9947,
+      "sha256": "353c56c31c648326557d7d1f58dcd4274743366c4b3d5f84abbd3fb196a3be42"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/bilddaten-150.json",
+      "bytes": 234828,
+      "sha256": "9028b2a88ee307550cf09675616d3a5c4ed3aa32e2850470b9927f506a392a92"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/bodenprobe.json",
+      "bytes": 870174,
+      "sha256": "b6b45ac6f012ab76797d4a42f18b9d0c880be42bc6838c54bb8ce02f3450869f"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/index.html",
+      "bytes": 5813911,
+      "sha256": "6aa95b0d2d761eb4d151cf17a6337940c6ee5ccc0859eeb7b0c9998e07e459a6"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/massnahmen-17.json",
+      "bytes": 13112,
+      "sha256": "d285b2b270fffdcccb6951cfc49568747ce6b8367ae3535ba8662f92356f3132"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/messung-150.json",
+      "bytes": 4886465,
+      "sha256": "ec8aa2f4261c7c5256a3c5a64299954f7480241f7678e47458392a14be4a6f67"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/pruefung.txt",
+      "bytes": 628,
+      "sha256": "1fdbf63fce36efe97d3ffc9b90f4f143a8904cc527e3bfb3796deaa7d85b3829"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtbefunde-150.json",
+      "bytes": 42375,
+      "sha256": "419d109fefdb885e1f05b237cbac985697f121060bae60d256a6c5d4fd7bc7d5"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-01.jpg",
+      "bytes": 236115,
+      "sha256": "2218c2199481166d6f1e022b04395ec4086c75a31739873e452f111819fed58d"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-02.jpg",
+      "bytes": 262609,
+      "sha256": "1adb85c3427310a07d8db413721601e2c7ca85b719ec23fd18206bb7d23498f4"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-03.jpg",
+      "bytes": 312053,
+      "sha256": "12eef210b5b2b86dad09e37127dea81c751dbecbc487eebdcfe39a0c41b18b78"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-04.jpg",
+      "bytes": 280090,
+      "sha256": "6469218de9d0e21c52a30c5b7e281ea2bc40cc8d6fc76d90ba297beedef978f5"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-05.jpg",
+      "bytes": 354481,
+      "sha256": "ebce4b9f71e42391930e8ab33635e0161c69cdc4d5d6cdff2b0e0863d5eb5d2f"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-06.jpg",
+      "bytes": 363263,
+      "sha256": "673387a996df54067343c369072b38d669b63009a8f02731670682645878cbfd"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-07.jpg",
+      "bytes": 322230,
+      "sha256": "08246e7c84340c084553d7f359e0abb37b2a3eef2ec0c74f4ee93a4269b411ae"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-08.jpg",
+      "bytes": 318304,
+      "sha256": "41907a5a5fc8e00a5411ab8d03e9dfba931b969e0a52096549dbd9b11ea472f0"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-09.jpg",
+      "bytes": 302896,
+      "sha256": "b9c85f5c4f5da8ee0f5dfe8eca99722ff068e5f8271a670c918e0ae49728ac6f"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sichtpruefung-10.jpg",
+      "bytes": 376034,
+      "sha256": "fab824c8cca02695940b8dfc866de9f382f7e0635b12743b5081325690ae5d78"
+    },
+    {
+      "path": "docs/waffenbalance-2026-11-09/sonderproben.json",
+      "bytes": 8450,
+      "sha256": "6b1392523041264ba61beedd49349c4cf524f0168967695fde8652daf4820ff4"
+    },
+    {
+      "path": "tools/waffenbalance-audit.mjs",
+      "bytes": 11895,
+      "sha256": "674a2a366117eb257d71a70548b9b842cae406642f7630920c80776fbc071841"
+    },
+    {
+      "path": "tools/waffenbalance-bericht.py",
+      "bytes": 38038,
+      "sha256": "dcd31f2f635325eb33ec050bb9ec4221b147aeaa38fb89f640449a1f94f551e2"
+    },
+    {
+      "path": "tools/waffenbalance-bilder.py",
+      "bytes": 4274,
+      "sha256": "3e92f8b4554b676a02bc354ae716022dcfbe0869775c8696ea1d3f1216c08b28"
+    },
+    {
+      "path": "tools/waffenbalance-bodenprobe.mjs",
+      "bytes": 3895,
+      "sha256": "52f2802372acc19a93cda0d3c4e5dd00508a8c3f88f41873bedcc276be7d2cc2"
+    },
+    {
+      "path": "tools/waffenbalance-sonderproben.mjs",
+      "bytes": 2589,
+      "sha256": "2cf4705afb83f4873efad4884b14a81b97538e754a26fe54b8079c13e0d98952"
+    }
+  ],
+  "inputFiles": [
+    {
+      "path": "src/client/assets/icons/IMG_9033_icon.png",
+      "sha256": "deeaaf20067114411e5ffd869ae61fc5dbe4351d559208abeda51d014a3b6e3e"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9034_icon.png",
+      "sha256": "e3086b91c3b4f6f233e30a7ad77a4d085c2a4cb6d9c23fe6bd71df08c8ebf8db"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9036_icon.png",
+      "sha256": "0648d78f55984f4518971dae8ca786bdfff44809f55d244da906d31f445bed2d"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9037_icon.png",
+      "sha256": "7a5f32f43442b2549f92fe54da2a3fab59e4a5fb6064cb17eebcbf71a69c242c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9040_icon.png",
+      "sha256": "3011f50c27215bcd0954c9befe3fc08883e2dee4c83d3a087c57847027f27512"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9041_icon.png",
+      "sha256": "aaac052d106d06399abc578950fe59840faf61ffb81e30fb2ac9f9262291bd75"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9042_icon.png",
+      "sha256": "db06a465aaf7eb19414f1429d50880e908c7bc603f6f2e4b03c680f3294fa830"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9043_icon.png",
+      "sha256": "62611b8ea226d83173dfb0f79e05a5d7c81b5d53c889403c06d7324826fd963f"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9044_icon.png",
+      "sha256": "f5e4749339b5e51c213b480a85cec5f0e895e39143b7935b31d7d3f8809665c0"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9045_icon.png",
+      "sha256": "6951ec3b9a1244e9c1d0e708aa7c40ff9565bc7ec010523d900fed45fe0e6621"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9046_icon.png",
+      "sha256": "d1da07c310988ebaa622446248576c4100903a4f0322ec30e08b7772db4d704e"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9047_icon.png",
+      "sha256": "419d4fa192d64ceb9308eb12e2b8b5061eb06c67c25a90b348542cf7ef6bb939"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9048_icon.png",
+      "sha256": "0e82aeb7082ead0dba4ce51086c53e81107dbcc220b1c5a3ece0013b25ccdf3b"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9049_icon.png",
+      "sha256": "bcf9c1d310c7ed0afcd453479259291cc9dd46100aa05920252417eeee54c8d2"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9050_icon.png",
+      "sha256": "d4cb48b5b0a454cf5f929488c980322f772c21008527ece904f69db8dc6ff79e"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9051_icon.png",
+      "sha256": "f79ba4b0d8eda26955b09b8a36f9c5caddac109de49cf83c10a86c8233a7c8f8"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9052_icon.png",
+      "sha256": "1b27b9776ebcaa83bb6e45f183858ae348ac2366d86d62db3647a5867726fffe"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9053_icon.png",
+      "sha256": "23da302612f183f61e420e090f30b99719fade746a6a232dd22dfa9c3c152fd4"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9054_icon.png",
+      "sha256": "07a64f0eaa2bf60d52dc8117f5d5c993b6925441311baa1790d95735bd65cb51"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9055_icon.png",
+      "sha256": "1eb7fe17009b3e4f5736280ec255a12b3eb74a489deb83c779f435a1d08324d7"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9058_icon.png",
+      "sha256": "21e5790c1d8e601a2af60e870b2918fa6d8d1e16eb2340d4c7e5efbc9d4b24c1"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9059_icon.png",
+      "sha256": "a70774a4d6cd83de248dad3656b76a3a1f68cafed9b96542cf2ae2c0515a6655"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9060_icon.png",
+      "sha256": "f476e33bd6d2c6d9f38a7763c410344e8261850c6ea4d3334cf6164233dd3e8e"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9061_icon.png",
+      "sha256": "d36edad20d7f77dca9a83e7b3d289fe8c6f47c54f7669fc151ddf0e435507ed4"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9062_icon.png",
+      "sha256": "8a71606d7c518392ff0fa453c57e7d892e51425df797fd0063fdc29a35c6f2ad"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9063_icon.png",
+      "sha256": "e19d5e248debea675d5a8a10f98ec26494ee20814e758315417e4ae21bf5ca6f"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9066_icon.png",
+      "sha256": "391ddb1f094508c00fdfd7600185bda494edc73844b7778e4683a0889c773bef"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9067_icon.png",
+      "sha256": "aa045ef9d633e31f33f8a052f5cc7b0aa8b087dff0b21a25887d5d817b25b628"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9068_icon.png",
+      "sha256": "24b97ac8cb9fca04fbe59d5563d64612fb7914e66f392e663b794bd52c9292c7"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9069_icon.png",
+      "sha256": "1adc005aec71d69bf29c5022b7d0d5b1594871573c7b5e5d65817666bde1eb1a"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9070_icon.png",
+      "sha256": "bbb2dd2806cd8f80ea0944efba8fb7957bcc2b195b1bcd36751fd7847e7f5539"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9071_icon.png",
+      "sha256": "33078300b95a62bb7bc226fb254a908e553f4c037bda7252886594247d443bd2"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9072_icon.png",
+      "sha256": "2113017b60dd3b9add5b0115f537df61e824f309a68a55112dc364e2b1bc623b"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9073_icon.png",
+      "sha256": "0a2f5b440e636386e33465bb540ed84c6f68b497fedb5ed0ae931f6ac468444c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9074_icon.png",
+      "sha256": "4686dbcdc0cf53f877e5d87024bdb30b93edea3ae881a4448beb993ed9381c4a"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9075_icon.png",
+      "sha256": "f0487232b0d6946703025ce9a2b480e49894624434a5f256b1f7625f3fdba05a"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9077_icon.png",
+      "sha256": "73c3388dfb4691a0c68d3e7a464ac041177add03c493855f75aada801b060582"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9078_icon.png",
+      "sha256": "79b35f470cfad72ba1b43f9afd1eff8acc0d8286856f01da30f053259da04bb6"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9079_icon.png",
+      "sha256": "0c7a2dfd5b1246d45108d5440ba9af0947f6e2a548215f812d52cc132a8e8b48"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9081_icon.png",
+      "sha256": "d40829fc67b7b4197bd1011b332a1ddd0ec117abf33e0b723a67832adc321cc0"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9082_icon.png",
+      "sha256": "fa99917ec9c74d490c1845eb14db1d06611f331543451bc7d69764111469c057"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9083_icon.png",
+      "sha256": "67bb38d3d1a6c13fb38d391dfb9c7048563cdbffb82ea28ca33bd33d0298d17f"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9085_icon.png",
+      "sha256": "1860a4568a8cf99d98a5b9b8c65e1e41df6ce9f2aaeb9fc6d921365a6c254ba1"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9086_icon.png",
+      "sha256": "48cd0188da8eb8abf7c166f0b8de2bbb0e020730db0fc303b6740f0783abcbbe"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9087_icon.png",
+      "sha256": "ea679a002835938c67586dfc8b0d4b15d1fbd96d31aa9833b99d1b1a5f1a58ff"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9088_icon.png",
+      "sha256": "412ed6220a13c8e4db1c50cc2238c40e6a1ebbe28ee9486726b5501e0037e2e7"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9089_icon.png",
+      "sha256": "d3eaed83a9abc1fe36f30f1e38b625bd2bcceca7ebfd862af3efe62c52d2cf8c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9090_icon.png",
+      "sha256": "7777cca1b408bb106a6440b3e38d4270de203ab6a3749079485de91c19b494bb"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9091_icon.png",
+      "sha256": "bfcbe563730f6c8eb0fe2fa52eb443eb2ed88b85768e5ca7eab4b8c0f5440cfb"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9092_icon.png",
+      "sha256": "b3d6e417c74023079b612da0206c7e7d37a53891680c562c77039969d6ed0798"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9093_icon.png",
+      "sha256": "5042dc6e083765327db312f89af760e6fb6abb122cb38cd522cdc558fa63ef57"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9094_icon.png",
+      "sha256": "89ac656dbd2ee978e709f9c75f2233c6f6f9a42275f025e92a1a0885053d2b2d"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9095_icon.png",
+      "sha256": "ffbbda814c5f442b108dbcd24082a28eb4b4ffa6ed8659d7404f8c42baab2feb"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9096_icon.png",
+      "sha256": "68c468ff8976c026784145e95b2dbe80ecfaa9ca755a050e9ecf605ad6d6e5a2"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9097_icon.png",
+      "sha256": "18b5b232fcbdfc2aafece583a1de7e16b8fd68d623bb7f65c06472d75497c59b"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9098_icon.png",
+      "sha256": "cca25720d4b1ada65d0eff65091afc0deca511d604fbf8b34fb102e25595a674"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9099_icon.png",
+      "sha256": "38f9c17313bdb2347d97284b6974ddca8c2a99104fc950e6c0dd50e7e44bb0a4"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9100_icon.png",
+      "sha256": "f95a1bf4354fb3a5d76154d5897e5375b9cc00bc8c2db8e3e0b569e025e9eb1e"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9101_icon.png",
+      "sha256": "7123cf72ad436c2b7df36a1f7a99b951127d4ea382b25a05eaa72f80c6563399"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9102_icon.png",
+      "sha256": "772a9555f36002ffae4e07d7e02d0738b3616697eeff597f9c78e64d2a605da5"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9103_icon.png",
+      "sha256": "5fabe8aa7fb650427bd7dce9cf62be1e83c8407edbaf56ba0406ccd7d2f5a077"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9104_icon.png",
+      "sha256": "98b5142fa8baa311818d7ffd194121a186fe4169bf1811fef0bfa656fac8ca70"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9105_icon.png",
+      "sha256": "0e6e2478e698adbb7d2eaec6defdf7df163c2b38cb4f73dddf7f2d110eec8e73"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9106_icon.png",
+      "sha256": "82c9e8ff2b76f055eb8ea2e5c51dfbe42d9c9b39376d689ae78ebcfe8aadbc72"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9107_icon.png",
+      "sha256": "367f9e4db3f8aff8f6d9681105a050a78e036e00103f6107ca6059cfc3bc791f"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9109_icon.png",
+      "sha256": "c29460098075391d80b9e92b0e52192eda79eea3383f7df1afddeb3bbaa81dad"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9113_icon.png",
+      "sha256": "17f84497e4c21553c1aa18081b546e69c3d291647d27f06334d9e89788723487"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9114_icon.png",
+      "sha256": "c9c51f3ba2c06e7aa54dc35618463255bdbac1f9de381709795b08a969e6bb89"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9115_icon.png",
+      "sha256": "04946d6a8896945cfdaf642a628ecf8b32670a55d54321e1e5537e7c1ade30ca"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9121_icon.png",
+      "sha256": "9d91284d013fea46cb15ed218ea99798c2df2835b534309ed7edd99d55f047ef"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9122_icon.png",
+      "sha256": "569ccf8ce1d50a294ce6cf390601d7b2b405c6c2ad1f1ddf7585c6c2304096f2"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9123_icon.png",
+      "sha256": "38f78331b7522120340a9535240c82b5e3cb5415bdcefeafc569f6e493e681c3"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9124_icon.png",
+      "sha256": "1930f705cd6428e40d98f2f2621d8f86f318a59a7823a740a51a345c2bf62900"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9125_icon.png",
+      "sha256": "33a32e022a333eebef585504b51f34522d84979a4646e08304ce8d3901252f0d"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9130_icon.png",
+      "sha256": "bde9133208b6d00ebcdf65a300c082522c6b1c527f27d2ec9e3108a0bfae731c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9131_icon.png",
+      "sha256": "547c993c1ccc95ae314b034c18ea0f5f31a6b221efa9f1c6ff07d5ddd2e8ac10"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9132_icon.png",
+      "sha256": "c283a5f893351e73ff40d96f718e21842fac2244893e6d01cf498bc40f50572d"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9133_icon.png",
+      "sha256": "759963748a4a2f644a4bdf4092e275c2b5295a1f6c46ee600a0607bf2b0b9c3a"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9134_icon.png",
+      "sha256": "5d3ca3b9ddeda5630baa4b2f4e9688600eae65546c0e9cbdb9295b7ddb929b40"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9135_icon.png",
+      "sha256": "fca8b24ae9b0f996daea3e01c7d2c2f98b5017bf9510da1cdd91e93684ca0030"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9136_icon.png",
+      "sha256": "323abbad057e223dbe135e45ccb653352b36befa7c8219c754c225e6c025101a"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9137_icon.png",
+      "sha256": "e50727d30540171d2de6e85fe989bf8171e3756dc64331887e07d642e228888c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9138_icon.png",
+      "sha256": "35dcda053f5caeee212ff65a27dd0c5657e059135b905500765c7f820371ae95"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9139_icon.png",
+      "sha256": "4c4a0221676a34fafaaefb685e367bd2f119af67431b6dc8a27868163991fdcb"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9140_icon.png",
+      "sha256": "ab78394d67cc994a5b381de9baf2192b4754a5d1cf375313a799b783c74044f0"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9150_icon.png",
+      "sha256": "6b528099600f225c21daa9c7c5aae65393782ab628ab94799e80661048e15fc5"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9151_icon.png",
+      "sha256": "466384f52d3005b1f81bca53089dd92f71e29e64d362a8494d99f50f8e5d09ff"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9152_icon.png",
+      "sha256": "5e49733c591a98f30ff4a6849497277b6a083d06cd8bfe11d7c7110ba96a3400"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9154_icon.png",
+      "sha256": "fa7e7c549b6e65315b2fe6da1a9ed0f83d12b187427ded6b1fa237cae27ddf58"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9155_icon.png",
+      "sha256": "692b9874d8d4c658e37ea173c2a18467957692a0ab64a1e812bb84a2e554eb04"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9156_icon.png",
+      "sha256": "5f9548367e040fcac130dc3d9c7983cddb8f0c1261a83118552a2e9a649b052b"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9157_icon.png",
+      "sha256": "705affbb81ba648de0aacdd24b69b48af66d6afc8db6a3cce78c5115b14c7026"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9323_icon.png",
+      "sha256": "7ebbb2e1616037fba8256c58c9d0a6d722725e7f6480e662f69462c3799fc58c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9324_icon.png",
+      "sha256": "e5a7b167f1a6d1dee1ba7e850cc0907b5b547f5da1e725c2774332c53a561d5f"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9325_icon.png",
+      "sha256": "df23aa6dce4b35ef08a320230e605988517311c4ab42eb334d55aa95bef1d090"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9326_icon.png",
+      "sha256": "034174a60209ac9fab16467b00074f0475ffb711ff9ff26d03063b6f4e4be658"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9327_icon.png",
+      "sha256": "c01cbc24751a2569b389e3d5ba7795082883f01b350c9f36880d1b344c888299"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9328_icon.png",
+      "sha256": "a8babb6d2048e5bb638926f4d559361f32fa5221dac33726ea84e82d5dde7383"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9329_icon.png",
+      "sha256": "95512035c816845efdd0f0d6cd1b3538fc8cf9b56d799ba4f9507ed5a437396f"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9330_icon.png",
+      "sha256": "da7423ba24285c229cac8279494737bda4901018650c35153316f50474e8e409"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9331_icon.png",
+      "sha256": "44eed7f3397662cbe96d5936503fec99f187e3d6c35b3bc435739e705d3407e1"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9332_icon.png",
+      "sha256": "b280ba4c4d2f429fe9c8e784bf1ac94c72e004f9ab5ae3ce73feb48d0a0bd21f"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9333_icon.png",
+      "sha256": "9fd937a8000f3a65c26837095d274b9e52f81ca90c43c26b884793f1f7f670a5"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9334_icon.png",
+      "sha256": "aa7700172977d17d2fa2cb77fc07bb9b16018f92faea413f72fdc08690c5f436"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9335_icon.png",
+      "sha256": "4367479176a9279fef0c476c28f3e3e8e1dbb13bf4857ef613b3a54c88ee9f6d"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9336_icon.png",
+      "sha256": "d24220a470f9378d7842fb4fe0b4210488f201c9a99709d1be61d0d804b8f1d2"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9337_icon.png",
+      "sha256": "55471852e93ee0ed90d82495009e5590ea147449b8dd7be9f6d5b90a0793d292"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9338_icon.png",
+      "sha256": "44e3a32aa1069c82d614023876446360bc67a9c44d5d88b952f00f1eae1d4aff"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9339_icon.png",
+      "sha256": "c38a66800a96232c2b804d765c97b4d0226150f865df6015711860d248c01112"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9340_icon.png",
+      "sha256": "35bfd20f84e55f1b27a072eb14924daae039cf5954d0fcff459ae39bf3df0fb9"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9341_icon.png",
+      "sha256": "937cfc5ae3f3c531e3b11d0af8f2f60e8d9b68d7bf3ca5a1a3780c267995cfe4"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9342_icon.png",
+      "sha256": "04232756afe740e7aafce36c678a5d4723142bcf497c5b02380131a542c9d60c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9343_icon.png",
+      "sha256": "0f445439bf5fab9bdb52baaca85d59620944c9f047897368f8b4ec6594fc1cdd"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9344_icon.png",
+      "sha256": "868720a121eae55f3b2a4587abcbabcf0e181e0b4d0c88ceb8cf2bed13a37ec0"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9345_icon.png",
+      "sha256": "6268fe6cdf74c428358ef960f3553cd844661658927125abbc868376348b9e98"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9346_icon.png",
+      "sha256": "f513ab8ff3ed5110883e488bc13e5159b73e1ea5f6f49fc5b11d6e13c0d2d701"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9347_icon.png",
+      "sha256": "029c8dfc34d2c3e7f32012e5d9e6dcc800bd7a0f86fa7f766c58b81fc571d88f"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9353_icon.png",
+      "sha256": "63694703860a1a48b1ce2689bdbada23aa415047d0e097ceb140e1bf43c5561c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9358_icon.png",
+      "sha256": "53dce6a84111356e7e97d9db0e0589fc4c1174bcbba99a7de40d35c5038c9081"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9359_icon.png",
+      "sha256": "0b55157668de1fe0cae1a3ef57e266694794cf439458ba603ed3d6ab4a46555f"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9360_icon.png",
+      "sha256": "47761b9e33e1e70ab826bcc74ece39d3b9cf3c4848520a7f11460d1987ec6879"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9364_icon.png",
+      "sha256": "19a869dbdb4db8270c002bc98b4fa3fd3721a5b5bdc463e5289e029fea1b7933"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9365_icon.png",
+      "sha256": "76224ac7a8881270417f5b78fdc84c9d6486cd1e3a3af7267280f0ff11caca4c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9366_icon.png",
+      "sha256": "3d2b2310f5d1f394d87f88bbb6d0d8e745ab4815faddbaa941dae76e349aacd7"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9368_icon.png",
+      "sha256": "df1496696bef02dadd2ba4a8186222d16edb9ec0eeaf2c68275bd34b7ba7a8ad"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9369_icon.png",
+      "sha256": "5b8b5c683dbe2167b6f81a163398201d1926938f2b2cc8fa674d01fd09885bc6"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9372_icon.png",
+      "sha256": "a7f4b42c984afee0e30070cc8cb3c4a5c2749094224141ae99b6cf61d09f8bb2"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9373_icon.png",
+      "sha256": "df6ae7c67511e64ec9ce3446efcc99be2b9cad99abf04521126d819ea58a78b5"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9376_icon.png",
+      "sha256": "c3e61ff7cf11d3bf2ea5ca398b33d763aff179ebb9ebece13f96350c830c7447"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9377_icon.png",
+      "sha256": "2f1171eb3f56aa160ede6e15ca6e83e1a3c2884825f03cce887b6457afc350c0"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9379_icon.png",
+      "sha256": "ac3accfc7217cda86417cde66b813e922628b78f8b4636e254f6d054aeaa34bb"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9380_icon.png",
+      "sha256": "3e1c058052e127c7ac867b80061c410111e99dca338fb10d601c9b980f7c4642"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9382_icon.png",
+      "sha256": "a59fc8abe006828303ece746aea59dbe5b2f82c189f13a8dae354bf3a71e8719"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9383_icon.png",
+      "sha256": "f1995554ad50a064f0b585890d7e948d67a658055bc492ade3241df986da2a7d"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9384_icon.png",
+      "sha256": "3e83c4144d9e274c432ca3b845d6f6893e46ee1b9ef32b8a127b0b2016778d7a"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9385_icon.png",
+      "sha256": "e2df990d76f30c17d407a848255f30a690e25f946172ae7c6db809dc366e727c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9386_icon.png",
+      "sha256": "9078756b1a2828dd15cfe20e508a0e2c7f0817eb3d97e430e3185e8f95602421"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9388_icon.png",
+      "sha256": "9fc1347ad7ac1f8163cccc9cf2e0d9b71e90ce4fc865e62e9478bb7950e22fe5"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9389_icon.png",
+      "sha256": "182cd5771579df1396d4afbd19b65a3423177556f5750d83d01328d29486225c"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9390_icon.png",
+      "sha256": "793fbb65264315cec43b8fda2679cac3d73f1b3ad2eb3b9ec108a22960f5e51e"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9391_icon.png",
+      "sha256": "85849bf51d0ceea4e2d3f221b93618da782b4b6d0c22ef8dae6824599cdee805"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9393_icon.png",
+      "sha256": "7b59537cb6a6eba40b85e184689f1fbf972bd67781853518e2b0840af9750922"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9394_icon.png",
+      "sha256": "ad9c4fa872ac5186b7fa719344028f6337d4bf2436cbb7833ff14ced2d64f316"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9397_icon.png",
+      "sha256": "9f7a1479ce4f6b366bd721f2db789ccc20cc56221189f617e49f7c42bbf55b55"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9398_icon.png",
+      "sha256": "627f55d191f89f3f82c9743610049d97b641e7ad9a917df4699521b5ce3b49b0"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9399_icon.png",
+      "sha256": "80ca92b7fb49e317326922d893f60129586edd7e87097aa9028e9244ed965fe7"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9400_icon.png",
+      "sha256": "f107f045fe262c65ac95431590c85f8bb709465c70f2abe200e342776918e264"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9401_icon.png",
+      "sha256": "db3e87766a262b8c66ebbc71020c7d4b2170fa1d8c7767a95f0c39ec48978510"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9402_icon.png",
+      "sha256": "8cfcce8677101eb9da74c7cd659a57009c0b2a8e0e4f6df405bff2db4a83760d"
+    },
+    {
+      "path": "src/client/assets/icons/IMG_9403_icon.png",
+      "sha256": "5cd1128bc17c4bbe993d459e23714c0d73ba886ee423fa024e6a84c95bda3e38"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/manifest.json",
+      "sha256": "605783b109b59eade341e0e6011ae996eadaccaa7ba11541d9bbc54c3ce8bb70"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_032.webp",
+      "sha256": "fadac26b0eb5d2236823583c29f76bba00422b7cc81198ae3a5821b43334e5a0"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_038.webp",
+      "sha256": "081512d9a499dee4cc1775b18c08d51dedaa8989009b4e67ad350318b2ceaaa0"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_044.webp",
+      "sha256": "421bd311bf9924a61751e07e944c2eb52337d6a7e0a2df5882c1d380628a041f"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_048.webp",
+      "sha256": "6f1c291f7f5c1ba61efdd258bfdad8e8f4b51ede764239b956306fc47d706e3d"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_049.webp",
+      "sha256": "46f45d95c6db20f12e750f9f9780275f343d237fbafaadc39cf25724428994bc"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_053.webp",
+      "sha256": "760fcc053908eb69fc6e3cf7520464b2a4b516795cc82da8846ae021af1fb7da"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_061.webp",
+      "sha256": "2e16896bf4b834f2791766c7e8ae99404619a74086fb24eb5a7d918b091cd7ce"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_065.webp",
+      "sha256": "2a2acdb138afabf4ff10abbe4d5ef2711cabba27d616b715b644fd9727f462bf"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_073.webp",
+      "sha256": "4ba0b57fb93d2dbc702549d760b47d523e5ca1001780218b343106677ee0e00d"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_112.webp",
+      "sha256": "51215e68c3147220838c664c3fd53127956f295214c5532c152fe2e29081316c"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_114.webp",
+      "sha256": "51215e68c3147220838c664c3fd53127956f295214c5532c152fe2e29081316c"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_115.webp",
+      "sha256": "691012ab700e8cd40b7f0fbf76f8de96e1d7843abc6c7cea0b2fa98ede61c591"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_118.webp",
+      "sha256": "2fe744b338db5c7db8750c6f67fda0e6698a0bcb123ae946b9f3af4b1c5822c2"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_121.webp",
+      "sha256": "e88e213f3c48b4610f2f0db4ddc828546cf5dcca8f85da0011fdddbab7efcfb5"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_122.webp",
+      "sha256": "0556c7ba4ba571a5a6948112c6797a0a7d48e92ef618a4b0cc98c1e0a51d9458"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_132.webp",
+      "sha256": "1622fc8aebd85d6999dcd85903ad4e1e1fb0e2da471caa4c5587e4c3bdad6eed"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_133.webp",
+      "sha256": "9b239a6f0a1492d2710783289db0a0b2c2a2d6217c910910c37518378461f001"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_134.webp",
+      "sha256": "96796b1be50933d2501cc06f9598b9d9630d68da4595e2219b67df2ceaab5e8f"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_135.webp",
+      "sha256": "00030cda5ef2462d0da4d75fb62617f7e3a290ac0a868598720230dc19717a98"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_136.webp",
+      "sha256": "fc1038b8ce31cbaa812deb58fe235ffc7b8bb9d7ff21861d06e9743cf74e8706"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_141.webp",
+      "sha256": "43bcea8f3ba8e6f0d5de5c04143edd680732b5fda2c34382dc83c273da481b76"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_142.webp",
+      "sha256": "d3100300fe70909a3f404ed53d3c712a46039d09fd14a06a65b2c41f2889a1fd"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_143.webp",
+      "sha256": "879f4937964980a09cff57062bcdd3763366346e14ac5ad258335405e3e6f4ce"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_144.webp",
+      "sha256": "415b71beec837c313f5f50831a4b49f2ffccac587bf8a5f01fe22b4a4f1cb579"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_147.webp",
+      "sha256": "6b2a5c739b773f15e64de64d2199b4da57f50584a9633760b77c14db059a73a7"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/anim/pa_148.webp",
+      "sha256": "b8919bcb7442371efac6b08bffdcf5ce8080bacd24119ba9eb047bb7cc28ea0e"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/atlas_elemental.png",
+      "sha256": "e943dd08514620798bff4fdfe805e7ec4bd921f1d43b4bdb6f69617d058e6fdd"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/atlas_heavy_ranged.png",
+      "sha256": "474d596852b7cdaece678aeb16269c364f42497fdf7e83a296c14265b77fad44"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/atlas_icons.png",
+      "sha256": "baec95b6ac73016e0ec4d0c7c7ec933f70dce518e18f467f450d61c61ff163dc"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/atlas_magic.png",
+      "sha256": "423d517870a1cb123f0a1ee6715e0200e2d5bb46e121f67ce95a3bb28da4c239"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/atlas_melee.png",
+      "sha256": "ffe04bc04e0c83e2ce06506e9bf1ba450ec4c25c3b14ada857832fde6926872e"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/atlas_ranged.png",
+      "sha256": "e399377085c91d6f4ae551e50f66ea74e60d5a449015bb7dfdacdf4b5a12e2dd"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/atlas_tech.png",
+      "sha256": "84c794889c2313b599b0f9063a10c052e694ec1a0d58ff8f85b169b34b9c4e2e"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/atlas_ultimate.png",
+      "sha256": "d18937dde89d8043c0b26f07dcc5194859e34af310aa20506a7a0be5d1075d5e"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/atlas_utility.png",
+      "sha256": "1fdb0e2c170b3ae9c7a0da5f617104451a5e1103ff0602cb547d6c53cc632069"
+    },
+    {
+      "path": "src/client/assets/weapon-sprites/manifest.json",
+      "sha256": "dc69d5546f2de69b6de947a279d7f7194e981c5ed0a14c2020789c43cea7f5ce"
+    },
+    {
+      "path": "src/engine/match.js",
+      "sha256": "bbc1978cbc29b6350d1f51163641f3bd45b99a3a91d099a926d59cb702d84549"
+    },
+    {
+      "path": "src/engine/schadenMali.js",
+      "sha256": "b832e58e33349668cac59230fa5df152bdb3e49acc8d82deacc6f1507dca97db"
+    },
+    {
+      "path": "src/engine/shooting.js",
+      "sha256": "b05a9674b9aabde0bda1f4252c6cf1e49f2c965472beb9803dae2e3186e9edf9"
+    },
+    {
+      "path": "src/shared/config/waffen-f15.js",
+      "sha256": "4b77e3826ea7dfdaeecbe261a0b61b3531bbd8b157042ed0899eb5438fd245eb"
+    },
+    {
+      "path": "src/shared/config/waffen-fassung.js",
+      "sha256": "ede32760ea6df423900fed57b8fa5e8068fbf8650ae45e49edea6db26e14d717"
+    },
+    {
+      "path": "src/shared/config/weapons.js",
+      "sha256": "4d35d81b0723c8f74934fb404b823383e2aba0d734ba5b53dbd127b1eacfb28d"
+    }
+  ]
+}

@@ -68,12 +68,10 @@ export class InputController {
   #handlers;
   #keys = new Set();
   #aim = { angle: Math.PI / 4, power: 55 };
-  #charging = false;
+  #ladeQuelle = null;
   #chargeStart = 0;
   #pointer = { x: 0, y: 0 };
-  #scale = { x: 1, y: 1 };
   #lauf = 0;
-  #ladenPerTaste = false;
   #touchLauf = 0;
   #laufGesendet = 0;
   /** Seil: gehaltene Richtung hoch (+1) / runter (−1) und Zeitpunkt der letzten Meldung (Erneuerung wie beim Gehen). */
@@ -94,41 +92,32 @@ export class InputController {
     this.#canvas = canvas;
     this.#handlers = handlers;
     this.#attach();
-    this.#recalculateScale();
   }
 
-  #recalculateScale() {
+  #zieleAmZeiger(event) {
     const rect = this.#canvas.getBoundingClientRect();
-    this.#scale.x = this.#canvas.width / (rect.width || this.#canvas.width);
-    this.#scale.y = this.#canvas.height / (rect.height || this.#canvas.height);
+    this.#pointer.x = (event.clientX - rect.left) * this.#canvas.width / (rect.width || this.#canvas.width);
+    this.#pointer.y = (event.clientY - rect.top) * this.#canvas.height / (rect.height || this.#canvas.height);
+    this.#updateAngleFromPointer();
   }
 
   #attach() {
     this.#canvas.addEventListener('pointermove', event => {
-      // Die Zeichenfläche ändert ihre Größe mit der Karte: Maßstab nicht veraltet lassen.
-      this.#recalculateScale();
-      const rect = this.#canvas.getBoundingClientRect();
-      this.#pointer.x = (event.clientX - rect.left) * this.#scale.x;
-      this.#pointer.y = (event.clientY - rect.top) * this.#scale.y;
-      this.#updateAngleFromPointer();
+      if (typeof this.#ladeQuelle === 'number' && this.#ladeQuelle !== event.pointerId) return;
+      this.#zieleAmZeiger(event);
     });
-
     this.#canvas.addEventListener('pointerdown', event => {
-      if (event.button !== 0) return;
-      this.#recalculateScale();
-      this.#updateAngleFromPointer();
-      this.#beginCharge();
+      if (event.button !== 0 || this.isCharging) return;
+      this.#zieleAmZeiger(event);
+      this.ladenStarten(event.pointerId);
     });
 
-    // Der Browser kann eine Berührung abbrechen (Scrollen, Systemgeste): ohne diese Behandlung
-    // bliebe die Ladung stehen (Audit 2026-10-13, Touch).
-    window.addEventListener('pointercancel', () => {
-      if (this.#charging) this.#releaseCharge();
+    // Nur der ladende Finger darf feuern. Eine Systemgeste bricht seinen Schuss ab.
+    window.addEventListener('pointercancel', event => {
+      if (this.#ladeQuelle === event.pointerId) this.#ladeQuelle = null;
     });
-
     window.addEventListener('pointerup', event => {
-      if (event.button !== 0) return;
-      if (this.#charging) this.#releaseCharge();
+      if (event.button === 0) this.ladenLoslassen(event.pointerId);
     });
 
     window.addEventListener('keydown', event => {
@@ -153,7 +142,7 @@ export class InputController {
       this.#keys.delete(key);
       if (key === ' ' || key === 'shift') {
         // Geladen wird mit Leertaste ODER Shift: erst wenn keine der beiden mehr gehalten wird, fällt der Schuss.
-        if (this.#charging && this.#ladenPerTaste && !this.#keys.has(' ') && !this.#keys.has('shift')) this.#releaseCharge();
+        if (!this.#keys.has(' ') && !this.#keys.has('shift')) this.ladenLoslassen('tastatur');
       }
       this.#syncLaufen();
       this.#syncVertikal();
@@ -162,12 +151,11 @@ export class InputController {
     // Fokusverlust: ein verlorenes „Taste los" darf die Figur nicht weiterlaufen lassen.
     window.addEventListener('blur', () => {
       this.#keys.clear();
-      this.#charging = false;
+      this.#ladeQuelle = null;
       this.#syncLaufen();
       this.#syncVertikal();
     });
 
-    window.addEventListener('resize', () => this.#recalculateScale());
   }
 
   /*
@@ -193,8 +181,7 @@ export class InputController {
 
     if (key === ' ' || key === 'shift') {
       if (key === ' ') event.preventDefault();
-      if (!this.#charging) this.#ladenPerTaste = true;
-      this.#beginCharge();
+      this.ladenStarten('tastatur');
       return;
     }
     if (key === 'enter') {
@@ -338,9 +325,9 @@ export class InputController {
     this.setAngle(angle);
   }
 
-  #beginCharge() {
-    if (this.#charging) return;
-    this.#charging = true;
+  ladenStarten(quelle = 'feuerknopf') {
+    if (this.isCharging) return;
+    this.#ladeQuelle = quelle;
     this.#chargeStart = performance.now();
   }
 
@@ -351,7 +338,7 @@ export class InputController {
    *
    * Hier stand:
    *
-   *     this.#charging = false;
+   *     this.#ladeQuelle = null;
    *     this.#handlers.onFire?.();
    *
    * `#charging` wurde also VOR dem Feuern gelöscht, und `chargeRatio` liefert
@@ -363,20 +350,16 @@ export class InputController {
    * Handler bekommt den Wert als Argument — so kann keine spätere Änderung der
    * Reihenfolge die Angabe still wieder verschlucken.
    */
-  #releaseCharge() {
+  ladenLoslassen(quelle = 'feuerknopf') {
+    if (this.#ladeQuelle !== quelle) return;
     const kraft = kraftAusLadung(this.chargeRatio);
-    this.#charging = false;
-    this.#ladenPerTaste = false;
+    this.#ladeQuelle = null;
     this.#handlers.onFire?.(kraft);
   }
 
-  /** Für den FEUER-Knopf der Oberfläche (Halten = laden, Loslassen = schießen). */
-  ladenStarten() { this.#beginCharge(); }
-  ladenLoslassen() { if (this.#charging) this.#releaseCharge(); }
-
   /** Ladefortschritt 0..1 (nur UI-Feedback, keine Simulationsgröße). */
   get chargeRatio() {
-    if (!this.#charging) return 0;
+    if (!this.isCharging) return 0;
     const elapsed = performance.now() - this.#chargeStart;
     return Math.min(1, elapsed / 1200);
   }
@@ -405,7 +388,7 @@ export class InputController {
   }
 
   get isCharging() {
-    return this.#charging;
+    return this.#ladeQuelle !== null;
   }
 
   get pointer() {
