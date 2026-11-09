@@ -4,12 +4,17 @@ import test from 'node:test';
 import {
   ACHIEVEMENTS,
   ACHIEVEMENTS_BY_ID,
+  BELOHNUNGS_ARTEN,
   CATEGORIES,
+  KATALOG_UMFANG,
   MUSTER_ANZAHL,
   TIERS,
+  belohnungstext,
   kennzahlen,
   neueErfolge,
+  normalisiereBelohnung,
   pruefeBedingung,
+  symbolFuer,
   uebersicht,
   werteAus,
 } from '../src/shared/achievements.js';
@@ -91,7 +96,12 @@ test('Der Katalog hält sein eigenes Format ein', () => {
     assert.ok(typeof e.hint === 'string' && e.hint.length > 0,
       `${e.id}: kein Hinweis — die Übersicht soll zeigen, WIE man ihn holt`);
     assert.ok(typeof e.icon === 'string' && e.icon.length > 0, `${e.id}: kein Symbol`);
+    assert.ok(e.iconBild === null || (typeof e.iconBild === 'string' && e.iconBild.length > 0),
+      `${e.id}: iconBild muss null oder ein nichtleerer Pfad/Data-URI sein`);
+    assert.equal(typeof e.iconAlt, 'string', `${e.id}: kein Alternativtextfeld`);
     assert.ok('reward' in e, `${e.id}: kein Belohnungsfeld`);
+    assert.ok(e.reward === null || normalisiereBelohnung(e.reward) !== null,
+      `${e.id}: ungültige Belohnung ${JSON.stringify(e.reward)}`);
     assert.ok(e.condition && typeof e.condition === 'object', `${e.id}: keine Bedingung`);
   }
 
@@ -339,4 +349,71 @@ test('Die Stufen sind vollständig benannt', () => {
     assert.ok(ACHIEVEMENTS.some(e => e.tier === tier),
       `Keine Erfolge der Stufe „${tier}" — die Anzeige hätte eine leere Zeile`);
   }
+});
+
+test('Der Katalog wird nicht künstlich auf 100 aufgebläht (ERFOLGE-1)', () => {
+  /*
+   * Die Vorgabe nennt 100 Erfolge. Die Inhalte liefert der Auftraggeber; bis
+   * dahin bleiben die elf belegten Einträge stehen. Wer nur die Zahl erfüllt,
+   * macht aus einer Inhaltslücke eine Scheinlösung: 89 erfundene Zeilen wären
+   * keine Erfolge, sondern Rauschen.
+   *
+   * Der Test hält den Umfang als ENTSCHEIDUNG fest. Eine spätere Erweiterung
+   * ist ausdrücklich möglich — sie muss dann `KATALOG_UMFANG` bewusst ändern.
+   */
+  assert.equal(ACHIEVEMENTS.length, KATALOG_UMFANG);
+  assert.equal(KATALOG_UMFANG, 11);
+  assert.ok(ACHIEVEMENTS.length < 100, 'Scheinlösung: Katalog ohne Inhalte aufgefüllt');
+});
+
+test('Ein Symbol ist entweder ein echtes Bild oder das ehrliche Zeichen', () => {
+  /*
+   * Bis Bilddateien vorliegen, zeigt die Anzeige ★/☆. `symbolFuer` darf kein
+   * Bild erfinden: Ohne `iconBild` bleibt es beim Zeichen, mit `iconBild` kommt
+   * ein <img>-fähiges Ergebnis samt Alternativtext.
+   */
+  const ohneBild = ACHIEVEMENTS[0];
+  assert.equal(ohneBild.iconBild, null);
+  assert.deepEqual(symbolFuer(ohneBild, false), {
+    art: 'zeichen', quelle: null, alt: '', zeichen: '☆',
+  });
+  assert.deepEqual(symbolFuer(ohneBild, true), {
+    art: 'zeichen', quelle: null, alt: '', zeichen: '★',
+  });
+
+  const mitBild = { ...ohneBild, iconBild: 'assets/erfolge/schuss.svg', iconAlt: 'Zielscheibe' };
+  assert.deepEqual(symbolFuer(mitBild, false), {
+    art: 'bild', quelle: 'assets/erfolge/schuss.svg', alt: 'Zielscheibe', zeichen: null,
+  });
+
+  // Ohne Alternativtext greift der Titel — nie ein leerer alt an einem Bild.
+  const ohneAlt = { ...ohneBild, iconBild: 'x.svg' };
+  assert.equal(symbolFuer(ohneAlt).alt, ohneBild.title);
+});
+
+test('Das Belohnungsfeld nimmt nur bekannte Arten an', () => {
+  /*
+   * Es gibt weiterhin kein Vergabesystem, deshalb tragen alle Einträge
+   * `reward: null`. Das FELD ist trotzdem ausformuliert: Eine spätere Belohnung
+   * ist eine Datenzeile, kein Umbau. Unbekannte Arten und leere Kennungen
+   * werden verworfen, damit kein Freitext in der Übersicht landet.
+   */
+  for (const e of ACHIEVEMENTS) {
+    assert.equal(e.reward, null, `${e.id}: Es gibt noch kein Vergabesystem`);
+    assert.equal(belohnungstext(e), 'Keine Belohnung — es gibt noch kein Vergabesystem.');
+  }
+
+  for (const art of BELOHNUNGS_ARTEN) {
+    assert.deepEqual(normalisiereBelohnung({ art, id: 'test', text: 'Text' }), {
+      art, id: 'test', text: 'Text',
+    });
+  }
+
+  assert.equal(normalisiereBelohnung(null), null);
+  assert.equal(normalisiereBelohnung({ art: 'geld', id: 'x' }), null);
+  assert.equal(normalisiereBelohnung({ art: 'titel', id: '' }), null);
+  assert.equal(normalisiereBelohnung('freischaltung'), null);
+
+  const mitBelohnung = { reward: { art: 'abzeichen', id: 'erster-schuss' } };
+  assert.equal(belohnungstext(mitBelohnung), 'Belohnung: abzeichen „erster-schuss"');
 });
