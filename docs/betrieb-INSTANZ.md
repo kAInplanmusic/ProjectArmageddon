@@ -506,3 +506,20 @@ als „offen, bewusst" im Register).
 
 **Nicht Teil dieses Auftrags:** Sperre, Datenbank, geteilter Zustand. Das wäre
 ein eigener Auftrag mit eigener Abnahme (Mehr-Instanz-Betrieb).
+
+## 10. On-Demand-Betrieb auf Hetzner (Freigabe 2026-11-10)
+
+Freigabe des Auftraggebers vom 2026-11-10: Der Spielserver wird bei Bedarf gemietet, nach 15 Minuten ohne Verbindung legt er ein Abbild (Snapshot) von sich an, prüft es und löscht sich selbst. Die Schutzvorkehrungen aus §5 bleiben unverändert: ohne geprüftes Abbild wird nie gelöscht (Fail-Safe: poweroff plus laute Meldung, da Hetzner auch ausgeschaltete Server berechnet); das Token liegt nur unter /run/projectarmageddon/hcloud-token (tmpfs), nie in Dateien, Logs, Abbildern oder Commits.
+
+Ablauf: `scripts/betrieb/server-hochfahren.sh hochfahren|status|not-aus` (oder Workflow `server-hochfahren.yml`), Selbstabbau durch `selbst-abbild-loeschen.sh` (idle-watch, PA_ACTION=abbild-loeschen). Dauerhaft bleiben nur das neueste Abbild und eine reservierte Primary IP (auto_delete=false).
+
+Typ: cx23/cx33 waren am 2026-11-10 nicht verfügbar, gewählt wurde cpx22 in fsn1 (0,037128 EUR/h laut API). Ein Abbild bindet die Plattengröße (80-GB-Abbild passt nicht auf 40-GB-Typen).
+
+Belege (echter Lauf gegen Hetzner, 2026-11-10, Mock-Tests getrennt in tests/betrieb-abruf.test.js):
+- Frischinstallation, https, Leerlauf, geprüftes Abbild, Selbstlöschung: bestätigt.
+- Wiederherstellung aus Abbild: BEREIT nach ca. 4 min, smoke --aussen bestanden (Version 0.9.0), Konto e2e-abruf aus dem Vorlauf meldete sich an (Zustand überlebt).
+- Zweite Leerlauf-Abschaltung: Endstand per API: Server 0, Volumes 0, Abbilder 1 (454628717, 2,11 GB, neuestes, Vorgänger gelöscht), Primary IP 1 (49.13.138.200, auto_delete=false).
+
+iPhone-Klickfolge: GitHub-App/Browser, Repo, Settings, Secrets and variables, Actions, New repository secret `HCLOUD_TOKEN` (Wert selbst eintragen), optional Variable `PA_DOMAIN`; dann Actions, "server-hochfahren", Run workflow, Modus `hochfahren`.
+
+Offene Punkte: PFLICHT-14 (Anmeldung/www-Zugang, siehe docs/zugang-www.md) bleibt Lücke; Option D nur spezifiziert; Starter nur Mock-getestet; Token liegt während der Laufzeit im Server-RAM; Abbild-Dauer wächst mit Datenmenge.
