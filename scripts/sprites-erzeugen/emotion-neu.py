@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Erzeugt einzelne Emotions-Posen je Figur neu (Together FLUX.1-kontext-pro, Seitenbild als Referenz).
 
+STAND 2026-11-10: Der Weg fuer ganze Emotionsblaetter ist jetzt gpt-image-2 per Together in EINEM Bild (4x2-Raster):
+`neu-erzeugen.py --anbieter tog --blaetter emotion --figuren <fraktion/figur,...>` (Prompt `prompts.EMOTION`, Referenz per
+raw-GitHub-URL, 1024x1024), danach `schneide.STRENG=True; schneide.blatt(roh, mehr=True)`. Dieses Skript (FLUX je Pose)
+bleibt fuer Einzelzellen-Reparaturen.
+
 Die ersten Emotions-Sheets (ein Raster je Figur) verwandelten Tiere in Menschen. Hier entsteht jede Pose
 als eigenes Bild mit der Figur als Referenz und der ausdrücklichen Vorgabe, die Art beizubehalten.
 

@@ -28,25 +28,25 @@ OBERGRENZE = 0.45
 SICHTPRUEFUNG = {
     'pixel/22_arcanus-b': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4 8-Bit-Blatt (Runware gpt-image-2); Zelle 4 (Zittern) faellt nur farblich, sichtgeprueft
     'beasts/00_pikamon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
-    'beasts/01_shrew-quakes': {'frei': [1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'beasts/02_storm-talon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03: Zellen 2 und 4 aus Zelle 1 abgeleitet, Magenta-Schatten entfernt
+    'beasts/01_shrew-quakes': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft; Zelle 2 (Blinzeln) aus dem alten Blatt, da im neuen am Rand beschnitten
+    'beasts/02_storm-talon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
     'beasts/10_flame-jaws': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/11_ember-tails': {'frei': [0, 1, 2, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/12_magma-plate': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/21_cosmic-meditate': {'frei': [0, 1, 2, 4, 5], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/22_sonic-blossom': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
-    'datacult/00_nullpointer-exception': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
+    'datacult/00_nullpointer-exception': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
     'datacult/01_datapath-replicant': {'frei': [0, 2, 3, 4], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'datacult/02_chrome-code-shifter': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 abgeleitet (emotion-ableiten.py)
     'datacult/11_synapse-streamer': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 ganzes Blatt neu (N-01)
-    'datacult/12_arcology-agent': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 abgeleitet (emotion-ableiten.py)
-    'datacult/21_hyper-link-hound': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
+    'datacult/12_arcology-agent': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
+    'datacult/21_hyper-link-hound': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
     'datacult/22_ethereo': {'frei': [0, 1, 2, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'machina/00_chassis-endo-t8': {'frei': [0, 1, 2, 4, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'machina/01_slasher-cyber-jax': {'frei': [0, 2, 3, 4, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'machina/02_hydra-titan-mech': {'frei': [3], 'sperre': []},
     'machina/11_heavy-battery-moerser-bot': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 3-D-Verfahren 2026-11-03
-    'machina/12_ordnance-rail-viper': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 3-D-Verfahren 2026-11-03
+    'machina/12_ordnance-rail-viper': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
     'machina/20_grid-drifter-datastream': {'frei': [0, 1, 2, 3, 5, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'machina/21_proxy-glitch-hack': {'frei': [0, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'machina/22_overlord-kernel-panic': {'frei': [0, 1, 3, 5, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
@@ -98,7 +98,7 @@ SICHTPRUEFUNG = {
     'xeno/10_drone-theta': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Nachauftrag: ganzes Blatt im 3-D-Verfahren (TRELLIS, yaw 35, Neigung 5), schwebende Drohne
     'xeno/11_desintegrator-kael': {'frei': [1, 2, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'xeno/20_harbinger-zeta': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'xeno/21_dark-matter-witch': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
+    'xeno/21_dark-matter-witch': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
     'xeno/22_null-entity-quark': {'frei': [1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     # 2026-11-03 (N-01): ganze Blätter neu (gpt-image-2, Magenta-Grund statt Grün; die grünen Figuren waren mit dem
     # Grün-Schlüssel in Splitter zerfallen), alle acht Zellen per Sichtprüfung freigegeben.
