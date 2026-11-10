@@ -292,7 +292,7 @@ test('Alle Bilder sind freigestellte PNG in gleicher Größe', () => {
     const farbtyp = puffer[25];
     assert.equal(farbtyp, 6, `${c.faction}/${c.sprite}: kein RGBA-Bild`);
 
-    assert.ok(fs.statSync(datei).size > 5_000,
+    assert.ok(fs.statSync(datei).size > 2_000, // 8-Bit-Bilder (≤16 Farben) sind legitim klein
       `${c.faction}/${c.sprite}: verdächtig klein`);
   }
   assert.equal(groessen.size, 1,
