@@ -553,8 +553,9 @@ const SPIN_GRANATE = 8;
  */
 export const GESCHOSS_GRUPPEN = Object.freeze({
   /**
-   * W10: KEINE „Streu“-Marke mehr. `fragmentation`, `banana_split` und
-   * `spread_shot` erzeugen im Motor kein zusätzliches Projektil; implementiert
+   * W10: KEINE „Streu“-Marke mehr. `fragmentation` und `banana_split` erzeugen im
+   * Motor kein zusätzliches Projektil (die Schrotflinte streut seit Waffenfassung 19
+   * über `streuung`, nicht über `spread_shot` — BAL-16, `config/waffen-f19.js`); implementiert
    * ist die Splitterstreuung im GELÄNDE (`charakterDerWaffe` →
    * `splitter`, `config/zerstoerung.js`). Die Marke heißt deshalb nach dieser
    * Mechanik und wird nur aus ihr vergeben — nicht aus dem Spezialnamen.

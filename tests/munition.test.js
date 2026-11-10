@@ -23,8 +23,8 @@ function welt() {
 
 const ohneStart = () => WEAPONS.filter(w => munitionsKlasse(w) !== Infinity);
 
-test('Standard ist Waffenfassung 18 (BAL-05 Nachschub) und Kistenfassung 4; Fassung 17 bis 11 bleiben gültig', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB);
+test('Standard ist Waffenfassung 19 (BAL-16 Streuung) und Kistenfassung 4; Fassung 18 bis 11 bleiben gültig', () => {
+  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB + 1);
   assert.equal(WAFFEN_NACHSCHUB, WAFFEN_KLASSE + 1);
   assert.equal(WAFFEN_KLASSE, WAFFEN_TREFFER + 1);
   assert.ok(WAFFEN_MUNITION < WAFFEN_MINE && WAFFEN_MINE < WAFFEN_SICHT && WAFFEN_SICHT < WAFFEN_WIND && WAFFEN_WIND < WAFFEN_TEMPO && WAFFEN_TEMPO < WAFFEN_STANDARD);

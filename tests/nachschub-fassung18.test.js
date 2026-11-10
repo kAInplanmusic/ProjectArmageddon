@@ -57,9 +57,10 @@ function wende(match, schuetze, waffe) {
   return r;
 }
 
-test('Fassung 18 ist der Standard und folgt direkt auf Fassung 17', () => {
+test('Fassung 18 folgt direkt auf Fassung 17, und der Standard enthält sie', () => {
   assert.equal(WAFFEN_NACHSCHUB, WAFFEN_KLASSE + 1);
-  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB);
+  // Seit Fassung 19 (BAL-16, Streuung) ist 18 nicht mehr die jüngste; die Nachschubregel gilt weiter.
+  assert.ok(WAFFEN_STANDARD >= WAFFEN_NACHSCHUB);
   assert.equal(normalisiereWaffen(17), WAFFEN_KLASSE, 'Fassung 17 bleibt eine gültige Marke (alte Replays)');
   assert.equal(normalisiereWaffen(18), WAFFEN_NACHSCHUB);
 });

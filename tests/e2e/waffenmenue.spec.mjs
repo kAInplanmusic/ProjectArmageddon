@@ -53,7 +53,12 @@ test.describe('Waffenmenü (Desktop)', () => {
     await page.keyboard.press('e');
     // Auf eine andere Waffe gehen.
     const ids = await page.evaluate(() => window.__PA__.waffenMenue().ids);
-    const ziel = ids.find(id => id !== vorher);
+    /*
+     * Ziel ist die Waffe NACH der aktiven (Pfeil runter). Seit Klassenfassung 3 steht die
+     * Klassenwaffe vorn; „die erste andere Waffe" lag dann ÜBER dem Fokus und war mit Pfeil runter
+     * nie erreichbar — der Test drückte ins Leere und meldete die alte Waffe (Befund 2026-11-10).
+     */
+    const ziel = ids.slice(ids.indexOf(vorher) + 1).find(id => id.startsWith('pa_'));
     expect(ziel).toBeTruthy();
     for (let i = 0; i < ids.length && (await page.evaluate(() => window.__PA__.waffenMenue().aktiveId)) !== ziel; i++) {
       await page.keyboard.press('ArrowDown');
@@ -69,7 +74,18 @@ test.describe('Waffenmenü (Desktop)', () => {
     await page.click('#waffen-menue-knopf');
     await expect(page.locator('#waffenmenue')).toBeVisible();
     const vorher = await aktiveWaffe(page);
-    const ziel = page.locator(`#waffenmenue [role=option]:not([data-weapon-id="${vorher}"]):not(.is-leer)`).first();
+    /*
+     * Ziel: die erste andere Waffe MIT Flächenwirkung — nur bei ihr kann die Infozeile einen Radius
+     * zeigen. Seit Klassenfassung 3 steht vorn die Klassenwaffe (hier der Kriegshammer, Nahkampf,
+     * ohne Radius); die alte Wahl „erste andere Waffe" prüfte damit eine Zusage, die für diese
+     * Waffe nicht gilt (Befund 2026-11-10).
+     */
+    const kandidaten = await page.locator(`#waffenmenue [role=option]:not([data-weapon-id="${vorher}"]):not(.is-leer)`)
+      .evaluateAll(l => l.map(e => e.dataset.weaponId).filter(id => id?.startsWith('pa_')));
+    const mitRadius = await page.evaluate(ids => import('/src/shared/config/waffen-fassung.js')
+      .then(m => ids.find(id => m.getWaffe(id).blastRadius > 0)), kandidaten);
+    expect(mitRadius, 'Testannahme: das Start-Inventar enthält eine Flächenwaffe').toBeTruthy();
+    const ziel = page.locator(`#waffenmenue [role=option][data-weapon-id="${mitRadius}"]`);
     await ziel.hover();
     await expect(page.locator('#waffenmenue-info')).toContainText(/Schaden \d+/);
     // Der Satz zur Waffe und die Schadensart stehen in der Infozeile, der Satz auch als Tooltip der Kachel.

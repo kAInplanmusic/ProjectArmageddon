@@ -109,11 +109,11 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 38 | Rakete | ranged | 58 | 38 | 23 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 39 | Feldmörser | ranged | 48 | 45 | 27 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 40 | Maschinenpistole | ranged | 21 | — | 4 px | 1 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
-| 41 | Salvengeber | heavy_ranged | 48 | 16 | 18 px | 2 | 8 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
-| 42 | Feuerwerkssalve | heavy_ranged | 58 | — | 4 px | 1 | 12 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 41 | Minirakete | heavy_ranged | 48 | 16 | 18 px | 2 | 8 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
+| 42 | Feuerwerksrakete | heavy_ranged | 58 | — | 4 px | 1 | 12 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 43 | Kampfgeschütz | heavy_ranged | 50 | — | 4 px | 1 | 36 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 44 | Phönixschlag | heavy_ranged | 65 | 55 | 33 px | 3 | 30 | Feuer 35 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß), Ziel (suchend), Zustand (Element) |
-| 45 | Raketensalve | heavy_ranged | 56 | — | 4 px | 1 | 24 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 45 | Schwere Rakete | heavy_ranged | 56 | — | 4 px | 1 | 24 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 46 | Splittergranate | heavy_ranged | 42 | 42 | 25 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 47 | Handgranate | heavy_ranged | 61 | — | 4 px | 1 | 28 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 48 | Bananengranate | heavy_ranged | 46 | 40 | 24 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
