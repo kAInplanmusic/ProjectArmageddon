@@ -36,13 +36,15 @@
  *     eigene Feld `trefferRadius` (24 px nur um die Figur, kein Schaden an Dritten). Nahkampf-
  *     und Wurfwaffen behalten kein Trefferfenster, echte Flächenwaffen bleiben unverändert.
  *     Fassungen 1 bis 15 spawnen bitgleich wie zuvor (Goldwerte in `tests/w01-trefferfenster.test.js`).
- *   - `WAFFEN_KLASSE` (17, Standard): wie 16; der Klassenfaktor gilt auch im Strahlpfad.
+ *   - `WAFFEN_KLASSE` (17): wie 16; der Klassenfaktor gilt auch im Strahlpfad.
  *     Bis Fassung 16 multiplizierte `shooting.js` den Projektilschaden mit
  *     `combatProfile().damageMultiplier`, `match.js#resolveHitscan` ließ ihn aus — derselbe
  *     Klassenvertrag ergab für Strahlwaffen dreimal denselben Rohschaden (BAL-02). Ab Fassung 17
  *     gilt EIN Vertrag für beide Pfade: `weapon.damage × Klassenfaktor × Buff`, jeder Faktor genau
  *     einmal; der Kettenblitz rechnet den Klassenfaktor einmal vor dem Sprungabfall. Fassungen 1 bis
  *     16 bleiben bitgleich (`tests/waffen-fassung.test.js`, `tests/klassenfaktor-pfade.test.js`).
+ *   - `WAFFEN_NACHSCHUB` (18, Standard): wie 17; eine Nachschubwaffe füllt nur andere Waffen
+ *     auf, nie sich selbst (BAL-05).
  *   - `WAFFEN_TEMPO` (15): wie 14, dazu `WAFFEN_F15_WERTE` (`config/waffen-f15.js`): Schaden je
  *     Katalogkategorie angehoben, damit eine Figur nach 3 bis 4 Treffern fällt (Median gemessen, siehe
  *     `docs/balance-tempo-2026-11-05.md`). Der Katalog bleibt unverändert; Fassungen 1 bis 14 lesen die Schicht
@@ -122,7 +124,15 @@ export const WAFFEN_TREFFER = 16;
  * Klassenfaktor aus; diese Fassungen bleiben bitgleich.
  */
 export const WAFFEN_KLASSE = 17;
-export const WAFFEN_STANDARD = WAFFEN_KLASSE;
+/**
+ * Fassung 18 (BAL-05, Nachschub füllt sich nie selbst): Eine Nachschubwaffe (`EFFECT_KIND.AMMO`,
+ * pa_119/pa_122/pa_125) füllt ab hier nur noch ANDERE endliche Waffen auf, nie sich selbst.
+ * Bis Fassung 17 stellte `restoreAmmo` bei sonst vollem Inventar die gerade verbrauchte eigene
+ * Ladung wieder her — die Waffe war damit unerschöpflich. Entscheidung des Auftraggebers vom
+ * 2026-11-09. Fassungen 1 bis 17 bleiben bitgleich (`tests/nachschub-fassung18.test.js`).
+ */
+export const WAFFEN_NACHSCHUB = 18;
+export const WAFFEN_STANDARD = WAFFEN_NACHSCHUB;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -135,7 +145,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT || fassung === WAFFEN_WIND || fassung === WAFFEN_TEMPO || fassung === WAFFEN_TREFFER || fassung === WAFFEN_KLASSE ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT || fassung === WAFFEN_WIND || fassung === WAFFEN_TEMPO || fassung === WAFFEN_TREFFER || fassung === WAFFEN_KLASSE || fassung === WAFFEN_NACHSCHUB ? fassung : WAFFEN_STANDARD;
 }
 
 /**

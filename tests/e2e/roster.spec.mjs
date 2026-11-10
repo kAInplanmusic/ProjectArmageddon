@@ -65,13 +65,26 @@ test('Jeder Eintrag nennt Superwaffe, Biografie und Profil', async ({ page }) =>
 
   await page.locator('#roster-tabs button').first().click();
 
-  for (const teil of ['.r-name', '.r-role', '.r-waffe', '.r-bio', '.r-prof']) {
+  for (const teil of ['.r-name', '.r-waffe', '.r-bio', '.r-prof']) {
     const texte = await page.locator(`#roster-list ${teil}`).allTextContents();
     expect(texte.length, `${teil} fehlt`).toBe(9);
     for (const t of texte) {
       expect(t.trim().length, `${teil} ist leer`).toBeGreaterThan(10);
     }
   }
+
+  /*
+   * Seit Audit A16 (c7eadd4, 2026-11-09) zeigt `.r-role` Klassenzeichen + Klassenname
+   * („Nahkampf", „Fernkampf", „Okkultist") statt des längeren Rollentexts. Die alte
+   * Längenprüfung (> 10 Zeichen) passte darauf nicht mehr; geprüft wird jetzt, was A16
+   * verlangt: ein bekannter Klassenname UND das Zeichen daneben.
+   */
+  const rollen = page.locator('#roster-list .r-role');
+  await expect(rollen).toHaveCount(9);
+  for (const t of await rollen.allTextContents()) {
+    expect(['Nahkampf', 'Fernkampf', 'Okkultist'], `.r-role: „${t.trim()}"`).toContain(t.trim());
+  }
+  await expect(page.locator('#roster-list .r-role svg')).toHaveCount(9);
 
   // Das Profil nennt Stärken und Schwächen.
   const profil = await page.locator('#roster-list .r-prof').first().textContent();

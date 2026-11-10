@@ -1959,10 +1959,10 @@ class Game {
      * hat `kartentyp` im Snapshot bekommen und hier weggeworfen.
      */
     this.#applyKartengroesse(terrain.width, terrain.height);
-    // Vorgabe 'automatisch': auch online das gemalte Bild passend zum Kartencharakter (Sonderbiome bleiben generativ).
-    if (this.gewaehlteKulisse?.includes('/') || (this.gewaehlteKulisse === 'automatisch' && (!terrain.sonderbiom || SONDER_KULISSEN[terrain.sonderbiom]) && terrain.charakter)) {
+    // 'automatisch' wie lokal: gemaltes Bild (KULISSE-1: ohne Kartencharakter, also auf klassischen Karten, fiel online auf generativ).
+    if (this.gewaehlteKulisse?.includes('/') || (this.gewaehlteKulisse === 'automatisch' && (!terrain.sonderbiom || SONDER_KULISSEN[terrain.sonderbiom]))) {
       this.renderer.setScenery(null);
-      this.#applyBackdrop(seed, preset, this.gewaehlteKulisse, terrain.charakter, terrain.sonderbiom ?? null);
+      this.#applyBackdrop(seed, preset, this.gewaehlteKulisse, terrain.charakter ?? undefined, terrain.sonderbiom ?? null);
     } else {
       this.setSceneryFromSeed(seed, preset, terrain.sonderbiom);
     }

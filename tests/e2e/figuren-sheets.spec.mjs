@@ -18,6 +18,14 @@ async function oeffne(page) {
   page.on('pageerror', e => fehler.push(String(e)));
   await page.goto('/');
   await page.locator('#cfg-seed').fill('20260910');
+  /*
+   * Seit A03 (b610060, 2026-11-09) zeigt ein Blatt Treffer und Niedergestreckt nur bei
+   * menschlichem Gesicht oder Sichtfreigabe; heute erfüllen das zehn Figuren (die Piraten
+   * und eine Shinobi). Mit zufälligen Fraktionen fand der Test deshalb keinen Treffer-Frame.
+   * Ein Team Piraten macht die Prüfung wieder wirksam, ohne die Regel aufzuweichen.
+   */
+  await page.locator('#fraktion-auswahl summary').click();
+  await page.locator('#cfg-fraktion-0').selectOption('pirates');
   await page.locator('#start-button').click();
   await expect(page.locator('#menu-overlay')).toBeHidden();
   return fehler;

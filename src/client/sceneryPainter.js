@@ -67,6 +67,48 @@ function naechtlich(farbe, tiefe) {
 }
 
 /**
+ * LOOK-2 (Rest, 2026-11-10): Sättigungsdeckel der GENERATIVEN Himmel.
+ *
+ * Die gemalten Kulissen haben seit A19 einen Deckel je Lichtklasse (`kulissenLicht.js`); der
+ * erzeugte Himmel hatte keinen. Gemessen wie `kulisseUndWasser.js` (HSV-Sättigung
+ * (max − min) / max, sehr dunkle Werte ausgenommen) an den gezeichneten Stufen nach
+ * `naechtlich`: 14 von 22 Himmeln lagen mit mindestens einer Stufe über 0,45, am höchsten
+ * `abyss` (0,78), `kosmos_planet_blau` (0,75), `clear_day` und `ember_sky` (0,71). Vor so einem
+ * Himmel heben sich bunte Figuren schlecht ab. Entscheidung des Auftraggebers: Deckel 0,45.
+ */
+export const HIMMEL_SAETTIGUNG_DECKEL = 0.45;
+
+/**
+ * Senkt die HSV-Sättigung einer Farbe auf höchstens `deckel`. Farbton und Helligkeit (max-Kanal)
+ * bleiben exakt: Jeder Kanal rückt um denselben Anteil an den hellsten heran. Farben unter dem
+ * Deckel bleiben unverändert.
+ *
+ * @param {number[]} farbe - [r, g, b] 0…255
+ * @param {number} [deckel]
+ * @returns {number[]}
+ */
+export function deckleSaettigung(farbe, deckel = HIMMEL_SAETTIGUNG_DECKEL) {
+  const max = Math.max(farbe[0], farbe[1], farbe[2]);
+  const min = Math.min(farbe[0], farbe[1], farbe[2]);
+  if (max <= 0) return farbe;
+  const s = (max - min) / max;
+  if (s <= deckel) return farbe;
+  const k = deckel / s;
+  return [max - (max - farbe[0]) * k, max - (max - farbe[1]) * k, max - (max - farbe[2]) * k];
+}
+
+/**
+ * Die gezeichnete Farbe einer Himmelsstufe: nächtlich abgedunkelt, dann gedeckelt.
+ *
+ * @param {string} farbe - CSS-Farbe aus `SKY_KINDS`
+ * @param {number} tiefe - 0 (oben) … 1 (Horizont)
+ * @returns {number[]}
+ */
+export function himmelStufe(farbe, tiefe) {
+  return deckleSaettigung(naechtlich(parseCss(farbe), tiefe));
+}
+
+/**
  * Zeichnet den Himmel als Verlauf und setzt den Himmelskörper.
  * @param {CanvasRenderingContext2D} ctx
  */
@@ -74,7 +116,8 @@ export function drawSky(ctx, breite, hoehe, scenery, zeit) {
   const stufen = scenery.sky.colors;
   const verlauf = ctx.createLinearGradient(0, 0, 0, hoehe);
   stufen.forEach((farbe, i) => {
-    verlauf.addColorStop(i / Math.max(1, stufen.length - 1), rgb(naechtlich(parseCss(farbe), i / Math.max(1, stufen.length - 1))));
+    const tiefe = i / Math.max(1, stufen.length - 1);
+    verlauf.addColorStop(tiefe, rgb(himmelStufe(farbe, tiefe)));
   });
   ctx.fillStyle = verlauf;
   ctx.fillRect(0, 0, breite, hoehe);

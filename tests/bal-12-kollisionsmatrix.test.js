@@ -153,9 +153,12 @@ test('BAL-12: Rollenentfernung ist dokumentiert und für den Beleg nachvollziehb
     assert.ok(eintrag.probe.distance <= eintrag.reichweite + 1,
       `${eintrag.id}: Beleg ${eintrag.probe.distance} px über der Reichweite ${eintrag.reichweite}`);
   }
-  /* Die Rückfälle sind ehrlich ausgewiesen: 101/112 treffen in der
-   * Rollenentfernung, 11 in einer kleineren, aber noch rollennahen Entfernung. */
-  assert.equal(matrix.summary.rollenDistanzErreicht, 101);
+  /* Die Rückfälle sind ehrlich ausgewiesen: 103/112 treffen in der
+   * Rollenentfernung, 9 in einer kleineren, aber noch rollennahen Entfernung.
+   * Neu erzeugt 2026-11-10 für Fassung 18: Die Zahl stieg von 101 auf 103 schon auf
+   * `main` vor BAL-05 (Gegenlauf auf `cce5e4b`, gleiches Ergebnis) — der Beleg war seit
+   * späteren Engine-Änderungen nicht neu erzeugt worden. */
+  assert.equal(matrix.summary.rollenDistanzErreicht, 103);
 });
 
 test('BAL-12: Zwei-Ziele-, Wand-, Rand- und Zielsuche-Szenario sind echt belegt', () => {

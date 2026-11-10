@@ -235,14 +235,23 @@ export function nutzwert(payload) {
 /**
  * Eine Selbstwirkung auf dem echten Boden (Startposition, kein Festhalten).
  * Heilung und Zufall bekommen vorher Schaden, damit die Wirkung nicht an
- * vollen LP verpufft; Munition wird durch den Schuss selbst verbraucht.
+ * vollen LP verpufft. Munition und Zufall bekommen eine zweite, angebrochene
+ * Waffe (`MUNITION_ZIEL`, eine Ladung): Bis Waffenfassung 17 füllte der Nachschub
+ * die eigene, gerade verbrauchte Ladung auf; ab Fassung 18 (BAL-05) füllt er nie
+ * sich selbst und braucht eine andere Waffe, um messbar zu wirken.
  */
+export const MUNITION_ZIEL = 'pa_072';
+
 export function selbstProbe(weapon) {
   const { m, shooter } = pruefstand(weapon.id, { frei: false });
   const effekt = buildEffect(weapon);
   if (effekt && (effekt.kind === 'heal' || effekt.kind === 'random')) {
     const max = m.world.getComponent(shooter, 'Health', 'max') ?? 100;
     m.world.setComponent(shooter, 'Health', 'current', Math.max(1, Math.round(max * 0.4)));
+  }
+  if (effekt && (effekt.kind === 'ammo' || effekt.kind === 'random') && weapon.id !== MUNITION_ZIEL) {
+    m.inventory.grantWeapon(shooter, MUNITION_ZIEL, { ammo: 1 });
+    m.inventory.selectWeapon(shooter, weapon.id);
   }
   const vorher = {
     x: rund(m.world.getComponent(shooter, 'Position', 'x')),

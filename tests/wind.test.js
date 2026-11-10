@@ -94,7 +94,7 @@ test('Waffenfassung 14 trägt windFactor 0..2,5; Fassung 13 sieht ihn nicht', ()
   assert.ok(getWaffe('pa_037', WAFFEN_WIND).windFactor >= 1.6, 'Raketenwerfer');
   assert.equal(getWaffe('pa_047', WAFFEN_WIND).windFactor, 0.6, 'Handgranate');
   assert.ok(!('windFactor' in getWaffe('pa_037', WAFFEN_SICHT)), 'Fassung 13 kennt das Feld nicht');
-  assert.equal(WAFFEN_STANDARD, WAFFEN_KLASSE);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_KLASSE + 1); // Fassung 18 (BAL-05 Nachschub)
   assert.equal(WAFFEN_KLASSE, WAFFEN_TREFFER + 1);
   assert.equal(WAFFEN_TREFFER, WAFFEN_TEMPO + 1);
 });

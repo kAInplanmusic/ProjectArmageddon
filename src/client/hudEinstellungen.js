@@ -19,6 +19,22 @@
 
 const FOKUSSIERBAR = 'button:not([hidden]):not([disabled]), input:not([disabled])';
 
+/**
+ * Liegt ein Element in einem modalen Dialog (`aria-modal="true"`, z. B. `#bestaetigung`)?
+ *
+ * MERGE-3 (2026-11-10): Die Rückfrage von „Match verlassen" liegt außerhalb des Dropdowns. Ein
+ * Tipp auf „Nein" galt deshalb als „daneben tippen" und schloss das Dropdown; der Dialog konnte
+ * den Fokus danach nicht an den auslösenden Knopf zurückgeben (er war verborgen), und Tastatur-
+ * nutzer verloren ihren Platz. Ein modaler Dialog, der aus dem Dropdown geöffnet wurde, gehört
+ * zur Bedienung des Dropdowns und schließt es nicht.
+ *
+ * @param {EventTarget|null} ziel
+ * @returns {boolean}
+ */
+function imDialog(ziel) {
+  return Boolean(ziel?.closest?.('[aria-modal="true"]'));
+}
+
 export class HudEinstellungen {
   #doc;
   #wurzel;
@@ -38,12 +54,13 @@ export class HudEinstellungen {
     this.#menue.addEventListener('keydown', e => this.#taste(e));
     this.#wurzel.addEventListener('focusout', e => {
       // Fokus wandert per Tab aus Knopf und Dropdown hinaus: schließen, ohne ihn zurückzuholen.
-      if (this.#offen && e.relatedTarget && !this.#wurzel.contains(e.relatedTarget)) this.schliesse({ fokus: false });
+      if (this.#offen && e.relatedTarget && !this.#wurzel.contains(e.relatedTarget)
+        && !imDialog(e.relatedTarget)) this.schliesse({ fokus: false });
     });
     const fenster = doc.defaultView ?? globalThis;
     // Daneben tippen schließt — in der Einfangphase, damit der Tipp nicht zugleich zielt oder feuert.
     fenster.addEventListener?.('pointerdown', e => {
-      if (!this.#offen || this.#wurzel.contains(e.target)) return;
+      if (!this.#offen || this.#wurzel.contains(e.target) || imDialog(e.target)) return;
       e.stopPropagation();
       this.schliesse({ fokus: false });
     }, true);
