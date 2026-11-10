@@ -98,6 +98,8 @@ caddyfile_schreiben() {
     chmod 644 /etc/caddy/Caddyfile
   fi
   PA_DOMAIN="$PA_DOMAIN" PA_ACME_EMAIL="$PA_ACME_EMAIL" caddy validate --config /etc/caddy/Caddyfile >/dev/null
+  # `caddy validate` (als root) legt die Logdatei an; Caddy läuft als Benutzer caddy und braucht sie lesbar/schreibbar.
+  chown -R caddy:caddy /var/log/caddy 2>/dev/null || true
 }
 
 ssh_einstellen() {
