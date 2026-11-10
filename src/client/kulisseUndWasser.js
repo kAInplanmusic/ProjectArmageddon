@@ -16,7 +16,7 @@
 import { WATER_SCALE } from '../engine/match.js';
 import { kulissenUrl } from './kulissenUrls.js';
 import { coverZuschnitt, glutStaerke } from './kulissenZuschnitt.js';
-import { lichtFuerKulisse, saettigungsFaktorAusMessung } from './kulissenLicht.js';
+import { lichtFuerKulisse, saettigungsFaktorAusMessung, aufhellFaktorAusMessung } from './kulissenLicht.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import { zeichneWetterHinten } from './wetterLicht.js';
 import { SPIEGEL_TIEFE, spiegelFarbe, spiegelGewicht } from './wasserSpiegel.js';
@@ -123,6 +123,8 @@ function ladeHochBild(r, backdrop) {
  * liegen (A19, siehe `kulissenLicht.js`).
  */
 const SAETTIGUNG_MESSUNG = new WeakMap();
+/** Mittlere Leuchtdichte je Bild (0…1), in derselben Probe gemessen wie die Sättigung. */
+const LEUCHTDICHTE_MESSUNG = new WeakMap();
 
 /** Mittlere Sättigung je Bild (0…1), einmal aus einer 64×36-Probe gerechnet. */
 function saettigungsMessung(img) {
@@ -139,10 +141,12 @@ function saettigungsMessung(img) {
       const daten = g.getImageData(0, 0, 64, 36).data;
       let summe = 0;
       let n = 0;
+      let leucht = 0;
       for (let i = 0; i < daten.length; i += 4) {
         const r = daten[i] / 255;
         const gg = daten[i + 1] / 255;
         const b = daten[i + 2] / 255;
+        leucht += 0.2126 * r + 0.7152 * gg + 0.0722 * b;
         const max = Math.max(r, gg, b);
         const min = Math.min(r, gg, b);
         if (max <= 0.05) continue;
@@ -150,6 +154,7 @@ function saettigungsMessung(img) {
         n += 1;
       }
       s = n > 0 ? summe / n : 0;
+      LEUCHTDICHTE_MESSUNG.set(img, leucht / (daten.length / 4));
     }
   } catch {
     // Ohne Bilddaten (z. B. Canvas gesperrt) bleibt die Kulisse unverändert.
@@ -190,7 +195,10 @@ function kulissenBild(r, img, stimmung, glut, licht) {
     const ctx = canvas.getContext('2d');
     // LOOK-2: Kulisse hinter das Gelände legen (Sättigungsdeckel der Lichtklasse).
     const saettigung = saettigungsFaktorAusMessung(saettigungsMessung(img), licht.saettigungDeckel);
-    if (saettigung < 1) ctx.filter = `saturate(${saettigung.toFixed(3)})`;
+    // N-35: sehr dunkle Kulissen (Sternennacht, Höhle) heben sich sonst kaum vom Gelände ab.
+    const aufhellung = aufhellFaktorAusMessung(LEUCHTDICHTE_MESSUNG.get(img));
+    const filter = [saettigung < 1 ? `saturate(${saettigung.toFixed(3)})` : '', aufhellung > 1.01 ? `brightness(${aufhellung.toFixed(3)})` : ''].filter(Boolean).join(' ');
+    if (filter) ctx.filter = filter;
     if (z) ctx.drawImage(img, 0, z.sy, bw, z.sh, 0, 0, breite, h);
     else ctx.drawImage(img, 0, 0, w, h);
     ctx.filter = 'none';

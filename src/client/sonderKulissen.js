@@ -15,7 +15,8 @@ export const SONDER_KULISSEN = Object.freeze({
   dschungel: Object.freeze(['hyperreal/jungle_river', 'deluge/drowned_forest', 'forest/fantasy_glade']),
   eiswueste: Object.freeze(['alpine/winter_snow', 'hyperreal/polar_station', 'maritime/arctic_ice', 'spires/ice_spires']),
   duenen: Object.freeze(['hyperreal/desert_caravan', 'spires/desert_hoodoos', 'western/desert_town']),
-  schrott: Object.freeze(['urban/industrial_ruins', 'urban/war_torn', 'noir/harbor_docks']),
+  // Schrott: ohne das Schwarzweißbild `noir/harbor_docks` (N-35: Stilbruch zu den farbigen Rost- und Metallstoffen).
+  schrott: Object.freeze(['urban/industrial_ruins', 'urban/war_torn']),
   schwebinseln: Object.freeze(['fantasy/dragon_peak', 'alpine/moonlit_peaks', 'spires/karst_peaks']),
   riff: Object.freeze(['island/caribbean_day', 'maritime/calm_day', 'island/polynesian_night']),
   pilzwald: Object.freeze(['forest/fantasy_glade', 'forest/fog_night', 'fantasy/elven_city']),

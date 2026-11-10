@@ -86,3 +86,14 @@ test('Kontrast der Spielfläche: heller Schnee braucht dunkle Figuren, Schwelle 
   assert.equal(kontrastVerhaeltnis(0.2, 0.6), kontrastVerhaeltnis(0.6, 0.2));
   assert.ok(kontrastVerhaeltnis(0, 0) >= 1);
 });
+
+test('N-35: sehr dunkle Kulissen werden aufgehellt, helle bleiben unverändert', async () => {
+  const { aufhellFaktorAusMessung, AUFHELL_GRENZE, AUFHELL_MAX } = await import('../src/client/kulissenLicht.js');
+  assert.equal(aufhellFaktorAusMessung(AUFHELL_GRENZE), 1);
+  assert.equal(aufhellFaktorAusMessung(0.6), 1);
+  assert.equal(aufhellFaktorAusMessung(NaN), 1, 'ohne Messung keine Änderung');
+  assert.ok(Math.abs(aufhellFaktorAusMessung(0) - AUFHELL_MAX) < 1e-9);
+  const a = aufhellFaktorAusMessung(0.2);
+  const b = aufhellFaktorAusMessung(0.1);
+  assert.ok(a > 1 && b > a && b < AUFHELL_MAX, `monoton: ${a} < ${b}`);
+});

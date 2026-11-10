@@ -57,8 +57,12 @@ function parseCss(css) {
  * Dunkelt eine Himmelsfarbe in Richtung der Palette ab: Der Entwurf ist nächtlich,
  * auch wenn das Biom einen hellen Tag vorsieht. Die Farbtönung bleibt erhalten.
  */
-/** Wie stark die Himmelsfarben zur Grundfarbe hin abgedunkelt werden (1 = wie bisher, 0 = Palette unverändert). */
-const HIMMEL_ABDUNKELUNG = 0.85;
+/**
+ * Wie stark die Himmelsfarben zur Grundfarbe hin abgedunkelt werden (1 = wie bisher, 0 = Palette unverändert).
+ * N-35: von 0,85 auf 0,72 gesenkt; die `dunkel`-Bänder der erzeugten Kulisse (Himmel, Dunst) waren so tief, dass alle Biome
+ * dieselbe schwarzgraue Fläche zeigten (Sichtprüfung 2026-11-10, Kontaktbogen).
+ */
+const HIMMEL_ABDUNKELUNG = 0.72;
 
 function naechtlich(farbe, tiefe) {
   const hell = luma(farbe) / 255;
@@ -128,10 +132,12 @@ export function drawSky(ctx, breite, hoehe, scenery, zeit) {
     return;
   }
 
+  // Dunst im Ton des Biomhimmels (vorher für alle Biome dasselbe Blaugrün: Stilbruch zwischen den Kulissen).
+  const dunstTon = mix(himmelStufe(stufen[stufen.length - 1], 1), [60, 88, 92], 0.35).join(',');
   const dunst = ctx.createLinearGradient(0, hoehe * 0.22, 0, hoehe * 0.62);
-  dunst.addColorStop(0, 'rgba(60, 88, 92, 0)');
-  dunst.addColorStop(0.7, 'rgba(60, 88, 92, 0.1)');
-  dunst.addColorStop(1, 'rgba(60, 88, 92, 0)');
+  dunst.addColorStop(0, `rgba(${dunstTon}, 0)`);
+  dunst.addColorStop(0.7, `rgba(${dunstTon}, 0.12)`);
+  dunst.addColorStop(1, `rgba(${dunstTon}, 0)`);
   ctx.fillStyle = dunst;
   ctx.fillRect(0, hoehe * 0.22, breite, hoehe * 0.4);
 
@@ -233,6 +239,19 @@ function leuchte(ctx, x, y, r, rgbText, alpha) {
   ctx.restore();
 }
 
+/** Helle Tönung aus dem Biomhimmel für Nebel und Lichtsäulen (je Kulisse einmal gerechnet). */
+const NEBEL_TON_CACHE = new WeakMap();
+function nebelTon(scenery) {
+  let t = NEBEL_TON_CACHE.get(scenery);
+  if (!t) {
+    const stufen = scenery.sky?.colors ?? [];
+    const basis = stufen.length ? himmelStufe(stufen[stufen.length - 1], 1) : [120, 140, 150];
+    t = mix(basis, [235, 240, 245], 0.45).join(',');
+    NEBEL_TON_CACHE.set(scenery, t);
+  }
+  return t;
+}
+
 /** Einzelne Ambientesorte zeichnen. */
 function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrund) {
   const x = element.x * breite;
@@ -320,6 +339,37 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       ctx.beginPath();
       ctx.ellipse(drift, y, rw, rh, 0, 0, Math.PI * 2);
       ctx.fill();
+      break;
+    }
+
+    case 'fog_sheets': {
+      // Nebelbank: großer weicher Streifen, zieht langsam; Ton aus dem Himmel des Bioms.
+      const rw = breite * 0.22 * skala;
+      const rh = hoehe * 0.05 * skala;
+      const drift = ((zeit * 0.0003 + element.phase) % 1.4 - 0.2) * breite;
+      const ry = y + bewegung * hoehe * 0.008;
+      const ton = nebelTon(scenery);
+      const verlauf = ctx.createRadialGradient(drift, ry, 0, drift, ry, rw);
+      verlauf.addColorStop(0, `rgba(${ton},0.22)`);
+      verlauf.addColorStop(1, `rgba(${ton},0)`);
+      ctx.fillStyle = verlauf;
+      ctx.beginPath();
+      ctx.ellipse(drift, ry, rw, rh, 0, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+
+    case 'light_pillars': {
+      // Lichtsäule: schmaler Streifen mit Verlauf nach oben und unten, leichtes Flackern.
+      const flackern = 0.7 + 0.3 * Math.sin(zeit * 0.01 + element.phase * 6.28);
+      const bs = breite * (0.012 + 0.012 * skala);
+      const ton = nebelTon(scenery);
+      const verlauf = ctx.createLinearGradient(0, 0, 0, hoehe * 0.62);
+      verlauf.addColorStop(0, `rgba(${ton},0)`);
+      verlauf.addColorStop(0.35, `rgba(${ton},${(0.1 * flackern).toFixed(3)})`);
+      verlauf.addColorStop(1, `rgba(${ton},0)`);
+      ctx.fillStyle = verlauf;
+      ctx.fillRect(x - bs / 2, 0, bs, hoehe * 0.62);
       break;
     }
 
@@ -469,14 +519,55 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
 }
 
 /**
+ * N-35 (Entwurf `background_elements_design.md`): zwei weitere Begleitelemente, nur Client-Optik.
+ *
+ * Sie stehen NICHT in `config/scenery.js`: Die Ziehung der Kulisse (`pickScenery`) hängt an einer festen Folge von Zufallszahlen,
+ * und jede neue Art in den Listen verschöbe sie (Boden, Himmelskörper). Stattdessen leitet der Client die Elemente
+ * aus Seed und Biom mit `hash2` ab (reine Funktion, nie die Wanduhr) und hängt sie an die Liste an.
+ *  - `fog_sheets`   weiche, langsam ziehende Nebelbänke dicht über dem Gelände (feuchte, dunkle Biome),
+ *  - `light_pillars` schmale Lichtsäulen von oben (Kosmos, Kristall, Fantasy, Tempel).
+ */
+const NEBEL_BIOME = new Set(['warren', 'caverns', 'deluge', 'vulkan', 'schlackeschmiede', 'pilzwald', 'dschungel', 'tiefsee', 'forest', 'kristallhoehle']);
+const SAEULEN_BIOME = new Set(['cosmos', 'kosmos', 'abstract', 'surreal', 'fantasy', 'kristallhoehle', 'kristallwald', 'kristallarchipel', 'tempelstadt', 'dimensionsriss', 'burg']);
+const ZUSATZ_CACHE = new WeakMap();
+export function zusatzElemente(scenery) {
+  const seed = (scenery.seed ?? 0) | 0;
+  const biom = scenery.biomeId;
+  const aus = [];
+  const art = (kind, n, salz, band, skala) => {
+    for (let i = 0; i < n; i += 1) {
+      aus.push({
+        kind,
+        x: hash2(seed, i, salz),
+        y: band[0] + hash2(seed, i, salz + 1) * (band[1] - band[0]),
+        scale: skala[0] + hash2(seed, i, salz + 2) * (skala[1] - skala[0]),
+        phase: hash2(seed, i, salz + 3),
+        seed: Math.floor(hash2(seed, i, salz + 4) * 999),
+      });
+    }
+  };
+  if (NEBEL_BIOME.has(biom)) art('fog_sheets', 2 + Math.floor(hash2(seed, 91, 7) * 3), 9100, [0.5, 0.78], [1.8, 3]);
+  if (SAEULEN_BIOME.has(biom)) art('light_pillars', 3 + Math.floor(hash2(seed, 92, 7) * 4), 9200, [0.25, 0.7], [0.4, 0.9]);
+  return aus;
+}
+function mitZusatzElementen(scenery) {
+  let liste = ZUSATZ_CACHE.get(scenery);
+  if (!liste) {
+    liste = scenery.ambient.elemente.concat(zusatzElemente(scenery));
+    ZUSATZ_CACHE.set(scenery, liste);
+  }
+  return liste;
+}
+
+/**
  * Zeichnet die Begleitelemente.
  * @param {boolean} imVordergrund - Regen, Schnee und Funken liegen VOR dem Spielfeld
  */
 export function drawAmbient(ctx, breite, hoehe, scenery, zeit, imVordergrund, dichte = 1) {
   const hinten = new Set(['stars', 'nebula_glow', 'aurora_bands', 'clouds_few', 'clouds_heavy',
-    'clouds_storm', 'haze', 'fog_banks', 'birds', 'lightning', 'glimmer']);
+    'clouds_storm', 'haze', 'fog_banks', 'birds', 'lightning', 'glimmer', 'fog_sheets', 'light_pillars']);
   ctx.save();
-  const elemente = scenery.ambient.elemente;
+  const elemente = mitZusatzElementen(scenery);
   for (let i = 0; i < elemente.length; i += 1) {
     const element = elemente[i];
     const gehoertNachHinten = hinten.has(element.kind);
@@ -863,13 +954,22 @@ function zeichneFelswand(ctx, x, y, b, h, zufall, farbe, kante) {
  * dunkler. Alles statisch — gezeichnet wird einmal in die gecachte Kulissenebene.
  */
 /** Kammbewuchs der fernen Hügel je Biom: Bäume gibt es nicht überall (Abnahme 2026-10-20: Palmen im Asteroidenfeld). */
-const KAMM_ZACKEN = new Set(['kosmos', 'cosmos', 'surreal', 'abstract', 'caverns']);
-const KAMM_MASTEN = new Set(['fabrik', 'urban', 'noir', 'hyperreal']);
-const KAMM_TANNEN = new Set(['alpine', 'burg', 'fantasy']);
+const KAMM_ZACKEN = new Set([
+  'kosmos', 'cosmos', 'surreal', 'abstract', 'caverns',
+  // N-35: Eis, Kristall und Vulkan haben keine Bäume (vorher Palmen und Tannen auf dem Kamm der Eiswüste).
+  'eiswueste', 'planet_eis', 'spires', 'schwebinseln', 'vulkan', 'schlackeschmiede', 'planet_lava', 'planet_stein',
+  'kristallhoehle', 'kristallwald', 'kristallarchipel', 'dimensionsriss', 'tiefsee', 'tempelstadt',
+]);
+const KAMM_MASTEN = new Set(['fabrik', 'urban', 'noir', 'hyperreal', 'schrott', 'planet_rost']);
+const KAMM_TANNEN = new Set(['alpine', 'burg', 'fantasy', 'forest', 'open', 'warren', 'pilzwald']);
+const KAMM_KAKTEEN = new Set(['duenen', 'western', 'planet_sand']);
+const KAMM_PALMEN = new Set(['maritime', 'island', 'riff', 'dschungel', 'deluge', 'planet_dschungel']);
 export function kammArt(biomeId) {
   if (KAMM_ZACKEN.has(biomeId)) return 'zacken';
   if (KAMM_MASTEN.has(biomeId)) return 'masten';
   if (KAMM_TANNEN.has(biomeId)) return 'tannen';
+  if (KAMM_KAKTEEN.has(biomeId)) return 'kakteen';
+  if (KAMM_PALMEN.has(biomeId)) return 'palmen';
   return 'baeume';
 }
 
@@ -895,6 +995,21 @@ function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
   ];
   ctx.save();
   ctx.lineJoin = 'round';
+  // N-35 `distant_range`: eine zusätzliche, sehr ferne Gebirgskette hinter allen Ebenen (hell, durchscheinend, im Dunst).
+  // Gebacken wie die Kulisse selbst; die Verschiebung nach `zeit` aus dem Entwurf entfällt (die Ebene liegt in der Standbild-Schicht).
+  if (kamm !== 'palmen') {
+    const fern = grundlinie - hoehe * 0.11;
+    ctx.beginPath();
+    ctx.moveTo(0, hoehe);
+    for (let x = 0; x <= breite; x += 12) {
+      const gipfel = rauschen1(x / (breite * 0.09), seed + 57);
+      ctx.lineTo(x, fern - hoehe * 0.16 * Math.pow(gipfel, 1.6) - hoehe * 0.02);
+    }
+    ctx.lineTo(breite, hoehe);
+    ctx.closePath();
+    ctx.fillStyle = rgb(mix(f_1, dunst, 0.45), 0.45);
+    ctx.fill();
+  }
   ebenen.forEach((ebene, e) => {
     const basis = grundlinie + ebene.versatz;
     const profil = x => basis - hoehe * ebene.amp * (0.25 + 0.75 * rauschen1(x / (breite * (0.13 - e * 0.012)), ebene.rausch));
@@ -955,6 +1070,28 @@ function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
         // Fabrik, Stadt: Schornsteine und Masten.
         const b = 3 + art * 4;
         ctx.fillRect(x - b / 2, profil(x) - h * (0.7 + art * 0.6), b, h * (0.7 + art * 0.6) + 4);
+      } else if (kamm === 'kakteen') {
+        // Wüste: Säulenkakteen mit ein bis zwei Armen statt Tannen.
+        const b = 3 + art * 3;
+        const hoch = h * (0.7 + art * 0.5);
+        const fuss = profil(x) + 3;
+        ctx.fillRect(x - b / 2, fuss - hoch, b, hoch);
+        const arm = hoch * 0.35;
+        ctx.fillRect(x - b * 2.2, fuss - hoch * 0.55, b * 2.2, b * 0.8);
+        ctx.fillRect(x - b * 2.2, fuss - hoch * 0.55 - arm, b * 0.8, arm);
+        if (art > 0.5) {
+          ctx.fillRect(x + b / 2, fuss - hoch * 0.4, b * 2, b * 0.8);
+          ctx.fillRect(x + b * 1.7, fuss - hoch * 0.4 - arm, b * 0.8, arm);
+        }
+      } else if (kamm === 'palmen') {
+        // Küste, Insel, Dschungel: Palmen und Büsche, keine Tannen.
+        if (art < 0.65) {
+          zeichnePflanze(ctx, { art: 'palme', x, y: profil(x) + 3, h, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 999) },
+            { blatt: farbe, dunkel: farbe, hell: farbe, stamm: farbe, kontur: null });
+        } else {
+          zeichnePflanze(ctx, { art: 'busch', x, y: profil(x) + 4, h: h * 0.4, spiegel: false, seed: Math.floor(zufall() * 999) },
+            { blatt: farbe, dunkel: farbe, hell: farbe, stamm: farbe, kontur: null });
+        }
       } else if (art < 0.5 || kamm === 'tannen') zeichneTanne(ctx, x, profil(x) + 3, h * 1.25, h * 0.55);
       else if (art < 0.8) {
         zeichnePflanze(ctx, { art: 'palme', x, y: profil(x) + 3, h, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 999) },

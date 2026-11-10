@@ -134,6 +134,22 @@ export function saettigungsFaktorAusMessung(s, deckel) {
   return grenze / messwert;
 }
 
+/** Unter dieser mittleren Leuchtdichte (0…1) wird eine Kulisse aufgehellt (N-35: die Sternennacht- und Höhlenbilder lagen bei 0,13 bis 0,25). */
+export const AUFHELL_GRENZE = 0.26;
+/** Größte Aufhellung (Faktor für `brightness()`), erreicht bei völlig schwarzem Bild. */
+export const AUFHELL_MAX = 1.45;
+
+/**
+ * Helligkeitsfaktor aus der mittleren Leuchtdichte `l` (0…1) einer Kulisse: 1 ab `AUFHELL_GRENZE`, darunter linear bis
+ * `AUFHELL_MAX`. Nur für sehr dunkle Bilder; hellere bleiben unverändert (Lesbarkeit der Figuren wird dort über die
+ * Abdunkelung nach unten gesichert).
+ */
+export function aufhellFaktorAusMessung(l) {
+  const wert = Number.isFinite(l) ? Math.min(1, Math.max(0, l)) : 1;
+  if (wert >= AUFHELL_GRENZE) return 1;
+  return 1 + ((AUFHELL_GRENZE - wert) / AUFHELL_GRENZE) * (AUFHELL_MAX - 1);
+}
+
 /**
  * Kontrastverhältnis zweier relativer Leuchtdichten (WCAG-Formel).
  * Dient der Abnahme „Spielfläche vor hellem/dunklem Hintergrund“.

@@ -237,3 +237,47 @@ test('Kleine und große Flächen werden ohne Absturz gezeichnet', () => {
     );
   }
 });
+
+// ------------------------------------------------------------------ N-35: Kamm, Nebelbänke, Lichtsäulen
+
+test('N-35: kammArt folgt dem Biom (keine Bäume in Eis, Kristall und Vulkan; Kakteen in der Wüste; Palmen an der Küste)', async () => {
+  const { kammArt } = await import('../src/client/sceneryPainter.js');
+  for (const b of ['eiswueste', 'planet_eis', 'vulkan', 'kristallhoehle', 'kristallwald', 'spires', 'kosmos']) assert.equal(kammArt(b), 'zacken', b);
+  for (const b of ['duenen', 'western']) assert.equal(kammArt(b), 'kakteen', b);
+  for (const b of ['riff', 'island', 'maritime', 'dschungel']) assert.equal(kammArt(b), 'palmen', b);
+  for (const b of ['schrott', 'fabrik', 'urban']) assert.equal(kammArt(b), 'masten', b);
+  assert.equal(kammArt('forest'), 'tannen');
+  // Jedes Biom bekommt eine bekannte Art; Palmen kommen nur in den Küstenbiomen vor.
+  for (const b of BIOME) assert.ok(['zacken', 'masten', 'tannen', 'kakteen', 'palmen', 'baeume'].includes(kammArt(b)), b);
+});
+
+test('N-35: Nebelbänke und Lichtsäulen sind aus Seed und Biom abgeleitet, deterministisch und ohne Eingriff in die Kulisse', async () => {
+  const { zusatzElemente } = await import('../src/client/sceneryPainter.js');
+  const kulisse = pickScenery(4242, 'hills', 'vulkan');
+  const vorher = JSON.stringify(kulisse);
+  const a = zusatzElemente(kulisse);
+  const b = zusatzElemente(pickScenery(4242, 'hills', 'vulkan'));
+  assert.deepEqual(a, b, 'gleicher Seed, gleiche Elemente');
+  assert.equal(JSON.stringify(kulisse), vorher, 'die Kulisse aus pickScenery bleibt unverändert (Zufallsfolge der Engine unberührt)');
+  assert.ok(a.length >= 2 && a.every(e => e.kind === 'fog_sheets'), 'Vulkan: Nebelbänke');
+  const kristall = zusatzElemente(pickScenery(7, 'hills', 'kristallwald'));
+  assert.ok(kristall.some(e => e.kind === 'light_pillars'), 'Kristallwald: Lichtsäulen');
+  assert.deepEqual(zusatzElemente(pickScenery(7, 'hills', 'eiswueste')), [], 'Eiswüste: keine Zusatzelemente');
+  for (const e of [...a, ...kristall]) {
+    assert.ok(e.x >= 0 && e.x <= 1 && e.y >= 0 && e.y <= 1 && e.scale > 0, JSON.stringify(e));
+  }
+});
+
+test('N-35: drawAmbient zeichnet die Zusatzelemente (Nebelbank, Lichtsäule) ohne Absturz', () => {
+  for (const [biom, kind] of [['vulkan', 'fog_sheets'], ['kristallwald', 'light_pillars']]) {
+    const kulisse = pickScenery(11, 'hills', biom);
+    const ctx = fakeCtx();
+    drawAmbient(ctx, 1280, 720, kulisse, 100, false);
+    assert.ok(ctx.hatGezeichnet(), `${biom} zeichnet`);
+    assert.ok(ctx.zaehle(kind === 'fog_sheets' ? 'ellipse' : 'fillRect') > 0, `${biom}: ${kind}`);
+    // Beide gehören nach hinten: im Vordergrundlauf kommen sie nicht vor.
+    const vorn = fakeCtx();
+    drawAmbient(vorn, 1280, 720, { ...kulisse, ambient: { ...kulisse.ambient, elemente: [] } }, 100, true);
+    assert.equal(vorn.zaehle('ellipse'), 0);
+  }
+});
