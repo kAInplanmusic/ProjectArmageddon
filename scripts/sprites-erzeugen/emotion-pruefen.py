@@ -89,10 +89,10 @@ SICHTPRUEFUNG = {
     'shinobi/22_vixen-kitsune': {'frei': [0, 3, 4, 6, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'undead/02_grim-reaper-silas': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 ganzes Blatt neu (N-01)
     'undead/10_archer-mortis': {'frei': [1, 2, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
-    'undead/12_vessel-plague-skull': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'undead/20_lich-king-alistair': {'frei': [1, 2, 3, 4, 5], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'undead/21_scribe-necro-silas': {'frei': [1, 2, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
-    'undead/22_banshee-beatrice': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
+    'undead/12_vessel-plague-skull': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 B3: Blatt neu aus der neuen Seitenansicht (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'undead/20_lich-king-alistair': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 B3: Blatt neu aus der neuen Seitenansicht (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'undead/21_scribe-necro-silas': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 B3: Blatt neu aus der neuen Seitenansicht (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'undead/22_banshee-beatrice': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 B3: Blatt neu aus der neuen Seitenansicht (Runware gpt-image-2), alle acht Zellen sichtgeprueft
     'xeno/01_stalker-predax': {'frei': [0, 4, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; 2026-11-03 Restposen per FLUX
     'xeno/02_vortex-grabber': {'frei': [0, 1, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'xeno/10_drone-theta': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Nachauftrag: ganzes Blatt im 3-D-Verfahren (TRELLIS, yaw 35, Neigung 5), schwebende Drohne
