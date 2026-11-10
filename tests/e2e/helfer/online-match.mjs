@@ -146,6 +146,7 @@ export async function schneideServernachrichtenMit(page) {
  */
 export async function starteOnlineMatch(page, {
   serverUrl, port, seed, name = 'Tester', preset = 'hills', teams = 2, playersPerTeam = 1,
+  backdropKey = undefined,
 } = {}) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
@@ -153,7 +154,7 @@ export async function starteOnlineMatch(page, {
 
   await page.evaluate(
     optionen => window.__PA__.startOnline(optionen),
-    { serverUrl, teams, playersPerTeam, preset, seed, name },
+    { serverUrl, teams, playersPerTeam, preset, seed, name, ...(backdropKey === undefined ? {} : { backdropKey }) },
   );
 
   await page.waitForFunction(

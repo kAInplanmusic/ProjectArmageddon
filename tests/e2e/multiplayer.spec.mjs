@@ -430,8 +430,9 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
         .map(el => Number((el.getAttribute('aria-label') ?? '').split('.')[0])),
     }));
 
-    // Start-Kit (Fassung 3): Reserve + zwei Common-Waffen + eine knappe Flächenwaffe = 4 Zeilen.
-    expect(liste.zeilen).toBe(4);
+    // Start-Kit + Klassenwaffe (Klassenfassung 3, 19c1902, 2026-11-05): Reserve + zwei Common-Waffen
+    // + eine knappe Flächenwaffe + die Kür der Klasse = 5 Zeilen. Vorher 4 (Test war seitdem veraltet).
+    expect(liste.zeilen).toBe(5);
     // Genau eine Waffe ist als aktiv markiert.
     expect(liste.aktiv).toBe(1);
     /*
@@ -473,7 +474,8 @@ test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) =>
       lobbyId: await page.evaluate(() => window.__PA__.game.lobbyId),
     });
     // Start-Kit (Fassung 3): zwei Common-Waffen, eine Flächenwaffe plus Reserve.
-    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(4, { timeout: 20_000 });
+    // 5 Zeilen: Start-Kit + Klassenwaffe (Klassenfassung 3), siehe den Test oben.
+    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(5, { timeout: 20_000 });
 
     // Bei fremdem Zug darf kein Wechsel gesendet werden, und die Meldung muss
     // im Protokoll erscheinen statt stillschweigend zu scheitern.
