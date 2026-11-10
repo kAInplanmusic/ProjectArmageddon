@@ -46,6 +46,8 @@ FIGUREN = [
     ("undead", "12_vessel-plague-skull"),
 ]
 BLAETTER = [("walk", prompts.WALK), ("aktion", prompts.AKTION), ("zustand", prompts.ZUSTAND)]
+# Nur auf Wunsch (--blaetter emotion): ein Emotionsblatt in einem Zug (B1, 2026-11-10).
+ZUSATZ_BLAETTER = [("emotion", prompts.EMOTION)]
 
 
 def seitenbild(fraktion, figur):
@@ -81,6 +83,7 @@ def main():
     p.add_argument("--blaetter", default="", help="Komma-Liste walk,aktion,zustand (leer = alle)")
     p.add_argument("--pilot", action="store_true", help="nur eine Figur, ein Blatt, alle Anbieter")
     p.add_argument("--trocken", action="store_true", help="nur den Plan ausgeben")
+    p.add_argument("--stil-zusatz", default="", help="wird an jeden Prompt angehängt (B1: '8bit' für echte Pixelkunst)")
     args = p.parse_args()
 
     figuren = FIGUREN
@@ -92,7 +95,7 @@ def main():
             [f for f in FIGUREN if f[1] in gewaehlt]
     if args.blaetter:
         gewaehlt = {t.strip() for t in args.blaetter.split(",") if t.strip()}
-        blaetter = [b for b in BLAETTER if b[0] in gewaehlt]
+        blaetter = [b for b in BLAETTER + ZUSATZ_BLAETTER if b[0] in gewaehlt]
     if args.pilot:
         figuren = figuren[:1]
         blaetter = blaetter[:1]
@@ -110,6 +113,12 @@ def main():
             continue
         for blatt, prompt in blaetter:
             for a in anbieter:
+                if args.stil_zusatz == "8bit":
+                    prompt = prompt + (" STYLE: authentic 8-bit NES-era pixel art exactly like the reference: very coarse "
+                                       "pixels (figure about 48 pixels tall), flat colors, at most 16 colors, hard black "
+                                       "outline, no gradients, no anti-aliasing.")
+                elif args.stil_zusatz:
+                    prompt = prompt + " " + args.stil_zusatz
                 auftraege.append((fraktion, figur, blatt, prompt, quelle, a))
 
     print(f"Auftraege: {len(auftraege)} (Figuren {len(figuren)}, Blaetter {len(blaetter)}, "

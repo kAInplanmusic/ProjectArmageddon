@@ -47,7 +47,7 @@ def ansichten(figur):
 
 
 ANSICHTEN = ansichten(FIGUR)
-RASTER_HOEHE = 48      # logische Pixel der Figurhöhe (Pilot: 32 war gröber als das Modellraster, Figur zerfiel)
+RASTER_HOEHE = 44      # logische Pixel der Figurhöhe höchstens (x FAKTOR = 220 px); Pilot: 32 war zu grob
 FARBEN = 16            # höchstens je Figur (Abnahme B1)
 ZIEL_GROESSE = 256     # wie die alten Bilder
 GRUEN = (0, 255, 0)
@@ -112,29 +112,44 @@ def freistellen(bild, toleranz=70):
     return rgba
 
 
-def raster(roh, ansicht):
-    """Schritt 2: freistellen, zuschneiden, aufs 32-px-Raster, ≤16 Farben, ohne Glättung auf 256 px."""
+GRUNDLINIE = 240      # Fußlinie aller Figurenbilder (scripts/seitenansichten/freistellen.py)
+MAX_H, MAX_B = 224, 236
+FAKTOR = 5            # logisches Pixel -> 5x5 Bildpixel (wie die Animationsblätter, b1-blaetter.py)
+
+
+def raster_klein(roh):
+    """Logisches 8-Bit-Raster der Figur: freigestellt, höchstens 16 Farben, Größe so, dass x FAKTOR in
+    MAX_H x MAX_B passt (Prüfung 2026-11-10: die erste Fassung stand auf y = 251 und war 192 px hoch,
+    die alten Bilder stehen auf 240 und sind bis 224 px hoch)."""
     figur = freistellen(roh)
     kasten = figur.getbbox()
     if not kasten:
         raise SystemExit("Keine Figur im Bild (alles Grün oder leer)")
     figur = figur.crop(kasten)
-    hoehe = RASTER_HOEHE
-    breite = max(1, round(figur.width * hoehe / figur.height))
+    hoehe = min(MAX_H // FAKTOR, int((MAX_B // FAKTOR) * figur.height / figur.width))
+    breite = max(1, min(MAX_B // FAKTOR, round(figur.width * hoehe / figur.height)))
     klein = figur.resize((breite, hoehe), Image.BOX)
     alpha = klein.getchannel("A").point(lambda a: 255 if a >= 128 else 0)
     # Palette nur aus Figurpixeln bilden (transparente Fläche würde sonst eine Farbe belegen).
     figurpixel = [p[:3] for p in klein.convert("RGBA").getdata() if p[3] >= 128] or [(0, 0, 0)]
     palette_bild = Image.new("RGB", (len(figurpixel), 1)); palette_bild.putdata(figurpixel)
     palette = palette_bild.quantize(colors=FARBEN, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
-    farbe = klein.convert("RGB").quantize(palette=palette, dither=Image.Dither.NONE)
-    klein = farbe.convert("RGBA")
+    klein = klein.convert("RGB").quantize(palette=palette, dither=Image.Dither.NONE).convert("RGBA")
     klein.putalpha(alpha)
-    faktor = max(1, (ZIEL_GROESSE * 7 // 8) // hoehe)  # Figur füllt wie bisher rund 7/8 der Höhe
-    gross = klein.resize((klein.width * faktor, klein.height * faktor), Image.NEAREST)
-    leinwand = Image.new("RGBA", (ZIEL_GROESSE, ZIEL_GROESSE), (0, 0, 0, 0))
-    leinwand.paste(gross, ((ZIEL_GROESSE - gross.width) // 2, ZIEL_GROESSE - gross.height - 4), gross)
-    return leinwand, klein
+    return klein
+
+
+def auf_leinwand(klein, groesse=ZIEL_GROESSE, grundlinie=GRUNDLINIE):
+    gross = klein.resize((klein.width * FAKTOR, klein.height * FAKTOR), Image.NEAREST)
+    leinwand = Image.new("RGBA", (groesse, groesse), (0, 0, 0, 0))
+    leinwand.paste(gross, ((groesse - gross.width) // 2, grundlinie - gross.height), gross)
+    return leinwand
+
+
+def raster(roh, ansicht):
+    """Schritt 2: logisches Raster (raster_klein), dann ohne Glättung auf 256 px, Fuß auf y = 240."""
+    klein = raster_klein(roh)
+    return auf_leinwand(klein), klein
 
 
 def farbzahl(bild):

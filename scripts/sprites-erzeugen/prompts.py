@@ -12,3 +12,15 @@ ZUSTAND=BASE+("This is a STATES sheet, 8 different poses in reading order: "
   "1 crouching low with knees deeply bent and arms forward (ready to jump), 2 falling through the air with arms flailing upward and legs spread, "
   "3 swimming stroke A (head above water, one arm reaching forward, body horizontal), 4 swimming stroke B (other arm reaching forward, body horizontal), "
   "(no water, no ripples, no ground shadows) 5 drowning and sinking with arm stretched up and a panicked face, 6 victory cheer with both arms raised high and mouth open, 7 victory wave with one hand waving and a smile, 8 taunting pose with hands on hips and chest out.")
+
+# B1 (2026-11-10): Emotionen als EIN 4x2-Blatt (Reihenfolge wie EMOTIONEN in figurSheets.js / POSEN in emotion-neu.py).
+EMOTION=BASE+("This is an EMOTIONS sheet, 8 different poses in reading order: "
+  "1 frightened: cowering low, leaning back, arms or front paws raised defensively, wide fearful eyes; "
+  "2 standing relaxed in the neutral stance of the reference, eyes closed in a blink; "
+  "3 shrugging: shoulders pulled up, empty palms up, head tilted, puzzled; "
+  "4 cheering: arms or forelegs raised high, mouth open, happy; "
+  "5 trembling and exhausted: hunched forward, knees bent, sweat drops; "
+  "6 same stance as the reference, only the head tilted up, looking upward; "
+  "7 same stance as the reference, only the head tilted down, looking downward; "
+  "8 switching gear: looking back over the shoulder, one empty hand reaching back. "
+  "A four-legged animal stays on all fours in every cell and keeps its species.")
