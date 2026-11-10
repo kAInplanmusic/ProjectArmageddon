@@ -85,6 +85,7 @@ PA_SERVER_PID="${PA_SERVER_PID:-}"
 PA_INTERVAL_SECONDS="${PA_INTERVAL_SECONDS:-30}"
 PA_DRY_RUN="${PA_DRY_RUN:-0}"
 PA_SNAPSHOT_SKRIPT="${PA_SNAPSHOT_SKRIPT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/snapshot.sh}"
+PA_ABBILD_LOESCHEN_SKRIPT="${PA_ABBILD_LOESCHEN_SKRIPT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/selbst-abbild-loeschen.sh}"
 
 # Ergebnis des Durchlaufs (überlebt als globale Größe, damit die Funktionen
 # unter `set -e` nicht als „Fehler" hochblubbern).
@@ -219,6 +220,16 @@ bremse() { # $1 Grund, $2 Beleg
     protokoll "  → Cloud-Abbild vor dem Abschalten ($PA_SNAPSHOT_SKRIPT --nur-cloud)"
     "$PA_SNAPSHOT_SKRIPT" --nur-cloud --grund "Idle-Bremse: $grund" \
       || protokoll "  ! Cloud-Abbild fehlgeschlagen — Abschalten läuft trotzdem weiter"
+  fi
+
+  # Auf-Abruf-Betrieb (Freigabe 2026-11-10): Abbild des eigenen Servers, prüfen, Server löschen.
+  # Ist das Abbild nicht geprüft, löscht das Skript NICHT (Fail-safe: poweroff + lautes Protokoll).
+  if [ "$PA_ACTION" = "abbild-loeschen" ]; then
+    protokoll "  → Abbild erstellen, prüfen, Server selbst löschen ($PA_ABBILD_LOESCHEN_SKRIPT)"
+    "$PA_ABBILD_LOESCHEN_SKRIPT" \
+      || protokoll "  ! selbst-abbild-loeschen.sh endete mit Fehler (Server wurde NICHT gelöscht; Wiederholung beim nächsten Timerlauf oder Fail-safe)"
+    ERGEBNIS_CODE=10
+    return 0
   fi
 
   if [ "$PA_ACTION" = "poweroff" ]; then
@@ -382,11 +393,11 @@ $PROGRAMM — Abschaltparameter (Trockenlauf: es wird NICHTS gestartet und NICHT
     Takt                       : ${PA_INTERVAL_SECONDS} s (--once: genau ein Durchlauf für den systemd-Timer)
 
   Abschaltung
-    PA_ACTION                  : ${PA_ACTION}   (stop | poweroff)
+    PA_ACTION                  : ${PA_ACTION}   (stop | poweroff | abbild-loeschen)
     systemd-Einheit            : ${PA_SYSTEMD_UNIT}
     Signaldatei (ohne systemd) : ${PA_BREMSE_DATEI:-keine}
     Server-PID (ohne systemd)  : ${PA_SERVER_PID:-keine}
-    Knoten-Stromaus            : $([ "$PA_ACTION" = "poweroff" ] && echo "ja, nach ${PA_POWEROFF_DELAY_SECONDS}s Bestätigung=${PA_POWEROFF_CONFIRM}" || echo "nein (PA_ACTION=stop)")
+    Knoten-Stromaus            : $([ "$PA_ACTION" = "poweroff" ] && echo "ja, nach ${PA_POWEROFF_DELAY_SECONDS}s Bestätigung=${PA_POWEROFF_CONFIRM}" || { [ "$PA_ACTION" = "abbild-loeschen" ] && echo "nein — Abbild, Prüfung, dann Server LÖSCHEN ($PA_ABBILD_LOESCHEN_SKRIPT)" || echo "nein (PA_ACTION=stop)"; })
     Trockenlauf                : ${PA_DRY_RUN}
 
   Scharfschaltung

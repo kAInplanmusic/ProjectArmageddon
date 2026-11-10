@@ -1,0 +1,59 @@
+# Spielserver auf Abruf (Hetzner) — Ein-Klick-Weg ohne Befehle.
+# Freigabe des Auftraggebers 2026-11-10, siehe docs/betrieb-INSTANZ.md Abschnitt 10.
+#
+# Starten: GitHub (App oder Browser) -> Actions -> „server-hochfahren“ -> Run workflow ->
+#          aktion wählen -> Run. Die Spiel-URL steht danach in der Zusammenfassung des Laufs.
+#   hochfahren  erzeugt den Server aus dem neuesten Abbild (sonst frisch), wartet auf https
+#   status      zeigt Server, Abbilder, Primary IP (nur lesen)
+#   not-aus     jeden Server: herunterfahren, Abbild prüfen, erst dann löschen
+#
+# Zeitplan = ZWEITE, UNABHÄNGIGE FRIST AUSSERHALB DES SERVERS (AGENTS.md §7, PFLICHT-13):
+# alle 3 Stunden werden Server, die ausgeschaltet oder älter als 12 Stunden sind, nach
+# geprüftem Abbild gelöscht. Ohne gesetztes Secret tut der Zeitplan nichts (und bleibt grün).
+#
+# Das Secret HCLOUD_TOKEN (Hetzner-Projekt-API-Token, Lesen+Schreiben) setzt der Auftraggeber
+# selbst unter Settings -> Secrets and variables -> Actions. Es steht nie im Repo.
+# Optional die Variable PA_DOMAIN (Reiter „Variables“), z. B. spiel.projectarmageddon.de.
+name: server-hochfahren
+
+on:
+  workflow_dispatch:
+    inputs:
+      aktion:
+        description: 'Was soll passieren?'
+        type: choice
+        options: [hochfahren, status, not-aus]
+        default: status
+  schedule:
+    - cron: '23 */3 * * *'
+
+concurrency:
+  group: server-hochfahren
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Aktion ausführen
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          PA_DOMAIN: ${{ vars.PA_DOMAIN }}
+          EREIGNIS: ${{ github.event_name }}
+          AKTION: ${{ inputs.aktion }}
+        run: |
+          if [ -z "$HCLOUD_TOKEN" ]; then
+            if [ "$EREIGNIS" = "schedule" ]; then echo "::notice::Secret HCLOUD_TOKEN ist nicht gesetzt - Zeitplan tut nichts."; exit 0; fi
+            echo "::error::Das Secret HCLOUD_TOKEN fehlt. Settings -> Secrets and variables -> Actions -> New repository secret (Name HCLOUD_TOKEN)."
+            exit 1
+          fi
+          if [ "$EREIGNIS" = "schedule" ]; then
+            scripts/betrieb/server-hochfahren.sh not-aus --aelter-als-stunden 12 --ausgeschaltete
+          else
+            scripts/betrieb/server-hochfahren.sh "$AKTION"
+          fi

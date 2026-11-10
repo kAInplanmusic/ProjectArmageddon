@@ -36,9 +36,16 @@ Type=oneshot
 EnvironmentFile=-/etc/projectarmageddon/betrieb.env
 ExecStart=/opt/projectarmageddon/current/scripts/betrieb/idle-watch.sh --once
 
-# Der Zustand (letzte Aktivität, letzte Bremse) liegt in /var/lib/projectarmageddon.
-StateDirectory=projectarmageddon
+# Der Zustand (letzte Aktivität, letzte Bremse) liegt in /var/lib/projectarmageddon. KEIN
+# StateDirectory= hier: Diese Einheit läuft als root, systemd würde das Verzeichnis bei jedem
+# Minutenlauf auf root umschreiben und dem Spielserver (User pa) wegnehmen. Es gehört der
+# Spielserver-Einheit; die Bremse (root) darf dort ohnehin schreiben.
+# RuntimeDirectory + Preserve: /run/projectarmageddon/hcloud-token (tmpfs) darf nicht verschwinden,
+# wenn dieser Oneshot endet (ohne Preserve räumt systemd das Verzeichnis jede Minute ab).
 RuntimeDirectory=projectarmageddon
+RuntimeDirectoryPreserve=yes
+# Bei PA_ACTION=abbild-loeschen wartet der Durchlauf auf das Abbild (bis PA_ABBILD_WARTE_SEKUNDEN x Versuche).
+TimeoutStartSec=7200
 
 # Der Durchlauf wird gemessen, nicht geraten: Diese Zeile macht "Bremse hat
 # ausgelöst" (10) zu einem ERFOLGREICHEN Lauf, damit der Auslöser den Timer
