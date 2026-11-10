@@ -49,7 +49,7 @@
  */
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE, WAFFEN_NACHSCHUB } from '../shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STREU } from '../shared/config/waffen-fassung.js';
 import { WIND_JE_ZUG, WIND_FAKTOR_MAX } from '../shared/config/wind.js';
 import { combatProfile, klassenKennung } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
@@ -269,6 +269,39 @@ function feuere(quelle, playerId, angle, power, weaponId) {
   // Geschwindigkeit übersetzt — der Zielpunkt bleibt der der normalen Zielung.
   const strike = resolveStrike(quelle, weapon, x, y, angle, power);
 
+  const streuung = quelle.waffenFassung >= WAFFEN_STREU ? weapon.streuung : null;
+  if (!streuung) {
+    const projectileId = erzeugeGeschoss(quelle, { playerId, weapon, profile, strike, x, y, vx, vy, angle, power, anteil: 1 });
+    quelle.applyCooldown(playerId, weapon);
+    return { ok: true, projectileId, hit: null };
+  }
+  /*
+   * Fassung 19 (BAL-16): Ein Streuschuss sind `streuung.anzahl` Geschosse in einem festen Fächer
+   * um den Zielwinkel — ohne Zufall, damit Zielhilfe, KI und Replay denselben Fächer sehen. Jedes
+   * trägt den gleichen Anteil; aus der Nähe treffen alle (zusammen der volle Schaden), auf Distanz
+   * nur die mittleren.
+   */
+  const anteil = 1 / streuung.anzahl;
+  const projectileIds = streuWinkel(streuung).map((versatz) => {
+    const winkel = angle + versatz;
+    const v = quelle.launchVector(playerId, winkel, power, weapon);
+    return erzeugeGeschoss(quelle, {
+      playerId, weapon, profile, strike, x: v.x, y: v.y, vx: v.vx, vy: v.vy, angle: winkel, power, anteil,
+    });
+  });
+  quelle.applyCooldown(playerId, weapon);
+  return { ok: true, projectileId: projectileIds[Math.floor(projectileIds.length / 2)], projectileIds, hit: null };
+}
+
+/**
+ * Legt EIN Geschoss an (Komponenten, Flugregister, Ereignis) und gibt seine Kennung zurück.
+ *
+ * Bis Waffenfassung 18 stand dieser Block direkt in `feuere`. Seit Fassung 19 (BAL-16, Streuung
+ * der Schrotflinte) entstehen aus einem Schuss mehrere Geschosse; jedes trägt den `anteil`
+ * (1 / Anzahl) an Schaden, Rückstoß und Geländeschaden. Mit `anteil === 1` bleibt jeder Wert
+ * unverändert (`anteilVon`), alte Fassungen laufen bitgleich.
+ */
+function erzeugeGeschoss(quelle, { playerId, weapon, profile, strike, x, y, vx, vy, angle, power, anteil }) {
   const projectileId = quelle.world.createEntity();
 
   // Abschusspunkt aus dem Körper des Schützen herausschieben.
@@ -299,7 +332,7 @@ function feuere(quelle, playerId, angle, power, weaponId) {
      */
     damageType: damageTypeId(weapon.damageType),
     // Der Schadensbonus aus Buffs wirkt auf den tatsaechlichen Schaden.
-    damage: weapon.damage * profile.damageMultiplier * quelle.statuses.damageMultiplier(playerId),
+    damage: anteilVon(weapon.damage * profile.damageMultiplier * quelle.statuses.damageMultiplier(playerId), anteil),
     /*
      * Trefferfenster und Schadensradius sind ZWEI Dinge (Waffenfassung 16, W01).
      *
@@ -332,14 +365,14 @@ function feuere(quelle, playerId, angle, power, weaponId) {
       && weapon.category !== 'melee'
       && !(weapon.blastRadius > 0)) ? 24 : 0,
     // Waffenfassung 11: Waffen mit Richtung (`stossRichtung`) stoßen den Direkttreffer gerichtet (`engine/stoss.js`), nicht radial.
-    knockback: weapon.stossRichtung === undefined ? weapon.knockback : 0,
-    stossKraft: weapon.stossRichtung === undefined ? 0 : weapon.knockback,
+    knockback: weapon.stossRichtung === undefined ? anteilVon(weapon.knockback, anteil) : 0,
+    stossKraft: weapon.stossRichtung === undefined ? 0 : anteilVon(weapon.knockback, anteil),
     stossGrad: weapon.stossRichtung ?? 0,
     drag: 0.995,
     gravityScale: weapon.gravityScale || 1,
     // AERO: Windfaktor der Waffe — erst ab Windfassung 2 (alte Replays: 1, Bit für Bit).
     windFactor: windFaktorFuerWaffe(weapon, quelle.windFassung),
-    terrainDamage: weapon.terrainDamage,
+    terrainDamage: anteilVon(weapon.terrainDamage, anteil),
     bounces: weapon.bounces,
     /*
      * Durchschlag und Zielsuche kommen aus der Waffe in das GESCHOSS.
@@ -382,8 +415,25 @@ function feuere(quelle, playerId, angle, power, weaponId) {
   quelle.shotsInFlight.set(projectileId, weapon.id);
 
   quelle.events.emit('projectile_spawn', { playerId, projectileId, weaponId: weapon.id, x, y, vx, vy });
-  quelle.applyCooldown(playerId, weapon);
-  return { ok: true, projectileId, hit: null };
+  return projectileId;
+}
+
+/** `wert × anteil`, aber bei `anteil === 1` exakt `wert` (bitgleiche alte Fassungen). */
+function anteilVon(wert, anteil) {
+  return anteil === 1 ? wert : wert * anteil;
+}
+
+/**
+ * Winkelversätze (Bogenmaß) eines Streufächers: `anzahl` Werte, gleichmäßig von
+ * −faecherGrad/2 bis +faecherGrad/2; bei ungerader Anzahl liegt einer genau auf dem Zielwinkel.
+ *
+ * @param {{anzahl: number, faecherGrad: number}} streuung
+ * @returns {number[]}
+ */
+export function streuWinkel({ anzahl, faecherGrad }) {
+  if (anzahl <= 1) return [0];
+  const halb = (faecherGrad * Math.PI) / 360;
+  return Array.from({ length: anzahl }, (_, i) => -halb + (2 * halb * i) / (anzahl - 1));
 }
 
 /**

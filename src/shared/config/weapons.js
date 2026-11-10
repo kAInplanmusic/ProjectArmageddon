@@ -1706,7 +1706,7 @@ export const WEAPONS = Object.freeze(
       "id": "pa_036",
       "index": 36,
       "displayName": "Raketenhandschuh",
-      "description": "Handschuh mit Raketenantrieb für einen wuchtigen Treffer mit Sprengkraft.",
+      "description": "Handschuh mit Raketenantrieb für einen wuchtigen Einzeltreffer mit starkem Rückstoß.",
       "internalName": "raketenhandschuh",
       "category": "ranged",
       "subcategory": "guns",
@@ -1942,8 +1942,8 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_041",
       "index": 41,
-      "displayName": "Salvengeber",
-      "description": "Kleine Raketen in schneller Folge mit kleinem Explosionsradius.",
+      "displayName": "Minirakete",
+      "description": "Kleine Rakete mit kleinem Explosionsradius; viel Munition für viele Züge.",
       "internalName": "raketenwerfer_mk_ii",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -1990,8 +1990,8 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_042",
       "index": 42,
-      "displayName": "Feuerwerkssalve",
-      "description": "Feuerwerksraketen mit hohem Schaden, wenig Munition und langer Nachladezeit.",
+      "displayName": "Feuerwerksrakete",
+      "description": "Schwere Feuerwerksrakete mit hohem Schaden, wenig Munition und langer Nachladezeit.",
       "internalName": "feuerwerks_salve",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -2131,8 +2131,8 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_045",
       "index": 45,
-      "displayName": "Raketensalve",
-      "description": "Rakete mit hohem Schaden, aber wenig Munition und langer Nachladezeit.",
+      "displayName": "Schwere Rakete",
+      "description": "Schwere Rakete mit hohem Schaden, aber wenig Munition und langer Nachladezeit.",
       "internalName": "raketen_salve",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -2838,7 +2838,7 @@ export const WEAPONS = Object.freeze(
       "id": "pa_060",
       "index": 60,
       "displayName": "Gatlingkanone",
-      "description": "Drehlaufgeschütz mit großer Reichweite.",
+      "description": "Drehlaufgeschütz mit großer Reichweite; ein schwerer Schuss je Zug.",
       "internalName": "minigun",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -7151,7 +7151,7 @@ export const WEAPON_IDENTITIES = Object.freeze(
       }
     },
     "pa_041": {
-      "displayName": "Salvengeber",
+      "displayName": "Minirakete",
       "concept": "Schnelles kleines Kaliber, viele Schüsse",
       "overrides": {
         "damage": 22,

@@ -57,7 +57,7 @@ test('Waffe und Schadensart passen zusammen (Stichproben aus allen Gruppen)', ()
     Feuerfaust: 'fire', Eispickel: 'ice', Fackel: 'fire', Flammenwerfer: 'fire', Molotowcocktail: 'fire',
     Eisschlag: 'ice', Eisschild: 'ice', Wasserwerfer: 'water', Giftwolke: 'poison', Säurekanone: 'acid',
     Tesla: 'electric', Impulsbombe: 'electric', Magnetkanone: 'magnetic', Plasmawerfer: 'energy',
-    Energiefaust: 'energy', Raketenwerfer: 'explosive', Salvengeber: 'explosive', Handgranate: 'explosive',
+    Energiefaust: 'energy', Raketenwerfer: 'explosive', Minirakete: 'explosive', 'Schwere Rakete': 'explosive', Handgranate: 'explosive',
     Haubitze: 'explosive', Luftangriff: 'explosive', Meteorregen: 'impact', Erdspalter: 'impact',
     Runenschwert: 'arcane', Zauberbolzen: 'arcane', Astralkugel: 'astral', Glutelixier: 'astral',
     Astralkrieger: 'astral', Frostsanduhr: 'time', Endlosschleife: 'time', Portalring: 'spatial',

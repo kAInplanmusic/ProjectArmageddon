@@ -1,9 +1,9 @@
 {
   "ticket": "BAL-12",
   "titel": "Reale Treffer- und Kollisionsmatrix",
-  "sourceCommit": "cce5e4b661add97f99e186cef5552219ce1e11d0",
+  "sourceCommit": "cf86bc44a6a2eea0e75b10936784e86b9ba76fc7",
   "versions": {
-    "waffen": 18,
+    "waffen": 19,
     "klassen": 3,
     "schaden": 2,
     "wind": 2,
@@ -2144,7 +2144,7 @@
     },
     {
       "id": "pa_041",
-      "name": "Salvengeber",
+      "name": "Minirakete",
       "art": "angriff",
       "category": "heavy_ranged",
       "delivery": "projectile",
@@ -2197,7 +2197,7 @@
     },
     {
       "id": "pa_042",
-      "name": "Feuerwerkssalve",
+      "name": "Feuerwerksrakete",
       "art": "angriff",
       "category": "heavy_ranged",
       "delivery": "projectile",
@@ -2356,7 +2356,7 @@
     },
     {
       "id": "pa_045",
-      "name": "Raketensalve",
+      "name": "Schwere Rakete",
       "art": "angriff",
       "category": "heavy_ranged",
       "delivery": "projectile",
@@ -2864,20 +2864,20 @@
           "homing": 0,
           "fuseTicks": 0
         },
-        "ticks": 37,
+        "ticks": 79,
         "kollision": {
           "art": "projectile_impact",
-          "x": 979.536,
-          "y": 88.44,
+          "x": 982.782,
+          "y": 116.676,
           "target": 2
         },
         "schaden": {
-          "ereignisse": 57,
-          "zielVerlust": 57,
+          "ereignisse": 22.8,
+          "zielVerlust": 22.8,
           "selbstVerlust": 0,
           "zielLP": {
             "vorher": 1000,
-            "nachher": 943
+            "nachher": 977.2
           }
         },
         "ereignisArten": [

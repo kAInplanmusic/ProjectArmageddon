@@ -3384,7 +3384,7 @@
   },
   "pa_041": {
    "id": "pa_041",
-   "name": "Salvengeber",
+   "name": "Minirakete",
    "category": "heavy_ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -3466,7 +3466,7 @@
   },
   "pa_042": {
    "id": "pa_042",
-   "name": "Feuerwerkssalve",
+   "name": "Feuerwerksrakete",
    "category": "heavy_ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -3712,7 +3712,7 @@
   },
   "pa_045": {
    "id": "pa_045",
-   "name": "Raketensalve",
+   "name": "Schwere Rakete",
    "category": "heavy_ranged",
    "subcategory": "guns",
    "rarity": "common",

@@ -1,7 +1,7 @@
 # BAL-16 · Name und Bildversprechen gegen Mechanik (Stand 2026-11-10)
 
-Status: **Teil 1 erledigt, Teil 2 wartet auf Entscheidungen.** Nichts an Werten oder Regeln
-geändert.
+Status: **erledigt 2026-11-10.** Entscheidung des Auftraggebers: Texte anpassen, nur die
+Schrotflinte bekommt eine echte Streuung (Waffenfassung 19). Umsetzung siehe Teil 3.
 
 ## Teil 1 — die drei genannten Fälle
 
@@ -43,3 +43,40 @@ darf in Texten und Prüfungen nicht als solcher gelten.
 „Text an Mechanik anpassen" ist billig und ändert keine Replays. „Mechanik an Text anpassen"
 (Mehrfachschuss, Streuung, Fläche) ist eine Regeländerung: neue Waffenfassung, Balance-Messung.
 Empfehlung: Texte anpassen, außer bei pa_054 Schrotflinte (Streuung ist das Wesen der Waffe).
+
+## Teil 3 — Umsetzung (2026-11-10)
+
+**Texte** (Quelle `project_armageddon_weapons_v1.json`, Katalog neu erzeugt; außer Name und
+Beschreibung kein Feld verändert, Feld für Feld gegen den alten Katalog verglichen):
+
+| Waffe | vorher | nachher |
+|---|---|---|
+| pa_036 | „… wuchtigen Treffer mit Sprengkraft." | „… wuchtigen Einzeltreffer mit starkem Rückstoß." |
+| pa_041 | Salvengeber · „Kleine Raketen in schneller Folge …" | **Minirakete** (erst „Kleinraketenwerfer", zu lang für die Menükachel: höchstens 17 Zeichen je Wort) · „Kleine Rakete mit kleinem Explosionsradius; viel Munition für viele Züge." |
+| pa_042 | Feuerwerkssalve · „Feuerwerksraketen …" | **Feuerwerksrakete** · „Schwere Feuerwerksrakete …" |
+| pa_045 | Raketensalve | **Schwere Rakete** · „Schwere Rakete mit hohem Schaden …" |
+| pa_060 | „Drehlaufgeschütz mit großer Reichweite." | „… ; ein schwerer Schuss je Zug." |
+
+Fallstrick: Der Generator leitet bei 26 Waffen ohne Quellangabe die **Schadensart aus dem Namen**
+ab. „Schwere Rakete" traf keinen Hinweis mehr und wäre von `explosive` auf `physical` gekippt —
+eine Regeländerung durch eine Umbenennung. Der Hinweis `rakete` ist ergänzt; danach ist der
+Katalog außer den Texten feldgleich.
+
+**Schrotflinte** (Waffenfassung 19, `config/waffen-f19.js`, `engine/shooting.js`): fünf Kugeln in
+einem festen Fächer von 12 Grad, je ein Fünftel von Schaden, Rückstoß und Geländeschaden, kein
+Zufall. Gemessen (gleicher Prüfstand wie die Kollisionsmatrix, bester Winkel nach Zielvorschau):
+
+| Abstand | Fassung 18 | Fassung 19 |
+|---:|---|---|
+| 80–200 px | 1 Treffer, 57 | 5/5, 57 |
+| 300 px | 1 Treffer, 57 | 4/5, 45,6 |
+| 400–500 px | 1 Treffer, 57 | 3/5, 34,2 |
+| 600 px | 1 Treffer, 57 | 2/5, 22,8 |
+
+**Folge für die Balance (offen, Auftraggeber spielt selbst durch):** Die Kollisionsmatrix prüft
+schwere Fernwaffen auf 600 px; dort bringt die Schrotflinte jetzt 40 % ihres bisherigen Schadens.
+Das ist die gewollte Wirkung der Streuung, macht sie aber auf großen Karten deutlich schwächer.
+Stellschrauben: Fächerbreite (`faecherGrad`) oder Grundschaden in `waffen-f19.js`.
+
+Tests: `tests/streuung-fassung19.test.js` (Fächer, Anteile, nah gegen weit, Hashgleichheit ohne
+Schrotflinte, Fassung 18 als Gegenprobe), `tests/waffen-schadensarten.test.js` (neue Namen).

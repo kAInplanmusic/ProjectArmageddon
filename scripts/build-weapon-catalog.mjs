@@ -178,7 +178,7 @@ export const WEAPON_IDENTITIES = Object.freeze({
     overrides: { damage: 62, blastRadius: 46, projectileSpeed: 62, maxAmmo: 3, knockback: 30, terrainDamage: 55 },
   },
   pa_041: {
-    displayName: 'Salvengeber',
+    displayName: 'Minirakete', // bis 2026-11-10 „Salvengeber": versprach eine Salve, feuert eine Rakete (BAL-16)
     concept: 'Schnelles kleines Kaliber, viele Schüsse',
     overrides: { damage: 22, blastRadius: 16, projectileSpeed: 92, maxAmmo: 6, knockback: 8, terrainDamage: 18 },
   },
@@ -319,9 +319,9 @@ export const FLUGPROFILE_4 = Object.freeze({
   pa_033: { projectileSpeed: 66, gravityScale: 1.05, knockback: 40 }, // Zauberstab
   pa_034: { projectileSpeed: 80, gravityScale: 0.9, knockback: 8 }, // Zauberbolzen
   pa_036: { projectileSpeed: 62, gravityScale: 0.9, knockback: 45 }, // Raketenhandschuh
-  pa_042: { projectileSpeed: 52, gravityScale: 0.9, knockback: 12 }, // Feuerwerkssalve
+  pa_042: { projectileSpeed: 52, gravityScale: 0.9, knockback: 12 }, // Feuerwerksrakete (bis 2026-11-10 „Feuerwerkssalve", BAL-16)
   pa_043: { projectileSpeed: 84, gravityScale: 0.95, knockback: 36 }, // Kampfgeschütz
-  pa_045: { projectileSpeed: 74, gravityScale: 0.9, knockback: 24 }, // Raketensalve
+  pa_045: { projectileSpeed: 74, gravityScale: 0.9, knockback: 24 }, // Schwere Rakete (bis 2026-11-10 „Raketensalve", BAL-16)
   pa_047: { projectileSpeed: 56, gravityScale: 1.2, bounces: 2, knockback: 28 }, // Handgranate
   pa_050: { projectileSpeed: 54, gravityScale: 1.25, bounces: 1, knockback: 40 }, // Doppelkopfaxt
   pa_051: { projectileSpeed: 90, gravityScale: 0.95, knockback: 6 }, // Wurfklingen
@@ -541,7 +541,8 @@ export function resolveDamage(stats) {
  * passende Hinweis gewinnt.
  */
 const DAMAGE_TYPE_BY_NAME_HINT = Object.freeze([
-  ['explosive', ['raketen', 'granate', 'feuerwerk', 'geschütz', 'spreng', 'bombe', 'mine', 'salve']],
+  // 'rakete' seit 2026-11-10: pa_045 heißt „Schwere Rakete" statt „Raketensalve" und bleibt explosiv (BAL-16).
+  ['explosive', ['raketen', 'rakete', 'granate', 'feuerwerk', 'geschütz', 'spreng', 'bombe', 'mine', 'salve']],
   ['fire', ['fackel', 'feuer', 'flamme', 'brand', 'lava', 'glut']],
   ['electric', ['blitz', 'strom', 'elektro', 'tesla', 'plasma']],
   ['arcane', ['magisch', 'zauber', 'rune', 'arkana']],
@@ -1383,7 +1384,7 @@ const weapons = raw.weapons.map(entry => {
    *
    * FUND (belegt, 2026-09-20): `aoe` wurde dort gesetzt, wo das Literal gebaut
    * wird — VOR den Identitäts-Overrides. Die Overrides heben bei zwei Waffen
-   * (pa_037 Raketenwerfer, pa_041 Salvengeber) den Radius von 0 auf 46 bzw. 16;
+   * (pa_037 Raketenwerfer, pa_041 Minirakete) den Radius von 0 auf 46 bzw. 16;
    * `aoe` blieb dabei auf `false` stehen und widersprach dem eigenen Radius. Eine
    * zweite Quelle für dieselbe Aussage läuft immer auseinander — deshalb gibt es
    * sie nicht mehr. `npm run check:effects` hält die Gleichheit fest.
