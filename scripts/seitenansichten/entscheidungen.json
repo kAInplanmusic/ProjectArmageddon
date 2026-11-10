@@ -154,5 +154,11 @@
   "key_alle": true,
   "freistellen_alt": [
     "beasts/21_cosmic-meditate.png"
-  ]
+  ],
+  "b3_portraet_gilt": {
+    "undead/12_vessel-plague-skull.png": "2026-11-10 B3: Seitenansicht wich vom Porträt ab; Auftraggeber: „Porträt gilt“. Neu aus dem HD-Porträt (Runware openai:gpt-image@2, Magenta-Key), Animationsblätter folgen.",
+    "undead/20_lich-king-alistair.png": "2026-11-10 B3: Seitenansicht wich vom Porträt ab; Auftraggeber: „Porträt gilt“. Neu aus dem HD-Porträt (Runware openai:gpt-image@2, Magenta-Key), Animationsblätter folgen.",
+    "undead/21_scribe-necro-silas.png": "2026-11-10 B3: Seitenansicht wich vom Porträt ab; Auftraggeber: „Porträt gilt“. Neu aus dem HD-Porträt (Runware openai:gpt-image@2, Magenta-Key), Animationsblätter folgen.",
+    "undead/22_banshee-beatrice.png": "2026-11-10 B3: Seitenansicht wich vom Porträt ab; Auftraggeber: „Porträt gilt“. Neu aus dem HD-Porträt (Runware openai:gpt-image@2, Magenta-Key), Animationsblätter folgen."
+  }
 }

@@ -758,45 +758,45 @@
       "file": "undead/12_vessel-plague-skull.png",
       "hasSide": true,
       "anchor": {
-        "x": 102,
+        "x": 126,
         "y": 240
       },
       "facing": "right",
-      "source": "together",
-      "model": "black-forest-labs/FLUX.1.1-pro"
+      "source": "runware-gpt-image-2",
+      "model": "openai:gpt-image@2"
     },
     "undead/20_lich-king-alistair.png": {
       "file": "undead/20_lich-king-alistair.png",
       "hasSide": true,
       "anchor": {
-        "x": 136,
+        "x": 121,
         "y": 240
       },
       "facing": "right",
-      "source": "together",
-      "model": "black-forest-labs/FLUX.1.1-pro"
+      "source": "runware-gpt-image-2",
+      "model": "openai:gpt-image@2"
     },
     "undead/21_scribe-necro-silas.png": {
       "file": "undead/21_scribe-necro-silas.png",
       "hasSide": true,
       "anchor": {
-        "x": 119,
+        "x": 120,
         "y": 240
       },
       "facing": "right",
-      "source": "together",
-      "model": "black-forest-labs/FLUX.1.1-pro"
+      "source": "runware-gpt-image-2",
+      "model": "openai:gpt-image@2"
     },
     "undead/22_banshee-beatrice.png": {
       "file": "undead/22_banshee-beatrice.png",
       "hasSide": true,
       "anchor": {
-        "x": 132,
+        "x": 130,
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "runware-gpt-image-2",
+      "model": "openai:gpt-image@2"
     },
     "xeno/00_sgt-acid-xeno.png": {
       "file": "xeno/00_sgt-acid-xeno.png",

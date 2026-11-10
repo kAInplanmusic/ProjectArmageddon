@@ -79,8 +79,8 @@ test('Manifest nennt jede der 81 Figuren genau einmal mit gültigen Feldern', ()
   for (const [k, e] of Object.entries(manifest.figures)) {
     assert.equal(e.file, k);
     assert.equal(e.facing, 'right');
-    assert.ok(['together', 'together-kontext', 'porträt', 'together-8bit-b1'].includes(e.source), `${k}: Quelle ${e.source}`);
-    const modell = { together: TEXT_MODELL, 'together-kontext': KONTEXT_MODELL, 'porträt': null, 'together-8bit-b1': 'openai/gpt-image-2' }[e.source];
+    assert.ok(['together', 'together-kontext', 'porträt', 'together-8bit-b1', 'runware-gpt-image-2'].includes(e.source), `${k}: Quelle ${e.source}`);
+    const modell = { together: TEXT_MODELL, 'together-kontext': KONTEXT_MODELL, 'porträt': null, 'together-8bit-b1': 'openai/gpt-image-2', 'runware-gpt-image-2': 'openai:gpt-image@2' }[e.source];
     assert.equal(e.model, modell, `${k}: Modell passt nicht zur Quelle`);
     assert.equal(typeof e.hasSide, 'boolean');
     if (e.hasSide) {
@@ -158,8 +158,16 @@ test('Charactersheets: Front und Seite nebeneinander, Zellen laut Manifest', () 
 test('Stufe 1 und 2 (Bild-zu-Bild mit Porträt als Referenz): Entscheidungen und Manifest stimmen überein', () => {
   assert.equal(entscheidungen.modell_kontext, KONTEXT_MODELL);
   const ersetzt = Object.keys(entscheidungen.kontext).sort();
-  // SPR-4: die neun pixel-Figuren wurden danach als echtes 8-Bit neu erzeugt (Quelle together-8bit-b1).
-  const imManifest = Object.entries(manifest.figures).filter(([, e]) => e.source === 'together-kontext' || e.source === 'together-8bit-b1').map(([k]) => k).sort();
+  // SPR-4: die neun pixel-Figuren wurden danach als echtes 8-Bit neu erzeugt (Quelle together-8bit-b1);
+  // B3 (2026-11-10): vier Untote aus dem Porträt neu (Quelle runware-gpt-image-2, „Porträt gilt“).
+  const b3 = Object.keys(entscheidungen.b3_portraet_gilt ?? {});
+  for (const k of b3) {
+    assert.equal(manifest.figures[k].source, 'runware-gpt-image-2', `${k}: B3 neu, Quelle passt nicht`);
+    assert.ok(entscheidungen.b3_portraet_gilt[k].length > 20, `${k}: B3-Begründung fehlt`);
+  }
+  const imManifest = Object.entries(manifest.figures)
+    .filter(([k, e]) => e.source === 'together-kontext' || e.source === 'together-8bit-b1' || (e.source === 'runware-gpt-image-2' && entscheidungen.kontext[k] !== undefined))
+    .map(([k]) => k).sort();
   assert.deepEqual(imManifest, ersetzt, 'Manifest und entscheidungen.json nennen nicht dieselben Figuren');
   assert.equal(ersetzt.length, 72, '20 Stufe-1-Figuren bleiben, 52 kamen in Stufe 2 dazu oder wurden neu erzeugt');
   for (const k of ersetzt) {
