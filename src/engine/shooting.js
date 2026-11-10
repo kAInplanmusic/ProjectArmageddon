@@ -49,7 +49,7 @@
  */
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STREU } from '../shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STREU, WAFFEN_FEUERWESEN } from '../shared/config/waffen-fassung.js';
 import { WIND_JE_ZUG, WIND_FAKTOR_MAX } from '../shared/config/wind.js';
 import { combatProfile, klassenKennung } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
@@ -248,6 +248,16 @@ function feuere(quelle, playerId, angle, power, weaponId) {
     return { ok: true, projectileId: null, hit: null, special: { kind: special.kind, ...outcome } };
   }
 
+  /*
+   * Fassung 20 (Feuerwesen, `pa_118`): Der Schuss setzt einen Läufer ab (`engine/feuerwesen.js`). Er zählt als
+   * „unterwegs", der Zug endet erst, wenn er und seine Feuerkugeln aufgelöst sind. Bis Fassung 19 war es ein Strahl.
+   */
+  if (quelle.waffenFassung >= WAFFEN_FEUERWESEN && weapon.laeufer && quelle.feuerwesen) {
+    const gnom = quelle.feuerwesen.setze(playerId, angle, weapon.laeufer, weapon);
+    quelle.applyCooldown(playerId, weapon);
+    return { ok: true, projectileId: null, feuerwesenId: gnom.id, hit: null };
+  }
+
   if (weapon.delivery === 'hitscan') {
     const hit = quelle.resolveHitscan(x, y, angle, power, weapon, playerId);
     quelle.events.emit('hitscan', { playerId, weaponId: weapon.id, ...hit });
@@ -301,7 +311,7 @@ function feuere(quelle, playerId, angle, power, weaponId) {
  * (1 / Anzahl) an Schaden, Rückstoß und Geländeschaden. Mit `anteil === 1` bleibt jeder Wert
  * unverändert (`anteilVon`), alte Fassungen laufen bitgleich.
  */
-function erzeugeGeschoss(quelle, { playerId, weapon, profile, strike, x, y, vx, vy, angle, power, anteil }) {
+function erzeugeGeschoss(quelle, { playerId, weapon, profile, strike, x, y, vx, vy, angle, power, anteil, lebensdauer = null }) {
   const projectileId = quelle.world.createEntity();
 
   // Abschusspunkt aus dem Körper des Schützen herausschieben.
@@ -390,7 +400,7 @@ function erzeugeGeschoss(quelle, { playerId, weapon, profile, strike, x, y, vx, 
      * liest sie von dort und plant deshalb keine Schüsse mehr, deren Geschoss
      * mitten im Flug verfällt.
      */
-    lifetime: projectileLifetime(quelle, playerId, angle, power, weapon),
+    lifetime: lebensdauer ?? projectileLifetime(quelle, playerId, angle, power, weapon),
     /**
      * Zünder in Ticks (0 = Aufprallwaffe). Eine Granate explodiert nicht beim
      * Aufprall, sondern nach Ablauf — sie bleibt liegen und zündet.
@@ -416,6 +426,45 @@ function erzeugeGeschoss(quelle, { playerId, weapon, profile, strike, x, y, vx, 
 
   quelle.events.emit('projectile_spawn', { playerId, projectileId, weaponId: weapon.id, x, y, vx, vy });
   return projectileId;
+}
+
+/**
+ * Fassung 20: Ein Feuerwesen zerbirst in genau `kugeln.anzahl` Feuerkugeln — gewöhnliche Geschosse der Waffe `pa_118`
+ * (Einschlag, Fläche, Brand über `elemental.fire` wie jedes Geschoss), in festem Fächer symmetrisch um die Senkrechte,
+ * ohne Zufall (`streuWinkel`). Schaden je Kugel `kugeln.schaden` × Klassenfaktor × Bonus des Werfers.
+ *
+ * @param {object} quelle - die Schießquelle
+ * @param {{ownerId:number, waffe:object, werte:object}} gnom
+ * @param {number} x
+ * @param {number} y
+ * @returns {number[]} die Geschosskennungen
+ */
+export function feuerkugeln(quelle, gnom, x, y) {
+  const k = gnom.werte.kugeln;
+  const kugel = {
+    ...gnom.waffe, damage: k.schaden, blastRadius: k.radius, knockback: k.rueckstoss, terrainDamage: k.gelaende,
+    bounces: 0, piercing: 0, homing: 0, fuseTime: 0,
+  };
+  const profile = profilVon(quelle, gnom.ownerId);
+  return streuWinkel({ anzahl: k.anzahl, faecherGrad: k.faecherGrad }).map((versatz) => {
+    const winkel = Math.PI / 2 + versatz;
+    const vx = Math.cos(winkel) * k.tempo;
+    const vy = -Math.sin(winkel) * k.tempo;
+    return erzeugeGeschoss(quelle, {
+      playerId: gnom.ownerId, weapon: kugel, profile, strike: { spawn: { x, y }, vx, vy },
+      x, y, vx, vy, angle: winkel, power: 0, anteil: 1, lebensdauer: k.lebensdauerTakte,
+    });
+  });
+}
+
+/** Kampfprofil (Klassenfaktor) einer Figur — dieselbe Rechnung wie beim Schuss. */
+function profilVon(quelle, playerId) {
+  const player = quelle.players.find(entry => entry.entityId === playerId);
+  return combatProfile(
+    klassenKennung(player?.classId ?? 0, quelle.klassen),
+    player?.archetypeId ?? 0,
+    player?.sidegradeId ?? null, quelle.klassen,
+  );
 }
 
 /** `wert × anteil`, aber bei `anteil === 1` exakt `wert` (bitgleiche alte Fassungen). */

@@ -38,7 +38,7 @@ import path from 'node:path';
 import { MatchController } from '../src/engine/match.js';
 import { wendeExplosionAn } from '../src/engine/explosion.js';
 import {
-  getWaffe, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STREU, WAFFEN_STANDARD, WAFFEN_TREFFER, WAFFEN_TEMPO, WAFFEN_WIND, WAFFEN_ALT,
+  getWaffe, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STREU, WAFFEN_FEUERWESEN, WAFFEN_STANDARD, WAFFEN_TREFFER, WAFFEN_TEMPO, WAFFEN_WIND, WAFFEN_ALT,
 } from '../src/shared/config/waffen-fassung.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
 import { waehleRolle, MODUS } from '../src/client/figurSheets.js';
@@ -142,10 +142,12 @@ test('W18 Radius: 0 trifft nur das Ziel, ein echter Radius trifft das zweite Zie
 // --------------------------------------------------------- Waffenversion
 
 test('W18 Waffenversion: Standard ist die aktuelle Fassung, Altfassungen sehen spätere Schichten nicht', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_STREU,
+  assert.equal(WAFFEN_STANDARD, WAFFEN_FEUERWESEN,
     'WAFFEN_STANDARD muss die jüngste Fassung sein — sonst zeigt das Spiel alte Werte');
+  assert.equal(WAFFEN_FEUERWESEN, WAFFEN_STREU + 1,
+    'die neue Fassung ist genau eine Stufe nach der Streuung (20 nach 19, Feuerwesen)');
   assert.equal(WAFFEN_STREU, WAFFEN_NACHSCHUB + 1,
-    'die neue Fassung ist genau eine Stufe nach dem Nachschub (19 nach 18, BAL-16 Streuung)');
+    'Fassung 19 folgt auf den Nachschub (19 nach 18, BAL-16 Streuung)');
   assert.equal(WAFFEN_NACHSCHUB, WAFFEN_KLASSE + 1,
     'Fassung 18 folgt auf den Klassenfaktor (18 nach 17, BAL-05)');
   assert.equal(WAFFEN_KLASSE, WAFFEN_TREFFER + 1,

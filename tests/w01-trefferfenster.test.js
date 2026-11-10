@@ -83,10 +83,10 @@ function schiessen(match, schuetze, weaponId, winkel = 0, kraft = 100) {
   return { schuss, ereignisse };
 }
 
-test('Waffenfassung 19 ist Standard; 18 bis 15 bleiben gültig und bitgleich', () => {
+test('Waffenfassung 20 ist Standard; 19 bis 15 bleiben gültig und bitgleich', () => {
   assert.equal(WAFFEN_TREFFER, 16);
   assert.equal(WAFFEN_KLASSE, 17);
-  assert.equal(WAFFEN_STANDARD, 19);
+  assert.equal(WAFFEN_STANDARD, 20);
   assert.equal(WAFFEN_TEMPO, 15);
 });
 

@@ -232,6 +232,8 @@ export function baueAnsichtszustand(quelle) {
     ...(quelle.bodenobjekte ? { bodenobjekte: quelle.bodenobjekte } : {}),
     // Seil (Seilfassung 2) nur, solange es hängt oder Neuwürfe laufen: sonst bleibt der Schlüsselsatz gleich.
     ...(quelle.seil ? { seil: quelle.seil } : {}),
+    // Feuerwesen (Waffenfassung 20) nur, solange eines läuft: sonst bleibt der Schlüsselsatz gleich.
+    ...(quelle.feuerwesen ? { feuerwesen: quelle.feuerwesen } : {}),
     // Die Kulisse geht als Kennung mit, nicht als volles Objekt: der Client
     // baut sie ohnehin selbst aus dem Seed. Die Kennungen dienen der Anzeige
     // und den Tests.
@@ -327,6 +329,10 @@ export function hashState(state) {
         : {}),
       ...(state.seil
         ? { seil: [state.seil.playerId, state.seil.haengt, state.seil.punkte.map(([x, y]) => [Math.round(x), Math.round(y)]), Math.round(state.seil.laenge), state.seil.neuwuerfe] }
+        : {}),
+      // Feuerwesen (Waffenfassung 20) nur, solange eines läuft: jeder ältere Hash bleibt gleich.
+      ...(state.feuerwesen
+        ? { feuerwesen: state.feuerwesen.map(g => [g.id, g.ownerId, Math.round(g.x), Math.round(g.y), g.richtung, g.luft, g.alter]) }
         : {}),
     });
 

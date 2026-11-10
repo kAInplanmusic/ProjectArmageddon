@@ -35,7 +35,7 @@ import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaRound, valhallaTickForRound, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
 import { getTurnDurationForSize } from './systems/turnSystem.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout, klassenKennung } from '../shared/config/classes.js';
-import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_KLASSE, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
+import { WAFFEN_STANDARD, WAFFEN_FEUERWESEN, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_KLASSE, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
 import { wendeStossAn } from './stoss.js';
 import { GELAENDE_STANDARD, GELAENDE_BIOME, loeseGelaende } from '../shared/config/gelaende.js';
@@ -65,6 +65,7 @@ import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
 import { ZugSystem } from './systems/zugSystem.js';
+import { FeuerwesenSystem } from './feuerwesen.js';
 import { FeuerSystem } from './systems/feuerSystem.js';
 import { damageTypeId } from './damageTypes.js';
 import { guentherWerte } from '../shared/config/guenther.js';
@@ -408,6 +409,7 @@ export class MatchController {
   #feuer = null;
   /** Minen (Bodenobjektfassung 2, `systems/bodenobjektSystem.js`); `null` ohne die Marke. */
   #bodenobjekte = null;
+  #feuerwesen = null; // Waffenfassung 20: laufende Feuerwesen (`engine/feuerwesen.js`)
   /** 1 = die Figur war im letzten Schritt in der Luft (für das Lande-Ereignis). */
   #airborne = new Map();
   #maelstrom;
@@ -610,6 +612,7 @@ export class MatchController {
       this.#kistenRng = this.#seedManager.getSubRng('KISTENWURF');
     }
     this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
+    this.#feuerwesen = this.waffen >= WAFFEN_FEUERWESEN ? new FeuerwesenSystem(this, () => this.#schussQuelle()) : null;
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
     this.schaden = normalisiereSchaden(schaden);
 
@@ -1010,6 +1013,7 @@ export class MatchController {
     this.#stepCookie();
     this.#feuer?.update();
     this.#bodenobjekte?.update();
+    this.#feuerwesen?.update(); // nach der Physik: er läuft auf dem Gelände dieses Takts
     // KEIN `drain()` hier: das würde die Warteschlange leeren und die
     // Ereignisse an die Push-Handler verteilen, bevor der Konsument sie lesen
     // kann. Der Client und der Server holen sie über `consumeEvents()`; die
@@ -1462,6 +1466,7 @@ export class MatchController {
       deployTurret: (id, effect) => this.#deployTurret(id, effect),
       // Waffenfassung 12: die Mine (`config/waffen-f12.js`); `null` ohne Bodenobjektfassung 2.
       legeMine: (id, schuss) => this.#legeMine(id, schuss),
+      feuerwesen: this.#feuerwesen, // Waffenfassung 20 (`engine/feuerwesen.js`); `null` davor
       rng: this.#rng,
       applyTargetEffect: (effect, target, attacker) => this.#applyTargetEffect(effect, target, attacker),
       applyCooldown: (id, weapon) => this.#applyCooldown(id, weapon),
@@ -2625,6 +2630,7 @@ export class MatchController {
       // Minen: nur mit Bodenobjektfassung 2 (sonst bleibt der Schlüsselsatz alter Partien gleich).
       bodenobjekte: this.#bodenobjekte ? this.#bodenobjekte.snapshot() : null,
       seil: this.seilSystem?.snapshot() ?? null, // nur solange ein Seil hängt oder eine Serie läuft
+      feuerwesen: this.#feuerwesen?.snapshot() ?? null, // nur solange ein Feuerwesen läuft (Fassung 20)
       // Kartengröße und Ausrichtung (für die Anzeige und die Umrechnung).
       terrainWidth: this.width,
       terrainHeight: this.height,
@@ -2748,7 +2754,7 @@ export class MatchController {
   get activeProjectileCount() {
     return this.#world
       .getEntitiesBySignature(COMPONENT_SIGNATURES.PROJECTILE)
-      .filter(id => this.#world.isActive(id)).length;
+      .filter(id => this.#world.isActive(id)).length + (this.#feuerwesen?.anzahl ?? 0); // laufende Feuerwesen zählen mit (Fassung 20)
   }
 }
 

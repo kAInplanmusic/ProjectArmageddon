@@ -107,9 +107,10 @@ function schuss(waffen, waffeId, abstand) {
   return { r, kugeln, treffer, schaden, spawns, hash: m.stateHash(), m };
 }
 
-test('Fassung 19 ist der Standard und folgt direkt auf Fassung 18', () => {
+test('Fassung 19 folgt direkt auf Fassung 18, und der Standard enthält sie', () => {
   assert.equal(WAFFEN_STREU, WAFFEN_NACHSCHUB + 1);
-  assert.equal(WAFFEN_STANDARD, WAFFEN_STREU);
+  // Seit Fassung 20 (Feuerwesen) ist 19 nicht mehr die jüngste; die Streuung gilt weiter.
+  assert.ok(WAFFEN_STANDARD >= WAFFEN_STREU);
   assert.equal(normalisiereWaffen(19), WAFFEN_STREU);
   assert.equal(normalisiereWaffen(18), WAFFEN_NACHSCHUB);
   assert.deepEqual(getWaffe(SCHROT, WAFFEN_STREU).streuung, { anzahl: 5, faecherGrad: 12 });
