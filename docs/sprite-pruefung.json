@@ -1,7 +1,7 @@
 {
   "werkzeug": "check-sprites",
-  "zeit": "2026-11-09T16:05:55.146Z",
-  "dauerSekunden": 19.2,
+  "zeit": "2026-11-10T11:57:32.808Z",
+  "dauerSekunden": 17.1,
   "figuren": {
     "figuren": 81,
     "fraktionen": 9,
@@ -22,7 +22,7 @@
     "deckungZuKlein": 0,
     "gepruefteBilder": 450,
     "atlanten": 9,
-    "deckungMittel": 41.49
+    "deckungMittel": 41.37
   },
   "haustiere": {
     "guenther": 14,
@@ -54,21 +54,6 @@
       "bereich": "figuren",
       "titel": "Splitter neben der Figur: datacult/20_buffer-flow-swarm__walk.webp Zelle 3",
       "detail": "17 Flächen < 24 px"
-    },
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: pixel/11_pyrowand-a__aktion.webp Zelle 1",
-      "detail": "11 Flächen < 24 px"
-    },
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: pixel/12_shieldmon__aktion.webp Zelle 3",
-      "detail": "31 Flächen < 24 px"
-    },
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: pixel/12_shieldmon__walk.webp Zelle 6",
-      "detail": "9 Flächen < 24 px"
     },
     {
       "bereich": "figuren",

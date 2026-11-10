@@ -14,12 +14,24 @@
    "zustand": "beasts/00_pikamon__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "beasts/01_shrew-quakes": {
@@ -28,12 +40,24 @@
    "zustand": "beasts/01_shrew-quakes__zustand.webp",
    "rollen": {
     "hocke": 4,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "beasts/02_storm-talon": {
@@ -42,12 +66,24 @@
    "zustand": "beasts/02_storm-talon__zustand.webp",
    "rollen": {
     "hocke": 6,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "beasts/10_flame-jaws": {
@@ -55,12 +91,24 @@
    "walk": "beasts/10_flame-jaws__walk.webp",
    "zustand": "beasts/10_flame-jaws__zustand.webp",
    "rollen": {
-    "idle": [4, 5],
+    "idle": [
+     4,
+     5
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 6
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "beasts/11_ember-tails": {
@@ -69,12 +117,24 @@
    "zustand": "beasts/11_ember-tails__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 4],
+    "idle": [
+     0,
+     4
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "beasts/12_magma-plate": {
@@ -83,12 +143,24 @@
    "zustand": "beasts/12_magma-plate__zustand.webp",
    "rollen": {
     "hocke": 4,
-    "idle": [0, 3],
+    "idle": [
+     0,
+     3
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "beasts/20_decay-spawn": {
@@ -97,12 +169,24 @@
    "zustand": "beasts/20_decay-spawn__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "beasts/21_cosmic-meditate": {
@@ -111,12 +195,24 @@
    "zustand": "beasts/21_cosmic-meditate__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "beasts/22_sonic-blossom": {
@@ -124,12 +220,24 @@
    "walk": "beasts/22_sonic-blossom__walk.webp",
    "zustand": "beasts/22_sonic-blossom__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "datacult/00_nullpointer-exception": {
@@ -138,12 +246,24 @@
    "zustand": "datacult/00_nullpointer-exception__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "datacult/01_datapath-replicant": {
@@ -152,12 +272,24 @@
    "zustand": "datacult/01_datapath-replicant__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "datacult/02_chrome-code-shifter": {
@@ -166,12 +298,24 @@
    "zustand": "datacult/02_chrome-code-shifter__zustand.webp",
    "rollen": {
     "hocke": 4,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "datacult/10_quantum-qubit-knight": {
@@ -180,12 +324,24 @@
    "zustand": "datacult/10_quantum-qubit-knight__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "datacult/11_synapse-streamer": {
@@ -194,12 +350,24 @@
    "zustand": "datacult/11_synapse-streamer__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "datacult/12_arcology-agent": {
@@ -208,12 +376,24 @@
    "zustand": "datacult/12_arcology-agent__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "datacult/20_buffer-flow-swarm": {
@@ -221,12 +401,24 @@
    "walk": "datacult/20_buffer-flow-swarm__walk.webp",
    "zustand": "datacult/20_buffer-flow-swarm__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "datacult/21_hyper-link-hound": {
@@ -235,12 +427,24 @@
    "zustand": "datacult/21_hyper-link-hound__zustand.webp",
    "rollen": {
     "hocke": 4,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "datacult/22_ethereo": {
@@ -249,12 +453,24 @@
    "zustand": "datacult/22_ethereo__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "machina/00_chassis-endo-t8": {
@@ -263,12 +479,24 @@
    "zustand": "machina/00_chassis-endo-t8__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "machina/01_slasher-cyber-jax": {
@@ -277,12 +505,24 @@
    "zustand": "machina/01_slasher-cyber-jax__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "machina/02_hydra-titan-mech": {
@@ -291,12 +531,24 @@
    "zustand": "machina/02_hydra-titan-mech__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "machina/10_recon-luchs-01": {
@@ -305,12 +557,24 @@
    "zustand": "machina/10_recon-luchs-01__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "machina/11_heavy-battery-moerser-bot": {
@@ -318,12 +582,24 @@
    "walk": "machina/11_heavy-battery-moerser-bot__walk.webp",
    "zustand": "machina/11_heavy-battery-moerser-bot__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "machina/12_ordnance-rail-viper": {
@@ -332,12 +608,24 @@
    "zustand": "machina/12_ordnance-rail-viper__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "machina/20_grid-drifter-datastream": {
@@ -345,12 +633,24 @@
    "walk": "machina/20_grid-drifter-datastream__walk.webp",
    "zustand": "machina/20_grid-drifter-datastream__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "machina/21_proxy-glitch-hack": {
@@ -359,12 +659,24 @@
    "zustand": "machina/21_proxy-glitch-hack__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "machina/22_overlord-kernel-panic": {
@@ -372,12 +684,24 @@
    "walk": "machina/22_overlord-kernel-panic__walk.webp",
    "zustand": "machina/22_overlord-kernel-panic__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pirates/00_captain-sven": {
@@ -386,12 +710,24 @@
    "zustand": "pirates/00_captain-sven__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pirates/01_swashbuckler-piet": {
@@ -400,12 +736,24 @@
    "zustand": "pirates/01_swashbuckler-piet__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pirates/02_iron-hook-harry": {
@@ -414,12 +762,24 @@
    "zustand": "pirates/02_iron-hook-harry__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pirates/10_cannoneer-klaus": {
@@ -428,12 +788,24 @@
    "zustand": "pirates/10_cannoneer-klaus__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pirates/11_sniper-marie": {
@@ -442,12 +814,24 @@
    "zustand": "pirates/11_sniper-marie__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pirates/12_bombard-billy": {
@@ -456,12 +840,24 @@
    "zustand": "pirates/12_bombard-billy__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pirates/20_voodoo-witch-morgana": {
@@ -469,12 +865,24 @@
    "walk": "pirates/20_voodoo-witch-morgana__walk.webp",
    "zustand": "pirates/20_voodoo-witch-morgana__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pirates/21_storm-schamane-hooky": {
@@ -483,12 +891,24 @@
    "zustand": "pirates/21_storm-schamane-hooky__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pirates/22_chanteyman-drake": {
@@ -497,12 +917,24 @@
    "zustand": "pirates/22_chanteyman-drake__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pixel/00_nullpointer-exception": {
@@ -510,9 +942,25 @@
    "walk": "pixel/00_nullpointer-exception__walk.webp",
    "zustand": "pixel/00_nullpointer-exception__zustand.webp",
    "rollen": {
-    "tod": 7
+    "hocke": 4,
+    "idle": [
+     0,
+     1
+    ],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pixel/01_pyrofox-a": {
@@ -520,12 +968,25 @@
    "walk": "pixel/01_pyrofox-a__walk.webp",
    "zustand": "pixel/01_pyrofox-a__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pixel/02_pyrofox-b": {
@@ -533,12 +994,24 @@
    "walk": "pixel/02_pyrofox-b__walk.webp",
    "zustand": "pixel/02_pyrofox-b__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pixel/10_arcershorn-a": {
@@ -546,13 +1019,25 @@
    "walk": "pixel/10_arcershorn-a__walk.webp",
    "zustand": "pixel/10_arcershorn-a__zustand.webp",
    "rollen": {
-    "hocke": 3,
-    "idle": [0, 1],
+    "hocke": 6,
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pixel/11_pyrowand-a": {
@@ -560,12 +1045,25 @@
    "walk": "pixel/11_pyrowand-a__walk.webp",
    "zustand": "pixel/11_pyrowand-a__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "hocke": 6,
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pixel/12_shieldmon": {
@@ -573,12 +1071,24 @@
    "walk": "pixel/12_shieldmon__walk.webp",
    "zustand": "pixel/12_shieldmon__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pixel/20_phantomal-a": {
@@ -586,12 +1096,24 @@
    "walk": "pixel/20_phantomal-a__walk.webp",
    "zustand": "pixel/20_phantomal-a__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pixel/21_arcanus-a": {
@@ -599,12 +1121,25 @@
    "walk": "pixel/21_arcanus-a__walk.webp",
    "zustand": "pixel/21_arcanus-a__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "hocke": 3,
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "pixel/22_arcanus-b": {
@@ -612,13 +1147,24 @@
    "walk": "pixel/22_arcanus-b__walk.webp",
    "zustand": "pixel/22_arcanus-b__zustand.webp",
    "rollen": {
-    "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "rodentia/00_commander-chewk": {
@@ -626,12 +1172,24 @@
    "walk": "rodentia/00_commander-chewk__walk.webp",
    "zustand": "rodentia/00_commander-chewk__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "rodentia/01_berzerker-fang": {
@@ -640,12 +1198,24 @@
    "zustand": "rodentia/01_berzerker-fang__zustand.webp",
    "rollen": {
     "hocke": 6,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "rodentia/02_vanguard-captain-rix": {
@@ -653,12 +1223,24 @@
    "walk": "rodentia/02_vanguard-captain-rix__walk.webp",
    "zustand": "rodentia/02_vanguard-captain-rix__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "rodentia/10_sharpshooter-quill": {
@@ -666,12 +1248,24 @@
    "walk": "rodentia/10_sharpshooter-quill__walk.webp",
    "zustand": "rodentia/10_sharpshooter-quill__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "rodentia/11_grenadier-skitter": {
@@ -680,12 +1274,24 @@
    "zustand": "rodentia/11_grenadier-skitter__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "rodentia/12_volley-captain-spark": {
@@ -693,12 +1299,24 @@
    "walk": "rodentia/12_volley-captain-spark__walk.webp",
    "zustand": "rodentia/12_volley-captain-spark__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "rodentia/20_alchemage-nibble": {
@@ -706,12 +1324,24 @@
    "walk": "rodentia/20_alchemage-nibble__walk.webp",
    "zustand": "rodentia/20_alchemage-nibble__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "rodentia/21_technomancer-squeak": {
@@ -720,12 +1350,24 @@
    "zustand": "rodentia/21_technomancer-squeak__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "rodentia/22_grand-conduit-vex": {
@@ -733,12 +1375,24 @@
    "walk": "rodentia/22_grand-conduit-vex__walk.webp",
    "zustand": "rodentia/22_grand-conduit-vex__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "shinobi/00_shred-katana-hanzmon": {
@@ -747,12 +1401,24 @@
    "zustand": "shinobi/00_shred-katana-hanzmon__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "shinobi/01_kunoichi-wind-flapper": {
@@ -761,12 +1427,24 @@
    "zustand": "shinobi/01_kunoichi-wind-flapper__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "shinobi/02_tetsubo-oni-brute": {
@@ -775,12 +1453,24 @@
    "zustand": "shinobi/02_tetsubo-oni-brute__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "shinobi/10_dazzler-werner": {
@@ -789,12 +1479,24 @@
    "zustand": "shinobi/10_dazzler-werner__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "shinobi/11_rauch-meister-genzi": {
@@ -802,12 +1504,24 @@
    "walk": "shinobi/11_rauch-meister-genzi__walk.webp",
    "zustand": "shinobi/11_rauch-meister-genzi__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "shinobi/12_blowpipe-koga": {
@@ -816,12 +1530,24 @@
    "zustand": "shinobi/12_blowpipe-koga__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "shinobi/20_ninjutsu-master-goemon": {
@@ -830,12 +1556,24 @@
    "zustand": "shinobi/20_ninjutsu-master-goemon__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "shinobi/21_talisman-sorcerer-jun": {
@@ -844,12 +1582,24 @@
    "zustand": "shinobi/21_talisman-sorcerer-jun__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "shinobi/22_vixen-kitsune": {
@@ -858,12 +1608,24 @@
    "zustand": "shinobi/22_vixen-kitsune__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "undead/00_bone-racker-karl": {
@@ -872,12 +1634,24 @@
    "zustand": "undead/00_bone-racker-karl__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "undead/01_grave-zombie-kauer": {
@@ -886,12 +1660,24 @@
    "zustand": "undead/01_grave-zombie-kauer__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "undead/02_grim-reaper-silas": {
@@ -900,12 +1686,24 @@
    "zustand": "undead/02_grim-reaper-silas__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "undead/10_archer-mortis": {
@@ -914,12 +1712,24 @@
    "zustand": "undead/10_archer-mortis__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "undead/11_pitcher-igor": {
@@ -927,12 +1737,24 @@
    "walk": "undead/11_pitcher-igor__walk.webp",
    "zustand": "undead/11_pitcher-igor__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "undead/12_vessel-plague-skull": {
@@ -941,12 +1763,24 @@
    "zustand": "undead/12_vessel-plague-skull__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "undead/20_lich-king-alistair": {
@@ -955,12 +1789,24 @@
    "zustand": "undead/20_lich-king-alistair__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "undead/21_scribe-necro-silas": {
@@ -969,12 +1815,24 @@
    "zustand": "undead/21_scribe-necro-silas__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "undead/22_banshee-beatrice": {
@@ -983,12 +1841,24 @@
    "zustand": "undead/22_banshee-beatrice__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "xeno/00_sgt-acid-xeno": {
@@ -997,12 +1867,24 @@
    "zustand": "xeno/00_sgt-acid-xeno__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "xeno/01_stalker-predax": {
@@ -1010,12 +1892,24 @@
    "walk": "xeno/01_stalker-predax__walk.webp",
    "zustand": "xeno/01_stalker-predax__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "xeno/02_vortex-grabber": {
@@ -1024,12 +1918,24 @@
    "zustand": "xeno/02_vortex-grabber__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 4],
+    "idle": [
+     0,
+     4
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "xeno/10_drone-theta": {
@@ -1038,12 +1944,24 @@
    "zustand": "xeno/10_drone-theta__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "xeno/11_desintegrator-kael": {
@@ -1051,12 +1969,24 @@
    "walk": "xeno/11_desintegrator-kael__walk.webp",
    "zustand": "xeno/11_desintegrator-kael__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "xeno/12_plasma-maw-zorg": {
@@ -1065,12 +1995,24 @@
    "zustand": "xeno/12_plasma-maw-zorg__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "xeno/20_harbinger-zeta": {
@@ -1078,12 +2020,24 @@
    "walk": "xeno/20_harbinger-zeta__walk.webp",
    "zustand": "xeno/20_harbinger-zeta__zustand.webp",
    "rollen": {
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "xeno/21_dark-matter-witch": {
@@ -1092,12 +2046,24 @@
    "zustand": "xeno/21_dark-matter-witch__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   },
   "xeno/22_null-entity-quark": {
@@ -1106,12 +2072,24 @@
    "zustand": "xeno/22_null-entity-quark__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [0, 1],
+    "idle": [
+     0,
+     1
+    ],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
    "gehenOk": 8
   }
  },
