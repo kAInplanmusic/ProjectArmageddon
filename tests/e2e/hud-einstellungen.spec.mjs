@@ -187,9 +187,14 @@ test('Aufgeben im Dropdown fragt nach: Nein spielt weiter, Ja beendet das Match'
   await expect(page.locator('#bestaetigung')).toBeHidden();
   expect(await page.evaluate(() => window.__PA__.game.match?.status)).toBe('playing');
 
-  // Der Dialog ist modal und nimmt den Fokus; das Dropdown schließt dabei.
-  // Für den zweiten Versuch wird es erneut geöffnet.
-  await page.locator('#hud-menue-knopf').click();
+  /*
+   * Nach „Nein" bleibt das Dropdown offen und der Fokus kehrt an „Aufgeben" zurück (MERGE-3,
+   * 2026-11-10): So steht es im Klick-Handler in `main.js` („erst nach einem Ja schließt sich das
+   * Einstellungs-Dropdown"). Bis dahin schloss der Tipp auf „Nein" das Dropdown als „daneben
+   * getippt", und dieser Test hatte das Fehlverhalten festgeschrieben.
+   */
+  await expect(page.locator('#hud-menue')).toBeVisible();
+  await expect(page.locator('#hud-aufgeben')).toBeFocused();
   await page.locator('#hud-aufgeben').click();
   await expect(page.locator('#bestaetigung')).toBeVisible();
   await page.locator('#bestaetigung-ja').click();
