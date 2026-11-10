@@ -1865,8 +1865,8 @@
    "projectile": {
     "art": "plasma",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -2685,8 +2685,8 @@
    "projectile": {
     "art": "rakete",
     "size": {
-     "w": 29,
-     "h": 18
+     "w": 30,
+     "h": 12
     },
     "angle": 0,
     "spin": false,
@@ -2768,8 +2768,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -2850,8 +2850,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -2932,8 +2932,8 @@
    "projectile": {
     "art": "plasma",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -3014,8 +3014,8 @@
    "projectile": {
     "art": "rakete",
     "size": {
-     "w": 29,
-     "h": 18
+     "w": 30,
+     "h": 12
     },
     "angle": 0,
     "spin": false,
@@ -3096,8 +3096,8 @@
    "projectile": {
     "art": "rakete",
     "size": {
-     "w": 29,
-     "h": 18
+     "w": 30,
+     "h": 12
     },
     "angle": 0,
     "spin": false,
@@ -3260,8 +3260,8 @@
    "projectile": {
     "art": "granate",
     "size": {
-     "w": 18,
-     "h": 14
+     "w": 28,
+     "h": 20
     },
     "angle": 0,
     "spin": false,
@@ -3342,8 +3342,8 @@
    "projectile": {
     "art": "kugel",
     "size": {
-     "w": 29,
-     "h": 6
+     "w": 28,
+     "h": 8
     },
     "angle": 0,
     "spin": false,
@@ -3424,8 +3424,8 @@
    "projectile": {
     "art": "rakete",
     "size": {
-     "w": 29,
-     "h": 18
+     "w": 30,
+     "h": 12
     },
     "angle": 0,
     "spin": false,
@@ -3506,8 +3506,8 @@
    "projectile": {
     "art": "rakete",
     "size": {
-     "w": 29,
-     "h": 18
+     "w": 30,
+     "h": 12
     },
     "angle": 0,
     "spin": false,
@@ -3588,8 +3588,8 @@
    "projectile": {
     "art": "granate",
     "size": {
-     "w": 18,
-     "h": 14
+     "w": 28,
+     "h": 20
     },
     "angle": 0,
     "spin": false,
@@ -3670,8 +3670,8 @@
    "projectile": {
     "art": "phoenix",
     "size": {
-     "w": 30,
-     "h": 28
+     "w": 29,
+     "h": 23
     },
     "angle": 0,
     "spin": false,
@@ -3752,8 +3752,8 @@
    "projectile": {
     "art": "rakete",
     "size": {
-     "w": 29,
-     "h": 18
+     "w": 30,
+     "h": 12
     },
     "angle": 0,
     "spin": false,
@@ -4490,8 +4490,8 @@
    "projectile": {
     "art": "kugel",
     "size": {
-     "w": 29,
-     "h": 6
+     "w": 28,
+     "h": 8
     },
     "angle": 0,
     "spin": false,
@@ -4572,8 +4572,8 @@
    "projectile": {
     "art": "kugel",
     "size": {
-     "w": 29,
-     "h": 6
+     "w": 28,
+     "h": 8
     },
     "angle": 0,
     "spin": false,
@@ -4654,8 +4654,8 @@
    "projectile": {
     "art": "kugel",
     "size": {
-     "w": 29,
-     "h": 6
+     "w": 28,
+     "h": 8
     },
     "angle": 0,
     "spin": false,
@@ -4736,8 +4736,8 @@
    "projectile": {
     "art": "kugel",
     "size": {
-     "w": 29,
-     "h": 6
+     "w": 28,
+     "h": 8
     },
     "angle": 0,
     "spin": false,
@@ -4818,8 +4818,8 @@
    "projectile": {
     "art": "pfeil",
     "size": {
-     "w": 29,
-     "h": 10
+     "w": 26,
+     "h": 7
     },
     "angle": 0,
     "spin": false,
@@ -4900,8 +4900,8 @@
    "projectile": {
     "art": "pfeil",
     "size": {
-     "w": 29,
-     "h": 10
+     "w": 26,
+     "h": 7
     },
     "angle": 0,
     "spin": false,
@@ -4982,8 +4982,8 @@
    "projectile": {
     "art": "kugel",
     "size": {
-     "w": 29,
-     "h": 6
+     "w": 28,
+     "h": 8
     },
     "angle": 0,
     "spin": false,
@@ -5065,7 +5065,7 @@
     "art": "daemon",
     "size": {
      "w": 29,
-     "h": 30
+     "h": 22
     },
     "angle": 0,
     "spin": false,
@@ -5147,8 +5147,8 @@
    "projectile": {
     "art": "feuer",
     "size": {
-     "w": 28,
-     "h": 16
+     "w": 30,
+     "h": 17
     },
     "angle": 0,
     "spin": false,
@@ -5229,7 +5229,7 @@
    "projectile": {
     "art": "wasser",
     "size": {
-     "w": 28,
+     "w": 30,
      "h": 14
     },
     "angle": 0,
@@ -5311,8 +5311,8 @@
    "projectile": {
     "art": "stein",
     "size": {
-     "w": 22,
-     "h": 18
+     "w": 30,
+     "h": 16
     },
     "angle": 0,
     "spin": false,
@@ -5475,8 +5475,8 @@
    "projectile": {
     "art": "granate",
     "size": {
-     "w": 18,
-     "h": 14
+     "w": 28,
+     "h": 20
     },
     "angle": 0,
     "spin": false,
@@ -5557,7 +5557,7 @@
    "projectile": {
     "art": "gift",
     "size": {
-     "w": 20,
+     "w": 30,
      "h": 16
     },
     "angle": 0,
@@ -5639,8 +5639,8 @@
    "projectile": {
     "art": "plasma",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -5721,8 +5721,8 @@
    "projectile": {
     "art": "rakete",
     "size": {
-     "w": 29,
-     "h": 18
+     "w": 30,
+     "h": 12
     },
     "angle": 0,
     "spin": false,
@@ -5803,7 +5803,7 @@
    "projectile": {
     "art": "gift",
     "size": {
-     "w": 20,
+     "w": 30,
      "h": 16
     },
     "angle": 0,
@@ -5885,8 +5885,8 @@
    "projectile": {
     "art": "eis",
     "size": {
-     "w": 28,
-     "h": 14
+     "w": 30,
+     "h": 9
     },
     "angle": 0,
     "spin": false,
@@ -5971,8 +5971,8 @@
    "projectile": {
     "art": "feuer",
     "size": {
-     "w": 28,
-     "h": 16
+     "w": 30,
+     "h": 17
     },
     "angle": 0,
     "spin": false,
@@ -6053,7 +6053,7 @@
    "projectile": {
     "art": "gift",
     "size": {
-     "w": 20,
+     "w": 30,
      "h": 16
     },
     "angle": 0,
@@ -6139,8 +6139,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -6225,8 +6225,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -6307,8 +6307,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -6394,8 +6394,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -6476,8 +6476,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -6558,8 +6558,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -6641,8 +6641,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -6797,8 +6797,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -8286,8 +8286,8 @@
    "projectile": {
     "art": "plasma",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -8368,8 +8368,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -9661,8 +9661,8 @@
    "projectile": {
     "art": "plasma",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -10764,8 +10764,8 @@
    "projectile": {
     "art": "plasma",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -10846,8 +10846,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -10933,8 +10933,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -11019,8 +11019,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -11102,8 +11102,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -11188,8 +11188,8 @@
    "projectile": {
     "art": "stein",
     "size": {
-     "w": 22,
-     "h": 18
+     "w": 30,
+     "h": 16
     },
     "angle": 0,
     "spin": false,
@@ -11274,8 +11274,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -11361,7 +11361,7 @@
     "art": "drache",
     "size": {
      "w": 29,
-     "h": 19
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -11446,8 +11446,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 30,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -11533,8 +11533,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,
@@ -11620,8 +11620,8 @@
    "projectile": {
     "art": "zauber",
     "size": {
-     "w": 24,
-     "h": 24
+     "w": 29,
+     "h": 18
     },
     "angle": 0,
     "spin": false,

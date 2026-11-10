@@ -530,6 +530,35 @@ def geschoss_generiert(art, farbe):
     return im.resize((PZELLE, PZELLE), Image.LANCZOS)
 
 
+# B6 (2026-11-10): gemalte 64-px-Geschosszellen je Familie (assets/weapons/geschosse, Runware gpt-image-2,
+# eine Rasterseite, lokal freigestellt). Sie ersetzen die Vektorzeichnung von `geschoss_generiert`; Daemon,
+# Phoenix, Drache, Granate und Pfeil ebenso (zweite Rasterseite); die Vektorzeichnung bleibt Rueckfall. `funkeln` ist farblos und wird mit der Waffenfarbe
+# eingefaerbt (Plasma und Zauber). Einzeltausch ohne Neubau der Atlanten: scripts/geschosszellen-einsetzen.py.
+GESCHOSS_BILDER = os.path.join(WURZEL, "assets", "weapons", "geschosse")
+GESCHOSS_BILD_JE_ART = {"rakete": "rakete", "feuer": "feuer", "eis": "eis", "gift": "gift", "wasser": "wasser",
+                        "plasma": "funkeln", "zauber": "funkeln", "kugel": "kugel", "stein": "stein",
+                        "granate": "granate", "pfeil": "pfeil", "phoenix": "phoenix", "daemon": "daemon", "drache": "drache"}
+GESCHOSS_BILD_JE_WAFFE = {"pa_148": "orb_blau"}   # Feuerschild: blauer Orb (N-09)
+EINFAERBEN = {"funkeln"}
+
+
+def geschoss_bild(art, farbe, waffe_id=None):
+    """Gemalte Geschosszelle (PZELLE, zeigt nach rechts) oder None, wenn fuer die Art keine vorliegt."""
+    name = GESCHOSS_BILD_JE_WAFFE.get(waffe_id) or GESCHOSS_BILD_JE_ART.get(art)
+    pfad = os.path.join(GESCHOSS_BILDER, f"{name}.png") if name else None
+    if not pfad or not os.path.exists(pfad):
+        return None
+    im = Image.open(pfad).convert("RGBA")
+    if name in EINFAERBEN:
+        a = np.asarray(im).astype(np.float32)
+        hell = a[..., 0:1] / 255.0
+        c = np.array(_hex(farbe), dtype=np.float32)
+        # dunkel -> Waffenfarbe, hell -> Weiss (heller Kern bleibt leuchtend)
+        rgb = np.where(hell < 0.7, c * (hell / 0.7), c + (255 - c) * ((hell - 0.7) / 0.3))
+        im = Image.fromarray(np.dstack([rgb, a[..., 3:4]]).clip(0, 255).astype(np.uint8), "RGBA")
+    return im.resize((PZELLE, PZELLE), Image.LANCZOS)
+
+
 def projektil(w, held_zelle, flash, kat, korr):
     """Gibt (Bild 32x32, meta) oder (None, None) zurueck."""
     art = korr.get("geschoss", GESCHOSS_ART.get(w["id"]) if w["delivery"] == "projectile" else None)
@@ -547,7 +576,7 @@ def projektil(w, held_zelle, flash, kat, korr):
         ys, xs = np.nonzero(a)
         groesse = {"w": int(xs.max() - xs.min() + 1), "h": int(ys.max() - ys.min() + 1)}
     else:
-        bild = geschoss_generiert(art, flash)
+        bild = geschoss_bild(art, flash, w["id"]) or geschoss_generiert(art, flash)
         a = np.asarray(bild)[..., 3] > 100
         ys, xs = np.nonzero(a)
         groesse = {"w": int(xs.max() - xs.min() + 1), "h": int(ys.max() - ys.min() + 1)}
