@@ -39,21 +39,21 @@ Wert ohne Beleg (Abschnitt 3) gilt als nicht eingetragen.
 
 | ID | Pflichtfeld | Wert | Beleg / Prüfung |
 |---|---|---|---|
-| PFLICHT-01 | **Name** der Instanz | **LÜCKE** — z. B. `pa-prod-01` (Vergabe: Auftraggeber) | `hcloud server list` bzw. Konsole; Name auch in Abschnitt 3 |
-| PFLICHT-02 | **Zweck** | **LÜCKE** — konkreter Zweck, nicht „Betrieb". Kandidaten laut `docs/betrieb.md` Abschnitt 4: Mehrspieler-Partien mit TLS + Konten (`B`), GPU nur bei Bedarf (`C`). | Zweck muss den Lauf begrenzen (Abschnitt 2) |
-| PFLICHT-03 | **Instanztyp** | **LÜCKE** — Anbieter, Modell, vCPU/RAM/GPU, Region | Angebot/Konsole; Typ im Beleg 5 |
-| PFLICHT-04 | **Preis pro Stunde** | **LÜCKE** — Zahl aus dem Angebot des Anbieters, nicht geschätzt | Rechnung/Preisliste; muss zu PFLICHT-06 passen |
-| PFLICHT-05 | **Besitzer** | **LÜCKE** — wer die Rechnung bekommt und die Abschaltung verantwortet | benannter Mensch, keine Rolle |
-| PFLICHT-06 | **Höchstdauer und Worst Case** | **LÜCKE** — geplante Dauer und Worst Case = Preis/h × Höchstdauer. Ohne diese Rechnung wird nicht gestartet. | Rechnung hier eintragen; Grundlage für den zweiten Alarm |
-| PFLICHT-07 | **`PA_MAX_MACHINE_MINUTES`** | **LÜCKE** — Ablaufdatum des **Knotens** (aus `/proc/uptime`). Einzige Frist, die auch bei nie gestartetem Server greift. Solange leer, ist diese Schicht AUS. | `idle-watch.sh --print-config` zeigt „Maschinenlaufzeit"; Wert in `betrieb.env` |
-| PFLICHT-08 | **`PA_MAX_RUNTIME_MINUTES`** | **LÜCKE** — Ablaufdatum des **Prozesses** (`uptimeMs` aus `/healthz`), greift immer, auch bei offenen Verbindungen. Vorgabe 180 ist zu bestätigen. | `--print-config`; `last-brake` nennt den Grund |
-| PFLICHT-09 | **`PA_IDLE_MINUTES`** | **LÜCKE** — Leerlauf-Frist, zu bestätigen. Vorgabe 15. | `--print-config`; Abschnitt 2 begründet die Zahl |
-| PFLICHT-10 | **`PA_ACTION`** | **LÜCKE** — `stop` oder `poweroff`. `poweroff` schaltet den Knoten ab, **beendet bei Hetzner aber die Kosten nicht** (abgerechnet wird bis zur Löschung, `docs/betrieb.md` Abschnitt 8). Bei `poweroff` zusätzlich `PA_POWEROFF_CONFIRM=yes`. | `--print-config`; Abschnitt 6 |
-| PFLICHT-11 | **`PA_SNAPSHOT_KEEP`** | **LÜCKE** — Zahl der aufbewahrten Archive (Standard 3, erlaubt 1–50). Cloud-Abbild ja/nein und Weg A (`abbild-lokal.sh`, empfohlen) oder Weg B (`token-setzen.sh`) mitentscheiden. Das Token liegt NIE in `betrieb.env`. | `snapshot.sh --print-config`; Beleg 5 und 6 |
-| PFLICHT-12 | **Hostname / Benutzer auf dem Knoten** | **LÜCKE** — die Platzhalter `/opt/projectarmageddon` und `pa` in `deploy/systemd/` ersetzen | `systemctl cat projectarmageddon`; `id pa` |
-| PFLICHT-13 | **Zweiter Alarm außerhalb des Knotens** | **LÜCKE** — Vorschlag, der nicht aus diesem Repo kommen darf: Nachricht an den Besitzer, wenn der Knoten nach der Höchstdauer noch lebt. Begründung: Fällt der Knoten aus oder schlägt der Timer fehl, ist die Bremse im Knoten mit ihm weg. | Nachweis des Alarms (z. B. Testnachricht) im Beleg 5 |
-| PFLICHT-14 | **TLS + Anmeldung** | **LÜCKE** — ohne beides bleibt `HOST=127.0.0.1` und `PA_ERLAUBE_OEFFENTLICH=no` (`docs/betrieb.md` Abschnitt 3) | `curl -I https://<domain>`; Anmeldung erzwungen; Caddyfile nach `deploy/Caddyfile.beispiel` |
-| PFLICHT-15 | **Bildpreis je GB und Monat** | **LÜCKE** — Preis des **Abbilds/Snapshots** je GB und Monat, aus der Preisliste des Anbieters, nicht geschätzt. Zählt zu den Kosten, solange das Abbild aufbewahrt wird (Abschnitt 8). | Preisliste + Abbildgröße im Beleg 5; Rechnung PFLICHT-06 ergänzen |
+| PFLICHT-01 | **Name** der Instanz | **`pa-spiel`** (Server), **`pa-spiel-ipv4`** (Primary IP) — Hetzner-Projekt des Auftraggebers | `hcloud server list` bzw. Konsole; Name auch in Abschnitt 3 |
+| PFLICHT-02 | **Zweck** | **Spielserver auf Abruf** (Weg B aus `docs/betrieb.md` Abschnitt 4): Mehrspieler-Partien mit TLS; Lebenszyklus laut Abschnitt 10 (hochfahren → spielen → 15 min Leerlauf → Abbild → Selbstlöschung). Keine GPU. | Zweck muss den Lauf begrenzen (Abschnitt 2) |
+| PFLICHT-03 | **Instanztyp** | **Hetzner `cpx22`**: 2 vCPU (AMD, geteilt), 4 GB RAM, 80 GB Platte, x86, Standort `fsn1` (Falkenstein). Gewählt automatisch als billigster **verfügbarer** Typ ≥ 2 vCPU/4 GB ≤ 25 €/Monat; `cx23` (40 GB, 6,53 €/Monat) und `cx33` waren am 2026-11-10 laut API in `fsn1`/`nbg1`/`hel1` nicht verfügbar (Begründung Abschnitt 10). | Angebot/Konsole; Typ im Beleg 5 |
+| PFLICHT-04 | **Preis pro Stunde** | **0,037128 €/h brutto** (23,1931 €/Monat Dauerbetrieb-Äquivalent), Hetzner-API `/server_types` am 2026-11-10; Primary IPv4 0,000952 €/h | Rechnung/Preisliste; muss zu PFLICHT-06 passen |
+| PFLICHT-05 | **Besitzer** | Auftraggeber (Inhaber des Hetzner-Projekts und des GitHub-Kontos `kAInplanmusic`); **Klarname vom Auftraggeber einzutragen** | benannter Mensch, keine Rolle |
+| PFLICHT-06 | **Höchstdauer und Worst Case** | Höchstdauer je Lauf **9 h** (= `PA_MAX_MACHINE_MINUTES` 540); Worst Case **9 h × 0,037128 €/h = 0,33 €** je Lauf. Dazu dauerhaft: Primary IP 0,595 €/Monat + Abbild (Größe × 0,017017 €/GB/Monat). Zweite Frist außerhalb: 12 h (Zeitplan, PFLICHT-13) = 0,45 €. | Rechnung hier eintragen; Grundlage für den zweiten Alarm |
+| PFLICHT-07 | **`PA_MAX_MACHINE_MINUTES`** | **540** (9 h) | `idle-watch.sh --print-config` zeigt „Maschinenlaufzeit"; Wert in `betrieb.env` |
+| PFLICHT-08 | **`PA_MAX_RUNTIME_MINUTES`** | **480** (8 h) | `--print-config`; `last-brake` nennt den Grund |
+| PFLICHT-09 | **`PA_IDLE_MINUTES`** | **15** (Auftraggeber 2026-11-10) | `--print-config`; Abschnitt 2 begründet die Zahl |
+| PFLICHT-10 | **`PA_ACTION`** | **`abbild-loeschen`** (neu, Abschnitt 10): Abbild des eigenen Servers, Prüfung, dann Server löschen; Fail-safe `poweroff` ohne Löschen. `poweroff` allein bleibt wirkungslos für die Kosten. | `--print-config`; Abschnitt 6 |
+| PFLICHT-11 | **`PA_SNAPSHOT_KEEP`** | `PA_SNAPSHOT_KEEP=3` (lokale Archive beim Stopp); Cloud-Abbild: **ja, durch den Server selbst** (`PA_ABBILD_BEHALTEN=1`, neuestes geprüftes bleibt); Token nur im Arbeitsspeicher (Weg C, Abschnitt 10), nie in `betrieb.env` | `snapshot.sh --print-config`; Beleg 5 und 6 |
+| PFLICHT-12 | **Hostname / Benutzer auf dem Knoten** | Pfade wie in `deploy/systemd/`: **`/opt/projectarmageddon`**, Benutzer **`pa`**; Hostname = Servername `pa-spiel` | `systemctl cat projectarmageddon`; `id pa` |
+| PFLICHT-13 | **Zweiter Alarm außerhalb des Knotens** | GitHub-Zeitplan `server-hochfahren` alle 3 h: Server, die **ausgeschaltet oder älter als 12 h** sind, werden nach geprüftem Abbild gelöscht (`not-aus --aelter-als-stunden 12 --ausgeschaltete`). Läuft außerhalb des Servers; braucht das Secret `HCLOUD_TOKEN`. | Nachweis des Alarms (z. B. Testnachricht) im Beleg 5 |
+| PFLICHT-14 | **TLS + Anmeldung** | TLS: **ja** (Caddy, Let's Encrypt, `<IP>.sslip.io` oder `PA_DOMAIN`). Anmeldung: **LÜCKE** — keine Entscheidung des Auftraggebers; Lobby/Konten wie im Spiel, URL nicht verlinkt (Beleg S3) | `curl -I https://<domain>`; Anmeldung erzwungen; Caddyfile nach `deploy/Caddyfile.beispiel` |
+| PFLICHT-15 | **Bildpreis je GB und Monat** | **0,017017 €/GB/Monat brutto** (Hetzner-API `/pricing`, 2026-11-10) | Preisliste + Abbildgröße im Beleg 5; Rechnung PFLICHT-06 ergänzen |
 
 ### Kosten (AGENTS.md §7)
 

@@ -246,7 +246,7 @@ test('Abruf: idle-watch mit PA_ACTION=abbild-loeschen ruft selbst-abbild-loesche
 
 /* ------------------------------------------------------------------ server-hochfahren */
 
-const hochfahrenEnv = (mock, extra = {}) => ({ HCLOUD_TOKEN: TEST_TOKEN, PA_HCLOUD_API: mock.api, PA_HCLOUD_PAUSE: '0', PA_WARTE_SEKUNDEN: '1', PA_POLL_SEKUNDEN: '0', ...extra });
+const hochfahrenEnv = (mock, extra = {}) => ({ HCLOUD_TOKEN: TEST_TOKEN, PA_HCLOUD_API: mock.api, PA_HCLOUD_PAUSE: '0', PA_WARTE_SEKUNDEN: '1', PA_POLL_SEKUNDEN: '0', PA_FEHLER_POLL_SEKUNDEN: '0', ...extra });
 const leererMock = async opt => { const m = await starteMock(opt); m.zustand.servers = []; return m; };
 
 test('Hochfahren frisch: reserviert Primary IP (auto_delete=false), billigster verfügbarer Typ, Token nur nach /run', async () => {

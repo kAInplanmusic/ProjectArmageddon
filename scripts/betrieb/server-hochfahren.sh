@@ -399,8 +399,16 @@ while [ "$(date +%s)" -lt "$ENDE" ]; do
     phase=$(hc_py 'print((d["server"].get("labels") or {}).get("projectarmageddon-phase","-"))' || echo "-")
   fi
   if [ "$phase" != "$LETZTE" ]; then protokoll "Phase: $phase"; LETZTE="$phase"; fi
+  zeile=$(hc_py 'print((d["server"].get("labels") or {}).get("projectarmageddon-zeile",""))' || true)
+  if [ -n "${zeile:-}" ] && [ "$zeile" != "${LETZTE_ZEILE:-}" ]; then protokoll "  server: $zeile"; LETZTE_ZEILE="$zeile"; fi
   case "$phase" in fehler-*)
-    protokoll "Einrichtung ist an Phase '${phase#fehler-}' gescheitert."
+    protokoll "Einrichtung ist an Phase '${phase#fehler-}' gescheitert. Die letzten Meldungen des Servers folgen."
+    for _ in $(seq 1 30); do
+      sleep "${PA_FEHLER_POLL_SEKUNDEN:-3}"
+      hc_anfrage GET "/servers/$SERVER_ID" || continue
+      zeile=$(hc_py 'print((d["server"].get("labels") or {}).get("projectarmageddon-zeile",""))' || true)
+      if [ -n "${zeile:-}" ] && [ "$zeile" != "${LETZTE_ZEILE:-}" ]; then protokoll "  server: $zeile"; LETZTE_ZEILE="$zeile"; fi
+    done
     if [ -z "$ABBILD_ID" ] && [ "${PA_BEHALTE_BEI_FEHLER:-0}" != "1" ]; then
       protokoll "Der frisch eingerichtete Server ist wertlos — wird gelöscht (PA_BEHALTE_BEI_FEHLER=1 behält ihn zur Analyse)."
       hc_anfrage DELETE "/servers/$SERVER_ID" >/dev/null || protokoll "  Löschen fehlgeschlagen: $(hc_fehlertext) — server-hochfahren.sh not-aus --erzwingen"

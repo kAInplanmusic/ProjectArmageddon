@@ -61,7 +61,7 @@ abbruch() { protokoll "ABBRUCH: $*"; exit 2; }
 protokoll "Prüfsumme ok: $(cut -d' ' -f1 "$ARCHIV.sha256")"
 
 INHALT=$(tar -tzf "$ARCHIV") || abbruch "Archiv nicht lesbar"
-OBERSTER=$(printf '%s\n' "$INHALT" | head -n1 | cut -d/ -f1)
+OBERSTER=$(head -n1 <<<"$INHALT" | cut -d/ -f1)   # Here-String statt printf|head: bei langer Liste SIGPIPE (rc 141) unter pipefail
 [[ "$OBERSTER" == projectarmageddon-* ]] || abbruch "Archiv beginnt nicht mit projectarmageddon-<kennung>/ ($OBERSTER)"
 KENNUNG="${OBERSTER#projectarmageddon-}"
 pruefe_kennung "$KENNUNG" || abbruch "ungültige Kennung „$KENNUNG“"

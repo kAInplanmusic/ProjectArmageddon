@@ -23,7 +23,7 @@
 #  (Hetzner-API, mit dem Token aus dem Arbeitsspeicher); server-hochfahren.sh zeigt es an.
 #  Bei Fehlern steht dort fehler-<phase>.
 # =============================================================================
-set -euo pipefail
+set -Eeuo pipefail
 
 MODUS="${1:---frisch}"
 BASIS=/opt/projectarmageddon
@@ -39,6 +39,10 @@ PA_NODE_MAJOR="${PA_NODE_MAJOR:-22}"
 PA_SSH="${PA_SSH:-nein}"
 PA_ACME_EMAIL="${PA_ACME_EMAIL:-}"
 PA_DOMAIN="${PA_DOMAIN:?PA_DOMAIN fehlt in boot.env}"
+
+# Alles Ausgegebene auch in eine Datei; die letzte Zeile wird als Etikett gemeldet (Beobachtung ohne SSH).
+LOGDATEI=/var/log/pa-install.log
+exec > >(tee -a "$LOGDATEI") 2>&1
 
 log() { printf '%s [erstinstallation] %s\n' "$(date -Is)" "$*"; }
 
@@ -60,9 +64,23 @@ print(json.dumps({"labels":l}))') || return 0
     -K <(printf 'header = "Authorization: Bearer %s"\nheader = "Content-Type: application/json"\n' "$tok") \
     --data-binary @- "$API/servers/$SERVER_ID" 2>/dev/null || true
 }
+ZEILE_PID=""
+zeilen_melder() {
+  ( while sleep 6; do z=$(tail -n1 "$LOGDATEI" 2>/dev/null || true); etikett projectarmageddon-zeile "${z: -55}"; done ) &
+  ZEILE_PID=$!
+}
 PHASE=start
 phase() { PHASE="$1"; log "Phase: $1"; etikett projectarmageddon-phase "$1"; }
-bei_fehler() { local rc=$?; log "FEHLER in Phase $PHASE (rc=$rc)"; etikett projectarmageddon-phase "fehler-$PHASE"; exit "$rc"; }
+bei_fehler() {
+  local rc=$?
+  [ -z "$ZEILE_PID" ] || kill "$ZEILE_PID" 2>/dev/null || true
+  log "FEHLER in Phase $PHASE (rc=$rc)"
+  etikett projectarmageddon-phase "fehler-$PHASE"
+  # Die letzten Zeilen nacheinander als Etikett melden (server-hochfahren.sh liest mit).
+  { journalctl -u projectarmageddon -n 8 --no-pager -o cat 2>/dev/null; tail -n 8 "$LOGDATEI" 2>/dev/null; } | tail -n 16 \
+    | while IFS= read -r l; do etikett projectarmageddon-zeile "${l: -55}"; sleep 3; done
+  exit "$rc"
+}
 trap bei_fehler ERR
 
 apt_() { apt-get -o DPkg::Lock::Timeout=900 -y -q "$@"; }
@@ -188,13 +206,15 @@ frisch() {
   install -d -m 700 /etc/projectarmageddon
   cp deploy/systemd/projectarmageddon.service deploy/systemd/projectarmageddon-idle.service deploy/systemd/projectarmageddon-idle.timer /etc/systemd/system/
   systemctl daemon-reload
-  scripts/release/deploy.sh --ohne-sicherung "$paket"
+  timeout 900 scripts/release/deploy.sh --ohne-sicherung "$paket"
   phase aufraeumen
   cd /
   rm -rf /var/tmp/pa-quelle /root/.npm
   apt-get clean; rm -rf /var/lib/apt/lists/*
 }
 
+zeilen_melder
+trap '[ -z "$ZEILE_PID" ] || kill "$ZEILE_PID" 2>/dev/null || true' EXIT
 case "$MODUS" in
   --frisch)
     if [ -e "$BASIS/current/scripts/server.mjs" ]; then log "Release vorhanden: wie --aus-abbild"; else frisch; fi
