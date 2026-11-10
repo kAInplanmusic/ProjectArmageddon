@@ -20,9 +20,9 @@
  *   - `breite`/`hoehe`: halbe Körperbreite 4 px, Körperhöhe 12 px (kleiner als eine Figur, 7/20 px).
  *
  * Feuerkugeln (`kugeln`): genau `anzahl` 5 in festem Fächer von `faecherGrad` 90 Grad symmetrisch um die Senkrechte
- * (45°, 67,5°, 90°, 112,5°, 135°), Startgeschwindigkeit `tempo` 5,5 px/Takt, ohne Zufall. Je Kugel `schaden` 12 und
- * `radius` 22: Vorbild ist der Feuerball (`pa_072`, 48 Schaden, Radius 34), geteilt durch vier für fünf Kugeln, von
- * denen an einer berührten Figur gemessen meist drei bis vier treffen (Messung in der Doku). Brand kommt wie bisher
+ * (45°, 67,5°, 90°, 112,5°, 135°), Startgeschwindigkeit `tempo` 5,5 px/Takt, ohne Zufall. Je Kugel `schaden` 20 und
+ * `radius` 30 (Vorbild: Feuerball `pa_072`, 48 Schaden, Radius 34); an einer berührten Figur im Testaufbau
+ * `tests/feuerwesen-fassung20.test.js` gemessen: rund 40 Direktschaden (Messung in der Doku). Brand kommt wie bisher
  * aus `elemental.fire` 40 des Katalogs (`elementalEffectFor`, je Treffer, Brand stapelt sich nicht: `schadenMali.js`).
  * `lebensdauerTakte` 180 begrenzt den Flug sichtbar (Deckel-Detonation wie bei jedem Geschoss).
  *
