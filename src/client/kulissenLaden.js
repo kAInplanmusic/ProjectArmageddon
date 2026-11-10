@@ -22,15 +22,15 @@ import { KulissenBildspeicher, waehleKulissenBreite } from './kulissenQuelle.js'
 export function ladeKulisse(ziel, backdrop, { onError } = {}) {
   ziel.backdropKey = backdrop.key;
 
-  if (backdrop.foto) {
+  if (backdrop.foto || backdrop.stil) {
     ziel.backdrop = backdrop;
     ziel.backdropReady = false;
     ziel.kulissenCache = null;
     ziel.palette = paletteFor({ key: `${backdrop.biomeId}/${backdrop.id}` });
     // Adresstabelle der Fotos erst jetzt nachladen (`panoramenUrls.js`, nicht im Startbündel).
-    import('./panoramenUrls.js').then(({ panoramaUrls }) => {
+    import('./panoramenUrls.js').then(({ panoramaUrls, stilUrls }) => {
       if (ziel.backdropKey !== backdrop.key) return;
-      ladeFoto(ziel, backdrop, panoramaUrls(backdrop.foto), onError);
+      ladeFoto(ziel, backdrop, backdrop.stil ? stilUrls(backdrop.stil) : panoramaUrls(backdrop.foto), onError);
     }, (fehler) => {
       if (ziel.backdropKey === backdrop.key) onError?.(fehler);
     });

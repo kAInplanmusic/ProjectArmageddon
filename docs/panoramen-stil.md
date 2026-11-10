@@ -78,3 +78,25 @@ sind nur der klassischen Kulissenfamilie (`config/backdrops.js`) zugeordnet, nic
 | `stadt_morgenrot` | fabrik | urban | Flache Industrie-/Stadtdaecher im Morgenrot |
 | `strand_ebbe` | riff | island | Strand bei Ebbe, Wasser und Himmel |
 | `western_regenbogen` | duenen | western | Western-Stadt im Abendlicht (gemalte Fassung); Wuestenstadt |
+
+
+## Einbindung als Kulissen (Stand 2026-11-10)
+
+- Katalog `src/shared/config/backdrops-panorama.js` (128 Einträge, Schlüssel `stil/<name>_<art>`, `findeKulisse` kennt sie);
+  Wahl und Objekte in `src/client/panoramenStil.js`; Laden über `kulissenLaden.js` (eigener Zweig neben `foto`).
+- Laufzeitdateien: `assets/panoramen-kulissen/<name>_<art>.webp`, 1280x720, Qualität 74 (`scripts/panoramen-kulissen.py`),
+  zusammen 8,7 MB; die 1920er bleiben Quelle und kommen nicht in den Build. Das Basisbild ohne Artsuffix wird nie verwendet
+  (`klondike_schnee.webp` trägt einen Textrest; `klondike_schnee_hell` ist textfrei).
+- Laden nur nach Bedarf: `panoramenUrls.js` (nachgeladener Baustein) liefert die eine Adresse der gewählten Karte.
+- Seitenverhältnis: der vorhandene Cover-Zuschnitt (`coverZuschnitt`, gleicher Maßstab, oben bündig, Breite per Kamera-Pan)
+  verzerrt nicht; es gibt keine `_h`-Dateien, Hochkant fällt auf das Querbild zurück (das Spiel zeigt im Hochformat ohnehin
+  nur den Dreh-Hinweis).
+- Auswahl (nur Client, `hash2` aus dem Seed, keine Engine-RNG): jede dritte Karte (Seed mod 3 = 0, wie die Fotos). Sonderbiom:
+  nur `stark` zugeordnete Motive (bei vorhandenem PolyHaven-Foto je zur Hälfte); klassisches Biom: alle Motive der Familie.
+  Art: hell zu zwei Dritteln, dunkel zu einem; Höhlenkarten Höhlenblick; Ragnarök nie automatisch, nur manuell per Schlüssel.
+- Eigene Einschätzung (zuordnung.json angepasst): `gewitter_abendrot` (hell = blauer Wiesenhimmel, kein Riss) und
+  `halbmond_huegel` (grüner Hügel) nur schwach, nicht automatisch im Sonderbiom; `palmenstrand_fluss` (seltsame Palmenstämme)
+  nur manuell (`mangel`); `fluss_goldhaus` Familie urban statt fantasy; Nachtmotive (`nachtstadt_*`, `nachtstrasse_sw`) nur
+  als dunkel automatisch. `dunkel` nutzt Lichtklasse nacht, `ragnarok` lava (`backdrop.lichtKlasse`).
+- Dist-Größe: +8,74 MB (123,05 auf 131,80 MB), Grenze in `scripts/bundle-grenzen.json` angehoben.
+- Offen: Menügruppe zum Wählen (der E2E-Test zählt Gruppen im Menü, deshalb noch nicht eingebaut); E2E nicht gelaufen.

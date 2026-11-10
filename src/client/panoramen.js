@@ -1,6 +1,7 @@
 /** Fotokulissen übernehmen Gelände- und Wetterpalette ihrer Motivfamilie. */
 import { getBackdrop } from '../shared/config/backdrops.js';
 import { getBackdropNeu } from '../shared/config/backdrops-neu.js';
+import { panoramaStil } from './panoramenStil.js';
 
 export const FOTOS = Object.freeze({
   snow_field: { label: 'Eiswüste · Schneefeld', basis: ['alpine', 'winter_snow'] },
@@ -89,5 +90,5 @@ export function fotoFuerBiom(biom, art) {
 /** Gemeinsamer Katalogzugriff für manuelle Kulissen und automatische Motivwahl. */
 export function findeKulisse(schluessel) {
   const [biom, variante] = String(schluessel).split('/');
-  return biom === 'foto' ? panorama(variante) : getBackdrop(biom, variante) ?? getBackdropNeu(biom, variante);
+  return biom === 'foto' ? panorama(variante) : biom === 'stil' ? panoramaStil(variante) : getBackdrop(biom, variante) ?? getBackdropNeu(biom, variante);
 }

@@ -1,4 +1,4 @@
-import { FOTOS, panorama, fotoFuerBiom, fotoFuerKarte, findeKulisse } from './panoramen.js';
+import { FOTOS, panorama, fotoFuerBiom, fotoFuerKarte, findeKulisse } from './panoramen.js'; import { stilFuerKarte } from './panoramenStil.js';
 /**
  * Browser-Einstiegspunkt für Project Armageddon.
  *
@@ -3106,14 +3106,13 @@ class Game {
      */
     // Sonderbiome (Schrott, Riff, Kristallhöhle, ...) haben passende gemalte Bilder (`sonderKulissen.js`).
     if (!kulisse && sonder && SONDER_KULISSEN[sonder] && !gewaehlt?.includes?.('/')) {
-      const motiv = sonderKulisseFuer(sonder, seed, charakter?.kartenart);
       const foto = fotoFuerBiom(sonder, charakter?.kartenart);
-      kulisse = (foto && (seed >>> 0) % 3 === 0 ? panorama(foto) : null) ?? findeKulisse(motiv);
+      kulisse = stilFuerKarte({ sonder, seed, kartenart: charakter?.kartenart, mitFoto: Boolean(foto) }) ?? (foto && (seed >>> 0) % 3 === 0 ? panorama(foto) : null) ?? findeKulisse(sonderKulisseFuer(sonder, seed, charakter?.kartenart));
     }
     if (!kulisse && charakter) {
       const biomId = motivFamilieFuerArt(charakter.kartenart) ?? biomFuerCharakter(charakter);
       const biom = BACKDROP_BIOMES.find(b => b.id === biomId);
-      kulisse = fotoFuerKarte(biomId, seed) ?? kulisseFuerBiom({ seed, biome: biom }); // Fotos des Auftraggebers (panoramen.js)
+      kulisse = stilFuerKarte({ biomId, seed }) ?? fotoFuerKarte(biomId, seed) ?? kulisseFuerBiom({ seed, biome: biom }); // Fotos des Auftraggebers (panoramen.js)
     }
     if (!kulisse) kulisse = pickBackdrop(seed, preset);
     if (!kulisse) {

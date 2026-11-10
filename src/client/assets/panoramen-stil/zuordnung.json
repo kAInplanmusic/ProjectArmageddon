@@ -47,7 +47,7 @@
    "biome": [
     "surreal"
    ],
-   "familie": "fantasy",
+   "familie": "urban",
    "staerke": "stark",
    "grund": "Goldener Wuerfelbau am Fluss unter Wolken, ungewoehnliche Architektur"
   },
@@ -56,16 +56,16 @@
     "dimensionsriss"
    ],
    "familie": "open",
-   "staerke": "stark",
-   "grund": "Violett-rosa Plasma-aehnlicher Himmel ueber dunkler Linie"
+   "staerke": "schwach",
+   "grund": "Violett-rosa Plasma-aehnlicher Himmel ueber dunkler Linie; hell zeigt blauen Wiesenhimmel, kein Riss (Einschaetzung 2026-11-10: nicht automatisch)"
   },
   "halbmond_huegel": {
    "biome": [
     "kristallwald"
    ],
    "familie": "forest",
-   "staerke": "stark",
-   "grund": "Dunkler bewaldeter Huegel mit Halbmond"
+   "staerke": "schwach",
+   "grund": "Dunkler bewaldeter Huegel mit Halbmond; gruener Huegel ohne Kristallmotiv (nicht automatisch)"
   },
   "herbstbaeume_dunst": {
    "biome": [],
@@ -99,7 +99,10 @@
    ],
    "familie": "urban",
    "staerke": "stark",
-   "grund": "Stadtlichter bei Nacht im Tal"
+   "grund": "Stadtlichter bei Nacht im Tal",
+   "autoArten": [
+    "dunkel"
+   ]
   },
   "nachtstadt_tal": {
    "biome": [
@@ -107,7 +110,10 @@
    ],
    "familie": "urban",
    "staerke": "stark",
-   "grund": "Stadtlichter bei Nacht im Tal"
+   "grund": "Stadtlichter bei Nacht im Tal",
+   "autoArten": [
+    "dunkel"
+   ]
   },
   "nachtstadt_tal_2": {
    "biome": [
@@ -115,7 +121,10 @@
    ],
    "familie": "urban",
    "staerke": "stark",
-   "grund": "Stadtlichter bei Nacht im Tal"
+   "grund": "Stadtlichter bei Nacht im Tal",
+   "autoArten": [
+    "dunkel"
+   ]
   },
   "nachtstrasse_sw": {
    "biome": [
@@ -124,7 +133,10 @@
    ],
    "familie": "noir",
    "staerke": "stark",
-   "grund": "Leere Nachtstrasse mit Laterne und Haus, Noir-Stimmung"
+   "grund": "Leere Nachtstrasse mit Laterne und Haus, Noir-Stimmung",
+   "autoArten": [
+    "dunkel"
+   ]
   },
   "nebelmorgen_scheune": {
    "biome": [],
@@ -137,8 +149,8 @@
     "riff"
    ],
    "familie": "island",
-   "staerke": "stark",
-   "grund": "Palmen, Sandstrand und Wasser"
+   "staerke": "mangel",
+   "grund": "Palmen, Sandstrand und Wasser; seltsame Palmenstaemme (nur manuell)"
   },
   "rosa_abend": {
    "biome": [],

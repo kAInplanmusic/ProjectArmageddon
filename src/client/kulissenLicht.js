@@ -107,6 +107,7 @@ const SCHLUESSEL_KLASSE = Object.freeze([
  * @returns {'schnee'|'wald'|'wueste'|'lava'|'stadt'|'nacht'|'standard'}
  */
 export function lichtKlasseFuer(backdrop, scenery = null) {
+  if (backdrop?.lichtKlasse && LICHT_KLASSEN[backdrop.lichtKlasse]) return backdrop.lichtKlasse;
   const text = [backdrop?.key, backdrop?.id, backdrop?.file].filter(Boolean).join(' ').toLowerCase();
   for (const [muster, klasse] of SCHLUESSEL_KLASSE) {
     if (muster.test(text)) return klasse;

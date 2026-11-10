@@ -8,6 +8,7 @@
  * @module panoramenUrls
  */
 let panoramen = null;
+let stil = null;
 
 function panoramenTabelle() {
   if (panoramen === null) {
@@ -30,4 +31,16 @@ export function panoramaUrls(id) {
   return (klein
     ? [tabelle[pfad + '-1280.webp'], tabelle[pfad + '-sdr.avif']]
     : [tabelle[pfad + '-sdr.avif'], tabelle[pfad + '-1280.webp']]).filter(Boolean);
+}
+
+/** Panorama-Kulissen (`assets/panoramen-kulissen`, 1280x720 WebP, `config/backdrops-panorama.js`): nur die gewaehlte Datei wird geladen. */
+export function stilUrls(datei) {
+  if (stil === null) {
+    try {
+      stil = import.meta.glob('./assets/panoramen-kulissen/*.webp', { eager: true, query: '?url', import: 'default' });
+    } catch {
+      stil = {};
+    }
+  }
+  return [stil['./assets/panoramen-kulissen/' + datei]].filter(Boolean);
 }
