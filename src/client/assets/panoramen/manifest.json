@@ -24,6 +24,30 @@
     "runtime": false
   },
   {
+    "file": "alpendorf_herbst-1280.webp",
+    "width": 1049,
+    "height": 720,
+    "bytes": 99116,
+    "sha256": "208b6e404e14336f3c1153fdf07a70de67e4e11e8b915ce7e2b2e872ab9a13b0",
+    "runtime": true
+  },
+  {
+    "file": "alpendorf_herbst-sdr.avif",
+    "width": 1500,
+    "height": 1030,
+    "bytes": 103865,
+    "sha256": "d5d479340089352b061b62030dc15d042c9b4ff5dc8a14e0233885706126c23a",
+    "runtime": true
+  },
+  {
+    "file": "alpendorf_herbst.webp",
+    "width": 1500,
+    "height": 1030,
+    "bytes": 310454,
+    "sha256": "c1f2a46339a181cade47a713a2e3459254351f49c96253882f45d73a972b7624",
+    "runtime": false
+  },
+  {
     "file": "baum_wegegabelung-1280.webp",
     "width": 2493,
     "height": 720,
@@ -45,6 +69,78 @@
     "height": 744,
     "bytes": 593608,
     "sha256": "75bae4246d88f167c0472c2324801c3bb4ce2448171dcc5bfdd720a508539577",
+    "runtime": false
+  },
+  {
+    "file": "baum_weitblick-1280.webp",
+    "width": 960,
+    "height": 720,
+    "bytes": 137922,
+    "sha256": "6de8b0e58dff83b133329f0b46402599e54ce38463e94a27e94aef86c1414af6",
+    "runtime": true
+  },
+  {
+    "file": "baum_weitblick-sdr.avif",
+    "width": 2016,
+    "height": 1512,
+    "bytes": 280508,
+    "sha256": "953bc754c7ee84e4073d5ebeac7292c57b2cb58218e2c9dd22ae310a9e4fcd0b",
+    "runtime": true
+  },
+  {
+    "file": "baum_weitblick.webp",
+    "width": 2016,
+    "height": 1512,
+    "bytes": 864756,
+    "sha256": "0465be3953835a51bfbbd6a67b1f245f685e1da186e90e18a05b05262040d79a",
+    "runtime": false
+  },
+  {
+    "file": "bergsee-1280.webp",
+    "width": 960,
+    "height": 720,
+    "bytes": 156258,
+    "sha256": "f206b275bfbdd1e9e258752510b0bf7d0639ec3632b7679f26141cf7df634562",
+    "runtime": true
+  },
+  {
+    "file": "bergsee-sdr.avif",
+    "width": 2000,
+    "height": 1500,
+    "bytes": 326781,
+    "sha256": "92fa6caae34f44a0ca73ed87d0358910771bb3eb03440285d74676fb84301219",
+    "runtime": true
+  },
+  {
+    "file": "bergsee.webp",
+    "width": 2000,
+    "height": 1500,
+    "bytes": 864120,
+    "sha256": "ec1632068d93e2df2411f070c84eebf27a4d097e696076361bc8fa10bffe141f",
+    "runtime": false
+  },
+  {
+    "file": "birke_gemaelde-1280.webp",
+    "width": 1320,
+    "height": 720,
+    "bytes": 123416,
+    "sha256": "f39fbb24ea2395c68a314880e28a024e5efb28e161f6374c8f85e2d0f79c85e1",
+    "runtime": true
+  },
+  {
+    "file": "birke_gemaelde-sdr.avif",
+    "width": 1408,
+    "height": 768,
+    "bytes": 84471,
+    "sha256": "fda78a79ffcba221bc33b47a5b52d96fe27b54c15ee2656ca814a7461c65212a",
+    "runtime": true
+  },
+  {
+    "file": "birke_gemaelde.webp",
+    "width": 1408,
+    "height": 768,
+    "bytes": 265096,
+    "sha256": "230cbe5e3d8ed7135c723b661ee07fe367e0c71de5de648e8543b6ba20d6199b",
     "runtime": false
   },
   {
@@ -136,6 +232,78 @@
     "runtime": false
   },
   {
+    "file": "gewitter_abendrot-1280.webp",
+    "width": 694,
+    "height": 720,
+    "bytes": 16310,
+    "sha256": "e3a62d858228d1e4e1a7caa1c410f7b25e40954ba81d88274eccfdbf927a7299",
+    "runtime": true
+  },
+  {
+    "file": "gewitter_abendrot-sdr.avif",
+    "width": 1542,
+    "height": 1600,
+    "bytes": 67057,
+    "sha256": "a23f182c17aaed839ec20a5c809fe4c416fda9ddf9ab55f08ef9fd68c31a4fe6",
+    "runtime": true
+  },
+  {
+    "file": "gewitter_abendrot.webp",
+    "width": 1542,
+    "height": 1600,
+    "bytes": 184234,
+    "sha256": "102867b660156ff1c27390843eacc2d4381fba7643c3e3f9a758681dcd70a851",
+    "runtime": false
+  },
+  {
+    "file": "halbmond_huegel-1280.webp",
+    "width": 884,
+    "height": 720,
+    "bytes": 54838,
+    "sha256": "ced14e224c0d9e8cc44b2428aa257f3067efc1a86e58a0a975d03cee765f2e65",
+    "runtime": true
+  },
+  {
+    "file": "halbmond_huegel-sdr.avif",
+    "width": 1350,
+    "height": 1100,
+    "bytes": 68974,
+    "sha256": "1e292490e21170126605eb42455764f9cc0e491cfa3b8dc001704646f790a40e",
+    "runtime": true
+  },
+  {
+    "file": "halbmond_huegel.webp",
+    "width": 1350,
+    "height": 1100,
+    "bytes": 183070,
+    "sha256": "89b414d1ed81d53442d734facbb468db3d8ddaaae590e1acb9d30079df4c5780",
+    "runtime": false
+  },
+  {
+    "file": "herbstbaeume_dunst-1280.webp",
+    "width": 828,
+    "height": 400,
+    "bytes": 39446,
+    "sha256": "84a4ea457a62237ee70e3105ed291c8c427e0401d18b8df826899896850ad4b9",
+    "runtime": true
+  },
+  {
+    "file": "herbstbaeume_dunst-sdr.avif",
+    "width": 828,
+    "height": 400,
+    "bytes": 25558,
+    "sha256": "6a4092be5c2d8e707d1924573cd46987edff7e45b773add1507204dd578ec1b8",
+    "runtime": true
+  },
+  {
+    "file": "herbstbaeume_dunst.webp",
+    "width": 828,
+    "height": 400,
+    "bytes": 78236,
+    "sha256": "58354e7aadfa009e90c3cccee5b633c9bb8be7645f8955d283f10c92fc06e6dd",
+    "runtime": false
+  },
+  {
     "file": "herbstwiese-1280.webp",
     "width": 1491,
     "height": 720,
@@ -184,6 +352,30 @@
     "runtime": false
   },
   {
+    "file": "klondike_schnee-1280.webp",
+    "width": 1080,
+    "height": 720,
+    "bytes": 140944,
+    "sha256": "9db753f2bc2199ef30026bafd6d2bf5af72ac2e194b03e5d3d7e408ced202013",
+    "runtime": true
+  },
+  {
+    "file": "klondike_schnee-sdr.avif",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 127639,
+    "sha256": "c12a18fe47c18bf660a6d9c9490917ea5b563e28677d27a3f9fe65ce676da298",
+    "runtime": true
+  },
+  {
+    "file": "klondike_schnee.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 412448,
+    "sha256": "b4a609c8d6c5ef37c4937c99f78a5d8edcb70c7867d86751ef580d7c5d08b11b",
+    "runtime": false
+  },
+  {
     "file": "maisfeld_sw-1280.webp",
     "width": 1047,
     "height": 720,
@@ -208,6 +400,30 @@
     "runtime": false
   },
   {
+    "file": "moosboden_wald-1280.webp",
+    "width": 907,
+    "height": 720,
+    "bytes": 140246,
+    "sha256": "a169ee38f70c661343d27122f0e56d3557c8a7b432c7da8f68ca62f5ff279a2d",
+    "runtime": true
+  },
+  {
+    "file": "moosboden_wald-sdr.avif",
+    "width": 1512,
+    "height": 1200,
+    "bytes": 163122,
+    "sha256": "cd95f42d4ef5c7e329b40604abfd83fb4af14231b563a00aae984ba00bfa7423",
+    "runtime": true
+  },
+  {
+    "file": "moosboden_wald.webp",
+    "width": 1512,
+    "height": 1200,
+    "bytes": 552700,
+    "sha256": "b85c12fcbd3b9b31884556491f39b9f2f2a9e1a857599b39d38ef5cae7878ef2",
+    "runtime": false
+  },
+  {
     "file": "nachtstadt_lichter-1280.webp",
     "width": 2093,
     "height": 720,
@@ -229,6 +445,54 @@
     "height": 886,
     "bytes": 547926,
     "sha256": "8c16e292f72e503968af5e75650437f20fe974ba4108a5178f8a43c12805c364",
+    "runtime": false
+  },
+  {
+    "file": "nachtstadt_tal-1280.webp",
+    "width": 960,
+    "height": 720,
+    "bytes": 33422,
+    "sha256": "cb31dbb4e168f3598883c0d447ba857954f4edcfdfe0cac1c0e885858fc16888",
+    "runtime": true
+  },
+  {
+    "file": "nachtstadt_tal-sdr.avif",
+    "width": 2016,
+    "height": 1512,
+    "bytes": 81214,
+    "sha256": "39f7e14dfd776d99d9e195f5b6ad71603e2535080df8875dd4f10eedf1e3c53c",
+    "runtime": true
+  },
+  {
+    "file": "nachtstadt_tal.webp",
+    "width": 2016,
+    "height": 1512,
+    "bytes": 211476,
+    "sha256": "4e7ffaaf4f1b74d5143194215909621c865874740cbbcbfd11b740d73bb38e39",
+    "runtime": false
+  },
+  {
+    "file": "nachtstadt_tal_2-1280.webp",
+    "width": 960,
+    "height": 720,
+    "bytes": 89478,
+    "sha256": "c0abbef48f24ea0bc155d109660694df20016d8f4f8964c910631d510aa9fc8f",
+    "runtime": true
+  },
+  {
+    "file": "nachtstadt_tal_2-sdr.avif",
+    "width": 2016,
+    "height": 1512,
+    "bytes": 164659,
+    "sha256": "513bec085f0d901d482832b00f2edc5841d8ef81c312b05a0d75da61eb7350d7",
+    "runtime": true
+  },
+  {
+    "file": "nachtstadt_tal_2.webp",
+    "width": 2016,
+    "height": 1512,
+    "bytes": 532398,
+    "sha256": "1f33b8a5a1dad90473505e74b1829e1186e0faac6672875c4d03cb315974d05f",
     "runtime": false
   },
   {
@@ -352,6 +616,30 @@
     "runtime": false
   },
   {
+    "file": "rosa_glut_feld-1280.webp",
+    "width": 1236,
+    "height": 720,
+    "bytes": 27824,
+    "sha256": "8efdc086d7dcb25eda6e4d20211a3392c1a56f407c374e71cae9dbff64be08c7",
+    "runtime": true
+  },
+  {
+    "file": "rosa_glut_feld-sdr.avif",
+    "width": 2576,
+    "height": 1500,
+    "bytes": 58354,
+    "sha256": "5cb70ac28a2eeacce317a9b2671ba6bbd06efa09e1264ab2799c1ded23476634",
+    "runtime": true
+  },
+  {
+    "file": "rosa_glut_feld.webp",
+    "width": 2576,
+    "height": 1500,
+    "bytes": 150824,
+    "sha256": "939d4767deb1e7228a5841c7e63c94c599baa0e4468a2462f32ff28f48fc33c7",
+    "runtime": false
+  },
+  {
     "file": "schaefchenwolken-1280.webp",
     "width": 1513,
     "height": 720,
@@ -376,6 +664,30 @@
     "runtime": false
   },
   {
+    "file": "schnee_alpendorf-1280.webp",
+    "width": 960,
+    "height": 720,
+    "bytes": 63988,
+    "sha256": "78d8298cfa2c82202bfe7f6b5110b6829c9f4c375d1db523abed084da9f1ccb6",
+    "runtime": true
+  },
+  {
+    "file": "schnee_alpendorf-sdr.avif",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 102065,
+    "sha256": "5cf5397b8bbd3513de814f162dae8d1c84652bda48e5af6bee3731b5bd2e7806",
+    "runtime": true
+  },
+  {
+    "file": "schnee_alpendorf.webp",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 250726,
+    "sha256": "041b37b15fc6bb3c66135d924ad2801e7e3cec99d5e7fab5b34e69b0134588a7",
+    "runtime": false
+  },
+  {
     "file": "schneegarten-1280.webp",
     "width": 1558,
     "height": 720,
@@ -397,6 +709,30 @@
     "height": 924,
     "bytes": 225318,
     "sha256": "e3c108fd8289845383eefcb5564f37b32f605ee5a22bf1fc76a7a8538a9fc89b",
+    "runtime": false
+  },
+  {
+    "file": "schotterweg_horizont-1280.webp",
+    "width": 1037,
+    "height": 720,
+    "bytes": 49108,
+    "sha256": "84de27a7cd46d459a525536f8e5f36106b8f5a4eae45aec10815c84e40fe3e05",
+    "runtime": true
+  },
+  {
+    "file": "schotterweg_horizont-sdr.avif",
+    "width": 1512,
+    "height": 1050,
+    "bytes": 46175,
+    "sha256": "d3eb423b2bf768f000511bf3dc618d3934776df877aac719b57b727830fc158b",
+    "runtime": true
+  },
+  {
+    "file": "schotterweg_horizont.webp",
+    "width": 1512,
+    "height": 1050,
+    "bytes": 156974,
+    "sha256": "3babb77f40c9e36b11f3b7f9ef85a7960dcbae38eac5b446eea1f50305343337",
     "runtime": false
   },
   {
@@ -477,6 +813,78 @@
     "height": 2160,
     "bytes": 119844,
     "sha256": "39321af8646513c934324e3b7afdfee711c6463497e47c1be8ac51bb02c5ba5b",
+    "runtime": false
+  },
+  {
+    "file": "sonne_ueber_wald-1280.webp",
+    "width": 659,
+    "height": 720,
+    "bytes": 24670,
+    "sha256": "6a2e4925250de9c284596b4a9b08a132158c342c6079407cd96138b464479c2d",
+    "runtime": true
+  },
+  {
+    "file": "sonne_ueber_wald-sdr.avif",
+    "width": 1190,
+    "height": 1300,
+    "bytes": 47941,
+    "sha256": "e2a37f86f5ffb9071a31df72f426ca092b93717326880d5f8f71e8ff11577d65",
+    "runtime": true
+  },
+  {
+    "file": "sonne_ueber_wald.webp",
+    "width": 1190,
+    "height": 1300,
+    "bytes": 127512,
+    "sha256": "9c3168898402973c70f68de3effd954197efbb547b73bca230dab0c5b3c790e7",
+    "runtime": false
+  },
+  {
+    "file": "sonnenaufgang_zaun-1280.webp",
+    "width": 1081,
+    "height": 720,
+    "bytes": 83472,
+    "sha256": "6068e4f6c411f78d4d208053b69679b731494cb79cf993afdf7521a5df2963c5",
+    "runtime": true
+  },
+  {
+    "file": "sonnenaufgang_zaun-sdr.avif",
+    "width": 2576,
+    "height": 1716,
+    "bytes": 194454,
+    "sha256": "0ff6e08ea3583611d8e2136639a7bd3fd3b7cb3e6c73a865fb7e575c268df1e7",
+    "runtime": true
+  },
+  {
+    "file": "sonnenaufgang_zaun.webp",
+    "width": 2576,
+    "height": 1716,
+    "bytes": 513266,
+    "sha256": "22dee15028e5ddaaf16d8043d767ccc27bca976a46998958db80cb2ec21b40ac",
+    "runtime": false
+  },
+  {
+    "file": "sonnenstrahlen_felder-1280.webp",
+    "width": 1081,
+    "height": 720,
+    "bytes": 40876,
+    "sha256": "9138276dd3078fecf37623944086728c85c2e81b7297e9746add92e258bf7cd7",
+    "runtime": true
+  },
+  {
+    "file": "sonnenstrahlen_felder-sdr.avif",
+    "width": 2576,
+    "height": 1716,
+    "bytes": 147011,
+    "sha256": "8bb25092bd74b7c2fcbba410bdebbe272d4313b45d99addd56ef68a9cb3754c7",
+    "runtime": true
+  },
+  {
+    "file": "sonnenstrahlen_felder.webp",
+    "width": 2576,
+    "height": 1716,
+    "bytes": 453504,
+    "sha256": "5de48971deb85a601779f66dd9b158d08fc2ab3cea56f0436fd7430fcc6c820b",
     "runtime": false
   },
   {

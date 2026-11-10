@@ -1,7 +1,7 @@
 {
   "_hinweis": "Grenzen für scripts/bundle-gate.mjs (Bytes; gzip Stufe 9). Gemessen 2026-11-09 nach dem Umbau des Startpfads (LADEZEIT, tests/ladezeit-nach-bedarf.test.js): haupt 1204317/356027, start 1314450/379364, dist 122444493 in 1034 Dateien, Sourcemaps 0, sourceMappingURL-Verweise 0. Davor (nach dem Merge der Branches bg/ag-a1 bis a10): haupt 1323113/369396, start 1433246/392733, dist in 1437 Dateien — das Gate war rot. Der Umbau zieht die Figuren-Manifeste und die Adresstabellen der Figurenbilder in zwei nachgeladene Bausteine (figurenDaten.js, figurenHdDaten.js): −118,8 kB roh / −13,4 kB gzip im Hauptbündel, 403 Zwergdateien weniger. Die Grenzen liegen rund 0,5 % über dem Messwert; sie werden nur verschärft, nie ohne gemessene Begründung angehoben. Angehoben 2026-11-10 nach Waffenfassung 20 (Feuerwesen, Motor+Client) und BAL-16: gemessen haupt 1214238/359192, start 1324371/382529 (+9,9 kB roh / +3,2 kB gzip im Hauptbündel gegenüber dem Stand vom 2026-11-09); neue Grenzen rund 0,5 % über dem Messwert.",
   "haupt": {
-    "roh": 1220000,
+    "roh": 1221000,
     "gzip": 361000
   },
   "start": {

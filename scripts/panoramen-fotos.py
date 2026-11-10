@@ -43,6 +43,26 @@ FOTOS = {
     'herbstwiese': ('7e6cda99-image.jpg', None),
     'nachtstrasse_boden': ('9685004d-image.jpg', None),
     'nachtstrasse_sw': ('5cf4063f-image.jpg', None),
+    # Zweite Lieferung (2026-11-10, 16:19). Nicht übernommen: Red-Rocks-Amphitheater (Personen, Herkunft
+    # ungeklärt), Bildschirmfoto einer Bildergalerie (fremdes Bild mit Bedienelementen), Schwarzlicht-Wandbild
+    # (fremdes Kunstwerk mit Webadresse) — bis der Auftraggeber die Rechte bestätigt.
+    'schotterweg_horizont': ('f6e5f038-image.jpg', (0, 250, 1512, 1300)),
+    'rosa_glut_feld': ('456da4b1-image.jpg', (0, 500, 2576, 2000)),
+    'gewitter_abendrot': ('e7bca755-image.jpg', (0, 350, 1542, 1950)),
+    'birke_gemaelde': ('3dfc8700-image.png', None),
+    'sonne_ueber_wald': ('3e61fa15-image.jpg', (0, 700, 1190, 2000)),
+    'sonnenstrahlen_felder': ('d45aca8d-image.jpg', None),
+    'klondike_schnee': ('6e6079ea-image.png', None),
+    'sonnenaufgang_zaun': ('ea315efc-image.jpg', None),
+    'alpendorf_herbst': ('896a06c8-image.jpg', (0, 250, 1500, 1280)),
+    'baum_weitblick': ('55767613-image.jpg', None),
+    'bergsee': ('e57cf0b5-image.jpg', None),
+    'schnee_alpendorf': ('008117fb-image.jpg', None),
+    'herbstbaeume_dunst': ('80d3fa2d-image.png', (0, 694, 828, 1094)),
+    'nachtstadt_tal': ('9697ce0f-image.jpg', None),
+    'halbmond_huegel': ('9500d923-image.jpg', (0, 450, 1350, 1550)),
+    'moosboden_wald': ('56fc4bb9-image.jpg', (0, 200, 1512, 1400)),
+    'nachtstadt_tal_2': ('bf4dc55f-image.jpg', None),
 }
 
 
