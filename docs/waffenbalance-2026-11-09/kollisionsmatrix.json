@@ -1,9 +1,9 @@
 {
   "ticket": "BAL-12",
   "titel": "Reale Treffer- und Kollisionsmatrix",
-  "sourceCommit": "cf86bc44a6a2eea0e75b10936784e86b9ba76fc7",
+  "sourceCommit": "9524f58db86180de0c514e5c405f418834384274",
   "versions": {
-    "waffen": 19,
+    "waffen": 20,
     "klassen": 3,
     "schaden": 2,
     "wind": 2,
@@ -23,7 +23,7 @@
     "tech": 250,
     "ultimate": 600
   },
-  "method": "Echter fire()/step()-Pfad je Waffe: beide Figuren auf y=100 im freien Luftraum, Ziel 1000 LP, keine Kisten. Angriff: Rollenentfernung (Kategorie), Vorschau-Zielung bzw. Steilfeuer-Winkelgitter; Nachweis nur über hitscan/projectile_impact/projectile_pierced/fuse_armed aus dem abgegebenen Schuss. Selbstwirkung: echte Startposition auf dem Boden, positiver Nutzwert. Ein kontrollierter wendeExplosionAn-Aufruf ist kein Kollisionsfall und wird getrennt ausgewiesen. Keine Trefferquote, keine Winrate, keine Aussage über Bewegung/Deckung der Partie.",
+  "method": "Echter fire()/step()-Pfad je Waffe: beide Figuren auf y=100 im freien Luftraum, Ziel 1000 LP, keine Kisten. Angriff: Rollenentfernung (Kategorie), Vorschau-Zielung bzw. Steilfeuer-Winkelgitter; Nachweis nur über hitscan/projectile_impact/projectile_pierced/fuse_armed (Läufer: feuerwesen_zerbirst an der Figur; beide Figuren dafür festgehalten auf der Oberfläche) aus dem abgegebenen Schuss. Selbstwirkung: echte Startposition auf dem Boden, positiver Nutzwert. Ein kontrollierter wendeExplosionAn-Aufruf ist kein Kollisionsfall und wird getrennt ausgewiesen. Keine Trefferquote, keine Winrate, keine Aussage über Bewegung/Deckung der Partie.",
   "waffen": [
     {
       "id": "pa_001",
@@ -5858,7 +5858,7 @@
       "name": "Feuerwesen",
       "art": "angriff",
       "category": "utility",
-      "delivery": "hitscan",
+      "delivery": "laeufer",
       "strikeStyle": "self",
       "rollenDistanz": 250,
       "reichweite": 572,
@@ -5867,29 +5867,39 @@
         "distance": 250,
         "angle": 0,
         "angleAnzeige": 0,
-        "power": 100,
-        "route": "strahl",
-        "spawn": null,
-        "ticks": 0,
+        "power": 50,
+        "route": "laeufer",
+        "spawn": {
+          "x": 417,
+          "y": 736,
+          "laeufer": true
+        },
+        "ticks": 174,
         "kollision": {
-          "art": "hitscan",
-          "x": 643,
-          "y": 95,
-          "target": 2
+          "art": "feuerwesen_zerbirst",
+          "x": 639.4,
+          "y": 736.36,
+          "target": 2,
+          "kugeln": 5
         },
         "schaden": {
-          "ereignisse": 46,
-          "zielVerlust": 62,
+          "ereignisse": 37.636,
+          "zielVerlust": 53.636,
           "selbstVerlust": 0,
           "zielLP": {
             "vorher": 1000,
-            "nachher": 938
+            "nachher": 946.364
           }
         },
         "ereignisArten": [
           "shot",
+          "feuerwesen_gesetzt",
+          "projectile_spawn",
+          "feuerwesen_zerbirst",
+          "terrain_destroyed",
           "damage",
-          "hitscan"
+          "explosion",
+          "projectile_impact"
         ],
         "quelle": "fire+step",
         "kontrollierteExplosion": false

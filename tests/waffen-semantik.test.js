@@ -288,16 +288,17 @@ test('W13: die drei Signaturen ziehen unterschiedliche Spuren', () => {
 // ---------------------------------------------------------------- W15
 
 test('W15: Reichweitenprüfung trennt Flug, Hitscan und Selbstwirkung über den Motor', () => {
-  const zaehlung = { flug: 0, hitscan: 0, selbst: 0 };
+  const zaehlung = { flug: 0, hitscan: 0, laeufer: 0, selbst: 0 };
   const selbst = [];
   for (const roh of WEAPONS) {
     const waffe = getWaffe(roh.id);
     const effekt = buildEffect(waffe);
     if (effekt && SELF_TARGET_KINDS.has(effekt.kind)) { zaehlung.selbst += 1; selbst.push(roh.id); continue; }
     if (waffe.delivery === 'hitscan') zaehlung.hitscan += 1;
+    else if (waffe.delivery === 'laeufer') zaehlung.laeufer += 1; // Waffenfassung 20: Feuerwesen läuft, zerbirst bei Berührung
     else if (waffe.delivery === 'projectile') zaehlung.flug += 1;
   }
-  assert.deepEqual(zaehlung, { flug: 87, hitscan: 25, selbst: 38 },
+  assert.deepEqual(zaehlung, { flug: 87, hitscan: 24, laeufer: 1, selbst: 38 },
     'Aufteilung Flug/Hitscan/Selbstwirkung weicht vom gemessenen Erstaktionspfad ab');
 
   // Genau diese sieben galten im alten Werkzeug fälschlich als 0-Reichweite.
