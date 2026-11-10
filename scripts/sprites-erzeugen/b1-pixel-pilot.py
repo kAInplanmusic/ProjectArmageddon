@@ -37,10 +37,16 @@ sys.path.insert(0, str(HIER))
 
 FIGUR = "00_nullpointer-exception"
 ASSETS = PROJEKT / "src" / "client" / "assets"
-ANSICHTEN = {
-    "portrait": ASSETS / "characters" / "pixel" / f"{FIGUR}.png",
-    "seite": ASSETS / "characters-side" / "pixel" / f"{FIGUR}.png",
-}
+
+
+def ansichten(figur):
+    return {
+        "portrait": ASSETS / "characters" / "pixel" / f"{figur}.png",
+        "seite": ASSETS / "characters-side" / "pixel" / f"{figur}.png",
+    }
+
+
+ANSICHTEN = ansichten(FIGUR)
 RASTER_HOEHE = 48      # logische Pixel der Figurhöhe (Pilot: 32 war gröber als das Modellraster, Figur zerfiel)
 FARBEN = 16            # höchstens je Figur (Abnahme B1)
 ZIEL_GROESSE = 256     # wie die alten Bilder
@@ -95,6 +101,14 @@ def freistellen(bild, toleranz=70):
         if x < w - 1: stapel.append((x + 1, y))
         if y > 0: stapel.append((x, y - 1))
         if y < h - 1: stapel.append((x, y + 1))
+    # Eingeschlossener Hintergrund (zwischen Bogen und Sehne, unter Armen): Flutung erreicht ihn nicht.
+    # Dort nur Pixel, die der gemessenen Grundfarbe SEHR nahe sind (enger als jedes Figurengrün im Pilot).
+    eng = 40 * 40
+    for y in range(h):
+        for x in range(w):
+            p = px[x, y]
+            if p[3] and sum((p[k] - grund[k]) ** 2 for k in range(3)) <= eng:
+                px[x, y] = (0, 0, 0, 0)
     return rgba
 
 
@@ -141,10 +155,10 @@ def kontaktbogen(paare, ziel):
     bogen.save(ziel)
 
 
-def erzeuge(anbieter, ansicht, ausgabe):
+def erzeuge(anbieter, ansicht, ausgabe, quelle):
     if anbieter == "tog":
         from tog import tog_gen
-        return tog_gen(PROMPT[ansicht], str(ANSICHTEN[ansicht]), str(ausgabe))
+        return tog_gen(PROMPT[ansicht], str(quelle), str(ausgabe))
     raise SystemExit(f"Anbieter {anbieter} hier nicht verdrahtet; Runware siehe tools/design-rest/runware.mjs")
 
 
@@ -155,35 +169,43 @@ def main():
     ap.add_argument("--ausfuehren", action="store_true", help="Bilder wirklich beim Anbieter erzeugen (kostet Guthaben)")
     ap.add_argument("--nur-raster", help="vorhandenes Rohbild nur rastern (offline)")
     ap.add_argument("--ansicht", choices=list(ANSICHTEN), default="seite")
+    ap.add_argument("--figur", action="append",
+                    help="Dateiname ohne .png (mehrfach möglich); 'alle' = alle neun pixel-Figuren. Standard: Pilotfigur")
     a = ap.parse_args()
     ziel = Path(a.ziel)
     ziel.mkdir(parents=True, exist_ok=True)
 
+    figuren = a.figur or [FIGUR]
+    if figuren == ["alle"]:
+        figuren = sorted(p.stem for p in (ASSETS / "characters" / "pixel").glob("*.png"))
+
     if a.nur_raster:
         neu, klein = raster(Image.open(a.nur_raster), a.ansicht)
-        neu.save(ziel / f"{FIGUR}__{a.ansicht}__8bit.png")
+        neu.save(ziel / f"{figuren[0]}__{a.ansicht}__8bit.png")
         print(f"{a.ansicht}: {farbzahl(klein)} Farben, Raster {klein.width}x{klein.height}")
         return
 
     if not a.ausfuehren:
         print("PLAN (nichts wird geholt; --ausfuehren startet die Erzeugung):")
-        for ansicht, quelle in ANSICHTEN.items():
-            print(f"  {ansicht}: Referenz {quelle.relative_to(PROJEKT)} -> {ziel}/{FIGUR}__{ansicht}__roh.png -> __8bit.png")
-        print(f"  Raster {RASTER_HOEHE} px hoch, <= {FARBEN} Farben, Ausgabe {ZIEL_GROESSE} px, Kontaktbogen {ziel}/kontaktbogen.png")
+        for figur in figuren:
+            for ansicht, quelle in ansichten(figur).items():
+                print(f"  {figur} {ansicht}: Referenz {quelle.relative_to(PROJEKT)} -> {ziel}/{figur}__{ansicht}__8bit.png")
+        print(f"  Raster {RASTER_HOEHE} px hoch, <= {FARBEN} Farben, Ausgabe {ZIEL_GROESSE} px")
         print(f"  Schlüssel gesetzt: {'ja' if os.environ.get('TOGETHER_API_KEY') else 'nein'} (TOGETHER_API_KEY)")
         return
 
     paare = []
-    for ansicht in ANSICHTEN:
-        roh = ziel / f"{FIGUR}__{ansicht}__roh.png"
-        antwort = erzeuge(a.anbieter, ansicht, roh)
-        print(f"{ansicht}: {antwort}")
-        if antwort != "ok":
-            continue
-        neu, klein = raster(Image.open(roh), ansicht)
-        neu.save(ziel / f"{FIGUR}__{ansicht}__8bit.png")
-        print(f"  {farbzahl(klein)} Farben, Raster {klein.width}x{klein.height}")
-        paare.append((Image.open(ANSICHTEN[ansicht]).convert("RGBA"), neu))
+    for figur in figuren:
+        for ansicht, quelle in ansichten(figur).items():
+            roh = ziel / f"{figur}__{ansicht}__roh.png"
+            antwort = "ok" if roh.exists() else erzeuge(a.anbieter, ansicht, roh, quelle)
+            print(f"{figur} {ansicht}: {antwort}", flush=True)
+            if antwort != "ok":
+                continue
+            neu, klein = raster(Image.open(roh), ansicht)
+            neu.save(ziel / f"{figur}__{ansicht}__8bit.png")
+            print(f"  {farbzahl(klein)} Farben, Raster {klein.width}x{klein.height}", flush=True)
+            paare.append((Image.open(quelle).convert("RGBA"), neu))
     if paare:
         kontaktbogen(paare, ziel / "kontaktbogen.png")
         print(f"Kontaktbogen: {ziel / 'kontaktbogen.png'} — Sichtfreigabe durch den Auftraggeber abwarten (B1).")
