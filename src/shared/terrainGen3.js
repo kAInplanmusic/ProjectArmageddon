@@ -81,7 +81,7 @@ import { baueStoffkarte, STOFF_FORK } from './stoffkarte.js';
 import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
 import { erzeugeKompositionsKarte, erzeugeZonenKarte, ZONEN_AB_BREITE } from './terrainKomposition.js';
-import { pruefeErreichbarkeit } from './erreichbarkeit.js';
+import { pruefeErreichbarkeit, findeFlaechen } from './erreichbarkeit.js';
 import { GELAENDE_KOMPOSITION, GELAENDE_WEIT, KARTENARTEN } from './config/gelaende.js';
 
 /**
@@ -694,7 +694,8 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
     karte.surface = oberflaechen(karte.bitmap, width, height);
     kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
     let urteil = pruefeBauteilKarte(kennzahlen);
-    if (urteil.ok && !spawnErreichbar(karte.bitmap, width, height, karte.art, zonen)) urteil = { ok: false, grund: 'Spawnspalten erreichen einander nicht' };
+    if (urteil.ok && zonen) urteil = zonenSpielbar(karte.bitmap, width, height, karte.wasserY);
+    else if (urteil.ok && !spawnErreichbar(karte.bitmap, width, height, karte.art)) urteil = { ok: false, grund: 'Spawnspalten erreichen einander nicht' };
     if (urteil.ok) break;
     ablehnungen.push(`${karte.art}: ${urteil.grund}`);
   }
@@ -715,7 +716,7 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
  * `erreichbarkeit.pruefeErreichbarkeit`, auf einem Viertel der Auflösung gerechnet (Kosten). Hochformat und Karten ohne Boden an
  * einer Spalte zählen als erreichbar (dort gilt die Prüfung des Matches).
  */
-function spawnErreichbar(bitmap, width, height, art = '', zonen = false) {
+function spawnErreichbar(bitmap, width, height, art = '') {
   if (height > width) return true;
   const S = 4;
   const w = Math.floor(width / S);
@@ -729,9 +730,48 @@ function spawnErreichbar(bitmap, width, height, art = '', zonen = false) {
     while (y < height && !bitmap[y * width + x]) y += 1;
     if (y < height) figuren.push({ x: x / S, y: y / S, teamId: i % 2 });
   }
-  const urteil = pruefeErreichbarkeit({ bitmap: klein, width: w, height: h, figuren, wurfweite: (zonen ? WURFWEITE_ZONEN : 0.3668 * width) / S });
+  const urteil = pruefeErreichbarkeit({ bitmap: klein, width: w, height: h, figuren, wurfweite: (0.3668 * width) / S });
   // Höhlenkarten zerfallen in Brocken: eine abgesprengte Figur ist dort erlaubt (der Grund beginnt mit ihrer Zahl), sonst neue Ziehung.
-  return urteil.ok || (!zonen && art.startsWith('hoehle') && Number.parseInt(urteil.grund, 10) <= 1);
+  return urteil.ok || (art.startsWith('hoehle') && Number.parseInt(urteil.grund, 10) <= 1);
+}
+
+/**
+ * Spielbarkeit einer Zonenkarte (Fassung 10), gerechnet wie die Startplatzwahl der Engine (`karteStart.hauptflaeche`): Figuren stehen nur auf
+ * den großen Landmassen (die größte Fläche und jede, die über 30 % der Breite oben liegt) und trocken (Oberkante über der Wasserlinie).
+ * Verlangt: Diese trockenen Spalten liegen in den äußeren Vierteln der Karte, decken mindestens 40 % der Breite, und zwischen zwei
+ * benachbarten trockenen Spalten liegt höchstens `WURFWEITE_ZONEN` px — ein Gegner ist von jedem Stand aus in Wurfweite. Rechnet auf einem Viertel der Auflösung.
+ */
+function zonenSpielbar(bitmap, width, height, wasserY) {
+  const S = 4;
+  const w = Math.floor(width / S);
+  const h = Math.floor(height / S);
+  const klein = new Uint8Array(w * h);
+  for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) klein[y * w + x] = bitmap[(y * S + 2) * width + x * S + 2];
+  const { flaeche, groessen } = findeFlaechen(klein, w, h);
+  let groesste = 0;
+  for (let i = 1; i < groessen.length; i += 1) if (groessen[i] > groessen[groesste]) groesste = i;
+  const oben = new Int32Array(w).fill(-1);
+  const hoehe = new Int32Array(w).fill(-1);
+  const zaehler = new Map();
+  for (let x = 0; x < w; x += 1) {
+    for (let y = 0; y < h; y += 1) {
+      const f = flaeche[y * w + x];
+      if (f !== -1) { oben[x] = f; hoehe[x] = y * S; zaehler.set(f, (zaehler.get(f) ?? 0) + 1); break; }
+    }
+  }
+  const trocken = [];
+  for (let x = 0; x < w; x += 1) {
+    if (oben[x] < 0 || hoehe[x] >= wasserY - 20) continue;
+    if (oben[x] === groesste || zaehler.get(oben[x]) >= w * 0.3) trocken.push(x);
+  }
+  // Alle Standplätze auf EINER Fläche: zwei große Landmassen teilen die Figuren, und die Engine-Prüfung (Hauptfläche = wo die meisten stehen) schlägt an.
+  if (trocken.some((x) => oben[x] !== oben[trocken[0]])) return { ok: false, grund: 'trockenes Land liegt auf getrennten Flächen' };
+  if (trocken.length < w * 0.4) return { ok: false, grund: `zu wenig trockenes Land (${((trocken.length / w) * 100).toFixed(0)} %)` };
+  if (trocken[0] > w * 0.25 || trocken.at(-1) < w * 0.75) return { ok: false, grund: 'Land erreicht die äußeren Viertel nicht' };
+  for (let i = 1; i < trocken.length; i += 1) {
+    if ((trocken[i] - trocken[i - 1]) * S > WURFWEITE_ZONEN) return { ok: false, grund: 'Lücke zwischen Landmassen über Wurfweite' };
+  }
+  return { ok: true };
 }
 
 /** Bauteilkarten haben Bänder und Lücken: nur Land-Anteil und Höhennutzung zählen (nicht Steilheit/Hohlraum des Hügelfelds). */

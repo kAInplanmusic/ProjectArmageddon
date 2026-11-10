@@ -43,6 +43,7 @@ import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, appl
 import { orderInventoryBySubcategory, WINDFAKTOR_JE_WAFFE } from '../shared/config/weapons.js';
 import { WAFFEN_STANDARD, getWaffe } from '../shared/config/waffen-fassung.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
+import { verdrahteKartenVorschlag } from './kartenVorschlag.js';
 import { pickBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
 import { SONDER_KULISSEN, sonderKulisseFuer, motivFamilieFuerArt } from './sonderKulissen.js'; import { ZEITEN, WETTER_WAHL, normalisiereWahl } from './stimmung.js';
@@ -3986,6 +3987,7 @@ if (typeof document !== 'undefined') {
     for (const id of ['cfg-teams', 'cfg-players']) {
       document.getElementById(id)?.addEventListener('change', () => { game.fillLoadoutOptions(); game.fillFraktionOptions(); });
     }
+    verdrahteKartenVorschlag();
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', fuelle, { once: true });

@@ -15,6 +15,8 @@ async function starte(page) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.evaluate(() => window.__PA__.setAutoLoop(false));
+  // Der Test misst die Einschlag-Optik auf der gewohnten Karte (16:9, mittel); die Menü-Vorgabe ist seit der Breitkarte 24:9/groß.
+  await page.evaluate(() => { document.getElementById('cfg-kartenformat').value = '16:9'; document.getElementById('cfg-kartengroesse').value = 'mittel'; });
   await page.locator('#cfg-seed').fill('20260921');
   await page.locator('#start-button').click();
   await expect(page.locator('#menu-overlay')).toBeHidden();
