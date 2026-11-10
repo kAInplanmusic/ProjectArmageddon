@@ -29,7 +29,7 @@ import { MatchController } from '../src/engine/match.js';
 import {
   SEED, KARTENBREITE, ZIEL_LP, ROLLEN_ENTFERNUNG,
   pruefstand, reichweite, rollenDistanz, vorschauZiel, trefferProbe, selbstProbe,
-  istSelbstwirkung, kontrollfall,
+  istSelbstwirkung, istLaeufer, kontrollfall,
 } from './kollisionsmatrix-kern.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -62,6 +62,12 @@ function kandidaten(weapon) {
     for (const d of [Math.round(reach * 0.6), 90]) {
       for (let a = 0.02; a <= 1.45; a += 0.02) dazu(dann, d, rund(a), 100, 'steilfeuer-rueckfall');
     }
+    return { erst, dann };
+  }
+  if (istLaeufer(weapon)) {
+    /* Läufer (Feuerwesen, Fassung 20): der Winkel wählt nur die Laufrichtung (0 = zum Ziel), die Kraft zählt nicht.
+     * Belegt wird die Berührung auf dem Boden in Rollenentfernung, sonst näher. */
+    for (const d of [rolle, 150, 90]) dazu(erst, d, 0, 50, 'laeufer');
     return { erst, dann };
   }
   if (weapon.delivery === 'hitscan') {
@@ -111,6 +117,7 @@ const ergebnis = {
   method: 'Echter fire()/step()-Pfad je Waffe: beide Figuren auf y=100 im freien Luftraum, '
     + 'Ziel 1000 LP, keine Kisten. Angriff: Rollenentfernung (Kategorie), Vorschau-Zielung bzw. '
     + 'Steilfeuer-Winkelgitter; Nachweis nur über hitscan/projectile_impact/projectile_pierced/fuse_armed '
+    + '(Läufer: feuerwesen_zerbirst an der Figur; beide Figuren dafür festgehalten auf der Oberfläche) '
     + 'aus dem abgegebenen Schuss. Selbstwirkung: echte Startposition auf dem Boden, positiver Nutzwert. '
     + 'Ein kontrollierter wendeExplosionAn-Aufruf ist kein Kollisionsfall und wird getrennt ausgewiesen. '
     + 'Keine Trefferquote, keine Winrate, keine Aussage über Bewegung/Deckung der Partie.',

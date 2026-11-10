@@ -14,7 +14,13 @@
  *   - `projectile_impact` mit `target` (Geschoss trifft eine Figur),
  *   - `projectile_pierced` mit `target` (Durchschlag trifft eine Figur),
  *   - `fuse_armed` in der Luft nahe der Figur (Zünderwaffe wird am Trefferfeld
- *     armiert; auf freier Strecke kann nur eine Figur der Auslöser sein).
+ *     armiert; auf freier Strecke kann nur eine Figur der Auslöser sein),
+ *   - `feuerwesen_zerbirst` mit `target` (Waffenfassung 20: der Läufer berührt
+ *     die Figur und zerbirst; seine Kugeln sind danach gewöhnliche Geschosse).
+ *
+ * Läufer (`delivery: 'laeufer'`, das Feuerwesen) brauchen Boden unter den Füßen:
+ * Im freien Luftraum fiele der Gnom unter dem Ziel hindurch. Für sie stehen
+ * beide Figuren deshalb festgehalten AUF der Oberfläche (`pruefstand`, `boden`).
  *
  * Der kontrollierte Aufruf `wendeExplosionAn(world, …)` erzeugt KEINES dieser
  * Ereignisse. Er ist damit kein Kollisionsfall — der Kontrollfall in Werkzeug
@@ -30,6 +36,8 @@ import { BODENOBJEKTE_STANDARD } from '../src/shared/config/bodenobjekte.js';
 import { WIND_STANDARD } from '../src/shared/config/wind.js';
 import { weitenFaktor } from '../src/shared/reichweite.js';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
+import { getWaffe } from '../src/shared/config/waffen-fassung.js';
+import { PLAYER_HALF_HEIGHT } from '../src/shared/config/player.js';
 import { wendeExplosionAn } from '../src/engine/explosion.js';
 
 export const SEED = 31337;
@@ -60,6 +68,11 @@ const gesund = (m, id) => m.world.getComponent(id, 'Health', 'current') ?? 0;
  * Ohne Angabe bleibt die echte Startposition (für Selbstwirkungen, die auf dem
  * Boden wirken müssen).
  */
+/** Läufer (Waffenfassung 20, Feuerwesen): Wirkpfad `laeufer` statt Strahl oder Geschoss. */
+export function istLaeufer(weapon) {
+  return weapon?.delivery === 'laeufer';
+}
+
 export function pruefstand(weaponId, { distance = 90, frei = true, spieler = 1 } = {}) {
   const m = new MatchController({
     seed: SEED, teams: 2, playersPerTeam: spieler, preset: 'open', turnDurationMs: 1_000_000,
@@ -72,7 +85,10 @@ export function pruefstand(weaponId, { distance = 90, frei = true, spieler = 1 }
   const shooter = entities[0].entityId;
   const target = entities[1].entityId;
   if (frei) {
-    const positionen = new Map([[shooter, { x: 400, y: 100 }], [target, { x: 400 + distance, y: 100 }]]);
+    // Läufer: beide Figuren auf der Oberfläche (Füße auf dem Boden), sonst im freien Luftraum auf y=100.
+    const boden = istLaeufer(getWaffe(weaponId, WAFFEN_STANDARD));
+    const hoehe = x => (boden ? m.surfaceYAt(x) - PLAYER_HALF_HEIGHT : 100);
+    const positionen = new Map([[shooter, { x: 400, y: hoehe(400) }], [target, { x: 400 + distance, y: hoehe(400 + distance) }]]);
     const festhalten = () => {
       for (const [id, p] of positionen) {
         if (!m.world.isActive(id)) continue;
@@ -109,6 +125,8 @@ export function reichweite(weapon) {
 export function rollenDistanz(weapon) {
   if (weapon.category === 'melee') return ROLLEN_ENTFERNUNG.melee;
   const job = ROLLEN_ENTFERNUNG[weapon.category] ?? 250;
+  // Läufer: seine Reichweite ist der Laufweg (Tempo × Laufzeit, kartenunabhängig), nicht die Strahlweite.
+  if (istLaeufer(weapon)) return Math.max(30, Math.round(Math.min(job, weapon.laeufer.tempo * weapon.laeufer.laufzeitTakte * 0.85)));
   if (weapon.delivery === 'hitscan') return Math.max(30, Math.round(Math.min(job, reichweite(weapon) * 0.95)));
   return Math.max(30, Math.round(Math.min(job, reichweite(weapon) * 0.85)));
 }
@@ -131,7 +149,7 @@ export function vorschauZiel(weapon, distance) {
   return { angle: best.angle, power: best.power, nearestPreview: rund(best.d) };
 }
 
-const kollisionsArten = ['hitscan', 'projectile_impact', 'projectile_pierced', 'fuse_armed'];
+const kollisionsArten = ['hitscan', 'projectile_impact', 'projectile_pierced', 'fuse_armed', 'feuerwesen_zerbirst'];
 
 /**
  * Ein echter Schuss auf ein Ziel. Liefert den vollständigen Nachweis oder
@@ -146,7 +164,8 @@ export function trefferProbe(weapon, { distance, angle, power }) {
   const r = m.fire(shooter, angle, power, weapon.id);
   const ereignisse = [...m.consumeEvents()];
   const projectileId = r.projectileId ?? null;
-  const spawn = projectileId == null ? null : {
+  const gesetzt = ereignisse.find(e => e.type === 'feuerwesen_gesetzt');
+  const spawn = gesetzt ? { x: rund(gesetzt.payload.x), y: rund(gesetzt.payload.y), laeufer: true } : projectileId == null ? null : {
     x: rund(m.world.getComponent(projectileId, 'Position', 'x')),
     y: rund(m.world.getComponent(projectileId, 'Position', 'y')),
     blastRadius: m.world.getComponent(projectileId, 'Projectile', 'blastRadius') ?? 0,
@@ -167,6 +186,7 @@ export function trefferProbe(weapon, { distance, angle, power }) {
   };
   const eigen = e => projectileId == null || e.payload.entityId === projectileId || e.payload.target !== undefined;
   const strahl = ereignisse.find(e => e.type === 'hitscan' && e.payload.target === target);
+  const laeufer = ereignisse.find(e => e.type === 'feuerwesen_zerbirst' && e.payload.target === target);
   const aufprall = ereignisse.find(e => e.type === 'projectile_impact' && eigen(e) && e.payload.target === target);
   const durchschlag = ereignisse.find(e => e.type === 'projectile_pierced' && eigen(e) && e.payload.target === target);
   const armierung = ereignisse.find(e => e.type === 'fuse_armed' && eigen(e));
@@ -175,7 +195,8 @@ export function trefferProbe(weapon, { distance, angle, power }) {
   const armierungInLuft = armierungAmZiel && armierungAmZiel.payload.y < (m.surfaceYAt(Math.round(armierungAmZiel.payload.x)) - 1);
 
   let kollision = null;
-  if (strahl) kollision = { art: 'hitscan', x: rund(strahl.payload.hitX), y: rund(strahl.payload.hitY), target: strahl.payload.target };
+  if (laeufer) kollision = { art: 'feuerwesen_zerbirst', x: rund(laeufer.payload.x), y: rund(laeufer.payload.y), target: laeufer.payload.target, kugeln: laeufer.payload.kugeln.length };
+  else if (strahl) kollision = { art: 'hitscan', x: rund(strahl.payload.hitX), y: rund(strahl.payload.hitY), target: strahl.payload.target };
   else if (aufprall) kollision = { art: 'projectile_impact', x: rund(aufprall.payload.x), y: rund(aufprall.payload.y), target: aufprall.payload.target };
   else if (durchschlag) kollision = { art: 'projectile_pierced', x: rund(durchschlag.payload.x), y: rund(durchschlag.payload.y), target: durchschlag.payload.target };
   else if (armierungInLuft) kollision = { art: 'fuse_armed', x: rund(armierungAmZiel.payload.x), y: rund(armierungAmZiel.payload.y), target, imFreien: true };
@@ -185,12 +206,12 @@ export function trefferProbe(weapon, { distance, angle, power }) {
     .reduce((n, e) => n + e.payload.amount, 0);
   const zielVerlust = rund(vorherZiel - gesund(m, target));
   const relevante = ['shot', 'hitscan', 'projectile_spawn', 'projectile_impact', 'projectile_pierced',
-    'fuse_armed', 'fuse_expired', 'explosion', 'damage', 'terrain_destroyed'];
+    'fuse_armed', 'fuse_expired', 'explosion', 'damage', 'terrain_destroyed', 'feuerwesen_gesetzt', 'feuerwesen_zerbirst'];
 
   return {
     distance, angle, angleAnzeige: rund(angle), power,
     ok: r.ok === true, errors: r.errors ?? [],
-    route: r.special ? 'selbst' : projectileId != null ? 'projektil' : 'strahl',
+    route: r.special ? 'selbst' : r.feuerwesenId != null ? 'laeufer' : projectileId != null ? 'projektil' : 'strahl',
     targetId: target, shooterId: shooter,
     munitionVorher: Number.isFinite(munitionVorher) ? munitionVorher : 'unbegrenzt',
     spawn, ticks: takte,
