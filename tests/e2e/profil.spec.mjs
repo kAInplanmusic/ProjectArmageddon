@@ -235,8 +235,9 @@ test('Zurücksetzen leert die Zahlen — und sie bleiben leer', async ({ page })
   expect((await page.evaluate(() => window.__PA__.profil())).partien).toBe(1);
 
   // Zurück ins Menü: Nach dem Match liegt der Endbildschirm über dem Menü, und
-  // die Profilangabe wäre nicht anklickbar.
-  await page.getByRole('button', { name: 'Revanche' }).click();
+  // die Profilangabe wäre nicht anklickbar. Seit UI-4 (3513a39, 2026-11-05) startet „Revanche“ sofort eine neue
+  // Partie; ins Menü führt „Zum Menü“.
+  await page.getByRole('button', { name: 'Zum Menü' }).click();
   await expect(page.locator('#menu-overlay')).toBeVisible();
 
   await page.locator('#profil-browser summary').click();

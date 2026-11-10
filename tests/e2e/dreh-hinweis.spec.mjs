@@ -34,6 +34,10 @@ for (const [breite, hoehe] of [[390, 844], [412, 915]]) {
       // Nicht bedienbar: Der Startknopf liegt unter dem Hinweis, #app ist inert, ein Tipp startet nichts.
       expect(await page.evaluate(() => document.getElementById('app').inert)).toBe(true);
       const start = await page.locator('#start-button').evaluate(knopf => {
+        // Das Menü ist hochkant länger als das Fenster; der Startknopf liegt unter dem Falz (gemessen: y≈1138 bei
+        // 844 px Höhe). Außerhalb des Fensters liefert elementFromPoint null — die Prüfung sagte dann nichts über
+        // die Abdeckung. Deshalb erst in den sichtbaren Bereich holen, dann prüfen, was an seiner Mitte oben liegt.
+        knopf.scrollIntoView({ block: 'center' });
         const r = knopf.getBoundingClientRect();
         const oben = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
         return { obenImHinweis: Boolean(oben?.closest('#dreh-hinweis')), x: r.x + r.width / 2, y: r.y + r.height / 2 };

@@ -185,12 +185,19 @@ label { font-size: 15px; letter-spacing: 0.08em; color: var(--muted); }
 #menu-overlay details > :not(summary) { padding-left: 14px; padding-right: 14px; }
 #menu-overlay details > :last-child { padding-bottom: 12px; }
 
-#menu-overlay .keymap { grid-area: keymap; grid-column: 1 / -1; opacity: 0.85; border-top: 1px solid var(--panel-edge); padding-top: 12px; grid-template-columns: repeat(3, 1fr); }
+/*
+ * Die Tastenliste steht im Bereich „keymap“ (linke Spalte unter der Marke, UI-Rest A6). Kein `grid-column: 1 / -1`
+ * mehr: Es stand nach `grid-area` und überschrieb dessen Spalte — die Liste spannte über beide Spalten und lag über
+ * der Konfiguration samt „Match starten“ (gemessen 1440×900, 915×412). In der schmalen linken Spalte einspaltig.
+ */
+#menu-overlay .keymap { grid-area: keymap; opacity: 0.85; border-top: 1px solid var(--panel-edge); padding-top: 12px; grid-template-columns: 1fr; }
 #menu-overlay .keymap b { color: var(--lime); font-weight: 700; }
 
 /* Schmale Fenster: einspaltig. */
 @media (max-width: 860px) {
   #menu-overlay .overlay-card { grid-template-columns: 1fr; grid-template-areas: 'marke' 'keymap' 'konfig' 'weitere'; }
+  /* Einspaltige Karte: Die Tastenliste hat die volle Breite und darf wieder dreispaltig laufen. */
+  #menu-overlay .keymap { grid-template-columns: repeat(3, 1fr); }
   #menu-overlay .menu-logo { width: min(100%, 170px); }
 }
 

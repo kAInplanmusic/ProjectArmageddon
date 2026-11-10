@@ -82,6 +82,33 @@ test('Erstkontakt: Spielziel und Steuerung stehen vor der Einrichtung', async ({
   expect(fehler).toEqual([]);
 });
 
+/*
+ * FUND (MERGE-2, 2026-11-10): Seit UI-Rest A6 (070b4ae) überschrieb ein stehengebliebenes `grid-column: 1 / -1`
+ * den Bereich `keymap`; die Tastenliste spannte über beide Spalten und lag über „Match starten“ und der
+ * Konfiguration (1440×900 ebenso wie Telefon quer 915×412). Geprüft wird, dass sich die Kästen nicht schneiden und
+ * an der Mitte von „Match starten“ der Knopf selbst oben liegt.
+ */
+for (const [breite, hoehe] of [[1440, 900], [1024, 768], [915, 412], [844, 390]]) {
+  test(`Erstkontakt ${breite}×${hoehe}: Tastenliste überdeckt weder Einrichtung noch Startknopf`, async ({ page }) => {
+    await page.setViewportSize({ width: breite, height: hoehe });
+    const fehler = await oeffneStartseite(page);
+    const stand = await page.evaluate(() => {
+      const a = document.querySelector('#menu-overlay .keymap').getBoundingClientRect();
+      const b = document.querySelector('#menu-overlay .menu-konfig').getBoundingClientRect();
+      const breiteSchnitt = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+      const hoeheSchnitt = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+      const knopf = document.getElementById('start-button');
+      knopf.scrollIntoView({ block: 'center' });
+      const r = knopf.getBoundingClientRect();
+      const oben = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return { schnitt: breiteSchnitt * hoeheSchnitt, knopfOben: Boolean(oben && knopf.contains(oben)) };
+    });
+    expect(stand.schnitt, 'Tastenliste und Einrichtung überlappen').toBe(0);
+    expect(stand.knopfOben, 'an der Mitte von „Match starten“ liegt etwas anderes').toBe(true);
+    expect(fehler).toEqual([]);
+  });
+}
+
 test('Erstkontakt: Tastaturweg von der Startseite über die Hilfe ins Match', async ({ page }) => {
   const fehler = await oeffneStartseite(page);
 

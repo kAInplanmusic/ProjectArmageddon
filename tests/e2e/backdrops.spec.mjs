@@ -264,16 +264,22 @@ test('Die Kulissenauswahl im Menü ist vollständig', async ({ page }) => {
    * hinzukam (`deluge` für die Geländeform `flooded`), ohne etwas über die
    * Vollständigkeit zu sagen — geprüft werden soll, dass NICHTS FEHLT.
    */
+  // Seit 0b7ac1d (2026-11-09) hängt das Menü die Fotokulissen (`src/client/panoramen.js#FOTOS`) als eigene
+  // Gruppe „Panoramafotografien“ an. Sie zählen mit — weiter abgeleitet, damit NICHTS fehlen darf.
   const katalog = await page.evaluate(async () => {
     const modul = await import('/src/shared/config/backdrops.js');
+    const fotos = await import('/src/client/panoramen.js');
+    const anzahlFotos = Object.keys(fotos.FOTOS).length;
     return {
       kulissen: modul.ALL_BACKDROPS.length,
       biome: modul.BACKDROP_BIOMES.length,
+      fotos: anzahlFotos,
     };
   });
+  expect(katalog.fotos, 'Testannahme: es gibt Fotokulissen').toBeGreaterThan(0);
 
-  expect(stand.optionen, 'Es fehlen Kulissen in der Auswahl').toBe(katalog.kulissen + 2);
-  expect(stand.gruppen, 'Es fehlen Biomgruppen in der Auswahl').toBe(katalog.biome);
+  expect(stand.optionen, 'Es fehlen Kulissen in der Auswahl').toBe(katalog.kulissen + katalog.fotos + 2);
+  expect(stand.gruppen, 'Es fehlen Biomgruppen in der Auswahl').toBe(katalog.biome + 1);
   expect(stand.generativZuerst).toBe('generativ');
   // Die Untergrenze aus der ursprünglichen Zusage bleibt stehen.
   expect(katalog.kulissen).toBeGreaterThanOrEqual(60);
@@ -407,6 +413,9 @@ for (const breite of [1024, 1600]) {
 test('Menü reicht Kartenformat, Größenstufe und Hagel bis in die Partie durch', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
+  // Kartengröße, Format und Wetter stehen im zugeklappten Bereich „Erweitert“ (seit aad3f23, 2026-10-21);
+  // eine Person klappt ihn zuerst auf. Ohne das wartete selectOption bis zum Timeout auf ein unsichtbares Feld.
+  await page.locator('#cfg-erweitert > summary').click();
   await page.selectOption('#cfg-kartengroesse', 'kompakt');
   await page.selectOption('#cfg-kartenformat', '9:16');
   await page.selectOption('#cfg-wetter', 'hagel');

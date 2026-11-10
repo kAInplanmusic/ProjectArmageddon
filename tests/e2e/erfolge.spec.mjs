@@ -132,8 +132,10 @@ test('Erreichte Erfolge sind in der Liste als erreicht gekennzeichnet', async ({
   await page.waitForFunction(() => Boolean(window.__PA__));
   await matchZuEndeSpielen(page);
 
-  // Zurück ins Menü (der Endbildschirm liegt darüber).
-  await page.getByRole('button', { name: 'Revanche' }).click();
+  // Zurück ins Menü (der Endbildschirm liegt darüber). Seit UI-4 (3513a39, 2026-11-05) startet „Revanche“ sofort
+  // eine neue Partie; ins Menü führt „Zum Menü“.
+  await page.getByRole('button', { name: 'Zum Menü' }).click();
+  await expect(page.locator('#menu-overlay')).toBeVisible();
   await page.locator('#erfolge-browser summary').click();
 
   const u = await page.evaluate(() => window.__PA__.erfolge());
