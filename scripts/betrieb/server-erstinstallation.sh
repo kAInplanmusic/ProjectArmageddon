@@ -37,6 +37,7 @@ PA_GIT_URL="${PA_GIT_URL:-https://github.com/kAInplanmusic/projectarmageddon}"
 PA_GIT_REF="${PA_GIT_REF:-main}"
 PA_NODE_MAJOR="${PA_NODE_MAJOR:-22}"
 PA_SSH="${PA_SSH:-nein}"
+PA_BELEG="${PA_BELEG:-nein}"
 PA_ACME_EMAIL="${PA_ACME_EMAIL:-}"
 PA_DOMAIN="${PA_DOMAIN:?PA_DOMAIN fehlt in boot.env}"
 
@@ -155,6 +156,22 @@ token_saeubern() {
   fi
 }
 
+# Nachweis (AGENTS.md §5 Punkt 3) ohne SSH: die echte Ausgabe der Belegbefehle, in Stücken zu 50 Zeichen
+# als Etikett projectarmageddon-zeile gemeldet; server-hochfahren.sh (PA_BELEG=ja) liest sie mit und druckt sie.
+beleg_melden() {
+  [ "$PA_BELEG" = "ja" ] || return 0
+  [ -z "$ZEILE_PID" ] || { kill "$ZEILE_PID" 2>/dev/null || true; ZEILE_PID=""; }
+  local l
+  {
+    echo "== list-timers"; systemctl list-timers projectarmageddon-idle.timer --no-pager 2>&1
+    echo "== marker"; ls -l /etc/projectarmageddon/ist-gemietet 2>&1
+    echo "== dienst"; systemctl is-active projectarmageddon.service caddy 2>&1
+    echo "== token-datei"; stat -c '%a %U %n' "$TOKEN_DATEI" 2>&1
+    echo "== config"; "$BASIS/current/scripts/betrieb/idle-watch.sh" --print-config 2>&1 | grep -E 'Leerlauf  |PA_ACTION|Marker|Serverlaufzeit  |Maschinenlaufzeit'
+    echo "== last-brake (vorheriger Lauf)"; cat /var/lib/projectarmageddon/last-brake 2>&1
+  } | sed 's/  */ /g' | fold -w 50 | while IFS= read -r l; do etikett projectarmageddon-zeile "$l"; sleep 3; done
+}
+
 starten() {
   phase start
   # Zustand des Leerlauf-Zählers aus dem Abbild verwerfen: sonst gilt der neue Server sofort als lange unbenutzt.
@@ -190,6 +207,7 @@ NFT
   selbsttest
   token_saeubern
   phase bereit
+  beleg_melden
 }
 
 # ------------------------------------------------------------------- frisch -----

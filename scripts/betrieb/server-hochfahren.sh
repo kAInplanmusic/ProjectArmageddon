@@ -41,7 +41,7 @@
 #  Umgebung: HCLOUD_TOKEN, PA_NAME=pa-spiel, PA_DOMAIN, PA_ACME_EMAIL, PA_SERVER_TYP, PA_ORT,
 #    PA_IDLE_MINUTES=15, PA_GRACE_MINUTES=5, PA_MAX_RUNTIME_MINUTES=480,
 #    PA_MAX_MACHINE_MINUTES=540, PA_ABBILD_BEHALTEN=1, PA_GIT_URL, PA_GIT_REF=main,
-#    PA_SSH_PUBKEY, PA_EXTRA_ENV (weitere PA_*=Wert-Zeilen für betrieb.env, z. B. für Proben),
+#    PA_WEITERE_ORIGINS, PA_SSH_PUBKEY, PA_EXTRA_ENV (weitere PA_*=Wert-Zeilen für betrieb.env, z. B. für Proben),
 #    PA_WARTE_SEKUNDEN, PA_HCLOUD_API.
 #  Rückgabe: 0 ok · 1 Fehler · 2 Bedienfehler
 # =============================================================================
@@ -68,6 +68,8 @@ PA_GIT_URL="${PA_GIT_URL:-https://github.com/kAInplanmusic/projectarmageddon}"
 PA_GIT_REF="${PA_GIT_REF:-main}"
 PA_SSH_PUBKEY="${PA_SSH_PUBKEY:-}"
 PA_EXTRA_ENV="${PA_EXTRA_ENV:-}"
+# Weitere erlaubte Herkünfte (kommagetrennt, https://…), z. B. eine Frontseite auf www (docs/zugang-www.md)
+PA_WEITERE_ORIGINS="${PA_WEITERE_ORIGINS:-}"
 PA_WARTE_SEKUNDEN="${PA_WARTE_SEKUNDEN:-}"
 PA_POLL_SEKUNDEN="${PA_POLL_SEKUNDEN:-15}"
 PA_ABBILD_WARTE_SEKUNDEN="${PA_ABBILD_WARTE_SEKUNDEN:-1800}"
@@ -342,14 +344,14 @@ for z in $PA_EXTRA_ENV; do case "$z" in PA_[A-Z0-9_]*=[A-Za-z0-9_./:,@+-]*) ;; *
 USER_DATA=$(TOKEN="$HC_TOKEN" INSTALLER="$INSTALLER" MODUS_BOOT="$MODUS_BOOT" DOMAIN="$PA_DOMAIN" ACME="$PA_ACME_EMAIL" \
   IDLE="$PA_IDLE_MINUTES" GRACE="$PA_GRACE_MINUTES" MAXRT="$PA_MAX_RUNTIME_MINUTES" MAXM="$PA_MAX_MACHINE_MINUTES" \
   KEEP="$PA_ABBILD_BEHALTEN" GITURL="$PA_GIT_URL" GITREF="$PA_GIT_REF" NODEMAJOR="$(node_major)" SSH="$( [ -n "$PA_SSH_PUBKEY" ] && echo ja || echo nein )" \
-  EXTRA="$PA_EXTRA_ENV" API="$PA_HCLOUD_API" python3 -c '
+  BELEG="${PA_BELEG:-nein}" EXTRA="$PA_EXTRA_ENV" WEITERE="$PA_WEITERE_ORIGINS" API="$PA_HCLOUD_API" python3 -c '
 import json,os
 e=os.environ
 d=e["DOMAIN"]
 env=["HOST=127.0.0.1","PORT=3000","LOG_LEVEL=info","LOG_FORMAT=json",
  "PA_STATE_PATH=/var/lib/projectarmageddon/lobbies.json","PA_KONTEN_PFAD=/var/lib/projectarmageddon/konten.db",
  "PA_ERLAUBE_OEFFENTLICH=no","PA_BUILD=0",
- "PA_ERLAUBTE_ORIGINS=https://"+d,"PA_EIGENER_ORIGIN=https://"+d,"PA_VERTRAUTE_PROXYS=127.0.0.1,::1",
+ "PA_ERLAUBTE_ORIGINS=https://"+d+(","+e["WEITERE"] if e["WEITERE"] else ""),"PA_EIGENER_ORIGIN=https://"+d,"PA_VERTRAUTE_PROXYS=127.0.0.1,::1",
  "PA_SICHERUNG_DIR=/var/lib/projectarmageddon/sicherungen","PA_SICHERUNG_BEHALTEN=10",
  "PA_IDLE_MINUTES="+e["IDLE"],"PA_GRACE_MINUTES="+e["GRACE"],
  "PA_MAX_RUNTIME_MINUTES="+e["MAXRT"],"PA_MAX_MACHINE_MINUTES="+e["MAXM"],
@@ -360,7 +362,7 @@ env=["HOST=127.0.0.1","PORT=3000","LOG_LEVEL=info","LOG_FORMAT=json",
  "PA_INTERVAL_SECONDS=30"]
 if e["API"]!="https://api.hetzner.cloud/v1": env.append("PA_HCLOUD_API="+e["API"])
 env+=e["EXTRA"].split()
-boot=["PA_GIT_URL="+e["GITURL"],"PA_GIT_REF="+e["GITREF"],"PA_NODE_MAJOR="+e["NODEMAJOR"],"PA_DOMAIN="+d,"PA_ACME_EMAIL="+e["ACME"],"PA_SSH="+e["SSH"]]
+boot=["PA_BELEG="+e["BELEG"],"PA_GIT_URL="+e["GITURL"],"PA_GIT_REF="+e["GITREF"],"PA_NODE_MAJOR="+e["NODEMAJOR"],"PA_DOMAIN="+d,"PA_ACME_EMAIL="+e["ACME"],"PA_SSH="+e["SSH"]]
 caddy="[Service]\nEnvironment=PA_DOMAIN="+d+"\nEnvironment=PA_ACME_EMAIL="+e["ACME"]+"\n"
 cfg={"ssh_pwauth":False,"disable_root":True,
  "write_files":[
@@ -427,6 +429,15 @@ done
 if [ "$bereit" != "1" ]; then
   protokoll "Server nicht bereit nach ${PA_WARTE_SEKUNDEN}s (letzte Phase: $LETZTE). Server $SERVER_ID läuft weiter; Idle-Bremse/Zeitplan räumen auf, oder: not-aus."
   exit 1
+fi
+if [ "${PA_BELEG:-nein}" = "ja" ]; then
+  protokoll "Beleg-Ausgabe des Servers (50-Zeichen-Stücke, 4 s Takt):"
+  ende_beleg=$(( $(date +%s) + 150 )); letzte=""
+  while [ "$(date +%s)" -lt "$ende_beleg" ]; do
+    hc_anfrage GET "/servers/$SERVER_ID" && z=$(hc_py 'print((d["server"].get("labels") or {}).get("projectarmageddon-zeile",""))' || true)
+    if [ -n "${z:-}" ] && [ "$z" != "$letzte" ]; then printf 'BELEG| %s\n' "$z" >&2; letzte="$z"; fi
+    sleep 1
+  done
 fi
 VERSION=$(curl -sS -m 15 "$URL/version.json" 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("version","?"), d.get("gitSha") or d.get("git") or "")' 2>/dev/null || echo "?")
 protokoll "BEREIT: $URL  (Version $VERSION)"

@@ -290,11 +290,12 @@ test('Hochfahren frisch: reserviert Primary IP (auto_delete=false), billigster v
 test('Hochfahren: PA_DOMAIN, Leerlauf und Zusatzzeilen kommen in betrieb.env; Unsinn wird verweigert', async () => {
   const mock = await leererMock();
   try {
-    const r = await lauf(S('server-hochfahren.sh'), [], hochfahrenEnv(mock, { PA_DOMAIN: 'https://spiel.projectarmageddon.de/', PA_IDLE_MINUTES: '2', PA_GRACE_MINUTES: '1', PA_EXTRA_ENV: 'PA_LOBBY_LEER_MS=60000' }));
+    const r = await lauf(S('server-hochfahren.sh'), [], hochfahrenEnv(mock, { PA_DOMAIN: 'https://knoten.example.org/', PA_IDLE_MINUTES: '2', PA_GRACE_MINUTES: '1', PA_EXTRA_ENV: 'PA_LOBBY_LEER_MS=60000', PA_WEITERE_ORIGINS: 'https://www.projectarmageddon.de' }));
     assert.equal(r.code, 1);
     const cfg = JSON.parse(aufrufe(mock, 'POST', /^\/servers$/)[0].body.user_data.slice(14));
     const env = cfg.write_files.find(f => f.path === '/etc/projectarmageddon/betrieb.env').content;
-    assert.match(env, /PA_EIGENER_ORIGIN=https:\/\/spiel\.projectarmageddon\.de\n/);
+    assert.match(env, /PA_EIGENER_ORIGIN=https:\/\/knoten\.example\.org\n/);
+    assert.match(env, /PA_ERLAUBTE_ORIGINS=https:\/\/knoten\.example\.org,https:\/\/www\.projectarmageddon\.de\n/);
     assert.match(env, /PA_IDLE_MINUTES=2\n/);
     assert.match(env, /PA_LOBBY_LEER_MS=60000/);
     const falsch = await lauf(S('server-hochfahren.sh'), [], hochfahrenEnv(mock, { PA_EXTRA_ENV: 'PA_X=$(rm -rf)' }));
