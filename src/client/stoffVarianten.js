@@ -34,6 +34,17 @@ export const NAHT_BAND = 6;
 /** Größte Verschiebung der Blockgrenzen durch das Rauschen in Pixeln. */
 export const GRENZ_VERSATZ = 22;
 
+/**
+ * Verzerrungsfeld der Texturkoordinate in `tinteStoffe`: je Oktave [Wellenlänge in px, größte Verschiebung in Texturpixeln].
+ * Gemessen (6 Seeds, Schritt 4 px): mittlere Steigung der Verschiebung etwa 0,15, Spitzen unter 0,8 (Faltung der Textur ab 1,0 tritt nicht auf). Die Kachel erscheint je Ort um andere Beträge versetzt.
+ */
+export const WARP = Object.freeze([[480, 110], [200, 28], [72, 6]].map(Object.freeze));
+/** Anteil der Verzerrung bei Plattenstoffen (starre Raster aus Fugen und Nieten). */
+export const WARP_STARR = 0.15;
+/** Fleckung: größte Abweichung der Helligkeit und je Kanal (Rot, Blau) des Farbtons, als Anteil. */
+export const MAKRO_HELL = 0.09;
+export const MAKRO_FARBE = 0.035;
+
 /** Zufallsquelle der Parameter: fest, nie die Wanduhr. */
 const SALZ_ANZAHL = 0x5a17;
 const SALZ_PARAM = 0x7e11;

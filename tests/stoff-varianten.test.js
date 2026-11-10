@@ -226,3 +226,98 @@ test('Texturen mit Kachelnaht werden gespiegelt gekachelt, nahtlose nicht', () =
   assert.equal(stoffTextur('naht-test').spiegel, true);
   leereStoffTexturen();
 });
+
+// --- Großflächige Variation (Verzerrung + Fleckung statt Blockwechsel) ---
+
+import { readFileSync } from 'node:fs';
+import { WARP, MAKRO_HELL } from '../src/client/stoffVarianten.js';
+
+/** Nahtlose Zufallstextur (Summe periodischer Wellen), Detail im Bereich 20 bis 60 px. */
+function rauschBild(x, y) {
+  let v = 128;
+  for (let k = 1; k <= 9; k += 1) {
+    const a = (k * 37) % 11;
+    v += 14 * Math.sin((2 * Math.PI * (x * (k + 3) + y * (a - 5))) / 512 + k * 1.7) + 9 * Math.cos((2 * Math.PI * (y * (k + 5) - x * (a - 4))) / 512 + k);
+  }
+  return Math.max(0, Math.min(255, v));
+}
+
+function streifen(stoff, seed, breite, hoehe) {
+  const spalten = breite / 8;
+  const zeilen = hoehe / 8;
+  const feld = new Uint8Array(spalten * zeilen).fill(stoff);
+  const bitmap = new Uint8Array(breite * hoehe).fill(1);
+  const d = new Uint8ClampedArray(breite * hoehe * 4).fill(128);
+  tinteStoffe(d, bitmap, breite, hoehe, { feld, spalten, zeilen }, seed);
+  return d;
+}
+
+/** Autokorrelation der Helligkeit (Hochpass 33 px waagrecht) bei Verschiebung `lag`, Mittel über alle Zeilen. */
+function korrelation(d, breite, hoehe, lag) {
+  let sab = 0; let saa = 0; let sbb = 0;
+  for (let y = 0; y < hoehe; y += 1) {
+    const z = new Float64Array(breite);
+    for (let x = 0; x < breite; x += 1) z[x] = d[(y * breite + x) * 4];
+    const hp = new Float64Array(breite);
+    for (let x = 16; x < breite - 16; x += 1) {
+      let s = 0; for (let k = -16; k <= 16; k += 1) s += z[x + k];
+      hp[x] = z[x] - s / 33;
+    }
+    for (let x = 16; x + lag < breite - 16; x += 1) { sab += hp[x] * hp[x + lag]; saa += hp[x] ** 2; sbb += hp[x + lag] ** 2; }
+  }
+  return sab / Math.sqrt(saa * sbb);
+}
+
+test('Kachelperiode 512 px ist im Bild nicht als Wiederholung zu erkennen', () => {
+  fuelleMit(rauschBild);
+  const stoff = STOFFE.findIndex((s) => s.key === 'fels' && STOFF_TEXTUR[s.key]);
+  const b = 2304;
+  const h = 96;
+  const d = streifen(stoff, 3, b, h);
+  // Gegenprobe: ohne Verzerrung (reine Kachelung der Textur) ist die Korrelation bei 512 nahezu 1.
+  const roh = new Uint8ClampedArray(b * h * 4);
+  const tex = stoffTextur(STOFF_TEXTUR.fels).rgba;
+  for (let y = 0; y < h; y += 1) for (let x = 0; x < b; x += 1) roh[(y * b + x) * 4] = tex[((y << 9) | (x & 511)) * 4];
+  assert.ok(korrelation(roh, b, h, 512) > 0.95, 'Gegenprobe: Kachelung wiederholt exakt');
+  const r512 = korrelation(d, b, h, 512);
+  const r1024 = korrelation(d, b, h, 1024);
+  assert.ok(Math.abs(r512) < 0.3 && Math.abs(r1024) < 0.3, `Korrelation bei 512 / 1024: ${r512.toFixed(2)} / ${r1024.toFixed(2)}`);
+  leereStoffTexturen();
+});
+
+test('Fleckung: Helligkeit ändert sich über die Breite, ohne Sprünge an Rastern', () => {
+  fuelleMit(() => 128); // glatte Textur: nur Fleckung und Stofffarbe bleiben
+  const stoff = STOFFE.findIndex((s) => s.key === 'sand' && STOFF_TEXTUR[s.key]);
+  const b = 3072;
+  const h = 64;
+  const d = streifen(stoff, 8, b, h);
+  const spaltenMittel = new Float64Array(b);
+  for (let x = 0; x < b; x += 1) { let s = 0; for (let y = 0; y < h; y += 1) s += d[(y * b + x) * 4]; spaltenMittel[x] = s / h; }
+  const mw = spaltenMittel.reduce((a, c) => a + c, 0) / b;
+  const spanne = Math.max(...spaltenMittel) - Math.min(...spaltenMittel);
+  assert.ok(spanne > mw * 0.04, `Fleckung sichtbar (Spanne ${spanne.toFixed(1)} bei Mittel ${mw.toFixed(1)})`);
+  assert.ok(spanne < mw * 4 * MAKRO_HELL * 3, `Fleckung maßvoll (Spanne ${spanne.toFixed(1)})`);
+  let maxSprung = 0;
+  for (let x = 1; x < b; x += 1) maxSprung = Math.max(maxSprung, Math.abs(spaltenMittel[x] - spaltenMittel[x - 1]));
+  assert.ok(maxSprung < 2, `kein Sprung zwischen Nachbarspalten (${maxSprung.toFixed(2)})`);
+  leereStoffTexturen();
+});
+
+test('Verzerrungsfeld: Steigung bleibt unter 1 (keine Faltung der Textur), grobe und feine Wellen', () => {
+  // Obere Schranke je Oktave: bilinear verbundene Gitterwerte ändern sich höchstens um 2 * Amplitude je Zelle.
+  let schranke = 0;
+  for (const [lambda, amp] of WARP) schranke += (2 * amp) / lambda;
+  assert.ok(schranke < 1, `Schranke ${schranke.toFixed(2)}`);
+  assert.ok(WARP.length >= 3 && Math.max(...WARP.map((w) => w[0])) >= 360 && Math.min(...WARP.map((w) => w[0])) <= 80);
+});
+
+test('Messwerte der Stoffoptik (scripts/stoff-naht-messwerte.json, Abschnitt optik) belegen: keine Wiederholung, Bake-Zeit', () => {
+  const o = JSON.parse(readFileSync(new URL('../scripts/stoff-naht-messwerte.json', import.meta.url), 'utf8')).optik;
+  assert.ok(o && o.streifen[0] === 6272, 'Streifen in Kartenbreite 6272');
+  const werte = Object.values(o.stoffe);
+  assert.ok(werte.length >= 90, `${werte.length} Stoffe gemessen`);
+  const med = [...werte.map((w) => w.wiederholung)].sort((a, b) => a - b)[werte.length >> 1];
+  assert.ok(med < 0.05, `Median der Wiederholung ${med}`);
+  for (const [n, w] of Object.entries(o.stoffe)) assert.ok(w.wiederholung < 0.3, `${n}: Wiederholung ${w.wiederholung}`);
+  assert.ok(o.bake.ms_max < 2000, `Bake-Zeit je Stoff ${o.bake.ms_max} ms`);
+});
