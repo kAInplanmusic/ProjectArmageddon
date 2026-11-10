@@ -4,13 +4,17 @@
  * Läuft als letzter Schritt von `faerbeGelaende` über denselben Pixelpuffer und verändert nur
  * Farben, nie die Maske. Zellgrenzen (8 px) werden durch zwei kleine Versatztabellen aufgebrochen,
  * damit Adern und Schichten als Bruchkanten erscheinen und nicht als Quadrate. Alles folgt Position
- * und Seed (`hash2`).
+ * und Seed (`hash2`). Jede Textur erscheint in 5 bis 7 Varianten je Stoff (`stoffVarianten.js`), die je 128-px-Block
+ * nach Seed gewählt und an den Blockgrenzen weich überblendet werden.
  *
  * @module stoffOptik
  */
-import { hash2 } from './stil.js';
+import { hash2, rauschen1 } from './stil.js';
 import { STOFFE } from '../shared/config/stoffe.js';
 import { STOFF_TEXTUR, TEXTUR_GROESSE, stoffTextur } from './stoffTexturen.js';
+import {
+  VARIANTEN_MAX, BLOCK_PX, NAHT_BAND, GRENZ_VERSATZ, variantenTabellen, waehleVariante,
+} from './stoffVarianten.js';
 
 /** Wie stark der Stoff die vorhandene Gesteinsfarbe überdeckt (0 bis 1). */
 const DECKUNG = 0.58;
@@ -38,6 +42,28 @@ function glatt(seed, x, y, sx, sy) {
   const c = hash2(seed, ix, iy + 1);
   const d = hash2(seed, ix + 1, iy + 1);
   return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+}
+
+/**
+ * Texturprobe mit Variante: liest das Texel (x, y) der Textur `tex` in der Variante `v` des Stoffes `id`
+ * (Lage, Versatz, Maßstab, Farbe) und legt die drei Kanäle in `PROBE`. Spiegelung und Drehung lassen die
+ * Kachel nahtlos, weil Breite und Höhe gleich sind und die Maske umbricht.
+ */
+const PROBE = new Float64Array(3);
+function probe(tex, ganz, farbe, id, v, x, y) {
+  const o = (id * VARIANTEN_MAX + v) * 4;
+  const lage = ganz[o];
+  const sc = ganz[o + 3];
+  let u = ((x * sc) >> 8) + ganz[o + 1];
+  let w = ((y * sc) >> 8) + ganz[o + 2];
+  if (lage & 4) { const t = u; u = w; w = t; }
+  if (lage & 1) u = ~u;
+  if (lage & 2) w = ~w;
+  const ti = (((w & TEX_MASKE) << 9) | (u & TEX_MASKE)) * 4;
+  const f = (id * VARIANTEN_MAX + v) * 3;
+  PROBE[0] = tex[ti] * farbe[f];
+  PROBE[1] = tex[ti + 1] * farbe[f + 1];
+  PROBE[2] = tex[ti + 2] * farbe[f + 2];
 }
 
 function tabelle(laenge, seed, amp) {
@@ -116,6 +142,37 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
   const spaltenMax = spalten - 1;
   const zeilenMax = zeilen - 1;
 
+  /*
+   * Varianten (reine Optik, siehe stoffVarianten.js): Blockraster aus 128-px-Blöcken mit glatt verschobenen
+   * Grenzen (`gu` je Zeile, `gv` je Spalte) und weicher Überblendung zum Nachbarblock im Band `NAHT_BAND`.
+   * Die Wahl je (Stoff, Block) liegt in lazy gefüllten Tabellen.
+   */
+  const { ganz, farbe: vFarbe } = variantenTabellen();
+  const blSpalten = Math.ceil(breite / BLOCK_PX) + 5;
+  const blZeilen = Math.ceil(hoehe / BLOCK_PX) + 5;
+  const blockWahl = new Array(STOFFE.length).fill(null);
+  const wahl = (id, bx, by) => {
+    let t = blockWahl[id];
+    if (!t) { t = new Uint8Array(blSpalten * blZeilen).fill(255); blockWahl[id] = t; }
+    const i = (by + 2) * blSpalten + bx + 2;
+    return t[i] === 255 ? (t[i] = waehleVariante(seed, id, bx, by)) : t[i];
+  };
+  const gu = new Int16Array(hoehe);
+  const gv = new Int16Array(breite);
+  for (let y = 0; y < hoehe; y += 1) gu[y] = Math.round((rauschen1(y / 40, seed + 421) - 0.5) * 2 * GRENZ_VERSATZ);
+  for (let x = 0; x < breite; x += 1) gv[x] = Math.round((rauschen1(x / 40, seed + 422) - 0.5) * 2 * GRENZ_VERSATZ);
+  const bandGewicht = new Float32Array(BLOCK_PX);
+  const bandRichtung = new Int8Array(BLOCK_PX);
+  for (let f = 0; f < BLOCK_PX; f += 1) {
+    let t = -1;
+    if (f < NAHT_BAND) { t = (f + 0.5) / NAHT_BAND; bandRichtung[f] = -1; }
+    else if (f >= BLOCK_PX - NAHT_BAND) { t = (BLOCK_PX - f - 0.5) / NAHT_BAND; bandRichtung[f] = 1; }
+    if (t >= 0) bandGewicht[f] = 0.5 * (1 - t * t * (3 - 2 * t));
+  }
+  const BLOCK_MASKE = BLOCK_PX - 1;
+  const BLOCK_SHIFT = Math.log2(BLOCK_PX);
+  let p0 = 0; let p1 = 0; let p2 = 0;
+
   for (let y = 0; y < hoehe; y += 1) {
     const lo = Math.min(zeilenMax, Math.max(0, (y - 4) >> 3));
     const hi = Math.min(zeilenMax, Math.max(0, (y + 4) >> 3));
@@ -133,13 +190,47 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
       const id = feld[gy * spalten + gx];
       const o = (zeile + x) * 4;
       const tex = texPixel[id];
+      if (tex) {
+        // Variante: Block der (verschobenen) Weltposition, im Randband weich zum Nachbarblock überblendet.
+        const qx = x + gu[y];
+        const qy = y + gv[x];
+        const bx = qx >> BLOCK_SHIFT;
+        const by = qy >> BLOCK_SHIFT;
+        const ax = qx & BLOCK_MASKE;
+        const ay = qy & BLOCK_MASKE;
+        const wxn = bandGewicht[ax];
+        const wyn = bandGewicht[ay];
+        probe(tex, ganz, vFarbe, id, wahl(id, bx, by), x, y);
+        if (wxn === 0 && wyn === 0) {
+          p0 = PROBE[0]; p1 = PROBE[1]; p2 = PROBE[2];
+        } else {
+          const wa = (1 - wxn) * (1 - wyn);
+          p0 = PROBE[0] * wa; p1 = PROBE[1] * wa; p2 = PROBE[2] * wa;
+          const nx = bx + bandRichtung[ax];
+          const ny = by + bandRichtung[ay];
+          if (wxn > 0) {
+            const wb = wxn * (1 - wyn);
+            probe(tex, ganz, vFarbe, id, wahl(id, nx, by), x, y);
+            p0 += PROBE[0] * wb; p1 += PROBE[1] * wb; p2 += PROBE[2] * wb;
+          }
+          if (wyn > 0) {
+            const wc = (1 - wxn) * wyn;
+            probe(tex, ganz, vFarbe, id, wahl(id, bx, ny), x, y);
+            p0 += PROBE[0] * wc; p1 += PROBE[1] * wc; p2 += PROBE[2] * wc;
+            if (wxn > 0) {
+              const wd = wxn * wyn;
+              probe(tex, ganz, vFarbe, id, wahl(id, nx, ny), x, y);
+              p0 += PROBE[0] * wd; p1 += PROBE[1] * wd; p2 += PROBE[2] * wd;
+            }
+          }
+        }
+      }
       if (id === 0) {
         // Erde: Grundton des Geländes bleibt, nur das Texturdetail moduliert die Helligkeit.
         if (!tex) continue;
-        const ti = (((y & TEX_MASKE) << 9) | (x & TEX_MASKE)) * 4;
-        d[o] *= 1 + (tex[ti] * texMittel[0] - 1) * TEX_STAERKE_ERDE;
-        d[o + 1] *= 1 + (tex[ti + 1] * texMittel[1] - 1) * TEX_STAERKE_ERDE;
-        d[o + 2] *= 1 + (tex[ti + 2] * texMittel[2] - 1) * TEX_STAERKE_ERDE;
+        d[o] *= 1 + (p0 * texMittel[0] - 1) * TEX_STAERKE_ERDE;
+        d[o + 1] *= 1 + (p1 * texMittel[1] - 1) * TEX_STAERKE_ERDE;
+        d[o + 2] *= 1 + (p2 * texMittel[2] - 1) * TEX_STAERKE_ERDE;
         continue;
       }
       let licht = 1;
@@ -153,19 +244,17 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
       }
       let m0 = 1; let m1 = 1; let m2 = 1;
       if (tex) {
-        const ti = (((y & TEX_MASKE) << 9) | (x & TEX_MASKE)) * 4;
         const k = id * 3;
-        m0 = 1 + (tex[ti] * texMittel[k] - 1) * TEX_STAERKE;
-        m1 = 1 + (tex[ti + 1] * texMittel[k + 1] - 1) * TEX_STAERKE;
-        m2 = 1 + (tex[ti + 2] * texMittel[k + 2] - 1) * TEX_STAERKE;
+        m0 = 1 + (p0 * texMittel[k] - 1) * TEX_STAERKE;
+        m1 = 1 + (p1 * texMittel[k + 1] - 1) * TEX_STAERKE;
+        m2 = 1 + (p2 * texMittel[k + 2] - 1) * TEX_STAERKE;
       }
       if (texFarbe[id]) {
         // Biom-Material mit Textur: deren Farbe trägt das Bild, Stofffarbe und Muster färben nur leicht nach.
-        const ti = (((y & TEX_MASKE) << 9) | (x & TEX_MASKE)) * 4;
         const l = 0.9 + 0.1 * licht;
-        d[o] = d[o] * (1 - DECKUNG_TEX) + Math.min(255, (tex[ti] * TEX_FARBE + f0[id] * (1 - TEX_FARBE)) * l) * DECKUNG_TEX;
-        d[o + 1] = d[o + 1] * (1 - DECKUNG_TEX) + Math.min(255, (tex[ti + 1] * TEX_FARBE + f1[id] * (1 - TEX_FARBE)) * l) * DECKUNG_TEX;
-        d[o + 2] = d[o + 2] * (1 - DECKUNG_TEX) + Math.min(255, (tex[ti + 2] * TEX_FARBE + f2[id] * (1 - TEX_FARBE)) * l) * DECKUNG_TEX;
+        d[o] = d[o] * (1 - DECKUNG_TEX) + Math.min(255, (p0 * TEX_FARBE + f0[id] * (1 - TEX_FARBE)) * l) * DECKUNG_TEX;
+        d[o + 1] = d[o + 1] * (1 - DECKUNG_TEX) + Math.min(255, (p1 * TEX_FARBE + f1[id] * (1 - TEX_FARBE)) * l) * DECKUNG_TEX;
+        d[o + 2] = d[o + 2] * (1 - DECKUNG_TEX) + Math.min(255, (p2 * TEX_FARBE + f2[id] * (1 - TEX_FARBE)) * l) * DECKUNG_TEX;
         continue;
       }
       d[o] = d[o] * (1 - DECKUNG) + Math.min(255, f0[id] * licht * m0) * DECKUNG;
