@@ -83,6 +83,7 @@ def main():
     p.add_argument("--blaetter", default="", help="Komma-Liste walk,aktion,zustand (leer = alle)")
     p.add_argument("--pilot", action="store_true", help="nur eine Figur, ein Blatt, alle Anbieter")
     p.add_argument("--trocken", action="store_true", help="nur den Plan ausgeben")
+    p.add_argument("--magenta", action="store_true", help="nur mit --blaetter emotion: Magenta- statt Gruen-Hintergrund (schneide.blatt(..., magenta=True))")
     p.add_argument("--stil-zusatz", default="", help="wird an jeden Prompt angehängt (B1: '8bit' für echte Pixelkunst)")
     args = p.parse_args()
 
@@ -96,6 +97,8 @@ def main():
     if args.blaetter:
         gewaehlt = {t.strip() for t in args.blaetter.split(",") if t.strip()}
         blaetter = [b for b in BLAETTER + ZUSATZ_BLAETTER if b[0] in gewaehlt]
+    if args.magenta:
+        blaetter = [(b, prompts.EMOTION_MAGENTA) for b, _ in blaetter if b == "emotion"]
     if args.pilot:
         figuren = figuren[:1]
         blaetter = blaetter[:1]

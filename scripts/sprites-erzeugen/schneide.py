@@ -35,8 +35,9 @@ def frei(cell,mehr=False):
     gg=np.minimum(g,np.maximum(r,b)+5)
     rgba=np.dstack([r,gg,b,np.clip(al*255,0,255)]).astype(np.uint8)
     return Image.fromarray(rgba,'RGBA')
-def blatt(path,hoehe_ref=None,zelle=256,boden=240,mehr=False):
-    teile=[frei(c,mehr) for c in zellen(path)]
+def blatt(path,hoehe_ref=None,zelle=256,boden=240,mehr=False,magenta=False):
+    # magenta=True: Magenta-Grund (Flutfuellung vom Rand), z. B. fuer gruene Figuren; Standard unveraendert
+    teile=[(frei_magenta(c,mehr) if magenta else frei(c,mehr)) for c in zellen(path)]
     bb=[t.getbbox() if t else None for t in teile]
     hs=[b[3]-b[1] for b in bb if b]
     # gemeinsame Skala: Median der Höhen der stehenden Frames (Frames 0..5), ohne liegende

@@ -24,3 +24,6 @@ EMOTION=BASE+("This is an EMOTIONS sheet, 8 different poses in reading order: "
   "7 same stance as the reference, only the head tilted down, looking downward; "
   "8 switching gear: looking back over the shoulder, one empty hand reaching back. "
   "A four-legged animal stays on all fours in every cell and keeps its species.")
+
+# Zweiter Versuch (2026-11-10): Magenta-Grund fuer gruene Figuren (der Gruen-Schluessel entsaettigt Gruen); EMOTION bleibt unveraendert.
+EMOTION_MAGENTA=EMOTION.replace("solid pure bright green (#00FF00) background","solid pure magenta (#FF00FF) background")
