@@ -91,7 +91,7 @@ test('Lobby: Zugzeit kommt aus der Größe und steht in der Beschreibung', () =>
 
 test('Lobby: unbekannte Größe/Form fällt auf die Vorgabe zurück (tolerant)', () => {
   const lobbies = new LobbyManager();
-  const { lobby } = lobbies.create({ teams: 2, mapSize: 'riesig', mapFormat: 'schraeg' });
+  const { lobby } = lobbies.create({ teams: 2, mapSize: 'gigantisch', mapFormat: 'schraeg' });
   assert.equal(lobby.mapSize, 'mittel', 'unbekannte Stufe wird nicht auf die Vorgabe gesetzt');
   assert.equal(lobby.mapFormat, '16:9', 'unbekannte Form wird nicht auf die Vorgabe gesetzt');
   assert.equal(lobby.turnDurationMs, ERWARTET.mittel);
@@ -191,7 +191,7 @@ test('HTTP: Form und Größe kommen durch die Lobby-API, Unbekanntes fällt zur�
     assert.equal(lobby.mapSize, 'gross');
     assert.equal(lobby.turnDurationMs, ERWARTET.gross, 'die API meldet eine andere Zugzeit als der Motor');
 
-    const tolerant = await anlegen({ mapFormat: 'schraeg', mapSize: 'riesig' });
+    const tolerant = await anlegen({ mapFormat: 'schraeg', mapSize: 'gigantisch' });
     assert.equal(tolerant.status, 201, 'eine unbekannte Angabe darf das Anlegen nicht verhindern');
     const fallback = (await tolerant.json()).lobby;
     assert.equal(fallback.mapFormat, '16:9');

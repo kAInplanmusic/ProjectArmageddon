@@ -28,6 +28,7 @@ const FLAECHEN = Object.freeze({
   weit: 3200 * 1800,
   mittel: 2560 * 1440,
   gross: 3840 * 2160,
+  riesig: 5120 * 2880,
   krieg: 5120 * 2880,
 });
 
@@ -38,6 +39,7 @@ const ALT_16_9 = Object.freeze({
   weit: { width: 3200, height: 1800 },
   mittel: { width: 2560, height: 1440 },
   gross: { width: 3840, height: 2160 },
+  riesig: { width: 5120, height: 2880 },
   krieg: { width: 5120, height: 2880 },
 });
 
@@ -46,9 +48,9 @@ test('Es gibt genau die sieben geforderten Formate', () => {
   assert.equal(MAP_FORMAT_VORGABE, '16:9', 'Vorgabe bleibt das bisherige Querformat');
 });
 
-test('Fünf wählbare Stufen; `krieg` nur noch lesbar', () => {
-  assert.deepEqual([...MAP_GROESSEN], ['klein', 'kompakt', 'mittel', 'weit', 'gross']);
-  assert.deepEqual([...MAP_GROESSEN_ALLE], ['klein', 'kompakt', 'mittel', 'weit', 'gross', 'krieg']);
+test('Sechs wählbare Stufen (`riesig` neu, gleiche Maße wie `krieg`); `krieg` nur noch lesbar', () => {
+  assert.deepEqual([...MAP_GROESSEN], ['klein', 'kompakt', 'mittel', 'weit', 'gross', 'riesig']);
+  assert.deepEqual([...MAP_GROESSEN_ALLE], ['klein', 'kompakt', 'mittel', 'weit', 'gross', 'riesig', 'krieg']);
   assert.equal(MAP_GROESSE_VORGABE, 'mittel');
 });
 
@@ -125,7 +127,7 @@ test('mapSizeFor und die Normalisierer fallen tolerant zurück', () => {
    */
   assert.deepEqual(mapSizeFor('schraeg', 'mittel'), MAP_SIZES['16:9'].mittel,
     'unbekannte Form fällt auf 16:9');
-  assert.deepEqual(mapSizeFor('16:9', 'riesig'), MAP_SIZES['16:9'].mittel,
+  assert.deepEqual(mapSizeFor('16:9', 'gigantisch'), MAP_SIZES['16:9'].mittel,
     'unbekannte Stufe fällt auf mittel');
   assert.deepEqual(mapSizeFor(undefined, undefined), MAP_SIZES['16:9'].mittel);
 
@@ -133,7 +135,7 @@ test('mapSizeFor und die Normalisierer fallen tolerant zurück', () => {
   assert.equal(normalisiereFormat('schraeg'), '16:9');
   assert.equal(normalisiereFormat('schraeg', 'portrait'), '9:16', 'die Ausrichtung bleibt der Rückfall');
   assert.equal(normalisiereGroesse('krieg'), 'krieg', 'Altstufe bleibt lesbar');
-  assert.equal(normalisiereGroesse('riesig'), 'mittel');
+  assert.equal(normalisiereGroesse('gigantisch'), 'mittel');
   assert.equal(normalisiereGroesse(undefined), 'mittel');
 });
 
@@ -177,4 +179,17 @@ test('Keine Größe überschreitet die Grenze des Drahtformats', () => {
       assert.ok(height <= grenze, `${format}/${stufe}: Höhe ${height} > ${Math.round(grenze)} px`);
     }
   }
+});
+
+test('`riesig` hat die Maße der Altstufe `krieg` und 55 s Zugzeit; Menüvorgaben und Figurenvorschlag', async () => {
+  const { MAP_FORMAT_MENUE, MAP_GROESSE_MENUE, mapGroesseFuerFiguren, FIGUR_BREITE_PX } = await import('../src/engine/karte.js');
+  for (const format of MAP_FORMATS) assert.deepEqual(MAP_SIZES[format].riesig, MAP_SIZES[format].krieg);
+  assert.deepEqual(MAP_SIZES['24:9'].riesig, { width: 6272, height: 2352 });
+  assert.ok(MAP_SIZES['24:9'].riesig.width <= 8191.75, 'Drahtformat Int16·4');
+  assert.equal(`${MAP_FORMAT_MENUE}/${MAP_GROESSE_MENUE}`, '24:9/gross');
+  assert.equal(mapSizeFor(MAP_FORMAT_MENUE, MAP_GROESSE_MENUE).width / FIGUR_BREITE_PX, 336);
+  assert.equal(mapGroesseFuerFiguren(6), 'weit');
+  assert.equal(mapGroesseFuerFiguren(20), 'riesig');
+  // Engine-Vorgabe für Köpfe ohne Angabe bleibt der Altstand (alte Replays bitgleich).
+  assert.equal(`${MAP_FORMAT_VORGABE}/${MAP_GROESSE_VORGABE}`, '16:9/mittel');
 });

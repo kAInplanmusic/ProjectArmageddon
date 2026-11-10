@@ -56,7 +56,7 @@ test('Die Zugzeit-Konfiguration hängt an der Kartengröße, nicht an der Spiele
    * Felder nach Spielerzahl (`duelSeconds`, `fourPlayerSeconds`) sind entfallen —
    * eine Zahl, die die Zugzeit nicht mehr steuert, wäre irreführend.
    */
-  assert.deepEqual(Object.keys(MATCH_RULES.turnTimers), ['klein', 'kompakt', 'mittel', 'weit', 'gross']);
+  assert.deepEqual(Object.keys(MATCH_RULES.turnTimers), ['klein', 'kompakt', 'mittel', 'weit', 'gross', 'riesig']);
   for (const [stufe, wert] of [['klein', 30], ['mittel', 40], ['gross', 50]]) {
     assert.equal(MATCH_RULES.turnTimers[stufe].seconds, wert, `${stufe}: falsche Sekundenzahl`);
     assert.ok(!('minimum' in MATCH_RULES.turnTimers[stufe]), `${stufe}.minimum gehört nicht mehr hierher`);

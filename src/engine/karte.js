@@ -59,9 +59,19 @@ export const MAP_FORMAT_VORGABE = '16:9';
 /** Vorgabestufe, wenn keine Größe gewählt ist. */
 export const MAP_GROESSE_VORGABE = 'mittel';
 /** Die wählbaren Größenstufen, klein nach groß (ohne die Altstufe `krieg`). */
-export const MAP_GROESSEN = Object.freeze(['klein', 'kompakt', 'mittel', 'weit', 'gross']);
-/** Alle Stufen der Tabelle — `krieg` nur noch zum Lesen alter Aufzeichnungen. */
+export const MAP_GROESSEN = Object.freeze(['klein', 'kompakt', 'mittel', 'weit', 'gross', 'riesig']);
+/** Alle Stufen der Tabelle — `krieg` nur noch zum Lesen alter Aufzeichnungen (gleiche Maße wie `riesig`). */
 export const MAP_GROESSEN_ALLE = Object.freeze([...MAP_GROESSEN, 'krieg']);
+
+/**
+ * Vorgaben für NEUE Partien aus dem Menü (nicht für die Engine: fehlt in einem Replay-Kopf die Angabe, gilt weiter
+ * `MAP_FORMAT_VORGABE`/`MAP_GROESSE_VORGABE`, damit alte Aufzeichnungen bitgleich laufen).
+ *
+ * 24:9 (≈ 2,67:1) liegt nahe an der Standardkarte von Worms Armageddon (1920×696 px ≈ 2,76:1); `gross` ist 4704×1764 px =
+ * 336 × 88 Figurenbreiten/-höhen (14 × 20 px), `riesig` 6272×2352 px.
+ */
+export const MAP_FORMAT_MENUE = '24:9';
+export const MAP_GROESSE_MENUE = 'gross';
 
 /**
  * Altnamen der Ausrichtung: Eine Aufzeichnung von vor den Formaten trägt
@@ -72,7 +82,8 @@ export const MAP_FORMAT_ALIASE = Object.freeze({ landscape: '16:9', portrait: '9
 const KARTEN = Object.freeze(Object.fromEntries(
   Object.entries(FORMATE).map(([format, liste]) => [format, Object.freeze(Object.fromEntries(
     MAP_GROESSEN_ALLE.map((stufe, index) => {
-      const [width, height] = index === 5 ? liste[3] : liste[Math.floor(index / 2)];
+      // `riesig` (5) und die Altstufe `krieg` (6) teilen sich das größte Maß der Tabelle.
+      const [width, height] = index >= 5 ? liste[3] : liste[Math.floor(index / 2)];
       if (index === 1 || index === 3) {
         const [w, h] = liste[Math.ceil(index / 2)];
         return [stufe, Object.freeze({ width: Math.round((width + w) / 2), height: Math.round((height + h) / 2) })];
@@ -94,6 +105,23 @@ export function mapGroesseFuerSpieler(spieler) {
   if (spieler <= 2) return 'klein';
   if (spieler <= 8) return 'mittel';
   return 'gross';
+}
+
+/** Körpermaß einer Figur in Kartenpixeln (`config/player.js`: 14 × 20) — für Maßangaben in Figurenbreiten. */
+export const FIGUR_BREITE_PX = 14;
+export const FIGUR_HOEHE_PX = 20;
+
+/**
+ * Stufe für die Figurenzahl einer Partie (Vorschlag für das Menü, Format 24:9): Je Figur sollen rund 40–55 Figurenbreiten
+ * Kartenbreite zur Verfügung stehen (Worms Armageddon: 1920 px / 9 px = 213 Breiten bei meist 6–8 Würmern, also 27–35).
+ * Die Waffenreichweiten (Kartenpixel) bleiben dabei im Spiel: der nächste Gegner liegt meist unter 700 px entfernt.
+ */
+export function mapGroesseFuerFiguren(figuren) {
+  if (figuren <= 3) return 'kompakt';
+  if (figuren <= 5) return 'mittel';
+  if (figuren <= 8) return 'weit';
+  if (figuren <= 14) return 'gross';
+  return 'riesig';
 }
 
 /** Ausrichtungen der Karte (Altbegriff; die Form ist die neue Angabe). */

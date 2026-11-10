@@ -55,6 +55,7 @@ export const MATCH_RULES = Object.freeze({
     mittel: Object.freeze({ seconds: 40 }),
     weit: Object.freeze({ seconds: 45 }),
     gross: Object.freeze({ seconds: 50 }),
+    riesig: Object.freeze({ seconds: 55 }),
   }),
   /*
    * Das Match endet, wenn es entschieden ist — nicht nach einer festen Rundenzahl
