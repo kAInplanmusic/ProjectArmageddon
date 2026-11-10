@@ -112,6 +112,27 @@ ssh_einstellen() {
   fi
 }
 
+# „bereit“ muss stimmen: Dienste aktiv, Spielserver antwortet, Caddy nimmt auf Port 80 an.
+# Bei Mangel: Phase fehler-selbsttest und die Journalzeilen als Etikett (bei_fehler).
+selbsttest() {
+  phase selbsttest
+  local i code
+  for i in $(seq 1 30); do
+    systemctl is-active --quiet projectarmageddon.service && curl -fsS -m 3 -o /dev/null http://127.0.0.1:3000/healthz && break
+    sleep 3
+  done
+  curl -fsS -m 3 -o /dev/null http://127.0.0.1:3000/healthz || { log "Spielserver antwortet nicht"; journalctl -u projectarmageddon -n 12 --no-pager -o cat; return 1; }
+  for i in $(seq 1 20); do
+    code=$(curl -sS -m 3 -o /dev/null -w '%{http_code}' http://127.0.0.1/ 2>/dev/null || echo 000)
+    case "$code" in 200|30?) log "Caddy antwortet auf Port 80 ($code)"; return 0 ;; esac
+    sleep 3
+  done
+  log "Caddy antwortet nicht auf Port 80 (letzter Code $code)"
+  systemctl is-active caddy || true
+  journalctl -u caddy -n 12 --no-pager -o cat
+  return 1
+}
+
 # cloud-init legt die user_data (darin das Token) auf der Platte ab. Diese Reste entfernen, dann die
 # ganze Platte nach dem Token durchsuchen und das Ergebnis als Etikett melden. So ist jedes Abbild
 # (auch das von „not-aus“) frei vom Token, sobald die Phase „bereit“ erreicht ist.
@@ -164,6 +185,7 @@ NFT
   systemctl restart caddy
   systemctl enable --now projectarmageddon-idle.timer
   ssh_einstellen
+  selbsttest
   token_saeubern
   phase bereit
 }
