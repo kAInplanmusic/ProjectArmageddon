@@ -26,6 +26,7 @@ OBERGRENZE = 0.45
 # Sichtprüfung am Kontaktbogen (2026-10-27) für neu erzeugte Zellen (emotion-neu.py): Ersatz für die Farbprüfung dieser Zellen.
 # Die Zellennummern gelten als gültig (Freigabe) bzw. werden gesperrt (Sperre), sonst entscheidet das Farbhistogramm.
 SICHTPRUEFUNG = {
+    'pixel/22_arcanus-b': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4 8-Bit-Blatt (Runware gpt-image-2); Zelle 4 (Zittern) faellt nur farblich, sichtgeprueft
     'beasts/00_pikamon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'beasts/01_shrew-quakes': {'frei': [1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/02_storm-talon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03: Zellen 2 und 4 aus Zelle 1 abgeleitet, Magenta-Schatten entfernt
@@ -58,15 +59,14 @@ SICHTPRUEFUNG = {
     'pirates/20_voodoo-witch-morgana': {'frei': [0, 1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'pirates/21_storm-schamane-hooky': {'frei': [1, 2, 3, 4], 'sperre': []},  # 2026-11-03 Restposen per FLUX; bisher farbgeprüfte Zellen sichtgeprüft
     'pirates/22_chanteyman-drake': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 abgeleitet (emotion-ableiten.py); bisher farbgeprüfte Zellen sichtgeprüft
-    'pixel/00_nullpointer-exception': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'pixel/01_pyrofox-a': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'pixel/02_pyrofox-b': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'pixel/10_arcershorn-a': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'pixel/11_pyrowand-a': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'pixel/12_shieldmon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'pixel/20_phantomal-a': {'frei': [1, 3, 4], 'sperre': []},
-    'pixel/21_arcanus-a': {'frei': [0, 1, 2, 3], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'pixel/22_arcanus-b': {'frei': [1, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
+    'pixel/00_nullpointer-exception': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'pixel/01_pyrofox-a': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'pixel/02_pyrofox-b': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'pixel/10_arcershorn-a': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'pixel/11_pyrowand-a': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'pixel/12_shieldmon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'pixel/20_phantomal-a': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
+    'pixel/21_arcanus-a': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
     'rodentia/00_commander-chewk': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'rodentia/01_berzerker-fang': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'rodentia/02_vanguard-captain-rix': {'frei': [0, 1, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
