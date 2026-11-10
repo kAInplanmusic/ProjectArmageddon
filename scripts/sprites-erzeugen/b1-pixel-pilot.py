@@ -41,7 +41,7 @@ ANSICHTEN = {
     "portrait": ASSETS / "characters" / "pixel" / f"{FIGUR}.png",
     "seite": ASSETS / "characters-side" / "pixel" / f"{FIGUR}.png",
 }
-RASTER_HOEHE = 32      # logische Pixel der Figurhöhe
+RASTER_HOEHE = 48      # logische Pixel der Figurhöhe (Pilot: 32 war gröber als das Modellraster, Figur zerfiel)
 FARBEN = 16            # höchstens je Figur (Abnahme B1)
 ZIEL_GROESSE = 256     # wie die alten Bilder
 GRUEN = (0, 255, 0)
@@ -64,15 +64,37 @@ PROMPT = {
 }
 
 
-def freistellen(bild):
-    """Grün (und vorhandene Transparenz) zu Alpha 0. Toleranz für leicht verschobenes Modellgrün."""
+def freistellen(bild, toleranz=70):
+    """Hintergrund zu Alpha 0: nur Pixel, die vom Bildrand aus ZUSAMMENHÄNGEND in der Hintergrundfarbe liegen.
+
+    Pilot 2026-11-10: Ein globaler Grünschlüssel schnitt grüne Figuren (Fraktion pixel ist grün) in Stücke.
+    Jetzt wird die Hintergrundfarbe an den Ecken gemessen und von allen Rändern aus geflutet; Grün INNERHALB
+    der Figur (vom Umriss umschlossen) bleibt erhalten.
+    """
     rgba = bild.convert("RGBA")
+    w, h = rgba.size
     px = rgba.load()
-    for y in range(rgba.height):
-        for x in range(rgba.width):
-            r, g, b, a = px[x, y]
-            if a < 128 or (g > 150 and g > r * 1.6 and g > b * 1.6):
-                px[x, y] = (0, 0, 0, 0)
+    ecken = [px[0, 0], px[w - 1, 0], px[0, h - 1], px[w - 1, h - 1]]
+    grund = tuple(sorted(e[k] for e in ecken)[1] for k in range(3))  # robust gegen eine abweichende Ecke
+
+    def ist_grund(p):
+        return p[3] < 128 or sum((p[k] - grund[k]) ** 2 for k in range(3)) <= toleranz * toleranz
+
+    gesehen = bytearray(w * h)
+    stapel = [(x, y) for x in range(w) for y in (0, h - 1)] + [(x, y) for y in range(h) for x in (0, w - 1)]
+    while stapel:
+        x, y = stapel.pop()
+        i = y * w + x
+        if gesehen[i]:
+            continue
+        gesehen[i] = 1
+        if not ist_grund(px[x, y]):
+            continue
+        px[x, y] = (0, 0, 0, 0)
+        if x > 0: stapel.append((x - 1, y))
+        if x < w - 1: stapel.append((x + 1, y))
+        if y > 0: stapel.append((x, y - 1))
+        if y < h - 1: stapel.append((x, y + 1))
     return rgba
 
 
@@ -87,7 +109,11 @@ def raster(roh, ansicht):
     breite = max(1, round(figur.width * hoehe / figur.height))
     klein = figur.resize((breite, hoehe), Image.BOX)
     alpha = klein.getchannel("A").point(lambda a: 255 if a >= 128 else 0)
-    farbe = klein.convert("RGB").quantize(colors=FARBEN, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    # Palette nur aus Figurpixeln bilden (transparente Fläche würde sonst eine Farbe belegen).
+    figurpixel = [p[:3] for p in klein.convert("RGBA").getdata() if p[3] >= 128] or [(0, 0, 0)]
+    palette_bild = Image.new("RGB", (len(figurpixel), 1)); palette_bild.putdata(figurpixel)
+    palette = palette_bild.quantize(colors=FARBEN, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    farbe = klein.convert("RGB").quantize(palette=palette, dither=Image.Dither.NONE)
     klein = farbe.convert("RGBA")
     klein.putalpha(alpha)
     faktor = max(1, (ZIEL_GROESSE * 7 // 8) // hoehe)  # Figur füllt wie bisher rund 7/8 der Höhe
