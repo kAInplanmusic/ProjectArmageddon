@@ -712,6 +712,9 @@ export const EREIGNIS_WIRKUNGEN = {
     if (g) Object.assign(g, { x: n.x, y: n.y, luft: true });
   }),
   feuerwesen_zerbirst: beide((k, n) => {
+    const vorher = k.fernzustand?.feuerwesen?.()?.get(n.id);
+    // `n.y` ist die Körpermitte (Körperhöhe 12 px); das Bild steht wie der Gnom auf den Füßen.
+    k.renderer?.feuerwesenZerbirst?.(n.x, vorher?.y ?? n.y + 6, vorher?.richtung ?? 1);
     k.fernzustand?.feuerwesen?.()?.delete(n.id);
     k.hud?.log(n.grund === 'beruehrung' ? 'Das Feuerwesen zerbirst in fünf Feuerkugeln!' : 'Das Feuerwesen verglüht und zerbirst', 'danger');
     k.renderer?.addFlash(n.x, n.y, 26, { color: '#ffb347' });

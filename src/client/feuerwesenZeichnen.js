@@ -1,10 +1,10 @@
 /**
- * Zeichnet laufende Feuerwesen (Waffenfassung 20, `pa_118`): ein kleiner Feuergnom mit trippelnden Beinen, dessen
- * Körper das Bild der Waffe im runden Rahmen trägt (dieselbe Orb-Darstellung wie die Kachel des Feuerwesens), dahinter
- * die Flammen aus dem Effekt-Sheet `feuerring`. Ein Ring um den Kopf zeigt die Restlaufzeit (die „Zündschnur").
+ * Zeichnet laufende Feuerwesen (Waffenfassung 20, `pa_118`): ein kleiner Feuergnom als Comic-Sprite
+ * (`assets/feuerwesen`, Posen `lauf1`/`lauf2` im Wechsel, `sprung` in der Luft, `zerbirst` beim Zerbersten; geladen
+ * über `tierBilder.js` wie Günther und Cookie). Kurz vor dem Ende der Laufzeit flackert er.
  *
- * Reine Darstellung aus dem Zustand (`state.feuerwesen`, online aus den Ereignissen `feuerwesen_*`); keine neuen
- * Bilddateien. Ohne geladenes Bild oder Sheet fällt die Zeichnung auf Kreis und Glut zurück.
+ * Reine Darstellung aus dem Zustand (`state.feuerwesen`, online aus den Ereignissen `feuerwesen_*`). Bis das Sprite
+ * geladen ist, fällt die Zeichnung auf den alten Orb (Waffenbild im runden Rahmen) zurück.
  *
  * @module feuerwesenZeichnen
  */
@@ -20,13 +20,15 @@ const SKALA = 1.8;
 /**
  * @param {CanvasRenderingContext2D} ctx - im Weltkoordinatensystem
  * @param {{id:number, x:number, y:number, richtung:number, luft:boolean, alter:number, laufzeitTakte:number}[]} liste
- * @param {{ikone:HTMLImageElement|null, sheets:object|null, zeit:number, reduziert:boolean}} optik
+ * @param {{ikone:HTMLImageElement|null, sheets:object|null, zeit:number, reduziert:boolean,
+ *   pose:((name:string)=>({bild:CanvasImageSource, anker:{x:number,y:number}, kante:number}|null))|null}} optik
  * @returns {number} Anzahl gezeichneter Gnome
  */
-export function zeichneFeuerwesen(ctx, liste, { ikone = null, sheets = null, zeit = 0, reduziert = false } = {}) {
+export function zeichneFeuerwesen(ctx, liste, { ikone = null, sheets = null, zeit = 0, reduziert = false, pose = null } = {}) {
   if (!Array.isArray(liste) || liste.length === 0) return 0;
   let anzahl = 0;
   for (const g of liste) {
+    if (zeichneSprite(ctx, g, pose, zeit, reduziert)) { anzahl += 1; continue; }
     const blick = g.richtung < 0 ? -1 : 1;
     const phase = reduziert ? 0 : zeit * 16 + g.id;
     const hub = reduziert || g.luft ? 0 : Math.abs(Math.sin(phase)) * 1.5;
@@ -95,4 +97,58 @@ export function zeichneFeuerwesen(ctx, liste, { ikone = null, sheets = null, zei
     anzahl += 1;
   }
   return anzahl;
+}
+
+/** Wechsel der Laufposen (s je Pose): passt zum Trippeln bei 1,6 px/Takt. */
+const SCHRITT_S = 0.14;
+
+/** Sprite-Darstellung eines Gnoms; `false`, solange die Pose nicht geladen ist. */
+function zeichneSprite(ctx, g, pose, zeit, reduziert) {
+  if (typeof pose !== 'function') return false;
+  const name = g.luft ? 'sprung' : (reduziert || Math.floor((zeit + g.id * 0.07) / SCHRITT_S) % 2 === 0 ? 'lauf1' : 'lauf2');
+  const e = pose(name);
+  if (!e) return false;
+  const k = e.kante / 256;
+  const rest = g.laufzeitTakte > 0 ? Math.max(0, 1 - g.alter / g.laufzeitTakte) : 1;
+  ctx.save();
+  ctx.translate(g.x, g.y);
+  // Schatten am Boden (in der Luft kleiner).
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+  ctx.beginPath();
+  ctx.ellipse(0, 1, e.kante * (g.luft ? 0.12 : 0.2), 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Kurz vor dem Zerbersten: flackern (die frühere „Zündschnur").
+  if (!reduziert && rest < 0.2) ctx.globalAlpha = 0.65 + 0.35 * Math.abs(Math.sin(zeit * 18));
+  ctx.scale(g.richtung < 0 ? -1 : 1, 1);
+  ctx.drawImage(e.bild, -e.anker.x * k, -e.anker.y * k, 256 * k, 256 * k);
+  ctx.restore();
+  return true;
+}
+
+/** Dauer des Zerbersten-Bilds (s). */
+export const ZERBIRST_DAUER_S = 0.35;
+
+/**
+ * Zerbersten-Bild an der Stelle, an der ein Gnom zerplatzt ist (`feuerwesen_zerbirst`); wächst kurz und blendet aus.
+ * Die echten fünf Kugeln sind gewöhnliche Geschosse und werden davon unabhängig gezeichnet.
+ *
+ * @param {{x:number, y:number, richtung:number, start:number}[]} liste - wird von abgelaufenen Einträgen befreit
+ * @returns {number} Anzahl gezeichneter Bilder
+ */
+export function zeichneFeuerwesenZerbersten(ctx, liste, { pose = null, zeit = 0 } = {}) {
+  if (!Array.isArray(liste) || liste.length === 0) return 0;
+  for (let i = liste.length - 1; i >= 0; i -= 1) if (zeit - liste[i].start > ZERBIRST_DAUER_S) liste.splice(i, 1);
+  const e = typeof pose === 'function' ? pose('zerbirst') : null;
+  if (!e) return 0;
+  for (const b of liste) {
+    const t = Math.max(0, Math.min(1, (zeit - b.start) / ZERBIRST_DAUER_S));
+    const k = (e.kante / 256) * (1 + 0.35 * t);
+    ctx.save();
+    ctx.globalAlpha = 1 - t * t;
+    ctx.translate(b.x, b.y);
+    ctx.scale(b.richtung < 0 ? -1 : 1, 1);
+    ctx.drawImage(e.bild, -e.anker.x * k, -e.anker.y * k, 256 * k, 256 * k);
+    ctx.restore();
+  }
+  return liste.length;
 }

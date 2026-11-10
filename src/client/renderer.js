@@ -105,7 +105,7 @@ import { KISTE_KANTE } from '../shared/config/kisten.js';
  * Selbsttest in `tests/backdrops.test.js` prüft die Präfixe aller Globs.
  */
 import { ladeKulisse } from './kulissenLaden.js';
-import { zeichneSeil } from './seilZeichnen.js'; import { zeichneFeuerwesen } from './feuerwesenZeichnen.js'; // Feuerwesen (Fassung 20)
+import { zeichneSeil } from './seilZeichnen.js'; import { zeichneFeuerwesen, zeichneFeuerwesenZerbersten } from './feuerwesenZeichnen.js'; // Feuerwesen (Fassung 20)
 
 /*
  * Seltenheitsfarbe einer Kiste: aus `LOOT_DROP_RULES.rarityColors` (config/loot.js), dieselbe Tabelle
@@ -425,7 +425,7 @@ export class Renderer {
   sheetGlut(x, y, groesse) {
     return this.sheets.starte('glut', x, y, groesse);
   }
-
+  feuerwesenZerbirst(x, y, richtung = 1) { this.#feuerwesenBirst.push({ x, y, richtung, start: performance.now() / 1000 }); } #feuerwesenPose = (name) => holeTierPose('feuerwesen', name); #feuerwesenBirst = []; // Feuerwesen (Fassung 20): Sprite-Posen aus `assets/feuerwesen`, Zerbersten-Bild bei `feuerwesen_zerbirst`; eine Zeile wegen der Zeilenanker
   /** Fügt einen Explosionsblitz an einer Stelle hinzu. */
   addFlash(x, y, radius, optionen = {}) {
     this.effects.push(erzeugeBlitz(x, y, radius, optionen));
@@ -2356,7 +2356,7 @@ export class Renderer {
     this.#drawTurrets(state.turrets ?? []);
     this.#drawCrates(state.crates ?? []);
     this.#drawMinen(state.bodenobjekte ?? []);
-    this.waffenStat.feuerwesen = zeichneFeuerwesen(this.ctx, state.feuerwesen ?? [], { ikone: state.feuerwesen ? holeWaffenIkone(this.waffe('pa_118')) : null, sheets: this.sheets, zeit: performance.now() / 1000, reduziert: this.reducedMotion }); // Fassung 20 (`feuerwesenZeichnen.js`)
+    this.waffenStat.feuerwesen = zeichneFeuerwesen(this.ctx, state.feuerwesen ?? [], { ikone: state.feuerwesen?.length ? holeWaffenIkone(this.waffe('pa_118')) : null, sheets: this.sheets, zeit: performance.now() / 1000, reduziert: this.reducedMotion, pose: this.#feuerwesenPose }); zeichneFeuerwesenZerbersten(this.ctx, this.#feuerwesenBirst, { pose: this.#feuerwesenPose, zeit: performance.now() / 1000 }); // Fassung 20 (`feuerwesenZeichnen.js`)
     this.#drawAimPreview(aimPreview);
     /*
      * Die Schussvorhersage liegt VOR der Zielhilfe und in eigener Farbe.

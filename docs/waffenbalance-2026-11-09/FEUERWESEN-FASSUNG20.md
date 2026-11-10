@@ -27,5 +27,9 @@ Alte Fassungen (≤ 19) bleiben bitgleich: der Läuferpfad gilt nur für `quelle
 
 ## Offen / ungeprüft
 - Balance gegen andere Waffen nicht gespielt; Werte sind Erstansatz.
-- Optik des Gnoms (im Client gezeichnet, kein Spritesheet) nicht vom Auftraggeber abgenommen.
+- Optik: seit 2026-11-10 Comic-Sprite wie Günther/Cookie (`src/client/assets/feuerwesen/`: `lauf1`, `lauf2`, `sprung`,
+  `zerbirst`; Runware `openai:gpt-image@2`, lauf1 als Referenz für die anderen Posen; Kosten ca. 0,07 USD). Geladen über
+  `tierBilder.js`, gezeichnet in `feuerwesenZeichnen.js` (Kante 48 Kartenpixel), Zerbersten-Bild 0,35 s beim Ereignis
+  `feuerwesen_zerbirst`. Sichtabnahme im Spiel durch den Auftraggeber steht aus; das Zerbersten-Bild ist im
+  Bildschirmfoto noch nicht erfasst (zu kurz).
 - Bundle: +9,9 kB roh im Hauptbündel, Grenzen in `scripts/bundle-grenzen.json` begründet angehoben.

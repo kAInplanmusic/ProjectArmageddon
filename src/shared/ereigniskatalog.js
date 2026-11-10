@@ -122,7 +122,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   feuerwesen_gesetzt: { klasse: 'zustand', anim: ['addFlash'] },
   feuerwesen_lauf: { klasse: 'zustand', stumm: 'nur Zustand: die Lage ist am gezeichneten Gnom zu sehen (online führt sie die Liste fort)' },
   feuerwesen_sprung: { klasse: 'zustand', stumm: 'nur Zustand: der Sprung ist am gezeichneten Gnom zu sehen' },
-  feuerwesen_zerbirst: { klasse: 'zustand', anim: ['addFlash'] },
+  feuerwesen_zerbirst: { klasse: 'zustand', anim: ['feuerwesenZerbirst', 'addFlash'] },
   feuerwesen_erloschen: { klasse: 'zustand' },
   fass_placed: { klasse: 'zustand', stumm: 'liegende Fässer melden sich nicht im Protokoll; die Liste steht im Zustand' },
   fass_abgeworfen: { klasse: 'zustand', stumm: 'Protokollzeile reicht; der Fall wird im Renderer gezeichnet' },

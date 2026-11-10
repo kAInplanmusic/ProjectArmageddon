@@ -1,0 +1,42 @@
+{
+ "version": 1,
+ "quelle": "Runware openai:gpt-image@2 (Text, danach Bild-zu-Bild mit lauf1 als Referenz), lokal freigestellt (gruener Key, Flutfuellung)",
+ "posen": {
+  "lauf1": {
+   "datei": "lauf1.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts",
+   "massstab": 0.2503
+  },
+  "lauf2": {
+   "datei": "lauf2.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts",
+   "massstab": 0.2503
+  },
+  "sprung": {
+   "datei": "sprung.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts",
+   "massstab": 0.2503
+  },
+  "zerbirst": {
+   "datei": "zerbirst.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts",
+   "massstab": 0.2503
+  }
+ }
+}

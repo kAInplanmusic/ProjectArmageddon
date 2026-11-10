@@ -1,5 +1,5 @@
 /**
- * Pose-Sprites der Tier-NPCs (Günther und Cookie): lazy geladen, gecacht.
+ * Pose-Sprites der Tier-NPCs (Günther und Cookie) und des Feuerwesens (`pa_118`): lazy geladen, gecacht.
  *
  * EINE Tabelle für beide (`TIER_ANSICHT`) und EIN Lader — Cookie ist kein zweiter
  * Figurentyp, sondern derselbe Weg mit anderem Ordner. Jede Pose ist ein
@@ -28,6 +28,7 @@ function bilderTabelle() {
       bilder = {
         guenther: import.meta.glob('./assets/guenther/*.png', { query: '?url', import: 'default' }),
         cookie: import.meta.glob('./assets/cookie/*.png', { query: '?url', import: 'default' }),
+        feuerwesen: import.meta.glob('./assets/feuerwesen/*.png', { query: '?url', import: 'default' }),
       };
     } catch {
       bilder = {};
@@ -42,6 +43,7 @@ function manifestTabelle() {
       manifeste = {
         guenther: import.meta.glob('./assets/guenther/manifest.json', { eager: true, import: 'default' }),
         cookie: import.meta.glob('./assets/cookie/manifest.json', { eager: true, import: 'default' }),
+        feuerwesen: import.meta.glob('./assets/feuerwesen/manifest.json', { eager: true, import: 'default' }),
       };
     } catch {
       manifeste = {};
@@ -54,6 +56,8 @@ function manifestTabelle() {
 const TIER_ANSICHT = Object.freeze({
   guenther: Object.freeze({ ordner: 'guenther', kante: 76 }),
   cookie: Object.freeze({ ordner: 'cookie', kante: 104 }),
+  // Feuerwesen (Waffenfassung 20): Posen lauf1, lauf2, sprung, zerbirst; deutlich kleiner als eine Figur.
+  feuerwesen: Object.freeze({ ordner: 'feuerwesen', kante: 48 }),
 });
 
 // art -> pose -> Eintrag | 'laedt' | 'fehlt'
