@@ -55,8 +55,16 @@ export class FeuerwesenSystem {
   /** Laufende Gnome — sie zählen für das Zugende wie Geschosse. */
   get anzahl() { return this.#gnome.size; }
 
+  /**
+   * Fest im Sinne des Gnoms. Die Kollisionsmaske nennt alles außerhalb der Karte fest (Rand als Wand). Für den Gnom
+   * ist jenseits des Seitenrands und unter dem Boden der Karte Leere: er läuft über die Kante hinaus und wird dort
+   * entfernt (wie ein Geschoss, das die Karte verlässt), statt an einer unsichtbaren Wand umzukehren.
+   */
   #fest(x, y) {
-    return this.#match.terrain.isSolid(Math.floor(x), Math.floor(y));
+    const sx = Math.floor(x);
+    const sy = Math.floor(y);
+    if (sx < 0 || sx >= this.#match.width || sy >= this.#match.height) return false;
+    return this.#match.terrain.isSolid(sx, sy);
   }
 
   /** Ist der Körper (Spalte der Vorderkante und Mitte, Füße bis Kopf) an `(x, y)` frei? */
@@ -122,6 +130,7 @@ export class FeuerwesenSystem {
   #schritt(g) {
     const w = g.werte;
     g.alter += 1;
+    if (g.alter >= w.laufzeitTakte) return this.#zerbirst(g, 'laufzeit', null);
     if (g.luft) this.#fliege(g, w);
     else this.#laufe(g, w);
 
@@ -137,7 +146,6 @@ export class FeuerwesenSystem {
       if (fid === g.ownerId && g.werferBeruehrt) continue;
       if (this.#beruehrt(g, fid)) return this.#zerbirst(g, 'beruehrung', fid);
     }
-    if (g.alter >= w.laufzeitTakte) return this.#zerbirst(g, 'laufzeit', null);
     if (g.alter % w.meldeTakte === 0) {
       this.#match.events.emit('feuerwesen_lauf', {
         id: g.id, x: g.x, y: g.y, richtung: g.richtung, luft: g.luft, alter: g.alter,
@@ -153,6 +161,7 @@ export class FeuerwesenSystem {
       g.vy = -absprung(w.hopserHoehe);
       g.luft = true;
       this.#match.events.emit('feuerwesen_sprung', { id: g.id, x: g.x, y: g.y, art: 'hopser' });
+      this.#fliege(g, w); // derselbe Takt: der Hopser geht vorwärts, er bleibt nicht stehen
       return;
     }
     const nx = g.x + g.richtung * w.tempo;
@@ -177,6 +186,7 @@ export class FeuerwesenSystem {
         g.luft = true;
         g.sprungVonX = g.x;
         this.#match.events.emit('feuerwesen_sprung', { id: g.id, x: g.x, y: g.y, art: 'sprung' });
+        this.#fliege(g, w);
         return;
       }
     }
