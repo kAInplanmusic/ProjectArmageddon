@@ -1,0 +1,32 @@
+# B1 / SPR-4 Pilot: eine Figur der Fraktion „pixel" als 8-Bit-Figur neu erzeugen (docs/auftraege/bildagenten-2026-11-09.md).
+# Läuft nur von Hand (Actions → „Bilder B1 Pilot" → Run workflow). Braucht das Repo-Secret TOGETHER_API_KEY;
+# der Schlüssel wird nie ausgegeben oder gespeichert. Ergebnis (Rohbilder, 8-Bit-Fassungen, Kontaktbogen)
+# als Artefakt `b1-pilot`; nichts wird ins Repo geschrieben, die Freigabe macht der Auftraggeber per Sicht.
+name: Bilder B1 Pilot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow
+      - name: Erzeugen
+        env:
+          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+        run: python3 scripts/sprites-erzeugen/b1-pixel-pilot.py --ausfuehren --ziel b1-pilot
+      - name: Ergebnis ablegen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b1-pilot
+          path: b1-pilot/
