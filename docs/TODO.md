@@ -171,6 +171,8 @@ Die zehn Paket-Branches `bg/ag-a1-public` bis `bg/ag-a10-tests` sind einzeln, in
 
 Geprüft am 2026-11-09 nach dem Startpfad-Umbau: `npm test` 2737 Tests (voller Lauf: 2735 grün, 1 übersprungen, 1 rot wegen einer verschobenen Zeilenmarke in `main.js`; behoben und die Datei einzeln grün, kein zweiter Volllauf); `eslint .` ohne Befund; `check:docs` grün; `npm run checks` 22 von 22 Gates grün; E2E 14 von 73 Spezifikationen gelaufen, drei bekannte rote (MERGE-3). Sicht- und Hörprüfung durch einen Menschen: keine.
 
+Geprüft am 2026-11-10 (BAL-05, LOOK-2, MERGE-3, KULISSE-1, BAL-16): `npm test` 2745 Tests (voller Lauf 2743 grün, 1 übersprungen, 1 rot = Versionsanker in `balance-report.test.js`, danach korrigiert; alle 315 Tests, die `main.js` lesen, danach erneut grün); `eslint .` ohne Befund; `check:docs` grün; 22 von 22 Gates grün. E2E gelaufen und grün: `roster`, `figuren-sheets`, `abort-knopf`, `hud-einstellungen`, `fokusfallen`, `kulisse-online`, `multiplayer`, `guenther-online`. Volle E2E-Suite weiterhin nicht gelaufen (MERGE-2). Sichtprüfung LOOK-2 im Spiel offen.
+
 | ID | Art | Befund / Arbeit | Stand |
 |---|---|---|---|
 | MERGE-2 | Lücke | Die volle E2E-Suite (387 Tests, 73 Spezifikationen) ist nach Merge und Startpfad-Umbau nicht gelaufen. Gelaufen sind `fokusfallen`, `onboarding-erstkontakt`, `zoom-200-prozent`, `hud-einstellungen`, `abort-knopf`, `runtime-smoke`, `figuren-feinschliff`, `figuren-sheets`, `figuren-sichtbarkeit`, `roster`, `effekt-sheets`, `ladezeit-nach-bedarf`; nicht gelaufen u. a. `visuell` (Bildvergleich) und alle Online-Specs. Sicht- und Hörprüfung fehlt ganz (Endrangliste, Porträtleisten, Kameraeffekte, WebP-Texturen). | offen |
