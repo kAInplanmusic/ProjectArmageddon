@@ -49,7 +49,7 @@
  */
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE } from '../shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE, WAFFEN_NACHSCHUB } from '../shared/config/waffen-fassung.js';
 import { WIND_JE_ZUG, WIND_FAKTOR_MAX } from '../shared/config/wind.js';
 import { combatProfile, klassenKennung } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
@@ -766,7 +766,9 @@ function applySelfEffect(quelle, effect, playerId, weapon, schuss = null) {
     }
 
     case EFFECT_KIND.AMMO: {
-      const restored = restoreAmmo(quelle, playerId, effect.amount);
+      // BAL-05 (Waffenfassung 18): Die Nachschubwaffe füllt sich nie selbst auf.
+      const ohne = quelle.waffenFassung >= WAFFEN_NACHSCHUB ? (weapon?.id ?? null) : null;
+      const restored = restoreAmmo(quelle, playerId, effect.amount, ohne);
       return { restored };
     }
 
@@ -850,15 +852,17 @@ function buildSubEffect(kind, weapon, element = null) {
  * ist. Dadurch ist das Ergebnis deterministisch und unabhängig von der
  * Reihenfolge im Inventar.
  *
+ * @param {string|null} [ohne] - Waffen-ID, die leer ausgeht (ab Waffenfassung 18 die Nachschubwaffe selbst)
  * @returns {number} tatsächlich aufgefüllte Ladungen
  */
-function restoreAmmo(quelle, playerId, amount) {
+function restoreAmmo(quelle, playerId, amount, ohne = null) {
   const weapons = quelle.inventory.getWeapons(playerId);
   let remaining = Math.max(0, Math.floor(amount));
   let restored = 0;
 
   for (const weaponId of weapons) {
     if (remaining <= 0) break;
+    if (weaponId === ohne) continue;
     const weapon = getWeapon(weaponId);
     if (!weapon) continue;
     const current = quelle.inventory.getAmmo(playerId, weaponId);

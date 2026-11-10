@@ -53,6 +53,10 @@ die Nachschubwaffe bei vollem Inventar unerschöpflich. Der Test hält deshalb
 nur die Obergrenze und die endliche Fremdwaffe fest; die Ökonomieentscheidung
 gehört zu BAL-05, nicht zu dieser Messung.
 
+**Nachtrag 2026-11-10 (BAL-05 entschieden):** Ab Waffenfassung 18 füllt eine Nachschubwaffe nie sich
+selbst, nur andere endliche Waffen (Entscheidung des Auftraggebers). Beleg mit 30 Anwendungen:
+`tests/nachschub-fassung18.test.js`. Die obige Messung gilt weiter für Fassung 17 und älter.
+
 ## Grenzen
 
 - Die Betäubungsprobe ruft `MaliRegeln.betaeube` direkt auf, damit zwei Urheber

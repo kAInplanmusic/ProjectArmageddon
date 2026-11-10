@@ -8,7 +8,7 @@ Priorität: **P0 Waffen/BAL (ich)**, **P1 Grafik (ich)**, **P2 Betrieb/Security*
 
 | ID | Arbeit | Abnahme / Stand |
 |---|---|---|
-| BAL-05 | Selbstauffüllenden Nachschub als Ökonomieregel entscheiden und mit mindestens 20 Anwendungen belegen. | offen |
+| BAL-05 | Selbstauffüllenden Nachschub als Ökonomieregel entscheiden und mit mindestens 20 Anwendungen belegen. | **erledigt 2026-11-10**: Entscheidung „füllt nie sich selbst"; Waffenfassung 18 (`WAFFEN_NACHSCHUB`, Standard), Fassungen 1 bis 17 bitgleich; 30 Anwendungen in `tests/nachschub-fassung18.test.js`; Kollisionsmatrix neu erzeugt (pa_085 Zufall-Munition misst jetzt an einer zweiten Waffe) |
 | BAL-15 | Browser-, Touch- und Bewegungsabnahme der Waffen-E2E; 24/64/128 px, Kontrast, Links-/Rechtszielung. | offen |
 | BAL-16 | Namen und Bildversprechen gegen tatsächliche Mechanik abgleichen, besonders pa_127 und Zauberrolle/Buch. | offen |
 | BAL-14 | Feinbalancing pro Rolle statt globaler Faktoren, mit identischen Seeds und echten LP. | offen |

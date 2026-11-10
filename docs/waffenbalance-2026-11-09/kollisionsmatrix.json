@@ -1,9 +1,9 @@
 {
   "ticket": "BAL-12",
   "titel": "Reale Treffer- und Kollisionsmatrix",
-  "sourceCommit": "efe0899897bc26d8379cda9bd689ff66f4942215",
+  "sourceCommit": "cce5e4b661add97f99e186cef5552219ce1e11d0",
   "versions": {
-    "waffen": 17,
+    "waffen": 18,
     "klassen": 3,
     "schaden": 2,
     "wind": 2,
@@ -2204,11 +2204,11 @@
       "strikeStyle": "self",
       "rollenDistanz": 405,
       "reichweite": 476,
-      "rollenDistanzErreicht": false,
+      "rollenDistanzErreicht": true,
       "probe": {
-        "distance": 286,
-        "angle": 0.36,
-        "angleAnzeige": 0.36,
+        "distance": 405,
+        "angle": 0.6,
+        "angleAnzeige": 0.6,
         "power": 100,
         "route": "projektil",
         "spawn": {
@@ -2219,11 +2219,11 @@
           "homing": 0,
           "fuseTicks": 0
         },
-        "ticks": 27,
+        "ticks": 47,
         "kollision": {
           "art": "projectile_impact",
-          "x": 665.596,
-          "y": 88.998,
+          "x": 782.393,
+          "y": 106.786,
           "target": 2
         },
         "schaden": {
@@ -2246,7 +2246,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 24
     },
     {
       "id": "pa_043",
@@ -2352,7 +2352,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 4
+      "versuche": 34
     },
     {
       "id": "pa_045",
@@ -2460,7 +2460,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 32
     },
     {
       "id": "pa_047",
@@ -2569,7 +2569,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 32
     },
     {
       "id": "pa_049",
@@ -2783,7 +2783,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 32
     },
     {
       "id": "pa_053",
@@ -2838,7 +2838,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 32
     },
     {
       "id": "pa_054",
@@ -3062,11 +3062,11 @@
       "strikeStyle": "self",
       "rollenDistanz": 600,
       "reichweite": 795,
-      "rollenDistanzErreicht": false,
+      "rollenDistanzErreicht": true,
       "probe": {
-        "distance": 477,
-        "angle": 0.32,
-        "angleAnzeige": 0.32,
+        "distance": 600,
+        "angle": 0.5,
+        "angleAnzeige": 0.5,
         "power": 100,
         "route": "projektil",
         "spawn": {
@@ -3077,11 +3077,11 @@
           "homing": 0,
           "fuseTicks": 0
         },
-        "ticks": 31,
+        "ticks": 44,
         "kollision": {
           "art": "projectile_impact",
-          "x": 853.405,
-          "y": 96.74,
+          "x": 983.606,
+          "y": 83.147,
           "target": 2
         },
         "schaden": {
@@ -3104,7 +3104,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 23
     },
     {
       "id": "pa_059",
@@ -4470,7 +4470,7 @@
           "hp": 40
         },
         "munitionVorher": 3,
-        "munitionNachher": 5,
+        "munitionNachher": 2,
         "ereignisArten": [
           "shot",
           "special_effect",
@@ -5108,7 +5108,7 @@
           "hp": 40
         },
         "munitionVorher": 3,
-        "munitionNachher": 5,
+        "munitionNachher": 2,
         "ereignisArten": [
           "shot",
           "special_effect",
@@ -5924,7 +5924,7 @@
           "hp": 100
         },
         "munitionVorher": 3,
-        "munitionNachher": 4,
+        "munitionNachher": 2,
         "ereignisArten": [
           "shot",
           "special_effect",
@@ -6050,7 +6050,7 @@
           "hp": 100
         },
         "munitionVorher": 3,
-        "munitionNachher": 5,
+        "munitionNachher": 2,
         "ereignisArten": [
           "shot",
           "special_effect",
@@ -6162,7 +6162,7 @@
         "projectileId": null,
         "nutzen": {
           "art": "munition",
-          "wert": 3
+          "wert": 4
         },
         "vorher": {
           "x": 853,
@@ -6175,7 +6175,7 @@
           "hp": 100
         },
         "munitionVorher": 3,
-        "munitionNachher": 5,
+        "munitionNachher": 2,
         "ereignisArten": [
           "shot",
           "special_effect",
@@ -6533,7 +6533,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 32
     },
     {
       "id": "pa_134",
@@ -7039,7 +7039,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 32
     },
     {
       "id": "pa_145",
@@ -7198,7 +7198,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 32
     },
     {
       "id": "pa_148",
@@ -7333,7 +7333,7 @@
         "quelle": "fire+step",
         "kontrollierteExplosion": false
       },
-      "versuche": 2
+      "versuche": 32
     }
   ],
   "summary": {
@@ -7351,7 +7351,7 @@
       }
     ],
     "selbstMitNutzen": 38,
-    "rollenDistanzErreicht": 101
+    "rollenDistanzErreicht": 103
   },
   "kontrollfall": {
     "schaden": 40,

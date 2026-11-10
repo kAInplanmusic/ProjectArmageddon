@@ -26,7 +26,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { MatchController, MAP_WIDTH } from '../src/engine/match.js';
-import { getWaffe, WAFFEN_KLASSE, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER } from '../src/shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER } from '../src/shared/config/waffen-fassung.js';
 import { CLASS_IDS, CLASS_DEFINITIONS } from '../src/shared/config/classes.js';
 import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 
@@ -261,9 +261,11 @@ test('BAL-02: Fassung 16 und 15 bleiben bitgleich — dreimal 46, gleicher Zusta
   }
 });
 
-test('BAL-02: die neue Fassung ist die jüngste und ändert nur den Strahlschaden', () => {
+test('BAL-02: Fassung 17 folgt auf 16, der Standard enthält sie, und sie ändert nur den Strahlschaden', () => {
   assert.equal(WAFFEN_KLASSE, WAFFEN_TREFFER + 1);
-  assert.equal(WAFFEN_STANDARD, WAFFEN_KLASSE);
+  // Seit Fassung 18 (BAL-05, Nachschub) ist 17 nicht mehr die jüngste; 18 ändert am Schaden nichts.
+  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB);
+  assert.equal(WAFFEN_NACHSCHUB, WAFFEN_KLASSE + 1);
   assert.equal(schuss(STRAHL, 'nahkampf').schaden, 34.5,
     'erst ab Fassung 17 gilt der Klassenfaktor im Strahl — der Test oben belegt Fassung 16 davor');
 });
