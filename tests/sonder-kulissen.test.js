@@ -48,7 +48,7 @@ test('Beide Höhlenformen haben für jedes gemalte Sonderbiom einen gültigen H�
   assert.equal(sonderKulisseFuer('planet', 42, 'hoehle'), null);
 });
 
-import { FOTOS, panorama, fotoFuerBiom, findeKulisse } from '../src/client/panoramen.js';
+import { FOTOS, FOTOS_JE_BIOM, panorama, fotoFuerBiom, fotoFuerKarte, findeKulisse } from '../src/client/panoramen.js';
 import { existsSync } from 'node:fs';
 
 test('Panoramafotos haben beide SDR-Stufen und behalten eine gültige Motivbasis', () => {
@@ -68,4 +68,21 @@ test('Panoramafotos haben beide SDR-Stufen und behalten eine gültige Motivbasis
   assert.equal(fotoFuerBiom('eiswueste', 'hoehle'), null);
   assert.equal(fotoFuerBiom('kristallhoehle', 'hoehle'), 'small_cave');
   assert.equal(fotoFuerBiom('planet', 'hoehle'), null);
+});
+
+test('Fotos des Auftraggebers: jedes ist genau einem Kulissenbiom zugeordnet, jede dritte Karte zeigt ein Foto', () => {
+  const zugeordnet = Object.values(FOTOS_JE_BIOM).flat();
+  assert.equal(new Set(zugeordnet).size, zugeordnet.length, 'kein Foto doppelt');
+  for (const id of zugeordnet) assert.ok(FOTOS[id], `${id}: unbekanntes Foto`);
+  for (const [biom, liste] of Object.entries(FOTOS_JE_BIOM)) {
+    const gesehen = new Set();
+    for (let seed = 0; seed < 300; seed += 1) {
+      const k = fotoFuerKarte(biom, seed);
+      assert.equal(k !== null, seed % 3 === 0, `${biom}/${seed}`);
+      if (k) gesehen.add(k.foto);
+    }
+    assert.deepEqual([...gesehen].sort(), [...liste].sort(), `${biom}: jedes Foto kommt vor`);
+  }
+  assert.equal(fotoFuerKarte('cosmos', 0), null);
+  assert.equal(fotoFuerKarte('open', 1), null);
 });

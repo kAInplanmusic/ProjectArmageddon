@@ -26,7 +26,6 @@
 let klassisch = null;
 let neu = null;
 let gross = null;
-let panoramen = null;
 
 /** Klassische Kulissen (`backdrops/`, inklusive `stimmung/`). Leer ohne Vite (node --test). */
 export function klassischeKulissen() {
@@ -100,25 +99,4 @@ export function kulissenUrl(datei) {
     ?? kulissenUrl4k(datei);
 }
 
-// SDR bleibt SDR, auch im AVIF-Container. Die alten HDR-Vorarbeiten sind nicht im Glob.
-function panoramenTabelle() {
-  if (panoramen === null) {
-    try {
-      panoramen = import.meta.glob(['./assets/panoramen/*-sdr.avif', './assets/panoramen/*-1280.webp'], {
-        eager: true, query: '?url', import: 'default',
-      });
-    } catch {
-      panoramen = {};
-    }
-  }
-  return panoramen;
-}
-
-export function panoramaUrls(id) {
-  const klein = globalThis.matchMedia?.('(max-width: 1280px)').matches;
-  const pfad = './assets/panoramen/' + id;
-  const tabelle = panoramenTabelle();
-  return (klein
-    ? [tabelle[pfad + '-1280.webp'], tabelle[pfad + '-sdr.avif']]
-    : [tabelle[pfad + '-sdr.avif'], tabelle[pfad + '-1280.webp']]).filter(Boolean);
-}
+// Panoramafotos: Adresstabelle im nachgeladenen Baustein `panoramenUrls.js` (nicht im Startbündel).

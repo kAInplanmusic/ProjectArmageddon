@@ -1,5 +1,53 @@
 [
   {
+    "file": "abendrot_silhouette-1280.webp",
+    "width": 2043,
+    "height": 720,
+    "bytes": 11758,
+    "sha256": "44bab13388cd4bf348646a40926f02ae127860f88795707136d2514bfe8b1b2a",
+    "runtime": true
+  },
+  {
+    "file": "abendrot_silhouette-sdr.avif",
+    "width": 2576,
+    "height": 908,
+    "bytes": 12580,
+    "sha256": "e07e06397312fd3d2e6b1c65312418e0e0be7f47026a4f9d76fe5b57a498bef2",
+    "runtime": true
+  },
+  {
+    "file": "abendrot_silhouette.webp",
+    "width": 2576,
+    "height": 908,
+    "bytes": 30218,
+    "sha256": "8687839b670ac0057d1e3182e32dc95a3478d40d4a8f0f47959522712bc02058",
+    "runtime": false
+  },
+  {
+    "file": "baum_wegegabelung-1280.webp",
+    "width": 2493,
+    "height": 720,
+    "bytes": 321414,
+    "sha256": "4cb2c2d45d5644ede0faeec21371181da9d385677cc1f1bed6c53d4a89855361",
+    "runtime": true
+  },
+  {
+    "file": "baum_wegegabelung-sdr.avif",
+    "width": 2576,
+    "height": 744,
+    "bytes": 184917,
+    "sha256": "872cd599c828bd1f81014bdad2689a000b0f0d69e89b53c424077c061898fc35",
+    "runtime": true
+  },
+  {
+    "file": "baum_wegegabelung.webp",
+    "width": 2576,
+    "height": 744,
+    "bytes": 593608,
+    "sha256": "75bae4246d88f167c0472c2324801c3bb4ce2448171dcc5bfdd720a508539577",
+    "runtime": false
+  },
+  {
     "file": "factory_yard-1280.avif",
     "width": 1280,
     "height": 720,
@@ -37,6 +85,318 @@
     "height": 2160,
     "bytes": 1213590,
     "sha256": "41214f80381d031d7e73ed2f6f8b887f79b44114eef5f40b72f5f4d00c9b85fd",
+    "runtime": false
+  },
+  {
+    "file": "feldweg_morgen-1280.webp",
+    "width": 2256,
+    "height": 720,
+    "bytes": 278592,
+    "sha256": "7138822fce5be808c6278c1f53df84f530f0004d19888e31d7ed83cb713ba2f5",
+    "runtime": true
+  },
+  {
+    "file": "feldweg_morgen-sdr.avif",
+    "width": 2576,
+    "height": 822,
+    "bytes": 181436,
+    "sha256": "fc50a0f0422212412609c486972d7072d1eb833f68929fff102bd46d5c7c1989",
+    "runtime": true
+  },
+  {
+    "file": "feldweg_morgen.webp",
+    "width": 2576,
+    "height": 822,
+    "bytes": 583054,
+    "sha256": "eab7a8911bb0af0fc14fd891b6302112c9889b6301270aab84a1ae198f586983",
+    "runtime": false
+  },
+  {
+    "file": "fluss_goldhaus-1280.webp",
+    "width": 916,
+    "height": 560,
+    "bytes": 52402,
+    "sha256": "dbee3a3487aa585d5333052f182a9ddffebcea2d60bdfa044334bdc3b4ac4392",
+    "runtime": true
+  },
+  {
+    "file": "fluss_goldhaus-sdr.avif",
+    "width": 916,
+    "height": 560,
+    "bytes": 32014,
+    "sha256": "c6c86f32187f9a532aa8d17d0af2f1462219a9af9591ade4c7263c29746864e2",
+    "runtime": true
+  },
+  {
+    "file": "fluss_goldhaus.webp",
+    "width": 916,
+    "height": 560,
+    "bytes": 92150,
+    "sha256": "df6785b0ed808d151494b225d777c3d53d718e4b95be044dd0bf6689c3fadc6b",
+    "runtime": false
+  },
+  {
+    "file": "herbstwiese-1280.webp",
+    "width": 1491,
+    "height": 720,
+    "bytes": 182032,
+    "sha256": "48c679501453a8f01ba3bc30c7f0dd1ad7a0b3073c7e53826b9b4b05a84adda5",
+    "runtime": true
+  },
+  {
+    "file": "herbstwiese-sdr.avif",
+    "width": 2576,
+    "height": 1244,
+    "bytes": 265063,
+    "sha256": "49a35f67687826ad46f10276dce0cfe33bc78cd3dd941c87d34c849f5adbc26f",
+    "runtime": true
+  },
+  {
+    "file": "herbstwiese.webp",
+    "width": 2576,
+    "height": 1244,
+    "bytes": 848298,
+    "sha256": "a95bfebd954bc4f9f69cf8051b65cc93a58ccf0d2bbaa7e9fcc2f93ccec41f02",
+    "runtime": false
+  },
+  {
+    "file": "huegelweide-1280.webp",
+    "width": 1159,
+    "height": 720,
+    "bytes": 65064,
+    "sha256": "0dd64e0a9822022a2e53b53b027c5f53e96d58a8b146781c37ecafda78c0d2d1",
+    "runtime": true
+  },
+  {
+    "file": "huegelweide-sdr.avif",
+    "width": 2576,
+    "height": 1600,
+    "bytes": 178644,
+    "sha256": "8c3fcab0813afee53a711d834d1c6f0d6846fde36573bd21950515f2ffd34882",
+    "runtime": true
+  },
+  {
+    "file": "huegelweide.webp",
+    "width": 2576,
+    "height": 1600,
+    "bytes": 601606,
+    "sha256": "c384809731a94d7a30b81b01d7ecf57bd79dcc3ca9e6934adc7b7f0429d86a4d",
+    "runtime": false
+  },
+  {
+    "file": "maisfeld_sw-1280.webp",
+    "width": 1047,
+    "height": 720,
+    "bytes": 46906,
+    "sha256": "a396835c0a8373f9f323dd7e0e31ec54a8749f9ebabb74da61f5e47ca2d422a1",
+    "runtime": true
+  },
+  {
+    "file": "maisfeld_sw-sdr.avif",
+    "width": 1716,
+    "height": 1180,
+    "bytes": 65880,
+    "sha256": "bab109c865b57177186cad013d091a65771213172e675b023b5e7c278baaeaa4",
+    "runtime": true
+  },
+  {
+    "file": "maisfeld_sw.webp",
+    "width": 1716,
+    "height": 1180,
+    "bytes": 316440,
+    "sha256": "45fba9f44293938e503dc2b56ea0925d2a7c61b05288512e73a596b4ad9c8f4d",
+    "runtime": false
+  },
+  {
+    "file": "nachtstadt_lichter-1280.webp",
+    "width": 2093,
+    "height": 720,
+    "bytes": 162316,
+    "sha256": "daee6b74076d23db58ebc80721dab585d9cc57b7aad06326229b6810c2b98119",
+    "runtime": true
+  },
+  {
+    "file": "nachtstadt_lichter-sdr.avif",
+    "width": 2576,
+    "height": 886,
+    "bytes": 150658,
+    "sha256": "c38b586a10a69c796ae4c27c2ac20d2df9579ca05657240b080b2f85f85a8a21",
+    "runtime": true
+  },
+  {
+    "file": "nachtstadt_lichter.webp",
+    "width": 2576,
+    "height": 886,
+    "bytes": 547926,
+    "sha256": "8c16e292f72e503968af5e75650437f20fe974ba4108a5178f8a43c12805c364",
+    "runtime": false
+  },
+  {
+    "file": "nachtstrasse_boden-1280.webp",
+    "width": 2576,
+    "height": 648,
+    "bytes": 100794,
+    "sha256": "6079db1eec267bcc249a8c7a36638e1cd29ecc3f75a0a8e2a6b18ee693e39e9f",
+    "runtime": true
+  },
+  {
+    "file": "nachtstrasse_boden-sdr.avif",
+    "width": 2576,
+    "height": 648,
+    "bytes": 67217,
+    "sha256": "7a63d95952e355851b9a65e9f6109b1f0a6da94dbae4138c91cf8b0e3fb07e8a",
+    "runtime": true
+  },
+  {
+    "file": "nachtstrasse_boden.webp",
+    "width": 2576,
+    "height": 648,
+    "bytes": 212962,
+    "sha256": "0a2395889c9918b3d0eee840363c5b599c7324a1af825d4d430e1c46c6ee8323",
+    "runtime": false
+  },
+  {
+    "file": "nachtstrasse_sw-1280.webp",
+    "width": 2108,
+    "height": 720,
+    "bytes": 96516,
+    "sha256": "de4a216e508f9fcd91b138865246ebb09268473a230b3be264253d63943840c6",
+    "runtime": true
+  },
+  {
+    "file": "nachtstrasse_sw-sdr.avif",
+    "width": 2576,
+    "height": 880,
+    "bytes": 97813,
+    "sha256": "9574c156c26a62b81dec4da5995a8c727c8b9db21d895b905a5b6ce687e13122",
+    "runtime": true
+  },
+  {
+    "file": "nachtstrasse_sw.webp",
+    "width": 2576,
+    "height": 880,
+    "bytes": 283710,
+    "sha256": "fd89f3d13de5fb42d645855935dd0715c60b4b70fbab8156f8fc1bc16edd8b18",
+    "runtime": false
+  },
+  {
+    "file": "nebelmorgen_scheune-1280.webp",
+    "width": 1513,
+    "height": 720,
+    "bytes": 122042,
+    "sha256": "18c49ec1f0503f97bf206fdf07ffa990d85c561d83277ccf81cb0a0080586b1a",
+    "runtime": true
+  },
+  {
+    "file": "nebelmorgen_scheune-sdr.avif",
+    "width": 2576,
+    "height": 1226,
+    "bytes": 187380,
+    "sha256": "6b4eae72ac9041b8a02e975353cd49ba67b3c438c6283c2c15b5b64c0d50539f",
+    "runtime": true
+  },
+  {
+    "file": "nebelmorgen_scheune.webp",
+    "width": 2576,
+    "height": 1226,
+    "bytes": 536536,
+    "sha256": "d59b1a0db3fabed5d26bac877ca9954c64fea9944e89c3e9555df7e1af3410bc",
+    "runtime": false
+  },
+  {
+    "file": "palmenstrand_fluss-1280.webp",
+    "width": 1880,
+    "height": 598,
+    "bytes": 225596,
+    "sha256": "42a1b094232cb1ba607672ee52167294e3b3fc9d5d1aed9ec28a7cfab3358b12",
+    "runtime": true
+  },
+  {
+    "file": "palmenstrand_fluss-sdr.avif",
+    "width": 1880,
+    "height": 598,
+    "bytes": 117065,
+    "sha256": "70f5b27f7140800d5a52d41402d4fb1526fb6867e02d2b449d6a49f855134026",
+    "runtime": true
+  },
+  {
+    "file": "palmenstrand_fluss.webp",
+    "width": 1880,
+    "height": 598,
+    "bytes": 384314,
+    "sha256": "c0ecc707eb46659324da82d9391ab16d8f192fc2fe20ff134fb91164ed50de99",
+    "runtime": false
+  },
+  {
+    "file": "rosa_abend-1280.webp",
+    "width": 1599,
+    "height": 720,
+    "bytes": 66748,
+    "sha256": "b53873fcfb6b80202bd683bfb51776e2ed29f7012a94a7fe9b787d828e1bf620",
+    "runtime": true
+  },
+  {
+    "file": "rosa_abend-sdr.avif",
+    "width": 2016,
+    "height": 908,
+    "bytes": 60072,
+    "sha256": "cd5e6e460b290679b8e9196dfcd36aad943ec747d2ee8ef7a39d1d43895868e2",
+    "runtime": true
+  },
+  {
+    "file": "rosa_abend.webp",
+    "width": 2016,
+    "height": 908,
+    "bytes": 143794,
+    "sha256": "6b91c090e41a45628a645ff0732bb131faec31c3e92ce8d2813ecc02ad486cc0",
+    "runtime": false
+  },
+  {
+    "file": "schaefchenwolken-1280.webp",
+    "width": 1513,
+    "height": 720,
+    "bytes": 81636,
+    "sha256": "0a10b9b32c69af824900fff27afef61dceb49e223b38286135cc64c9375ea9dc",
+    "runtime": true
+  },
+  {
+    "file": "schaefchenwolken-sdr.avif",
+    "width": 1980,
+    "height": 942,
+    "bytes": 84288,
+    "sha256": "0c61a379d57c499b7adeb8fd7fc0020d07f2c502c24e11fa74351a79ad399b5a",
+    "runtime": true
+  },
+  {
+    "file": "schaefchenwolken.webp",
+    "width": 1980,
+    "height": 942,
+    "bytes": 259806,
+    "sha256": "dcdbe245b5b2aef3dce34a9250711f9b14c89f1090363fcd710f325cc96c4800",
+    "runtime": false
+  },
+  {
+    "file": "schneegarten-1280.webp",
+    "width": 1558,
+    "height": 720,
+    "bytes": 93514,
+    "sha256": "584bafd245fde9b7a12df464f26fbd526ee774a613a669ffa0f9c6f6acbae81b",
+    "runtime": true
+  },
+  {
+    "file": "schneegarten-sdr.avif",
+    "width": 2000,
+    "height": 924,
+    "bytes": 88118,
+    "sha256": "3ccbade4471a3b41abb52925e5bd465d7338822a921418a838f4020414c61f9c",
+    "runtime": true
+  },
+  {
+    "file": "schneegarten.webp",
+    "width": 2000,
+    "height": 924,
+    "bytes": 225318,
+    "sha256": "e3c108fd8289845383eefcb5564f37b32f605ee5a22bf1fc76a7a8538a9fc89b",
     "runtime": false
   },
   {
@@ -117,6 +477,102 @@
     "height": 2160,
     "bytes": 119844,
     "sha256": "39321af8646513c934324e3b7afdfee711c6463497e47c1be8ac51bb02c5ba5b",
+    "runtime": false
+  },
+  {
+    "file": "sonnenuntergang_feld-1280.webp",
+    "width": 2576,
+    "height": 616,
+    "bytes": 83920,
+    "sha256": "f352d1067366574f813db99ad34b9198310fbb8dcae581989fc79165a44b9bde",
+    "runtime": true
+  },
+  {
+    "file": "sonnenuntergang_feld-sdr.avif",
+    "width": 2576,
+    "height": 616,
+    "bytes": 58555,
+    "sha256": "e53a778a59a911d989063493ef3f18f037f574e0e066e0639a2635f7eaa163ee",
+    "runtime": true
+  },
+  {
+    "file": "sonnenuntergang_feld.webp",
+    "width": 2576,
+    "height": 616,
+    "bytes": 172448,
+    "sha256": "e4a16016268355e6f13e60c16b3c8e8cc5ada8fad5a04c66cc3db34941ff6620",
+    "runtime": false
+  },
+  {
+    "file": "stadt_morgenrot-1280.webp",
+    "width": 1599,
+    "height": 720,
+    "bytes": 48368,
+    "sha256": "fbcc66389b99459b698d5e75ca23b5a929b7922be25afb74184749804ed01606",
+    "runtime": true
+  },
+  {
+    "file": "stadt_morgenrot-sdr.avif",
+    "width": 2016,
+    "height": 908,
+    "bytes": 50463,
+    "sha256": "a1d17b1425a9aaedfb04613370bac21f1a9fef1ceaff50ea493e3160351326bc",
+    "runtime": true
+  },
+  {
+    "file": "stadt_morgenrot.webp",
+    "width": 2016,
+    "height": 908,
+    "bytes": 127246,
+    "sha256": "6ccc95d8ae58e9313e8eff8524b5d3953117518157bb1ce52f4c4c340b063ea1",
+    "runtime": false
+  },
+  {
+    "file": "strand_ebbe-1280.webp",
+    "width": 1599,
+    "height": 720,
+    "bytes": 52760,
+    "sha256": "b0c2705504bcea2258661014658ee25ff225af6b1ec5ded022dcd63511b1e863",
+    "runtime": true
+  },
+  {
+    "file": "strand_ebbe-sdr.avif",
+    "width": 2016,
+    "height": 908,
+    "bytes": 56862,
+    "sha256": "b62ba511495c06c00fdbf046aed571bc925816298182b7ee6b92dc8bbe4db46c",
+    "runtime": true
+  },
+  {
+    "file": "strand_ebbe.webp",
+    "width": 2016,
+    "height": 908,
+    "bytes": 125444,
+    "sha256": "a2e23af8cf461dc1624198b89b9751c6b28978c5f93e2ca163cc8130e0f8589b",
+    "runtime": false
+  },
+  {
+    "file": "western_regenbogen-1280.webp",
+    "width": 720,
+    "height": 720,
+    "bytes": 143362,
+    "sha256": "ceb0e07c57a7dcb537af17a0f5301512a6675439b2a503e46f95d4b01820e671",
+    "runtime": true
+  },
+  {
+    "file": "western_regenbogen-sdr.avif",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 174429,
+    "sha256": "042245f0ff75eb2af9096e6cd5cdb4aedff9e44088ec52874c00e78e20b107a0",
+    "runtime": true
+  },
+  {
+    "file": "western_regenbogen.webp",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 567336,
+    "sha256": "f3a21d282055a6486b53f8a2f67172831939556f617010ac902fcb710944ee6f",
     "runtime": false
   }
 ]

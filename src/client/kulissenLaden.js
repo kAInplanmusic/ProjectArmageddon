@@ -1,5 +1,5 @@
 import { paletteFor } from '../shared/config/backdrops.js';
-import { kulissenUrl, panoramaUrls } from './kulissenUrls.js';
+import { kulissenUrl } from './kulissenUrls.js';
 import { KulissenBildspeicher, waehleKulissenBreite } from './kulissenQuelle.js';
 
 /**
@@ -23,34 +23,17 @@ export function ladeKulisse(ziel, backdrop, { onError } = {}) {
   ziel.backdropKey = backdrop.key;
 
   if (backdrop.foto) {
-    const quellen = panoramaUrls(backdrop.foto);
-    const url = kulissenUrl(backdrop.file);
-    if (url) quellen.push(url);
-    if (!quellen.length) {
-      ziel.backdrop = null;
-      ziel.backdropReady = false;
-      onError?.(new Error(`Kulisse nicht gefunden: ${backdrop.file}`));
-      return;
-    }
     ziel.backdrop = backdrop;
     ziel.backdropReady = false;
     ziel.kulissenCache = null;
     ziel.palette = paletteFor({ key: `${backdrop.biomeId}/${backdrop.id}` });
-    const bild = new Image();
-    bild.decoding = 'async';
-    bild.onload = () => {
-      // Nur übernehmen, wenn inzwischen keine andere Kulisse gesetzt wurde.
+    // Adresstabelle der Fotos erst jetzt nachladen (`panoramenUrls.js`, nicht im Startbündel).
+    import('./panoramenUrls.js').then(({ panoramaUrls }) => {
       if (ziel.backdropKey !== backdrop.key) return;
-      ziel.backdropImage = bild;
-      ziel.backdropReady = true;
-    };
-    bild.onerror = () => {
-      if (ziel.backdropKey !== backdrop.key) return;
-      if (quellen.length) { bild.src = quellen.shift(); return; }
-      ziel.backdropReady = false;
-      onError?.(new Error(`Kulisse lädt nicht: ${backdrop.file}`));
-    };
-    bild.src = quellen.shift();
+      ladeFoto(ziel, backdrop, panoramaUrls(backdrop.foto), onError);
+    }, (fehler) => {
+      if (ziel.backdropKey === backdrop.key) onError?.(fehler);
+    });
     return;
   }
 
@@ -83,4 +66,35 @@ export function ladeKulisse(ziel, backdrop, { onError } = {}) {
       onError?.(new Error(`Kulisse nicht gefunden oder lädt nicht: ${backdrop.file}`));
     },
   });
+}
+
+/** Lädt ein Panoramafoto aus den gegebenen Quellen (Rückfall der Reihe nach, zuletzt die gemalte Kulisse). */
+function ladeFoto(ziel, backdrop, quellen, onError) {
+  const url = kulissenUrl(backdrop.file);
+  if (url) quellen.push(url);
+  if (!quellen.length) {
+    ziel.backdrop = null;
+    ziel.backdropReady = false;
+    onError?.(new Error(`Kulisse nicht gefunden: ${backdrop.file}`));
+    return;
+  }
+  ziel.backdrop = backdrop;
+  ziel.backdropReady = false;
+  ziel.kulissenCache = null;
+  ziel.palette = paletteFor({ key: `${backdrop.biomeId}/${backdrop.id}` });
+  const bild = new Image();
+  bild.decoding = 'async';
+  bild.onload = () => {
+    // Nur übernehmen, wenn inzwischen keine andere Kulisse gesetzt wurde.
+    if (ziel.backdropKey !== backdrop.key) return;
+    ziel.backdropImage = bild;
+    ziel.backdropReady = true;
+  };
+  bild.onerror = () => {
+    if (ziel.backdropKey !== backdrop.key) return;
+    if (quellen.length) { bild.src = quellen.shift(); return; }
+    ziel.backdropReady = false;
+    onError?.(new Error(`Kulisse lädt nicht: ${backdrop.file}`));
+  };
+  bild.src = quellen.shift();
 }

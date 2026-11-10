@@ -1,4 +1,4 @@
-import { FOTOS, panorama, fotoFuerBiom, findeKulisse } from './panoramen.js';
+import { FOTOS, panorama, fotoFuerBiom, fotoFuerKarte, findeKulisse } from './panoramen.js';
 /**
  * Browser-Einstiegspunkt für Project Armageddon.
  *
@@ -3113,7 +3113,7 @@ class Game {
     if (!kulisse && charakter) {
       const biomId = motivFamilieFuerArt(charakter.kartenart) ?? biomFuerCharakter(charakter);
       const biom = BACKDROP_BIOMES.find(b => b.id === biomId);
-      kulisse = kulisseFuerBiom({ seed, biome: biom });
+      kulisse = fotoFuerKarte(biomId, seed) ?? kulisseFuerBiom({ seed, biome: biom }); // Fotos des Auftraggebers (panoramen.js)
     }
     if (!kulisse) kulisse = pickBackdrop(seed, preset);
     if (!kulisse) {
