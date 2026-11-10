@@ -104,3 +104,16 @@ test('WebSocket nur unter /ws: anderer Pfad wird mit 400 abgelehnt', async () =>
     assert.equal(await wsVersuch(port, null), 'offen');
   } finally { await server.close(); }
 });
+
+test('Web-Zugang (Option D): Seite auf www + eigene sslip-Adresse erlaubt, WebSocket von www geht, fremder nicht', async () => {
+  const www = 'https://www.projectarmageddon.de';
+  const { server, url, port } = await start({ erlaubteOrigins: ['https://49-13-138-200.sslip.io', www], eigenerOrigin: 'https://49-13-138-200.sslip.io' });
+  try {
+    const vorab = await fetch(`${url}/api/konto/anmelden`, { method: 'OPTIONS', headers: { origin: www } });
+    assert.equal(vorab.status, 204);
+    assert.equal(vorab.headers.get('access-control-allow-origin'), www);
+    assert.match(vorab.headers.get('access-control-allow-headers'), /authorization/);
+    assert.equal(await wsVersuch(port, www), 'offen');
+    assert.equal(await wsVersuch(port, 'https://fremd.example'), 403);
+  } finally { await server.close(); }
+});

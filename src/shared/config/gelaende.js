@@ -44,6 +44,11 @@
  *     braucht einen zu Fuß begehbaren Abschnitt von `MIN_START_ABSCHNITT` px. Zufall und Ziehung wie in 8; die Fassungen 1 bis
  *     8 bleiben Bit für Bit gleich.
  *
+ *   - `GELAENDE_WEIT` (10): Breite Karten (ab `ZONEN_AB_BREITE` = 2800 px, also 24:9 ab `gross`, 16:9 ab 3840 px) entstehen aus Zonen
+ *     (`terrainKomposition.erzeugeZonenKarte`): je ~2000 px Breite eine eigene Kartenart, gemeinsame Wasserlinie, 300 px
+ *     Mischzone und Träger-Brücken an den Nähten; die Spielbarkeitsprüfung rechnet dort mit fester Wurfweite (939 px) statt
+ *     proportional zur Breite. Karten unter 2800 px bleiben Bit für Bit die der Fassung 9; die Fassungen 1 bis 9 bleiben gleich.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
@@ -66,11 +71,15 @@ export const GELAENDE_BIOME_20 = 7;
 export const GELAENDE_KLAR = 8;
 /** Fassung 9: kein Start in einem Schacht (Ruinenfenster bleiben unter der Krone, Startplatz mit begehbarem Abschnitt). */
 export const GELAENDE_OHNE_SCHACHT = 9;
-export const GELAENDE_STANDARD = GELAENDE_OHNE_SCHACHT;
+/** Fassung 10: breite Karten aus mehreren Zonen (`terrainKomposition.erzeugeZonenKarte`); schmale Karten wie in 9. */
+export const GELAENDE_WEIT = 10;
+/** Ab dieser Kartenbreite (px) wirkt die Fassung 10 (Zonenkarte, Kistenverteilung); darunter bleibt alles wie in 9. */
+export const GELAENDE_WEIT_AB_BREITE = 2800;
+export const GELAENDE_STANDARD = GELAENDE_WEIT;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */

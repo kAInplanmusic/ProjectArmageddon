@@ -15,7 +15,15 @@ export default defineConfig({
   define: {
     __PA_BAUINFO__: JSON.stringify(BAUINFO),
   },
-  plugins: [{
+  plugins: [...(process.env.PA_WEB_BUILD === '1' ? [{
+    // Web-Zugang (docs/zugang-www.md): nur dieser Build lädt Login/Start-Seite und bekommt `pa-web.json`.
+    name: 'pa-web-zugang',
+    apply: 'build',
+    transformIndexHtml: { order: 'pre', handler: () => [{ tag: 'script', attrs: { type: 'module', src: '/src/client/webStart.js' }, injectTo: 'body' }] },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'pa-web.json', source: '{"gateway":true}\n' });
+    },
+  }] : []), {
     name: 'pa-bauinfo',
     // Entwicklungsbelege bleiben im Quelltext, nicht in jeder HTML-Auslieferung.
     transformIndexHtml: html => html.replace(/<!--[\s\S]*?-->/g, ''),

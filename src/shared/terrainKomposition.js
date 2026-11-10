@@ -142,6 +142,7 @@ function bruecke(maske, x0, x1, y0, y1) {
 }
 
 import { planetArtAusZug } from './config/biome-planet.js';
+import { GELAENDE_WEIT_AB_BREITE } from './config/gelaende.js';
 
 /** Die Kartenarten; der Seed zieht eine, bei Hochformat gilt `hochkant`. */
 export const KARTENARTEN = Object.freeze(['ebenen', 'insel', 'inselgruppe', 'hoehle', 'hoehleInsel', 'schlucht', 'archipel', 'vulkan', 'ruinenstadt', 'pyramide', 'planet', 'unmoeglich', 'hochkant']);
@@ -871,6 +872,141 @@ function dichteHochkant(maske, rng, B, H, stat) {
   stat.platten += n;
   stat.pfeiler += 1;
   return Math.round(H * 0.94);
+}
+
+/* ====================================================================
+ * Mehrzonen-Gelände (Geländefassung 10): breite Karten aus mehreren Kartenarten
+ * ==================================================================== */
+
+/** Ab dieser Kartenbreite (px) baut Fassung 10 die Karte aus Zonen; schmalere Karten bleiben Bit für Bit gleich. */
+export const ZONEN_AB_BREITE = GELAENDE_WEIT_AB_BREITE;
+/** Zielbreite einer Zone (px): n = round(Breite / ZONEN_BREITE), mindestens 2. */
+export const ZONEN_BREITE = 2000;
+/** Breite der Mischzone an jeder Naht (px). */
+export const ZONEN_UEBERLAPP = 300;
+/** Wasserlinie der Zonenkarte (Anteil der Höhe), für alle Zonen gleich. */
+const ZONEN_WASSER = 0.86;
+/** Kartenarten, aus denen eine Zone gezogen wird (ohne Planet, „Unmögliches“ und Hochkant: Sonderregeln der Engine). */
+const ZONEN_ARTEN = Object.freeze(['insel', 'inselgruppe', 'ebenen', 'hoehle', 'hoehleInsel', 'schlucht', 'archipel', 'vulkan', 'ruinenstadt', 'pyramide']);
+
+/** Zeichnet jede Zonenart in ihre eigene (schmalere) Maske; liefert die Wasserlinie der Art (hier unbenutzt). */
+const ZONEN_BAUER = {
+  insel: dichteInsel, inselgruppe: dichteGruppe, ebenen: dichteEbenen, hoehle: dichteHoehle,
+  hoehleInsel: (m, r, b, h, st) => dichteHoehle(m, r, b, h, st, true), schlucht: dichteSchlucht,
+  archipel: (m, r, b, h, st) => dichteGruppe(m, r, b, h, st, true), vulkan: dichteVulkan, ruinenstadt: dichteRuinenstadt, pyramide: kartePyramide,
+};
+
+/** Zonen-Zahl einer Kartenbreite (`n = round(Breite / 2000)`, mindestens 2). */
+export function zonenZahl(width) {
+  return Math.max(2, Math.round(width / ZONEN_BREITE));
+}
+
+/**
+ * Baut an einer Naht bei `s` eine Träger-Brücke, wenn dort zwischen zwei Landstücken Wasser oder Abgrund liegt: Planke von Kante
+ * zu Kante, darunter Stützen bis zum Grund. Gibt es keine Lücke (Land geht durch), geschieht nichts.
+ * @returns {boolean} wurde eine Brücke gebaut
+ */
+function nahtBruecke(maske, rng, s, wasserY, stat) {
+  const SUCH = 450;
+  const trocken = (x) => { const y = oben(maske, x); return y >= 0 && y < wasserY - 20 ? y : -1; };
+  // Die längste Lücke ohne trockenes Land, die beidseitig von Land begrenzt ist.
+  let beste = null;
+  let start = null;
+  let letzt = null;
+  for (let x = Math.max(8, s - SUCH); x <= Math.min(maske.breite - 9, s + SUCH); x += 4) {
+    if (trocken(x) >= 0) {
+      if (start !== null && (!beste || x - letzt.x > beste.xb - beste.xa)) beste = { xa: letzt.x, xb: x, ya: letzt.y, yb: trocken(x) };
+      start = null;
+      letzt = { x, y: trocken(x) };
+    } else if (start === null && letzt) {
+      start = x;
+    }
+  }
+  if (!beste || beste.xb - beste.xa < 24 || beste.xb - beste.xa > 800) return false;
+  const { xa, xb, ya, yb } = beste;
+  bruecke(maske, xa - 6, xb + 6, ya + 4, yb + 4);
+  // Träger: Stützen alle ~170 px von der Planke bis zum Grund.
+  const stuetzen = Math.max(1, Math.round((xb - xa) / 170) - 1);
+  for (let i = 1; i <= stuetzen; i += 1) {
+    const t = i / (stuetzen + 1);
+    const x = xa + (xb - xa) * t;
+    pfeiler(maske, rng, x, ya + (yb - ya) * t + 8, wasserY + 175, 26);
+  }
+  stat.bruecken += 1;
+  stat.pfeiler += stuetzen;
+  return true;
+}
+
+/**
+ * Mehrzonen-Karte für breite Formate (Geländefassung 10, `config.gelaende` ≥ 10).
+ *
+ * Die Breite wird in `n = round(Breite / 2000)` Zonen geteilt. Jede Zone zieht ihre eigene Kartenart (nie dieselbe wie die Nachbarzone;
+ * eine ausdrücklich gewählte Vorlage gilt für die mittlere Zone), wird in einer eigenen Maske gebaut (Breite = Zone + Überlappung) und an
+ * den Nähten über 300 px mit zweidimensionalem Rauschen gemischt. Alle Zonen teilen die Wasserlinie `0,86·H` und den Grund darunter.
+ * Danach räumt `raeumeAuf` die Naht auf, und an jeder Naht mit Lücke trägt eine Brücke über das Wasser.
+ *
+ * Reiner Seed-Zufall (`rng.next()`), keine zweite Quelle.
+ *
+ * @returns {{bitmap:Uint8Array, wasserY:number, bauteile:object, art:string, umlauf:boolean, rund:boolean, planetenart:null, zonen:string[]}}
+ *   `art` ist die Art der mittleren Zone (damit Kulisse und Charakter weiter eine gültige Kartenart sehen)
+ */
+export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10 }) {
+  const n = zonenZahl(width);
+  const maske = new Maske(width, height);
+  maske.begehbar = fassung >= 8;
+  maske.fensterZu = fassung >= 9;
+  const stat = neuesStat();
+  const wasserY = Math.round(height * ZONEN_WASSER);
+  const mitte = Math.floor(n / 2);
+  const zonen = [];
+  for (let i = 0; i < n; i += 1) {
+    let wahl;
+    if (i === mitte && ZONEN_ARTEN.includes(art)) {
+      wahl = art;
+    } else {
+      // Nie dieselbe Art wie die Nachbarzone (links); die letzte Zone auch nicht wie die erste, solange es Auswahl gibt.
+      const erlaubt = ZONEN_ARTEN.filter((a) => a !== zonen[i - 1] && !(i === n - 1 && n > 2 && a === zonen[0]));
+      wahl = erlaubt[Math.floor(rng.next() * erlaubt.length)];
+    }
+    zonen.push(wahl);
+  }
+  const halb = ZONEN_UEBERLAPP / 2;
+  const zb = width / n;
+  const maske2 = [];
+  for (let i = 0; i < n; i += 1) {
+    const xa = i === 0 ? 0 : Math.round(i * zb - halb);
+    const xb = i === n - 1 ? width : Math.round((i + 1) * zb + halb);
+    const sub = new Maske(xb - xa, height);
+    sub.begehbar = maske.begehbar;
+    sub.fensterZu = maske.fensterZu;
+    ZONEN_BAUER[zonen[i]](sub, rng, sub.breite, height, stat);
+    maske2.push({ xa, xb, sub });
+  }
+  const bm = maske.bitmap;
+  const aus = (z, x, y) => z.sub.bitmap[y * z.sub.breite + (x - z.xa)];
+  // Zone i besitzt die Spalten [von_i, bis_i); dazwischen liegt je Naht eine Mischzone von 300 px.
+  const von = (i) => (i === 0 ? 0 : Math.round(i * zb + halb));
+  const bis = (i) => (i === n - 1 ? width : Math.round((i + 1) * zb - halb));
+  for (let i = 0; i < n; i += 1) {
+    for (let x = von(i); x < bis(i); x += 1) for (let y = 0; y < height; y += 1) bm[y * width + x] = aus(maske2[i], x, y);
+  }
+  // Mischzone je Naht: zweidimensionales Rauschen entscheidet punktweise, ob links oder rechts gilt; der rechte Anteil wächst über die Naht.
+  for (let i = 0; i + 1 < n; i += 1) {
+    const feld = rausch2(rng, ZONEN_UEBERLAPP, height, 90);
+    const x0 = bis(i);
+    for (let x = x0; x < von(i + 1); x += 1) {
+      const t = (x - x0) / ZONEN_UEBERLAPP;
+      for (let y = 0; y < height; y += 1) {
+        const rechts = (t - 0.5) * 2 + feld(x - x0, y) * 0.8 > 0;
+        bm[y * width + x] = aus(maske2[rechts ? i + 1 : i], x, y);
+      }
+    }
+  }
+  // Grund: unterhalb der Wasserlinie massiv (wie bei den Einzelkarten), davor Wasser.
+  maske.rechteck(0, wasserY + 170, width, height);
+  raeumeAuf(maske);
+  for (let i = 1; i < n; i += 1) nahtBruecke(maske, rng, Math.round(i * zb), wasserY, stat);
+  return { bitmap: maske.bitmap, wasserY, bauteile: stat, art: zonen[mitte], umlauf: false, rund: false, planetenart: null, zonen };
 }
 
 /**

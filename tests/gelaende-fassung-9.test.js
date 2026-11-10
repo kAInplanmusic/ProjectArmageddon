@@ -23,12 +23,13 @@ import {
   GELAENDE_KLAR, GELAENDE_OHNE_SCHACHT, GELAENDE_STANDARD, normalisiereGelaende,
 } from '../src/shared/config/gelaende.js';
 
-test('Marke: Fassung 9 ist gültig und der Standard, 8 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
+test('Marke: Fassung 9 ist gültig (und nicht mehr der Standard seit 10), 8 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_OHNE_SCHACHT, 9);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_OHNE_SCHACHT);
+  assert.ok(GELAENDE_STANDARD >= GELAENDE_OHNE_SCHACHT);
   assert.equal(normalisiereGelaende(GELAENDE_KLAR), GELAENDE_KLAR);
   assert.equal(normalisiereGelaende(9), 9);
-  assert.equal(normalisiereGelaende(10), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(10), 10);
+  assert.equal(normalisiereGelaende(11), GELAENDE_STANDARD);
 });
 
 const START = (seed, biom, teams, ppt, gelaende) => {
@@ -162,10 +163,10 @@ test('Alter Replay (Marke 8): Kopf behält die 8, Wiedergabe endet im Goldwert v
   }
 });
 
-test('Neuer Replay (Marke 9): Kopf trägt die 9, Wiedergabe endet im Live-Hash', () => {
+test('Neuer Replay: Kopf trägt die Standardmarke (>= 9), Wiedergabe endet im Live-Hash', () => {
   for (const biom of ['pilzwald', 'schlackeschmiede']) {
     const r = aufzeichnenUndAbspielen({ kartentyp: 'autonom', biom });
-    assert.equal(r.kopf.gelaende, GELAENDE_OHNE_SCHACHT, biom);
+    assert.equal(r.kopf.gelaende, GELAENDE_STANDARD, biom);
     assert.equal(r.replay, r.live, `${biom}: Wiedergabe gegen live`);
   }
 });

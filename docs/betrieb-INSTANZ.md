@@ -52,7 +52,7 @@ Wert ohne Beleg (Abschnitt 3) gilt als nicht eingetragen.
 | PFLICHT-11 | **`PA_SNAPSHOT_KEEP`** | `PA_SNAPSHOT_KEEP=3` (lokale Archive beim Stopp); Cloud-Abbild: **ja, durch den Server selbst** (`PA_ABBILD_BEHALTEN=1`, neuestes geprüftes bleibt); Token nur im Arbeitsspeicher (Weg C, Abschnitt 10), nie in `betrieb.env` | `snapshot.sh --print-config`; Beleg 5 und 6 |
 | PFLICHT-12 | **Hostname / Benutzer auf dem Knoten** | Pfade wie in `deploy/systemd/`: **`/opt/projectarmageddon`**, Benutzer **`pa`**; Hostname = Servername `pa-spiel` | `systemctl cat projectarmageddon`; `id pa` |
 | PFLICHT-13 | **Zweiter Alarm außerhalb des Knotens** | GitHub-Zeitplan `server-hochfahren` alle 3 h: Server, die **ausgeschaltet oder älter als 12 h** sind, werden nach geprüftem Abbild gelöscht (`not-aus --aelter-als-stunden 12 --ausgeschaltete`). Läuft außerhalb des Servers; braucht das Secret `HCLOUD_TOKEN`. | Nachweis des Alarms (z. B. Testnachricht) im Beleg 5 |
-| PFLICHT-14 | **TLS + Anmeldung** | TLS: **ja** (Caddy, Let's Encrypt, `<IP>.sslip.io` oder `PA_DOMAIN`). Anmeldung: **LÜCKE** — keine Entscheidung des Auftraggebers; Lobby/Konten wie im Spiel, URL nicht verlinkt (Beleg S3) | `curl -I https://<domain>`; Anmeldung erzwungen; Caddyfile nach `deploy/Caddyfile.beispiel` |
+| PFLICHT-14 | **TLS + Anmeldung** | TLS: **ja** (Caddy, Let's Encrypt, `<IP>.sslip.io` oder `PA_DOMAIN`). Anmeldung: **Start nur nach Login** auf https://www.projectarmageddon.de (Option D, `docs/zugang-www.md`: Passwort als PBKDF2-Hash, signiertes 12-h-Cookie, Sperre nach 5 Fehlversuchen); der Spielserver selbst ist öffentlich, Spieler schützt das Konto des Spiels | `curl -I https://<domain>`; Anmeldung erzwungen; Caddyfile nach `deploy/Caddyfile.beispiel` |
 | PFLICHT-15 | **Bildpreis je GB und Monat** | **0,017017 €/GB/Monat brutto** (Hetzner-API `/pricing`, 2026-11-10) | Preisliste + Abbildgröße im Beleg 5; Rechnung PFLICHT-06 ergänzen |
 
 ### Kosten (AGENTS.md §7)
@@ -522,4 +522,4 @@ Belege (echter Lauf gegen Hetzner, 2026-11-10, Mock-Tests getrennt in tests/betr
 
 iPhone-Klickfolge: GitHub-App/Browser, Repo, Settings, Secrets and variables, Actions, New repository secret `HCLOUD_TOKEN` (Wert selbst eintragen), optional Variable `PA_DOMAIN`; dann Actions, "server-hochfahren", Run workflow, Modus `hochfahren`.
 
-Offene Punkte: PFLICHT-14 (Anmeldung/www-Zugang, siehe docs/zugang-www.md) bleibt Lücke; Option D nur spezifiziert; Starter nur Mock-getestet; Token liegt während der Laufzeit im Server-RAM; Abbild-Dauer wächst mit Datenmenge.
+Offene Punkte: Web-Zugang www (Option D, docs/zugang-www.md) ist gebaut und Mock-getestet, aber nicht auf Netlify ausgeführt; Token liegt während der Laufzeit im Server-RAM; Abbild-Dauer wächst mit Datenmenge.

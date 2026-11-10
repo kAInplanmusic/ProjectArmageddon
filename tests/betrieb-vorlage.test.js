@@ -53,18 +53,34 @@ function bremse(env, argumente = ['--once']) {
   return spawnSync('bash', [BREMSE, ...argumente], { env, encoding: 'utf8' });
 }
 
-test('Pflichtfeld-Vorlage: genau 15 Felder mit fester Bedeutung, alle offen', () => {
+test('Pflichtfeld-Vorlage: genau 15 Felder mit fester Bedeutung; leere Vorlage alle offen, die Instanz vollständig', () => {
   assert.equal(FELDER.length, 15);
   assert.deepEqual(FELDER.map(f => f.id), Array.from({ length: 15 }, (_, i) => `PFLICHT-${String(i + 1).padStart(2, '0')}`));
 
-  const lauf = pruefer('--json');
-  assert.equal(lauf.status, 3, lauf.stderr);
-  const bericht = JSON.parse(lauf.stdout);
-  assert.equal(bericht.felder.length, 15);
-  assert.deepEqual(bericht.offen, FELDER.map(f => f.id), 'die Vorlage ist unausgefüllt — LÜCKE in jedem Wert');
-  assert.deepEqual(bericht.fehler, []);
-  for (const [position, feld] of bericht.felder.entries()) {
-    assert.match(feld.name, FELDER[position].begriff, `${feld.id} hat nicht die erwartete Bedeutung`);
+  // Die Instanz (docs/betrieb-INSTANZ.md) ist ausgefüllt: nichts offen.
+  const instanz = pruefer('--json');
+  assert.equal(instanz.status, 0, instanz.stdout + instanz.stderr);
+  assert.deepEqual(JSON.parse(instanz.stdout).offen, []);
+
+  // Die Vorlage selbst: gleiche Zeilen, jeder Wert LÜCKE -> alle 15 offen.
+  const wurzel = mkdtempSync(join(tmpdir(), 'pa-leer-'));
+  try {
+    const leer = join(wurzel, 'leer.md');
+    writeFileSync(leer, dok.split('\n').map(z => {
+      const m = /^(\| PFLICHT-\d\d \| [^|]+\|).*$/.exec(z);
+      return m ? `${m[1]} LÜCKE | LÜCKE |` : z;
+    }).join('\n'), 'utf8');
+    const lauf = pruefer('--json', '--datei', leer);
+    assert.equal(lauf.status, 3, lauf.stderr);
+    const bericht = JSON.parse(lauf.stdout);
+    assert.equal(bericht.felder.length, 15);
+    assert.deepEqual(bericht.offen, FELDER.map(f => f.id), 'die Vorlage ist unausgefüllt — LÜCKE in jedem Wert');
+    assert.deepEqual(bericht.fehler, []);
+    for (const [position, feld] of bericht.felder.entries()) {
+      assert.match(feld.name, FELDER[position].begriff, `${feld.id} hat nicht die erwartete Bedeutung`);
+    }
+  } finally {
+    rmSync(wurzel, { recursive: true, force: true });
   }
 });
 

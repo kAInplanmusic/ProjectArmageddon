@@ -38,7 +38,7 @@ import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout, klassenKennung
 import { WAFFEN_STANDARD, WAFFEN_FEUERWESEN, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_KLASSE, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
 import { wendeStossAn } from './stoss.js';
-import { GELAENDE_STANDARD, GELAENDE_BIOME, loeseGelaende } from '../shared/config/gelaende.js';
+import { GELAENDE_STANDARD, GELAENDE_BIOME, GELAENDE_WEIT, GELAENDE_WEIT_AB_BREITE, loeseGelaende } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_STATUS, normalisiereSchaden } from '../shared/config/schaden.js';
 import { MaliRegeln } from './schadenMali.js';
 import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
@@ -961,7 +961,7 @@ export class MatchController {
         rng: this.#seedManager.getSubRng('LOOT'),
         width: this.width,
         height: this.height,
-        surfaceYFor: x => this.surfaceYAt(x), kisten: this.kisten,
+        surfaceYFor: x => this.surfaceYAt(x), kisten: this.kisten, weit: this.kartentyp === 'autonom' && this.gelaende >= GELAENDE_WEIT && this.width >= GELAENDE_WEIT_AB_BREITE,
       });
     } catch (error) {
       this.#events.emit('loot_error', { message: error.message });

@@ -80,9 +80,9 @@ import { biomFuerCharakter } from './biomwahl.js';
 import { baueStoffkarte, STOFF_FORK } from './stoffkarte.js';
 import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
-import { erzeugeKompositionsKarte } from './terrainKomposition.js';
+import { erzeugeKompositionsKarte, erzeugeZonenKarte, ZONEN_AB_BREITE } from './terrainKomposition.js';
 import { pruefeErreichbarkeit } from './erreichbarkeit.js';
-import { GELAENDE_KOMPOSITION, KARTENARTEN } from './config/gelaende.js';
+import { GELAENDE_KOMPOSITION, GELAENDE_WEIT, KARTENARTEN } from './config/gelaende.js';
 
 /**
  * Die zwölf Achsen des Charakters.
@@ -666,6 +666,9 @@ function erzeugePlanetKarte({ rng, width, height, biom, stoffe, fassung = 0 }) {
 /** Kartenarten ohne Sonderregel der Engine (kein Umlauf, keine Radialform). */
 const BAUTEIL_ARTEN = KARTENARTEN;
 
+/** Feste Wurfweite (px) der Spawnprüfung auf Zonenkarten (Fassung 10): 0,3668 · 2560, die Reichweite einer mittleren Karte, statt proportional zur Breite. */
+const WURFWEITE_ZONEN = 939;
+
 /** Welche Achse die Kartenart auslenkt, damit das Biom (`biomFuerCharakter`) zur Karte passt. */
 const BAUTEIL_CHARAKTER = {
   hoehle: { hoehlung: 0.21 }, hoehleInsel: { hoehlung: 0.21 }, schlucht: { hoehlung: 0.21 },
@@ -686,11 +689,12 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
   let versuch = 1;
   for (; versuch <= 8; versuch += 1) {
     const art = height > width * 1.2 ? 'hochkant' : (kartenart ?? BAUTEIL_ARTEN[Math.floor(rng.next() * BAUTEIL_ARTEN.length)]);
-    karte = erzeugeKompositionsKarte({ rng, width, height, art, fassung });
+    const zonen = fassung >= GELAENDE_WEIT && width >= ZONEN_AB_BREITE && height <= width * 1.2;
+    karte = zonen ? erzeugeZonenKarte({ rng, width, height, art: kartenart, fassung }) : erzeugeKompositionsKarte({ rng, width, height, art, fassung });
     karte.surface = oberflaechen(karte.bitmap, width, height);
     kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
     let urteil = pruefeBauteilKarte(kennzahlen);
-    if (urteil.ok && !spawnErreichbar(karte.bitmap, width, height, karte.art)) urteil = { ok: false, grund: 'Spawnspalten erreichen einander nicht' };
+    if (urteil.ok && !spawnErreichbar(karte.bitmap, width, height, karte.art, zonen)) urteil = { ok: false, grund: 'Spawnspalten erreichen einander nicht' };
     if (urteil.ok) break;
     ablehnungen.push(`${karte.art}: ${urteil.grund}`);
   }
@@ -711,7 +715,7 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
  * `erreichbarkeit.pruefeErreichbarkeit`, auf einem Viertel der Auflösung gerechnet (Kosten). Hochformat und Karten ohne Boden an
  * einer Spalte zählen als erreichbar (dort gilt die Prüfung des Matches).
  */
-function spawnErreichbar(bitmap, width, height, art = '') {
+function spawnErreichbar(bitmap, width, height, art = '', zonen = false) {
   if (height > width) return true;
   const S = 4;
   const w = Math.floor(width / S);
@@ -725,9 +729,9 @@ function spawnErreichbar(bitmap, width, height, art = '') {
     while (y < height && !bitmap[y * width + x]) y += 1;
     if (y < height) figuren.push({ x: x / S, y: y / S, teamId: i % 2 });
   }
-  const urteil = pruefeErreichbarkeit({ bitmap: klein, width: w, height: h, figuren, wurfweite: (0.3668 * width) / S });
+  const urteil = pruefeErreichbarkeit({ bitmap: klein, width: w, height: h, figuren, wurfweite: (zonen ? WURFWEITE_ZONEN : 0.3668 * width) / S });
   // Höhlenkarten zerfallen in Brocken: eine abgesprengte Figur ist dort erlaubt (der Grund beginnt mit ihrer Zahl), sonst neue Ziehung.
-  return urteil.ok || (art.startsWith('hoehle') && Number.parseInt(urteil.grund, 10) <= 1);
+  return urteil.ok || (!zonen && art.startsWith('hoehle') && Number.parseInt(urteil.grund, 10) <= 1);
 }
 
 /** Bauteilkarten haben Bänder und Lücken: nur Land-Anteil und Höhennutzung zählen (nicht Steilheit/Hohlraum des Hügelfelds). */

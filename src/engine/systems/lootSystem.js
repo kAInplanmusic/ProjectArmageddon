@@ -240,26 +240,35 @@ export class LootSystem {
    * @param {number} options.width
    * @param {number} options.height
    * @param {function(number):number} options.surfaceYFor
+ * @param {boolean} [options.weit] - Geländefassung 10 auf breiter Karte (ab 2800 px): Zahl und Obergrenze wachsen mit der Breite
+ *   (Faktor Breite/2560, höchstens 2,5), die Kisten liegen auf Land über der Wasserlinie (bis zu sechs Ziehungen je Kiste)
    * @returns {number[]} Entity-IDs der Kisten
    */
-  spawnRoundCrates(world, { rng, width, height, surfaceYFor, kisten = KISTEN_STANDARD }) {
+  spawnRoundCrates(world, { rng, width, height, surfaceYFor, kisten = KISTEN_STANDARD, weit = false }) {
     const activeRng = rng ?? this.rng;
     if (!activeRng) throw new Error('LootSystem benoetigt einen RNG');
 
     const count = rollCrateCount(activeRng, kisten);
     let amount = count === 'none' ? 0 : count === 'one' ? 1 : count === 'two' ? 2 : 3;
+    // Breite Karte: auf 4704 px käme sonst eine Kiste auf rund 2900 px Karte (mittlere Karte: 1600 px).
+    const faktor = weit ? Math.max(1, Math.min(2.5, width / 2560)) : 1;
+    amount = Math.round(amount * faktor);
     if (kisten !== KISTEN_ALT) {
       // Fassung 2: nie mehr als `maxCratesOnMap` unaufgehobene Kisten gleichzeitig.
       let liegen = 0;
       for (const id of world.getEntitiesBySignature(COMPONENT_SIGNATURES.CRATE | COMPONENT_SIGNATURES.POSITION)) {
         if (world.isActive(id) && world.getComponent(id, 'Crate', 'picked') !== 1) liegen += 1;
       }
-      amount = Math.max(0, Math.min(amount, LOOT_DROP_RULES.maxCratesOnMap - liegen));
+      amount = Math.max(0, Math.min(amount, Math.round(LOOT_DROP_RULES.maxCratesOnMap * faktor) - liegen));
     }
     const spawned = [];
 
     for (let i = 0; i < amount; i++) {
-      const x = Math.round(activeRng.nextFloat(width * 0.08, width * 0.92));
+      let x = Math.round(activeRng.nextFloat(width * 0.08, width * 0.92));
+      // Breite Karte: nicht in eine Wasserlinien-Senke (Grund unter 0,86·Höhe), die nächste Ziehung nehmen.
+      for (let versuch = 0; weit && versuch < 6 && !(surfaceYFor(x) > 0 && surfaceYFor(x) < height * 0.86); versuch += 1) {
+        x = Math.round(activeRng.nextFloat(width * 0.08, width * 0.92));
+      }
       const groundY = surfaceYFor(x);
       const y = (groundY > 0 ? groundY : height * 0.5) - KISTE_KANTE;
 
