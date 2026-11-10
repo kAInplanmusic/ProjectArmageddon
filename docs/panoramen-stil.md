@@ -27,3 +27,54 @@ diesem Prompt wieder abweichen würden; für sie bleibt das Original.
 Bedingt brauchbar (Komposition erkennbar, Details leicht verändert): `schotterweg_horizont` (Sonne und Ferne
 ergänzt), `nachtstadt_lichter` (Wasserfläche ergänzt), `feldweg_morgen`, `halbmond_huegel`. Geprüft wurde nur
 visuell per Kontaktbogen (links Original, rechts neu), nicht im Spiel.
+
+
+## Vier Hintergrundarten je Bild (Stand 2026-11-10)
+
+Je Panorama gibt es `<name>_<art>.webp` (1920x1080, WebP) mit `art` = `hell` (Tag), `dunkel` (Nacht), `hoehle`
+(Blick aus einer Hoehle, Gesteinsrahmen) und `ragnarok` (endzeitlich, Glut und Asche); gleiche Bedeutung wie
+`STIMMUNGEN` in `config/backdrops.js` und `backdrops-neu`. Es gibt keine `_h`-Dateien (Hochkant 768x1344 bei den
+Biom-Kulissen); sie wurden nicht verlangt und fehlen. Erzeugt mit `scripts/panoramen-4arten.py` (Together
+`openai/gpt-image-2`, Referenz = das gemalte Panorama, Methode wie oben). `hell` wurde bei 14 Tagbildern und `dunkel`
+bei 4 Nachtbildern aus dem vorhandenen Bild uebernommen, alles andere neu erzeugt.
+
+### Zuordnung zu Biomen (`panoramen-stil/zuordnung.json`)
+
+Annahmen: Die Fotos zeigen mitteleuropaeische Landschaft; nur wenige der 20 Biome passen wirklich. Zuordnung nach
+Motiv und Stimmung, schwache Zuordnungen sind als solche begruendet. Bilder ohne Sonderbiom (Wiesen, Felder, Himmel)
+sind nur der klassischen Kulissenfamilie (`config/backdrops.js`) zugeordnet, nicht erzwungen einem der 20 Biome.
+
+| Bild | Biome (SSOT-Kennung) | Kulissenfamilie | Begruendung |
+|---|---|---|---|
+| `alpendorf_herbst` | burg | alpine | Berghang mit Holzhaeusern und Nadelwald; Burgfelsen/Bergfestung als schwache Naehe |
+| `baum_wegegabelung` | keins | open | Wiesenlandschaft mit Weg, kein Sonderbiom passt |
+| `baum_weitblick` | keins | open | Wiese mit Einzelbaum und Fernsicht |
+| `bergsee` | kristallarchipel | alpine | Klarer tuerkiser Bergsee mit Wasserflaeche; kuehle Eis-/Inselstimmung (schwach) |
+| `birke_gemaelde` | kristallwald | forest | Dunkler, nebliger Birkenwald; Uralter Wald |
+| `feldweg_morgen` | keins | open | Felder und Feldweg |
+| `fluss_goldhaus` | surreal | fantasy | Goldener Wuerfelbau am Fluss unter Wolken, ungewoehnliche Architektur |
+| `gewitter_abendrot` | dimensionsriss | open | Violett-rosa Plasma-aehnlicher Himmel ueber dunkler Linie |
+| `halbmond_huegel` | kristallwald | forest | Dunkler bewaldeter Huegel mit Halbmond |
+| `herbstbaeume_dunst` | keins | forest | Herbstbaeume im Dunst auf Wiese |
+| `herbstwiese` | keins | forest | Herbstbaeume mit tiefer Sonne |
+| `huegelweide` | keins | open | Huegelweide mit Wald, Weg |
+| `klondike_schnee` | eiswueste | alpine | Verschneites Holzdorf am Hang |
+| `nachtstadt_lichter` | fabrik | urban | Stadtlichter bei Nacht im Tal |
+| `nachtstadt_tal` | fabrik | urban | Stadtlichter bei Nacht im Tal |
+| `nachtstadt_tal_2` | fabrik | urban | Stadtlichter bei Nacht im Tal |
+| `nachtstrasse_sw` | schrott, fabrik | noir | Leere Nachtstrasse mit Laterne und Haus, Noir-Stimmung |
+| `nebelmorgen_scheune` | keins | open | Morgennebel mit Baeumen und Haus |
+| `palmenstrand_fluss` | riff | island | Palmen, Sandstrand und Wasser |
+| `rosa_abend` | keins | open | Abendhimmel mit Haeusersilhouetten |
+| `rosa_glut_feld` | keins | open | Gluehendes Abendrot ueber Feld und Waldkante |
+| `schaefchenwolken` | keins | open | Wolkenhimmel ueber Wiese |
+| `schnee_alpendorf` | eiswueste | alpine | Schneelandschaft mit Berg und Alpendorf |
+| `schneegarten` | eiswueste | alpine | Verschneite Baeume und Garten |
+| `schotterweg_horizont` | duenen | open | Karge trockene Ebene mit Horizont; Wuestenaehnlich (schwach) |
+| `sonne_ueber_wald` | keins | forest | Sonnenuntergang ueber Waldkante |
+| `sonnenaufgang_zaun` | keins | open | Sonnenaufgang ueber Zaun und Wiese |
+| `sonnenstrahlen_felder` | keins | open | Lichtstrahlen ueber Wiese |
+| `sonnenuntergang_feld` | duenen | open | Goldene Weite mit tiefer Sonne, wuestenaehnlich (schwach) |
+| `stadt_morgenrot` | fabrik | urban | Flache Industrie-/Stadtdaecher im Morgenrot |
+| `strand_ebbe` | riff | island | Strand bei Ebbe, Wasser und Himmel |
+| `western_regenbogen` | duenen | western | Western-Stadt im Abendlicht (gemalte Fassung); Wuestenstadt |

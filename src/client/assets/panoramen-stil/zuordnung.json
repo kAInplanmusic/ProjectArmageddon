@@ -1,0 +1,236 @@
+{
+ "_hinweis": "Annahmen (2026-11-10, ohne Abnahme): biome = Kennungen aus SONDERBIOM_IDS_FASSUNG_7 (leer = kein Sonderbiom passt); familie = Schluessel der klassischen Kulissenfamilie in config/backdrops.js. Arten je Bild: <name>_{hell,dunkel,hoehle,ragnarok}.webp, 1920x1080. 'staerke' stark/schwach.",
+ "bilder": {
+  "alpendorf_herbst": {
+   "biome": [
+    "burg"
+   ],
+   "familie": "alpine",
+   "staerke": "schwach",
+   "grund": "Berghang mit Holzhaeusern und Nadelwald; Burgfelsen/Bergfestung als schwache Naehe"
+  },
+  "baum_wegegabelung": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Wiesenlandschaft mit Weg, kein Sonderbiom passt"
+  },
+  "baum_weitblick": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Wiese mit Einzelbaum und Fernsicht"
+  },
+  "bergsee": {
+   "biome": [
+    "kristallarchipel"
+   ],
+   "familie": "alpine",
+   "staerke": "schwach",
+   "grund": "Klarer tuerkiser Bergsee mit Wasserflaeche; kuehle Eis-/Inselstimmung (schwach)"
+  },
+  "birke_gemaelde": {
+   "biome": [
+    "kristallwald"
+   ],
+   "familie": "forest",
+   "staerke": "stark",
+   "grund": "Dunkler, nebliger Birkenwald; Uralter Wald"
+  },
+  "feldweg_morgen": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Felder und Feldweg"
+  },
+  "fluss_goldhaus": {
+   "biome": [
+    "surreal"
+   ],
+   "familie": "fantasy",
+   "staerke": "stark",
+   "grund": "Goldener Wuerfelbau am Fluss unter Wolken, ungewoehnliche Architektur"
+  },
+  "gewitter_abendrot": {
+   "biome": [
+    "dimensionsriss"
+   ],
+   "familie": "open",
+   "staerke": "stark",
+   "grund": "Violett-rosa Plasma-aehnlicher Himmel ueber dunkler Linie"
+  },
+  "halbmond_huegel": {
+   "biome": [
+    "kristallwald"
+   ],
+   "familie": "forest",
+   "staerke": "stark",
+   "grund": "Dunkler bewaldeter Huegel mit Halbmond"
+  },
+  "herbstbaeume_dunst": {
+   "biome": [],
+   "familie": "forest",
+   "staerke": "keins",
+   "grund": "Herbstbaeume im Dunst auf Wiese"
+  },
+  "herbstwiese": {
+   "biome": [],
+   "familie": "forest",
+   "staerke": "keins",
+   "grund": "Herbstbaeume mit tiefer Sonne"
+  },
+  "huegelweide": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Huegelweide mit Wald, Weg"
+  },
+  "klondike_schnee": {
+   "biome": [
+    "eiswueste"
+   ],
+   "familie": "alpine",
+   "staerke": "stark",
+   "grund": "Verschneites Holzdorf am Hang"
+  },
+  "nachtstadt_lichter": {
+   "biome": [
+    "fabrik"
+   ],
+   "familie": "urban",
+   "staerke": "stark",
+   "grund": "Stadtlichter bei Nacht im Tal"
+  },
+  "nachtstadt_tal": {
+   "biome": [
+    "fabrik"
+   ],
+   "familie": "urban",
+   "staerke": "stark",
+   "grund": "Stadtlichter bei Nacht im Tal"
+  },
+  "nachtstadt_tal_2": {
+   "biome": [
+    "fabrik"
+   ],
+   "familie": "urban",
+   "staerke": "stark",
+   "grund": "Stadtlichter bei Nacht im Tal"
+  },
+  "nachtstrasse_sw": {
+   "biome": [
+    "schrott",
+    "fabrik"
+   ],
+   "familie": "noir",
+   "staerke": "stark",
+   "grund": "Leere Nachtstrasse mit Laterne und Haus, Noir-Stimmung"
+  },
+  "nebelmorgen_scheune": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Morgennebel mit Baeumen und Haus"
+  },
+  "palmenstrand_fluss": {
+   "biome": [
+    "riff"
+   ],
+   "familie": "island",
+   "staerke": "stark",
+   "grund": "Palmen, Sandstrand und Wasser"
+  },
+  "rosa_abend": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Abendhimmel mit Haeusersilhouetten"
+  },
+  "rosa_glut_feld": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Gluehendes Abendrot ueber Feld und Waldkante"
+  },
+  "schaefchenwolken": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Wolkenhimmel ueber Wiese"
+  },
+  "schnee_alpendorf": {
+   "biome": [
+    "eiswueste"
+   ],
+   "familie": "alpine",
+   "staerke": "stark",
+   "grund": "Schneelandschaft mit Berg und Alpendorf"
+  },
+  "schneegarten": {
+   "biome": [
+    "eiswueste"
+   ],
+   "familie": "alpine",
+   "staerke": "stark",
+   "grund": "Verschneite Baeume und Garten"
+  },
+  "schotterweg_horizont": {
+   "biome": [
+    "duenen"
+   ],
+   "familie": "open",
+   "staerke": "schwach",
+   "grund": "Karge trockene Ebene mit Horizont; Wuestenaehnlich (schwach)"
+  },
+  "sonne_ueber_wald": {
+   "biome": [],
+   "familie": "forest",
+   "staerke": "keins",
+   "grund": "Sonnenuntergang ueber Waldkante"
+  },
+  "sonnenaufgang_zaun": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Sonnenaufgang ueber Zaun und Wiese"
+  },
+  "sonnenstrahlen_felder": {
+   "biome": [],
+   "familie": "open",
+   "staerke": "keins",
+   "grund": "Lichtstrahlen ueber Wiese"
+  },
+  "sonnenuntergang_feld": {
+   "biome": [
+    "duenen"
+   ],
+   "familie": "open",
+   "staerke": "schwach",
+   "grund": "Goldene Weite mit tiefer Sonne, wuestenaehnlich (schwach)"
+  },
+  "stadt_morgenrot": {
+   "biome": [
+    "fabrik"
+   ],
+   "familie": "urban",
+   "staerke": "stark",
+   "grund": "Flache Industrie-/Stadtdaecher im Morgenrot"
+  },
+  "strand_ebbe": {
+   "biome": [
+    "riff"
+   ],
+   "familie": "island",
+   "staerke": "stark",
+   "grund": "Strand bei Ebbe, Wasser und Himmel"
+  },
+  "western_regenbogen": {
+   "biome": [
+    "duenen"
+   ],
+   "familie": "western",
+   "staerke": "stark",
+   "grund": "Western-Stadt im Abendlicht (gemalte Fassung); Wuestenstadt"
+  }
+ }
+}
