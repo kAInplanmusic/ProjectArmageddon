@@ -510,11 +510,7 @@
    "walk": "pixel/00_nullpointer-exception__walk.webp",
    "zustand": "pixel/00_nullpointer-exception__zustand.webp",
    "rollen": {
-    "hocke": 4,
-    "idle": [0, 1],
-    "luft": 2,
-    "tod": 7,
-    "treffer": 5
+    "tod": 7
    },
    "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
    "gehenOk": 8
@@ -524,7 +520,6 @@
    "walk": "pixel/01_pyrofox-a__walk.webp",
    "zustand": "pixel/01_pyrofox-a__zustand.webp",
    "rollen": {
-    "hocke": 3,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,
@@ -551,7 +546,7 @@
    "walk": "pixel/10_arcershorn-a__walk.webp",
    "zustand": "pixel/10_arcershorn-a__zustand.webp",
    "rollen": {
-    "hocke": 6,
+    "hocke": 3,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,
@@ -565,7 +560,6 @@
    "walk": "pixel/11_pyrowand-a__walk.webp",
    "zustand": "pixel/11_pyrowand-a__zustand.webp",
    "rollen": {
-    "hocke": 6,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,
@@ -605,7 +599,6 @@
    "walk": "pixel/21_arcanus-a__walk.webp",
    "zustand": "pixel/21_arcanus-a__zustand.webp",
    "rollen": {
-    "hocke": 3,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,
@@ -619,6 +612,7 @@
    "walk": "pixel/22_arcanus-b__walk.webp",
    "zustand": "pixel/22_arcanus-b__zustand.webp",
    "rollen": {
+    "hocke": 3,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,

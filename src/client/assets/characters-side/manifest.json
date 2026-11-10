@@ -406,78 +406,78 @@
       "file": "pixel/00_nullpointer-exception.png",
       "hasSide": true,
       "anchor": {
-        "x": 155,
+        "x": 129,
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "together-8bit-b1",
+      "model": "openai/gpt-image-2"
     },
     "pixel/01_pyrofox-a.png": {
       "file": "pixel/01_pyrofox-a.png",
       "hasSide": true,
       "anchor": {
-        "x": 160,
+        "x": 151,
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "together-8bit-b1",
+      "model": "openai/gpt-image-2"
     },
     "pixel/02_pyrofox-b.png": {
       "file": "pixel/02_pyrofox-b.png",
       "hasSide": true,
       "anchor": {
-        "x": 121,
+        "x": 117,
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "together-8bit-b1",
+      "model": "openai/gpt-image-2"
     },
     "pixel/10_arcershorn-a.png": {
       "file": "pixel/10_arcershorn-a.png",
       "hasSide": true,
       "anchor": {
-        "x": 112,
+        "x": 126,
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "together-8bit-b1",
+      "model": "openai/gpt-image-2"
     },
     "pixel/11_pyrowand-a.png": {
       "file": "pixel/11_pyrowand-a.png",
       "hasSide": true,
       "anchor": {
-        "x": 156,
+        "x": 129,
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "together-8bit-b1",
+      "model": "openai/gpt-image-2"
     },
     "pixel/12_shieldmon.png": {
       "file": "pixel/12_shieldmon.png",
       "hasSide": true,
       "anchor": {
-        "x": 128,
+        "x": 129,
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "together-8bit-b1",
+      "model": "openai/gpt-image-2"
     },
     "pixel/20_phantomal-a.png": {
       "file": "pixel/20_phantomal-a.png",
       "hasSide": true,
       "anchor": {
-        "x": 141,
+        "x": 145,
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "together-8bit-b1",
+      "model": "openai/gpt-image-2"
     },
     "pixel/21_arcanus-a.png": {
       "file": "pixel/21_arcanus-a.png",
@@ -487,19 +487,19 @@
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "together-8bit-b1",
+      "model": "openai/gpt-image-2"
     },
     "pixel/22_arcanus-b.png": {
       "file": "pixel/22_arcanus-b.png",
       "hasSide": true,
       "anchor": {
-        "x": 112,
+        "x": 121,
         "y": 240
       },
       "facing": "right",
-      "source": "together-kontext",
-      "model": "black-forest-labs/FLUX.1-kontext-pro"
+      "source": "together-8bit-b1",
+      "model": "openai/gpt-image-2"
     },
     "rodentia/00_commander-chewk.png": {
       "file": "rodentia/00_commander-chewk.png",

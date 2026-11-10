@@ -37,7 +37,10 @@ def tog_gen(prompt, src, out, breite=1024, hoehe=768, modell=MODELL, steps=28, s
         rel = pfad.relative_to(wurzel).as_posix()
     except ValueError:
         return "ERR Quellbild liegt nicht im Repo; fuer Kontext ist eine oeffentliche URL noetig"
-    bild_url = "https://raw.githubusercontent.com/kAInplanmusic/ProjectArmageddon/main/" + rel
+    # PA_RAW_REF: Branch, von dem die Vorlage geholt wird (Standard main). Neue Vorlagen, die noch nicht auf main
+    # liegen (B1: 8-Bit-Seitenansichten vor der Freigabe), kommen so von ihrem Arbeitsbranch.
+    ref = os.environ.get("PA_RAW_REF", "main")
+    bild_url = f"https://raw.githubusercontent.com/kAInplanmusic/ProjectArmageddon/{ref}/" + rel
     if "kontext" in modell:
         body = {
             "model": modell, "prompt": prompt, "width": breite, "height": hoehe, "steps": steps, "seed": seed,
