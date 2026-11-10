@@ -1766,7 +1766,7 @@ class Game {
     client.on('terrain_state', stand => { this.#baueKarteNeu(stand); this.renderer.feuerOptik?.uebernimmMeldung(stand.feuer, this.renderer.stoffkarte); });
     client.on('lobby_state', payload => {
       // Minen: Der Beitrittszustand trägt die aktuelle Liste (auch beim Wiedereinstieg); danach folgen Ereignisse.
-      this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }])); this.remoteSeil = null;
+      this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }])); this.remoteSeil = null; this.remoteFeuerwesen = null;
       if (payload.seed !== null && payload.seed !== undefined && !this.remoteTerrain) {
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, kartentyp }));
       }
@@ -2182,7 +2182,7 @@ class Game {
       turrets: snapshot.turrets ?? [],
       // Minen: nicht im binären Snapshot, sondern aus dem Beitrittszustand und den Ereignissen `mine_*`.
       bodenobjekte: [...(this.remoteMinen?.values() ?? [])],
-      ...(this.remoteSeil ? { seil: this.remoteSeil } : {}), // Seil: aus den Ereignissen `seil_*`
+      ...(this.remoteSeil ? { seil: this.remoteSeil } : {}), ...(this.remoteFeuerwesen?.size ? { feuerwesen: [...this.remoteFeuerwesen.values()] } : {}), // Seil und Feuerwesen: aus den Ereignissen `seil_*`, `feuerwesen_*`
       /*
        * Günther aus dem Snapshot (Protokoll v7).
        *
@@ -2571,7 +2571,7 @@ class Game {
         setzeEinschnitt: wert => { this.remoteInset = wert; },
         // Minen (Bodenobjektfassung 2): Online führen die Ereignisse `mine_*` diese Liste fort.
         minen: () => (this.remoteMinen ??= new Map()),
-        setzeSeil: wert => { this.remoteSeil = wert; },
+        setzeSeil: wert => { this.remoteSeil = wert; }, feuerwesen: () => (this.remoteFeuerwesen ??= new Map()), // Feuerwesen (Fassung 20)
       },
     };
   }

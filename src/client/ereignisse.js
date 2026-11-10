@@ -691,6 +691,36 @@ export const EREIGNIS_WIRKUNGEN = {
     else if (n.grund === 'wasser') k.hud?.log('Das Seil reißt im Wasser', 'notice');
   }),
 
+  /*
+   * Feuerwesen (Waffenfassung 20): lokal liest der Renderer den Zustand des Motors (`getState().feuerwesen`), online
+   * führen diese Ereignisse die Liste des Clients fort (`k.fernzustand.feuerwesen()`, nicht im binären Snapshot).
+   * Die Kugeln selbst sind gewöhnliche Geschosse (`projectile_spawn`, `explosion`).
+   */
+  feuerwesen_gesetzt: beide((k, n) => {
+    k.fernzustand?.feuerwesen?.()?.set(n.id, {
+      id: n.id, ownerId: n.ownerId ?? null, x: n.x, y: n.y, richtung: n.richtung, luft: false, alter: 0, laufzeitTakte: n.laufzeitTakte,
+    });
+    k.hud?.log('Ein Feuerwesen läuft los', 'accent');
+    k.renderer?.addFlash(n.x, n.y - 6, 12, { color: '#ff8a2a' });
+  }),
+  feuerwesen_lauf: beide((k, n) => {
+    const g = k.fernzustand?.feuerwesen?.()?.get(n.id);
+    if (g) Object.assign(g, { x: n.x, y: n.y, richtung: n.richtung, luft: n.luft, alter: n.alter });
+  }),
+  feuerwesen_sprung: beide((k, n) => {
+    const g = k.fernzustand?.feuerwesen?.()?.get(n.id);
+    if (g) Object.assign(g, { x: n.x, y: n.y, luft: true });
+  }),
+  feuerwesen_zerbirst: beide((k, n) => {
+    k.fernzustand?.feuerwesen?.()?.delete(n.id);
+    k.hud?.log(n.grund === 'beruehrung' ? 'Das Feuerwesen zerbirst in fünf Feuerkugeln!' : 'Das Feuerwesen verglüht und zerbirst', 'danger');
+    k.renderer?.addFlash(n.x, n.y, 26, { color: '#ffb347' });
+  }),
+  feuerwesen_erloschen: beide((k, n) => {
+    k.fernzustand?.feuerwesen?.()?.delete(n.id);
+    k.hud?.log(n.grund === 'wasser' ? 'Das Feuerwesen erlischt im Wasser' : 'Das Feuerwesen läuft aus der Karte', 'neutral');
+  }),
+
   mine_exploded: beide((k, n) => {
     kameraEffekte.ketteGlied('Mine');
     k.fernzustand?.minen?.()?.delete(n.mineId);

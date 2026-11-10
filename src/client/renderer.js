@@ -105,7 +105,7 @@ import { KISTE_KANTE } from '../shared/config/kisten.js';
  * Selbsttest in `tests/backdrops.test.js` prüft die Präfixe aller Globs.
  */
 import { ladeKulisse } from './kulissenLaden.js';
-import { zeichneSeil } from './seilZeichnen.js';
+import { zeichneSeil } from './seilZeichnen.js'; import { zeichneFeuerwesen } from './feuerwesenZeichnen.js'; // Feuerwesen (Fassung 20)
 
 /*
  * Seltenheitsfarbe einer Kiste: aus `LOOT_DROP_RULES.rarityColors` (config/loot.js), dieselbe Tabelle
@@ -231,7 +231,7 @@ export class Renderer {
     this.waffenPoseTmp = neuePose();
     this.handTmp = { x: 0, y: 0 };
     this.geschosse = new GeschossLagen();
-    this.waffenStat = { sprite: 0, ikone: 0, geschossSprites: 0, geschosseGesamt: 0 };
+    this.waffenStat = { sprite: 0, ikone: 0, geschossSprites: 0, geschosseGesamt: 0, feuerwesen: 0 };
     /** Letzte Pose je Figur (Diagnose, Tests): `entityId` → Kopie der Felder. */
     this.waffenDiagnose = new Map();
     /** Der laufende Kamera-Ruck (oder `null`). */
@@ -2356,6 +2356,7 @@ export class Renderer {
     this.#drawTurrets(state.turrets ?? []);
     this.#drawCrates(state.crates ?? []);
     this.#drawMinen(state.bodenobjekte ?? []);
+    this.waffenStat.feuerwesen = zeichneFeuerwesen(this.ctx, state.feuerwesen ?? [], { ikone: state.feuerwesen ? holeWaffenIkone(this.waffe('pa_118')) : null, sheets: this.sheets, zeit: performance.now() / 1000, reduziert: this.reducedMotion }); // Fassung 20 (`feuerwesenZeichnen.js`)
     this.#drawAimPreview(aimPreview);
     /*
      * Die Schussvorhersage liegt VOR der Zielhilfe und in eigener Farbe.

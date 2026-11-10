@@ -195,17 +195,24 @@ test.describe('Waffen-Animation', () => {
     expect(fehler).toEqual([]);
   });
 
-  test('Kachel-Waffen: Orb (Zauber-Darstellung) oder herausgelöstes Motiv, nie die gerahmte Karte', async ({ page }) => {
+  test('Kachel-Waffen: herausgelöstes Motiv oder gar nicht in der Hand, nie die gerahmte Karte', async ({ page }) => {
     const fehler = await matchStarten(page);
-    // pa_118 Feuerwesen: Orb; pa_071 Eisschlag: Motiv ohne Rahmen (pa_034 ist seit N-06 keine Kachel mehr)
+    /*
+     * MERGE-13: Hier stand pa_118 (Feuerwesen) als „Orb in der Hand". Seit BAL-11 (60a4456) ist das Feuerwesen eine
+     * Beschwörung (`waffen-rollen.js`: „kein Handbild"), der Renderer zeichnet nur `hand`/`geschoss`-Rollen in die
+     * Faust (`renderer.js`, `waffenRolle` → `weltobjekt`) — die Pose kam deshalb nie, der Test lief in den Timeout.
+     * Seit Waffenfassung 20 wird der Gnom abgesetzt; seinen runden Rahmen (Orb mit Kachelbild) zeigt er in der Welt
+     * (`tests/e2e/feuerwesen.spec.mjs`). Hier bleibt die Zusage „nie die gerahmte Karte in der Hand": pa_118 hat KEINE
+     * Handpose, pa_071 (Eisschlag) zeigt das Motiv ohne Rahmen (pa_034 ist seit N-06 keine Kachel mehr).
+     */
     const spieler = await waffeWaehlen(page, 'pa_118');
     await page.waitForFunction(
-      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_118', spieler, { timeout: 15000 });
-    const orb = (await waffenZustand(page)).posen[spieler];
-    expect(orb.kachel).toBe('orb');
-    expect(orb.orb).toBe(true);
+      id => window.__PA__.getMatch().inventory.getActiveWeaponId(id) === 'pa_118', spieler, { timeout: 15000 });
     await page.waitForTimeout(300);
-    await ablegen(page, 'waffen-animation-kachel-orb');
+    const ohneHand = (await waffenZustand(page)).posen[spieler];
+    // Die Diagnose führt die zuletzt gezeichnete Handwaffe weiter; entscheidend ist: pa_118 erscheint dort nie.
+    expect(ohneHand?.waffeId, 'das Feuerwesen wird nicht als Karte in der Hand gezeichnet').not.toBe('pa_118');
+    await ablegen(page, 'waffen-animation-kachel-ohne-hand');
 
     await waffeWaehlen(page, 'pa_071');
     await page.waitForFunction(
