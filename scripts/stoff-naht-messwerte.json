@@ -11,18 +11,18 @@
     {
       "datei": "stoff-texturen/basalt.jpg",
       "name": "basalt",
-      "verhaeltnis": 1.309,
-      "waagrecht": 1.309,
-      "senkrecht": 1.228,
-      "sha256": "590ea794c4e56d229f2c5e81d37f98d88f5b8e9335092ce4ad14de42d2f155e5"
+      "verhaeltnis": 1.824,
+      "waagrecht": 1.824,
+      "senkrecht": 1.501,
+      "sha256": "5437757f03b7a5e6ca08f71eb9081895d3a7cf2afc7584eb02a9d2b9f42f6aae"
     },
     {
       "datei": "stoff-texturen/beton.jpg",
       "name": "beton",
-      "verhaeltnis": 1.259,
-      "waagrecht": 1.062,
-      "senkrecht": 1.259,
-      "sha256": "877084e98d9d4d5f2ee3f3a2db93fd972046dc1cf84006c3746be644b0f1b53a"
+      "verhaeltnis": 2.231,
+      "waagrecht": 1.797,
+      "senkrecht": 2.231,
+      "sha256": "9e7d2e6fccaee22282d52eec6571672418419b94701a0fe49fc0ecdec541b386"
     },
     {
       "datei": "stoff-texturen/eis.jpg",
@@ -59,10 +59,10 @@
     {
       "datei": "stoff-texturen/holz.jpg",
       "name": "holz",
-      "verhaeltnis": 1.651,
-      "waagrecht": 1.651,
-      "senkrecht": 0.93,
-      "sha256": "e274829935bcf0aac3ffdc1fe196a21bb3a4265b0d95d53e48550f42f822b929"
+      "verhaeltnis": 1.905,
+      "waagrecht": 1.905,
+      "senkrecht": 1.644,
+      "sha256": "c37f5038bc34802f4ca7d83a228e703888ea807f4cdddcadf65f39ef6b6aa165"
     },
     {
       "datei": "stoff-texturen/kies.jpg",
@@ -91,18 +91,18 @@
     {
       "datei": "stoff-texturen/obsidian.jpg",
       "name": "obsidian",
-      "verhaeltnis": 1.465,
-      "waagrecht": 1.141,
-      "senkrecht": 1.465,
-      "sha256": "2f1c0eef9772a9e5cf1b364315c07ff68e5ec5383cb891afde41e21392dabbdb"
+      "verhaeltnis": 1.859,
+      "waagrecht": 1.37,
+      "senkrecht": 1.859,
+      "sha256": "07607b8cd10b1d18bc3f24f48e0773b5a908951c20dacad9efd7db4ac9d059d6"
     },
     {
       "datei": "stoff-texturen/pilz.jpg",
       "name": "pilz",
-      "verhaeltnis": 1.151,
-      "waagrecht": 0.967,
-      "senkrecht": 1.151,
-      "sha256": "7c6b2c4df35d1a75896cc4333a6770c9d86951afc5819b0190e2e868634e17a7"
+      "verhaeltnis": 1.48,
+      "waagrecht": 1.288,
+      "senkrecht": 1.48,
+      "sha256": "9ba94f5d0cbcebd869861fe7cea69ea77900391d84b1a94cb546ba5a0bc9ef12"
     },
     {
       "datei": "stoff-texturen/regolith.jpg",
@@ -115,10 +115,10 @@
     {
       "datei": "stoff-texturen/sand.jpg",
       "name": "sand",
-      "verhaeltnis": 1.768,
-      "waagrecht": 1.191,
-      "senkrecht": 1.768,
-      "sha256": "e5a91955da17fded691645b24e2eb7d736649ebcaae19706b941b90a9ddfd995"
+      "verhaeltnis": 2.562,
+      "waagrecht": 1.478,
+      "senkrecht": 2.562,
+      "sha256": "e5638cae0d75aa5896fb43dfc8c2f0107153ecbe38bd929a8ac56d7cf6116b6b"
     },
     {
       "datei": "stoff-texturen/schnee.jpg",
@@ -131,10 +131,10 @@
     {
       "datei": "stoff-texturen-neu/alienharz.webp",
       "name": "alienharz",
-      "verhaeltnis": 1.475,
-      "waagrecht": 1.475,
-      "senkrecht": 1.209,
-      "sha256": "dadf0585611abd3a73d3e92f8d0b49d348c02a26c683be37bb7411e762d7b89f"
+      "verhaeltnis": 1.726,
+      "waagrecht": 1.726,
+      "senkrecht": 1.312,
+      "sha256": "c9bb0035b8f95fdf9bb32e623ecbe3ff7d121569f5d3fe4d90dbde36ddf363c6"
     },
     {
       "datei": "stoff-texturen-neu/asche.webp",
@@ -163,10 +163,10 @@
     {
       "datei": "stoff-texturen-neu/bimsstein.webp",
       "name": "bimsstein",
-      "verhaeltnis": 1.299,
-      "waagrecht": 1.299,
-      "senkrecht": 1.214,
-      "sha256": "35af53e9d1211f25070ad5dce9936343fc989960c92530a82a8484c924a75a93"
+      "verhaeltnis": 1.427,
+      "waagrecht": 1.427,
+      "senkrecht": 1.395,
+      "sha256": "51ed3cbc10d62a39a9615a7585c9515c1621d64e06dfa1a88dcaddcf6c880fce"
     },
     {
       "datei": "stoff-texturen-neu/burgfelsen.webp",
@@ -219,10 +219,10 @@
     {
       "datei": "stoff-texturen-neu/firn.webp",
       "name": "firn",
-      "verhaeltnis": 1.971,
-      "waagrecht": 1.971,
-      "senkrecht": 1.202,
-      "sha256": "42276eb61aad25116d992e7afcf42059cbb8ef82b1bc057aaff12659b9368f7e"
+      "verhaeltnis": 1.943,
+      "waagrecht": 1.943,
+      "senkrecht": 1.23,
+      "sha256": "470ef0f60bab4518d178b0f1e82d7143ac3286058544f890de2dde6d3ec18986"
     },
     {
       "datei": "stoff-texturen-neu/gefrorene_wurzeln.webp",
@@ -515,10 +515,10 @@
     {
       "datei": "stoff-texturen-neu/moos.webp",
       "name": "moos",
-      "verhaeltnis": 1.227,
-      "waagrecht": 1.227,
-      "senkrecht": 1.069,
-      "sha256": "1d374b67fe92d4e483eb1e8a1d721d285e6077a4968de75f6536e4da2acf7bab"
+      "verhaeltnis": 1.54,
+      "waagrecht": 1.54,
+      "senkrecht": 1.137,
+      "sha256": "35ae8aa9a63bfa1ed8643bbd80b48c60a48cd1f8a97aeb7fe512bebf13f0fc42"
     },
     {
       "datei": "stoff-texturen-neu/mutterboden.webp",
@@ -619,10 +619,10 @@
     {
       "datei": "stoff-texturen-neu/rostmetall.webp",
       "name": "rostmetall",
-      "verhaeltnis": 1.337,
-      "waagrecht": 1.337,
-      "senkrecht": 1.179,
-      "sha256": "6ff0c47d69204befcd36799872c0087ed0f895ead838c5a066237f70a6759188"
+      "verhaeltnis": 1.362,
+      "waagrecht": 1.362,
+      "senkrecht": 1.175,
+      "sha256": "711f61488668d1b995cd303a55cd464c916561b0364378941d1bae004b727929"
     },
     {
       "datei": "stoff-texturen-neu/saeureablagerungen.webp",
@@ -795,10 +795,10 @@
     {
       "datei": "stoff-texturen-neu/wolkenstein.webp",
       "name": "wolkenstein",
-      "verhaeltnis": 1.298,
-      "waagrecht": 1.298,
-      "senkrecht": 1.077,
-      "sha256": "7e3c3acfa4b490cea54e96829eccf809afea0b78c57032dfaa2475c7b34d1c10"
+      "verhaeltnis": 1.444,
+      "waagrecht": 1.444,
+      "senkrecht": 1.136,
+      "sha256": "697eb36c4a9176d09dcf282b31760d5ed9a7c31d0beb77dbfa6fd0add6587734"
     },
     {
       "datei": "stoff-texturen-neu/wurzeln.webp",

@@ -6,7 +6,7 @@
  *  - Lage: eine der 8 Spiegelungen/Drehungen des Quadrats (die Kachel bleibt dabei nahtlos),
  *  - Versatz (dx, dy) in Texturpixeln,
  *  - Maßstab (± etwa 12 %),
- *  - Farbabweichung: Helligkeit und leichte Farbtonverschiebung je Kanal.
+ *  - Farbabweichung: Helligkeit (± 5 %) und leichte Farbtonverschiebung je Kanal.
  * Variante 0 ist immer die unveränderte Textur, damit der Stoff wiedererkennbar bleibt.
  *
  * Gewählt wird je Stoff und Zellblock: Die Karte wird in Blöcke aus `BLOCK_ZELLEN`² Weltzellen (Zelle = 8 px)
@@ -92,7 +92,7 @@ export function variantenTabellen() {
       ganz[o + 1] = Math.floor(h(1) * 512);
       ganz[o + 2] = Math.floor(h(2) * 512);
       ganz[o + 3] = MASSSTAEBE[Math.floor(h(3) * MASSSTAEBE.length)];
-      const hell = 1 + (h(4) - 0.5) * 0.2; // ± 10 % Helligkeit
+      const hell = 1 + (h(4) - 0.5) * 0.1; // ± 5 % Helligkeit (größere Sprünge zeigten die Blockgrenzen als Naht)
       const f = (VARIANTEN_MAX * s + v) * 3;
       farbe[f] = hell * (1 + (h(5) - 0.5) * 0.08);
       farbe[f + 1] = hell * (1 + (h(6) - 0.5) * 0.08);

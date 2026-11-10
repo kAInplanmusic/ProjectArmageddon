@@ -58,7 +58,7 @@ import { waehleStimmung } from './musikStimmung.js';
 import { bindeDrehHinweis } from './drehHinweis.js';
 import { bindeGrafikBedienung } from './grafikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
-import { setzeStoffTexturUrls, beiNeuenStoffTexturen, stoffTexturenBereit } from './stoffTexturen.js';
+import { BASIS_TEXTUREN, setzeStoffTexturUrls, beiNeuenStoffTexturen, stoffTexturenBereit } from './stoffTexturen.js';
 import { planetenBilder } from './planetenKulisse.js';
 import HYMNEN_MANIFEST from './assets/music/fraktionen/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
@@ -153,16 +153,16 @@ const MUSIK_URLEN = Object.fromEntries([
     .map(([pfad, url]) => [`fraktionen/${pfad.split('/').pop()}`, url]),
 ]);
 
-/** Material-Texturen der Stoffe (Client-Optik): Name → URL. Nur die Zuordnung; geladen wird je Karte nach Bedarf (`stoffTexturen.js`). */
+/** Material-Texturen der Stoffe (Client-Optik), Name → URL; geladen wird je Karte nach Bedarf (`stoffTexturen.js`). */
+const STOFF_TEXTUR_NEU = Object.fromEntries(Object.entries(import.meta.glob('./assets/stoff-texturen-neu/*.{webp,jpg}', { query: '?url', import: 'default', eager: true }))
+  .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.(webp|jpg)$/, ''), url]));
 const STOFF_TEXTUR_URLEN = {
-  // Biom-Materialien (`stoff-texturen-neu`), dann die Basisstoffe (gleiche Namen: die Basisstoffe gewinnen).
-  ...Object.fromEntries(
-    Object.entries(import.meta.glob('./assets/stoff-texturen-neu/*.{webp,jpg}', { query: '?url', import: 'default', eager: true }))
-      .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.(webp|jpg)$/, ''), url]),
-  ),
+  // Biom-Materialien, dann die Basisstoffe; bei gleichem Namen gewinnt die alte Datei nur für Basisstoffe (das Foto `moos.jpg` verdeckte sonst das gemalte `moos.webp`, Stilbruch).
+  ...STOFF_TEXTUR_NEU,
   ...Object.fromEntries(
     Object.entries(import.meta.glob('./assets/stoff-texturen/*.jpg', { query: '?url', import: 'default', eager: true }))
-      .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.jpg$/, ''), url]),
+      .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.jpg$/, ''), url])
+      .filter(([name]) => BASIS_TEXTUREN.includes(name) || !(name in STOFF_TEXTUR_NEU)),
   ),
 };
 

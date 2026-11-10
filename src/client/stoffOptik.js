@@ -5,11 +5,12 @@
  * Farben, nie die Maske. Zellgrenzen (8 px) werden durch zwei kleine Versatztabellen aufgebrochen,
  * damit Adern und Schichten als Bruchkanten erscheinen und nicht als Quadrate. Alles folgt Position
  * und Seed (`hash2`). Jede Textur erscheint in 5 bis 7 Varianten je Stoff (`stoffVarianten.js`), die je 128-px-Block
- * nach Seed gewählt und an den Blockgrenzen weich überblendet werden.
+ * nach Seed gewählt; die Blockgrenzen verlaufen organisch (2D-Rauschen) und werden im Randband gesprenkelt statt
+ * überblendet (Überblenden zweier Varianten zeigt Rissmuster doppelt, siehe `tinteStoffe`).
  *
  * @module stoffOptik
  */
-import { hash2, rauschen1 } from './stil.js';
+import { hash2 } from './stil.js';
 import { STOFFE } from '../shared/config/stoffe.js';
 import { STOFF_TEXTUR, TEXTUR_GROESSE, stoffTextur } from './stoffTexturen.js';
 import {
@@ -22,6 +23,7 @@ const DECKUNG = 0.58;
 const TEX_STAERKE = 0.85;
 const TEX_STAERKE_ERDE = 0.6;
 const TEX_MASKE = TEXTUR_GROESSE - 1;
+const TEX_MASKE2 = TEXTUR_GROESSE * 2 - 1;
 /** Biom-Materialien (ab dieser Kennung) mit eigener Textur zeigen deren Farbe; die Basisstoffe bleiben wie früher. */
 const ERSTER_BIOM_STOFF = 18;
 /** Wie stark die Textur eines Biom-Materials die Farbe bestimmt (0 = nur Stofffarbe, 1 = nur Textur). */
@@ -47,10 +49,10 @@ function glatt(seed, x, y, sx, sy) {
 /**
  * Texturprobe mit Variante: liest das Texel (x, y) der Textur `tex` in der Variante `v` des Stoffes `id`
  * (Lage, Versatz, Maßstab, Farbe) und legt die drei Kanäle in `PROBE`. Spiegelung und Drehung lassen die
- * Kachel nahtlos, weil Breite und Höhe gleich sind und die Maske umbricht.
+ * Kachel nahtlos, weil Breite und Höhe gleich sind und die Maske umbricht. `spiegel`: Textur mit Kachelnaht wird gespiegelt gekachelt.
  */
 const PROBE = new Float64Array(3);
-function probe(tex, ganz, farbe, id, v, x, y) {
+function probe(tex, ganz, farbe, id, v, x, y, spiegel) {
   const o = (id * VARIANTEN_MAX + v) * 4;
   const lage = ganz[o];
   const sc = ganz[o + 3];
@@ -59,6 +61,11 @@ function probe(tex, ganz, farbe, id, v, x, y) {
   if (lage & 4) { const t = u; u = w; w = t; }
   if (lage & 1) u = ~u;
   if (lage & 2) w = ~w;
+  if (spiegel) {
+    // Nicht nahtlose Textur: gespiegelt kacheln (Periode 2 × Kantenlänge), Kachelkanten sind dann stetig.
+    u &= TEX_MASKE2; if (u > TEX_MASKE) u = TEX_MASKE2 - u;
+    w &= TEX_MASKE2; if (w > TEX_MASKE) w = TEX_MASKE2 - w;
+  }
   const ti = (((w & TEX_MASKE) << 9) | (u & TEX_MASKE)) * 4;
   const f = (id * VARIANTEN_MAX + v) * 3;
   PROBE[0] = tex[ti] * farbe[f];
@@ -113,6 +120,7 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
   const texPixel = new Array(STOFFE.length).fill(null);
   const texMittel = new Float64Array(STOFFE.length * 3);
   const texFarbe = new Uint8Array(STOFFE.length);
+  const texSpiegel = new Uint8Array(STOFFE.length);
   let erdeTextur = false;
   /*
    * LADEZEIT: Nur Stoffe, die auf DIESER Karte vorkommen, fragen ihre Textur an. `stoffTextur`
@@ -129,6 +137,7 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
     const t = stoffTextur(STOFF_TEXTUR[STOFFE[id]?.key]);
     if (!t) continue;
     texPixel[id] = t.rgba;
+    if (t.spiegel) texSpiegel[id] = 1;
     if (id >= ERSTER_BIOM_STOFF) texFarbe[id] = 1;
     for (let c = 0; c < 3; c += 1) texMittel[id * 3 + c] = 1 / t.mittel[c];
     if (id === 0) erdeTextur = true;
@@ -143,9 +152,11 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
   const zeilenMax = zeilen - 1;
 
   /*
-   * Varianten (reine Optik, siehe stoffVarianten.js): Blockraster aus 128-px-Blöcken mit glatt verschobenen
-   * Grenzen (`gu` je Zeile, `gv` je Spalte) und weicher Überblendung zum Nachbarblock im Band `NAHT_BAND`.
-   * Die Wahl je (Stoff, Block) liegt in lazy gefüllten Tabellen.
+   * Varianten (reine Optik, siehe stoffVarianten.js): Blockraster aus 128-px-Blöcken. Die Blockgrenzen verlaufen
+   * organisch: Die Weltposition wird vor der Blockwahl um ein 2D-Rauschen (`wuX`/`wuY`, Stützstellen alle 8 px,
+   * bilinear) verschoben. Am Blockrand (`NAHT_BAND`) übernimmt ein Teil der Pixel nach Zufallsschwelle die
+   * Variante des Nachbarblocks. Je Pixel wird genau EINE Variante gelesen: Überblenden zweier Varianten zeigte
+   * Rissmuster doppelt (Ghosting) und kostete im Band bis zu vier Texturproben.
    */
   const { ganz, farbe: vFarbe } = variantenTabellen();
   const blSpalten = Math.ceil(breite / BLOCK_PX) + 5;
@@ -157,10 +168,22 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
     const i = (by + 2) * blSpalten + bx + 2;
     return t[i] === 255 ? (t[i] = waehleVariante(seed, id, bx, by)) : t[i];
   };
-  const gu = new Int16Array(hoehe);
-  const gv = new Int16Array(breite);
-  for (let y = 0; y < hoehe; y += 1) gu[y] = Math.round((rauschen1(y / 40, seed + 421) - 0.5) * 2 * GRENZ_VERSATZ);
-  for (let x = 0; x < breite; x += 1) gv[x] = Math.round((rauschen1(x / 40, seed + 422) - 0.5) * 2 * GRENZ_VERSATZ);
+  const GS = 8;
+  const gb = Math.ceil(breite / GS) + 2;
+  const gh = Math.ceil(hoehe / GS) + 2;
+  const wuX = new Float32Array(gb * gh);
+  const wuY = new Float32Array(gb * gh);
+  for (let j = 0; j < gh; j += 1) {
+    for (let i = 0; i < gb; i += 1) {
+      const px = i * GS; const py = j * GS;
+      wuX[j * gb + i] = ((glatt(seed + 421, px, py, 56, 56) - 0.5) * 2.8 + (glatt(seed + 423, px, py, 20, 20) - 0.5) * 1.0) * GRENZ_VERSATZ;
+      wuY[j * gb + i] = ((glatt(seed + 422, px, py, 56, 56) - 0.5) * 2.8 + (glatt(seed + 424, px, py, 20, 20) - 0.5) * 1.0) * GRENZ_VERSATZ;
+    }
+  }
+  const zeileX = new Float32Array(gb);
+  const zeileY = new Float32Array(gb);
+  const fxTab = new Float32Array(breite);
+  for (let x = 0; x < breite; x += 1) fxTab[x] = (x & 7) / 8;
   const bandGewicht = new Float32Array(BLOCK_PX);
   const bandRichtung = new Int8Array(BLOCK_PX);
   for (let f = 0; f < BLOCK_PX; f += 1) {
@@ -171,6 +194,7 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
   }
   const BLOCK_MASKE = BLOCK_PX - 1;
   const BLOCK_SHIFT = Math.log2(BLOCK_PX);
+  const wuSalz = Math.imul(seed | 0, 0x45d9f3b) ^ 0x1b873593;
   let p0 = 0; let p1 = 0; let p2 = 0;
 
   for (let y = 0; y < hoehe; y += 1) {
@@ -181,6 +205,16 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
     if (!belegt) continue;
     const zeile = y * breite;
     const versatzY = wy[y];
+    // Verschiebung der Blockgrenzen: in y bilinear zwischen den Stützzeilen, in x je Pixel weiter (fxTab).
+    {
+      const gj = y >> 3;
+      const fy = (y & 7) / 8;
+      const k0 = gj * gb;
+      for (let i = 0; i < gb; i += 1) {
+        zeileX[i] = wuX[k0 + i] + (wuX[k0 + gb + i] - wuX[k0 + i]) * fy;
+        zeileY[i] = wuY[k0 + i] + (wuY[k0 + gb + i] - wuY[k0 + i]) * fy;
+      }
+    }
     for (let x = 0; x < breite; x += 1) {
       if (!bitmap[zeile + x]) continue;
       const gx0 = (x + versatzY) >> 3;
@@ -191,39 +225,26 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
       const o = (zeile + x) * 4;
       const tex = texPixel[id];
       if (tex) {
-        // Variante: Block der (verschobenen) Weltposition, im Randband weich zum Nachbarblock überblendet.
-        const qx = x + gu[y];
-        const qy = y + gv[x];
-        const bx = qx >> BLOCK_SHIFT;
-        const by = qy >> BLOCK_SHIFT;
+        // Variante: Block der (organisch verschobenen) Weltposition; im Randband nach Zufallsschwelle der Nachbarblock.
+        const fxk = fxTab[x];
+        const gi = x >> 3;
+        const qx = x + ((zeileX[gi] + (zeileX[gi + 1] - zeileX[gi]) * fxk) | 0);
+        const qy = y + ((zeileY[gi] + (zeileY[gi + 1] - zeileY[gi]) * fxk) | 0);
+        let bx = qx >> BLOCK_SHIFT;
+        let by = qy >> BLOCK_SHIFT;
         const ax = qx & BLOCK_MASKE;
         const ay = qy & BLOCK_MASKE;
         const wxn = bandGewicht[ax];
         const wyn = bandGewicht[ay];
-        probe(tex, ganz, vFarbe, id, wahl(id, bx, by), x, y);
-        if (wxn === 0 && wyn === 0) {
-          p0 = PROBE[0]; p1 = PROBE[1]; p2 = PROBE[2];
-        } else {
-          const wa = (1 - wxn) * (1 - wyn);
-          p0 = PROBE[0] * wa; p1 = PROBE[1] * wa; p2 = PROBE[2] * wa;
-          const nx = bx + bandRichtung[ax];
-          const ny = by + bandRichtung[ay];
-          if (wxn > 0) {
-            const wb = wxn * (1 - wyn);
-            probe(tex, ganz, vFarbe, id, wahl(id, nx, by), x, y);
-            p0 += PROBE[0] * wb; p1 += PROBE[1] * wb; p2 += PROBE[2] * wb;
-          }
-          if (wyn > 0) {
-            const wc = (1 - wxn) * wyn;
-            probe(tex, ganz, vFarbe, id, wahl(id, bx, ny), x, y);
-            p0 += PROBE[0] * wc; p1 += PROBE[1] * wc; p2 += PROBE[2] * wc;
-            if (wxn > 0) {
-              const wd = wxn * wyn;
-              probe(tex, ganz, vFarbe, id, wahl(id, nx, ny), x, y);
-              p0 += PROBE[0] * wd; p1 += PROBE[1] * wd; p2 += PROBE[2] * wd;
-            }
-          }
+        if (wxn > 0 || wyn > 0) {
+          let hz = Math.imul(x, 0x27d4eb2d) ^ Math.imul(y, 0x165667b1) ^ wuSalz;
+          hz = Math.imul(hz ^ (hz >>> 15), 0x2c1b3c6d);
+          const r = ((hz ^ (hz >>> 12)) >>> 0) / 4294967296;
+          if (r < wxn) bx += bandRichtung[ax];
+          else if (r < wxn + wyn) by += bandRichtung[ay];
         }
+        probe(tex, ganz, vFarbe, id, wahl(id, bx, by), x, y, texSpiegel[id]);
+        p0 = PROBE[0]; p1 = PROBE[1]; p2 = PROBE[2];
       }
       if (id === 0) {
         // Erde: Grundton des Geländes bleibt, nur das Texturdetail moduliert die Helligkeit.

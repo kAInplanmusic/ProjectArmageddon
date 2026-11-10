@@ -10,7 +10,7 @@ import {
 } from '../src/client/stoffVarianten.js';
 import { tinteStoffe } from '../src/client/stoffOptik.js';
 import {
-  STOFF_TEXTUR, TEXTUR_NAMEN, TEXTUR_GROESSE, registriereStoffTextur, leereStoffTexturen,
+  STOFF_TEXTUR, TEXTUR_NAMEN, TEXTUR_GROESSE, NAHT_SCHWELLE, nahtWert, registriereStoffTextur, leereStoffTexturen, stoffTextur,
 } from '../src/client/stoffTexturen.js';
 
 test('Jeder der 126 Stoffe hat 5, 6 oder 7 Varianten, fest aus der Kennung', () => {
@@ -143,30 +143,35 @@ test('Abtragen lässt die Varianten der übrigen Pixel stehen (an Weltkoordinate
   leereStoffTexturen();
 });
 
-test('Weiche Übergänge: keine harten Nähte zwischen Varianten, aber sichtbare Abwechslung', () => {
+/** Setzt jede angemeldete Textur auf `bild(x, y)` (Helligkeit 0..255). */
+function fuelleMit(bild) {
   leereStoffTexturen();
-  // Glatte, nahtlose Textur: Sprünge im Bild können nur von Variantenwechseln kommen.
   for (const n of TEXTUR_NAMEN) {
     const px = new Uint8ClampedArray(TEXTUR_GROESSE * TEXTUR_GROESSE * 4);
     for (let i = 0; i < px.length; i += 4) {
-      const p = i >> 2;
-      const x = p & 511;
-      const y = p >> 9;
-      const v = 128 + 70 * Math.sin((2 * Math.PI * x) / 512) * Math.cos((2 * Math.PI * (y + 100)) / 512) + 30 * Math.sin((2 * Math.PI * y) / 256);
+      const v = bild((i >> 2) & 511, (i >> 2) >> 9);
       px[i] = v; px[i + 1] = v; px[i + 2] = v; px[i + 3] = 255;
     }
     registriereStoffTextur(n, px);
   }
+}
+
+test('Blockgrenzen: Sprünge nur im schmalen Randband, nirgends eine durchgehende Naht', () => {
+  // Glatte, nahtlose Textur: Sprünge im Bild können nur von Variantenwechseln kommen.
+  fuelleMit((x, y) => 128 + 70 * Math.sin((2 * Math.PI * x) / 512) * Math.cos((2 * Math.PI * (y + 100)) / 512) + 30 * Math.sin((2 * Math.PI * y) / 256));
   const stoff = STOFFE.findIndex((s) => s.key === 'kristall' && STOFF_TEXTUR[s.key]);
   const d = faerbe(stoff, 5);
-  let maxSprung = 0;
+  let grosse = 0;
+  let paare = 0;
+  const spalte = new Float64Array(B); // große Sprünge je Spalte: eine gerade Naht häufte sie in wenigen Spalten
   for (let y = 0; y < H; y += 1) {
-    for (let x = 1; x < B; x += 1) maxSprung = Math.max(maxSprung, Math.abs(d[(y * B + x) * 4] - d[(y * B + x - 1) * 4]));
+    for (let x = 1; x < B; x += 1) {
+      paare += 1;
+      if (Math.abs(d[(y * B + x) * 4] - d[(y * B + x - 1) * 4]) > 25) { grosse += 1; spalte[x] += 1; }
+    }
   }
-  for (let y = 1; y < H; y += 1) {
-    for (let x = 0; x < B; x += 1) maxSprung = Math.max(maxSprung, Math.abs(d[(y * B + x) * 4] - d[((y - 1) * B + x) * 4]));
-  }
-  assert.ok(maxSprung <= 25, `größter Sprung zwischen Nachbarpixeln ${maxSprung}`);
+  assert.ok(grosse / paare < 0.02, `Anteil großer Sprünge ${(100 * grosse / paare).toFixed(2)} %`);
+  assert.ok(Math.max(...spalte) < H * 0.5, `keine Spalte mit durchgehender Naht (${Math.max(...spalte)} von ${H})`);
   // Abwechslung: Die Blockmittel (BLOCK_PX) streuen deutlich.
   const mittel = [];
   for (let by = 0; by < H / BLOCK_PX; by += 1) {
@@ -179,5 +184,45 @@ test('Weiche Übergänge: keine harten Nähte zwischen Varianten, aber sichtbare
   const mw = mittel.reduce((a, b) => a + b, 0) / mittel.length;
   const streu = Math.sqrt(mittel.reduce((a, b) => a + (b - mw) ** 2, 0) / mittel.length);
   assert.ok(streu > 0.5, `Blockmittel streuen (${streu.toFixed(2)})`);
+  leereStoffTexturen();
+});
+
+test('Kein Ghosting: je Pixel genau eine Variante, keine Mischwerte zweier Rissmuster', () => {
+  // Zweiwertige Textur (dunkel/hell, wie Risse auf Grund). Überblenden zweier Varianten ergäbe im Randband
+  // Zwischenwerte (doppelte, halbe Risse); mit einer Probe je Pixel bleiben die Werte in zwei Gruppen.
+  fuelleMit((x, y) => (((x >> 3) + (y >> 3)) % 5 === 0 ? 220 : 40));
+  const stoff = STOFFE.findIndex((s) => s.key === 'risszone' && STOFF_TEXTUR[s.key]);
+  assert.ok(stoff > 0);
+  const d = faerbe(stoff, 9);
+  const werte = [];
+  for (let i = 0; i < d.length; i += 4) werte.push(d[i]);
+  const sortiert = [...werte].sort((a, b) => a - b);
+  const lo = sortiert[Math.floor(sortiert.length * 0.05)];
+  const hi = sortiert[Math.floor(sortiert.length * 0.95)];
+  assert.ok(hi - lo > 30, `beide Gruppen unterscheidbar (${lo}..${hi})`);
+  let mitte = 0;
+  for (const v of werte) if (v > lo + 0.35 * (hi - lo) && v < lo + 0.65 * (hi - lo)) mitte += 1;
+  assert.ok(mitte / werte.length < 0.002, `Anteil Mischwerte ${(100 * mitte / werte.length).toFixed(2)} %`);
+  leereStoffTexturen();
+});
+
+test('Texturen mit Kachelnaht werden gespiegelt gekachelt, nahtlose nicht', () => {
+  leereStoffTexturen();
+  const naht = new Uint8ClampedArray(TEXTUR_GROESSE * TEXTUR_GROESSE * 4);
+  const glatt = new Uint8ClampedArray(TEXTUR_GROESSE * TEXTUR_GROESSE * 4);
+  for (let i = 0; i < naht.length; i += 4) {
+    const x = (i >> 2) & 511;
+    const y = (i >> 2) >> 9;
+    const v = 128 + 60 * Math.sin((2 * Math.PI * x) / 512 * 3) + 20 * Math.cos((2 * Math.PI * y) / 512 * 2);
+    glatt[i] = v; glatt[i + 1] = v; glatt[i + 2] = v; glatt[i + 3] = 255;
+    const w = (x * 200) / 511 + (((x >> 4) + (y >> 4)) & 1) * 15; // läuft von dunkel nach hell: harter Sprung an der Kante
+    naht[i] = w; naht[i + 1] = w; naht[i + 2] = w; naht[i + 3] = 255;
+  }
+  assert.ok(nahtWert(glatt) < NAHT_SCHWELLE, `glatt: ${nahtWert(glatt)}`);
+  assert.ok(nahtWert(naht) > NAHT_SCHWELLE, `Naht: ${nahtWert(naht)}`);
+  registriereStoffTextur('glatt-test', glatt);
+  registriereStoffTextur('naht-test', naht);
+  assert.equal(stoffTextur('glatt-test').spiegel, false);
+  assert.equal(stoffTextur('naht-test').spiegel, true);
   leereStoffTexturen();
 });

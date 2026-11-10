@@ -36,6 +36,9 @@ const STOFF_TEXTUR_BASIS = {
   beton: 'beton',
 };
 
+/** Dateinamen der Basisstoff-Texturen (`assets/stoff-texturen/*.jpg`); nur diese Namen gewinnen gegen gleichnamige neue Texturen. */
+export const BASIS_TEXTUREN = Object.freeze([...new Set(Object.values(STOFF_TEXTUR_BASIS))]);
+
 /**
  * Dazu die Biom-Materialien: Der Katalog nennt je Stoff seine Textur (`textur`, Dateiname in
  * `assets/stoff-texturen-neu/`); Basisstoffe behalten ihre feste Zuordnung oben.
@@ -61,8 +64,48 @@ export function registriereStoffTextur(name, rgba) {
   let r = 0; let g = 0; let b = 0;
   for (let i = 0; i < rgba.length; i += 4) { r += rgba[i]; g += rgba[i + 1]; b += rgba[i + 2]; }
   const mittel = [Math.max(1, r / n), Math.max(1, g / n), Math.max(1, b / n)];
-  geladen.set(name, { rgba, mittel });
+  const naht = nahtWert(rgba);
+  geladen.set(name, { rgba, mittel, naht, spiegel: naht > NAHT_SCHWELLE || SPIEGEL_IMMER.has(name) });
   return true;
+}
+
+/** Fenster (Pixel) entlang der Kachelkante, in denen die Naht einzeln bewertet wird: Niete und Plattenkanten sind örtlich. */
+const NAHT_FENSTER = 32;
+/**
+ * Ab diesem Nahtwert gilt eine Textur als nicht nahtlos und wird gespiegelt gekachelt (`stoffOptik`).
+ * Gemessen an den 100 ausgelieferten Texturen (nach N-28 liegen die Kanten alle unter 4,5 außer den gewollten Fugen): darüber liegen die Fugenmuster
+ * Keramik, Kristall, Metall, Eisader, Glas, Leuchtalgen, Tempelstein; sie werden gespiegelt gekachelt.
+ */
+export const NAHT_SCHWELLE = 6;
+/**
+ * Texturen mit örtlicher Naht, die der Nahtwert nicht fängt (Sichtprüfung am Kachelbild). Leer: Rostmetall hatte Niete und
+ * Plattenstumpf an der Kachelkante, sie sind aus der Bilddatei entfernt (2026-11-10), Spiegeln war dafür nicht nötig.
+ */
+const SPIEGEL_IMMER = new Set();
+
+/**
+ * Nahtwert einer Textur: Sprung der Helligkeit über die Kachelkante (rechts an links, unten an oben) im Verhältnis zum
+ * Sprung zwischen Nachbarpixeln im Inneren, im schlechtesten Fenster von `NAHT_FENSTER` Pixeln. Nahtlose Texturen
+ * liegen bei etwa 1 bis 2, eine abgeschnittene Plattenkante oder ein halber Niet weit darüber.
+ * @param {Uint8ClampedArray} rgba - TEXTUR_GROESSE² Pixel
+ * @returns {number}
+ */
+export function nahtWert(rgba) {
+  const n = TEXTUR_GROESSE;
+  const lum = (i) => 0.2126 * rgba[i * 4] + 0.7152 * rgba[i * 4 + 1] + 0.0722 * rgba[i * 4 + 2];
+  let schlecht = 0;
+  for (let achse = 0; achse < 2; achse += 1) {
+    const at = (k, j) => (achse === 0 ? k * n + j : j * n + k); // k = Zeile/Spalte entlang der Kante, j = Lage quer dazu
+    let innen = 0;
+    for (let k = 0; k < n; k += 1) for (let j = 1; j < n; j += 1) innen += Math.abs(lum(at(k, j)) - lum(at(k, j - 1)));
+    const innenMittel = innen / (n * (n - 1)) + 1;
+    for (let k0 = 0; k0 < n; k0 += NAHT_FENSTER) {
+      let sprung = 0;
+      for (let k = k0; k < k0 + NAHT_FENSTER; k += 1) sprung += Math.abs(lum(at(k, n - 1)) - lum(at(k, 0)));
+      schlecht = Math.max(schlecht, sprung / NAHT_FENSTER / innenMittel);
+    }
+  }
+  return schlecht;
 }
 
 /** Zahl der geladenen Texturen (Renderer: Gelände nachfärben, wenn beim Aufbau welche fehlten). */
