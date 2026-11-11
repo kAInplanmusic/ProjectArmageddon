@@ -27,6 +27,7 @@ Die Skripte dazu liegen in `scripts/betrieb/`:
 | `scripts/betrieb/snapshot-einrichten.sh` | einmalige Einrichtung der Sicherung auf dem Knoten (prüft das Hetzner-Token, schreibt `betrieb.env`) |
 | `scripts/betrieb/abbild-lokal.sh` | **auf deinem Rechner:** Server herunterfahren, Hetzner-Abbild, alte löschen, optional Server löschen — das Token verlässt deinen Rechner nie |
 | `scripts/betrieb/server-aus-abbild.sh` | **auf deinem Rechner:** neuen Server aus dem neuesten Abbild erstellen |
+| `scripts/betrieb/selbst-abbild-loeschen.sh`, `scripts/betrieb/server-hochfahren.sh` | Abruf-Betrieb: Idle-Bremse (15 min) → Abbild prüfen → Server löscht sich selbst; Start/Status/Not-aus über die Netlify-Seite (`docs/zugang-www.md`) oder `server-hochfahren.yml` |
 | `scripts/betrieb/token-setzen.sh` | legt das Hetzner-Token nur im Arbeitsspeicher des Servers ab (nie auf der Platte) |
 | `scripts/betrieb/snapshot.sh` | Sicherung bei jedem Stopp (Archiv, optional Hetzner-Abbild); behält die neuesten 3 — `docs/betrieb.md` Abschnitt 8 |
 | `scripts/betrieb/sichern.sh` / `wiederherstellen.sh` | nur der Spielstand (`PA_STATE_PATH`): atomar sichern mit Aufbewahrung (Vorgabe 10) und zurückspielen — `docs/deploy-plan.md` Abschnitt 9 |
