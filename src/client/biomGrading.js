@@ -9,7 +9,8 @@
  *  - schlackeschmiede: aufgehellte, warme Schlacke mit glühenden Lavaadern (heller nach unten, zur Schmelze hin);
  *  - kristallarchipel: eisige Facetten (Dreiecke mit Kantenlicht) statt fleckiger Wand;
  *  - tempelstadt: warmer Sandstein ohne Mooskleckse, dazu Zierfriese (goldenes Zickzack zwischen Fugen);
- *  - tiefsee: kaltes Blau, biolumineszente Punkte, Dunkelwerden mit der Tiefe;
+ *  - tiefsee: flüssigkeitsähnliches Wasser-Gel statt blauem Fels (halbtransparent anmutender Tiefenverlauf, Strömungs-Kaustik,
+ *    heller Meniskus-Rand an jeder Kante, Blasen, biolumineszente Adern, Trübung mit der Tiefe), dunkles Wasser in den Höhlen;
  *  - dimensionsriss: nur leicht (Violett bleibt, Kontrast etwas höher);
  *  - kristallwald („Fantasywald“): dunkles, bemoostes Holz in Grün/Blau-Grün, Rindenmaserung, violett-türkise Leuchtflecken.
  *
@@ -22,7 +23,7 @@ export const HOEHLEN_FUELLUNG = Object.freeze({
   schlackeschmiede: Object.freeze({ farbe: [34, 20, 18], deckkraft: 225 }),
   kristallarchipel: Object.freeze({ farbe: [22, 52, 84], deckkraft: 190 }),
   tempelstadt: Object.freeze({ farbe: [40, 28, 24], deckkraft: 215 }),
-  tiefsee: Object.freeze({ farbe: [6, 26, 46], deckkraft: 215 }),
+  tiefsee: Object.freeze({ farbe: [3, 16, 34], deckkraft: 228 }),
   kristallwald: Object.freeze({ farbe: [14, 22, 34], deckkraft: 220 }),
 });
 
@@ -61,6 +62,141 @@ function facette(seed, x, y, groesse) {
   return { hell, kante: kante < 0.035 ? 1 - kante / 0.035 : 0 };
 }
 
+
+/** Weiches Gitterrauschen mit vorberechneten Gitterwerten und Hermite-Glättung (schnell, ohne Kanten); Rückgabe: Abtastfunktion (x, y) -> [0, 1]. */
+function gitter(seed, breite, hoehe, s) {
+  const nx = Math.ceil(breite / s) + 3; const ny = Math.ceil(hoehe / s) + 3;
+  const g = new Float32Array(nx * ny);
+  for (let iy = 0; iy < ny; iy += 1) for (let ix = 0; ix < nx; ix += 1) g[iy * nx + ix] = hash2(ix, iy, seed);
+  const mx = nx - 2.001; const my = ny - 2.001;
+  return (x, y) => {
+    let gx = x / s; let gy = y / s;
+    gx = gx < 0 ? 0 : gx > mx ? mx : gx; gy = gy < 0 ? 0 : gy > my ? my : gy;
+    const ix = gx | 0; const iy = gy | 0;
+    let fx = gx - ix; let fy = gy - iy;
+    fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+    const i = iy * nx + ix;
+    const a = g[i]; const b = g[i + 1]; const c = g[i + nx]; const e = g[i + nx + 1];
+    return a + (b - a) * fx + (c - a) * fy + (a - b - c + e) * fx * fy;
+  };
+}
+
+/** Abstand jedes festen Pixels zur nächsten Luft in halben Pixeln (Chamfer 2/3, gedeckelt bei 255); Luft = 0. */
+function randAbstand(bitmap, breite, hoehe) {
+  const dist = new Uint8Array(breite * hoehe);
+  for (let i = 0; i < dist.length; i += 1) dist[i] = bitmap[i] ? 255 : 0;
+  for (let y = 0; y < hoehe; y += 1) {
+    for (let x = 0; x < breite; x += 1) {
+      const i = y * breite + x; let v = dist[i];
+      if (!v) continue;
+      if (x === 0 || y === 0) { v = 3; } else {
+        v = Math.min(v, dist[i - 1] + 2, dist[i - breite] + 2, dist[i - breite - 1] + 3, x + 1 < breite ? dist[i - breite + 1] + 3 : 255);
+      }
+      dist[i] = v > 255 ? 255 : v;
+    }
+  }
+  for (let y = hoehe - 1; y >= 0; y -= 1) {
+    for (let x = breite - 1; x >= 0; x -= 1) {
+      const i = y * breite + x; let v = dist[i];
+      if (!v) continue;
+      if (x === breite - 1 || y === hoehe - 1) { v = Math.min(v, 3); } else {
+        v = Math.min(v, dist[i + 1] + 2, dist[i + breite] + 2, dist[i + breite + 1] + 3, x > 0 ? dist[i + breite - 1] + 3 : 255);
+      }
+      dist[i] = v > 255 ? 255 : v;
+    }
+  }
+  return dist;
+}
+
+/** Wasserfarbe nach Tiefe t in [0, 1]: oben türkis-durchscheinend, unten fast schwarzblau. */
+function wasserFarbe(t) {
+  const a = [30, 118, 148]; const m = [12, 58, 98]; const u = [3, 16, 40];
+  const w = t < 0.5 ? t / 0.5 : (t - 0.5) / 0.5; const p = t < 0.5 ? a : m; const q = t < 0.5 ? m : u;
+  return [p[0] + (q[0] - p[0]) * w, p[1] + (q[1] - p[1]) * w, p[2] + (q[2] - p[2]) * w];
+}
+
+/**
+ * Tiefsee-Gelände als Wasser-Gel: statt Fels ein tiefenabhängiger Farbverlauf mit weicher Strömungs-Kaustik,
+ * Blasen, biolumineszenten Adern und einem hellen Meniskus-Rand an jeder Kante (Lesbarkeit der Kontur).
+ * Rein statisch (nur Weltposition und Seed).
+ */
+function gradeTiefsee(d, bitmap, breite, hoehe, seed) {
+  const s = Math.max(1, breite / 2560);
+  const dist = randAbstand(bitmap, breite, hoehe);
+  const warpX = gitter(seed + 931, breite, hoehe, 90 * s); const warpY = gitter(seed + 932, breite, hoehe, 90 * s);
+  const stroem1 = gitter(seed + 933, breite, hoehe, 38 * s); const stroem2 = gitter(seed + 934, breite, hoehe, 24 * s);
+  const licht = gitter(seed + 935, breite, hoehe, 170 * s);
+  const ader = gitter(seed + 936, breite, hoehe, 52 * s); const haufen = gitter(seed + 937, breite, hoehe, 320 * s);
+  const plankton = gitter(seed + 938, breite, hoehe, 9 * s);
+  const BZ = Math.round(64 * s);
+  const lauf = new Int32Array(breite);
+  const bx = new Float32Array(Math.ceil(breite / BZ) + 1); const by = new Float32Array(bx.length); const br = new Float32Array(bx.length);
+  let bandNr = -1;
+  for (let y = 0; y < hoehe; y += 1) {
+    const t = y / hoehe;
+    const farbe = wasserFarbe(t);
+    const oben = (1 - t) * (1 - t);
+    const nrY = Math.floor(y / BZ);
+    if (nrY !== bandNr) {
+      bandNr = nrY;
+      for (let k = 0; k < bx.length; k += 1) {
+        const w = hash2(k, nrY, seed + 941);
+        br[k] = w < 0.4 ? (2.2 + 4.8 * hash2(k, nrY, seed + 942)) * s : 0;
+        bx[k] = k * BZ + BZ * (0.2 + 0.6 * hash2(k, nrY, seed + 943));
+        by[k] = nrY * BZ + BZ * (0.2 + 0.6 * hash2(k, nrY, seed + 944));
+      }
+    }
+    for (let x = 0; x < breite; x += 1) {
+      const idx = y * breite + x;
+      if (!bitmap[idx]) { lauf[x] = 0; continue; }
+      lauf[x] += 1;
+      const o = idx * 4;
+      if (d[o + 3] === 0) continue;
+      const lum = (0.3 * d[o] + 0.59 * d[o + 1] + 0.11 * d[o + 2]) / 160;
+      const wx = (warpX(x, y) - 0.5) * 46 * s; const wy = (warpY(x, y) - 0.5) * 46 * s;
+      const n1 = stroem1(x + wx, y + wy); const n2 = stroem2(x - wy, y + wx);
+      const weich = licht(x, y);
+      // Grundfarbe: Tiefenverlauf, leicht von der alten Helligkeit (Schichtung) und weichem Licht moduliert.
+      let k = (0.9 + 0.16 * Math.min(1.6, lum)) * (0.8 + 0.4 * weich) * (0.9 + 0.2 * n2);
+      let r = farbe[0] * k; let gr = farbe[1] * k; let b = farbe[2] * k;
+      // Kaustik: feines Netz heller Linien, nach unten ausklingend.
+      const c = Math.abs(n1 + n2 - 1);
+      if (c < 0.2) { const f = (1 - c / 0.2); const f2 = f * f * f * (0.2 + 0.8 * oben) * 0.5; r += 70 * f2; gr += 175 * f2; b += 190 * f2; }
+      // Biolumineszente Adern in Gruppen, nach unten kräftiger.
+      const av = Math.abs(ader(x + wy, y - wx) - 0.5) * 2;
+      const hf = haufen(x, y); const stark = (0.25 + 0.75 * t) * Math.max(0, Math.min(1, (hf - 0.5) / 0.2));
+      if (stark > 0 && av < 0.04) { const f = 1 - av / 0.04; const f2 = f * f * Math.min(1, stark * 1.5); r += 20 * f2; gr += 235 * f2; b += 180 * f2; } else if (stark > 0 && av < 0.12) { const f = (1 - (av - 0.04) / 0.08) * stark * 0.3; gr += 90 * f; b += 70 * f; }
+      const pk = plankton(x, y); if (pk > 0.93) { const f = (pk - 0.93) / 0.07 * 0.8; gr += 190 * f; b += 150 * f; r += 20 * f; }
+      // Blasen: heller Ring, aufgehellter Innenraum, Glanzpunkt.
+      const kz = Math.floor(x / BZ);
+      for (let kk = kz - 1; kk <= kz + 1; kk += 1) {
+        if (kk < 0 || kk >= bx.length || br[kk] === 0) continue;
+        const dx = x - bx[kk]; const dy = y - by[kk]; const rad = br[kk];
+        const q2 = dx * dx + dy * dy;
+        if (q2 > (rad + 1.6) * (rad + 1.6)) continue;
+        const dd = Math.sqrt(q2);
+        if (dd > rad - 1.1) { const f = Math.max(0, 1 - Math.abs(dd - rad) / 1.5) * 0.9; r += 90 * f; gr += 190 * f; b += 200 * f; } else { r += 8; gr += 28; b += 36; }
+        if (dx < -rad * 0.2 && dy < -rad * 0.2 && dx > -rad * 0.65 && dy > -rad * 0.65 && dd < rad * 0.7) { r += 100; gr += 120; b += 120; }
+      }
+      // Trübung mit der Tiefe: Richtung dunkles Blau, nie unter einen Mindestwert.
+      const trueb = 0.18 * t;
+      r += (4 - r) * trueb; gr += (22 - gr) * trueb; b += (50 - b) * trueb;
+      // Meniskus-Rand: dünne helle Linie direkt an der Kante, weicher Schein nach innen (oben stärker, innen flacher).
+      const e = dist[idx] / 2 / s;
+      if (e < 12) {
+        const oberkante = lauf[x] < 14 * s ? 1 : 0.55;
+        const linie = e < 1.8 ? 1 - e / 1.8 : 0;
+        const schein = (1 - e / 12) * (1 - e / 12);
+        const f = Math.min(1, linie * 0.95 + schein * 0.5) * oberkante;
+        r += (175 - r) * f * 0.8 + 18 * schein; gr += (238 - gr) * f * 0.8 + 70 * schein * oberkante; b += (250 - b) * f * 0.8 + 76 * schein * oberkante;
+      }
+      d[o] = r < 0 ? 0 : r > 255 ? 255 : r;
+      d[o + 1] = gr < 0 ? 0 : gr > 255 ? 255 : gr;
+      d[o + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+    }
+  }
+}
+
 /**
  * Wendet das Grading des Bioms auf die gefärbten Geländepixel an.
  *
@@ -75,6 +211,7 @@ function facette(seed, x, y, groesse) {
 export function gradeBiom(d, bitmap, breite, hoehe, biom, seed = 0) {
   const g = GRUND[biom];
   if (!g) return false;
+  if (biom === 'tiefsee') { gradeTiefsee(d, bitmap, breite, hoehe, seed); return true; }
   const [mr, mg, mb] = g.mul; const [ar, ag, ab] = g.add;
   for (let y = 0; y < hoehe; y += 1) {
     const tiefe = y / hoehe;
@@ -133,13 +270,6 @@ export function gradeBiom(d, bitmap, breite, hoehe, biom, seed = 0) {
               else { r *= 0.86; gr *= 0.84; b *= 0.82; }
             }
           }
-          break;
-        }
-        case 'tiefsee': {
-          const dunkler = 1 - 0.42 * tiefe;
-          r *= dunkler; gr *= dunkler; b *= dunkler;
-          const punkt = glatt(seed + 931, x, y, 11);
-          if (punkt > 0.9) { const t = (punkt - 0.9) / 0.1; r += 20 * t; gr += 190 * t; b += 170 * t; }
           break;
         }
         case 'kristallwald': {

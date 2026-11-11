@@ -60,3 +60,32 @@ test('Fantasywald (Kennung kristallwald): Name, Kulisse, Pflanzen, Höhlenfüllu
   assert.ok(!k.pflanzen.arten.includes('kristall'));
   assert.ok(HOEHLEN_FUELLUNG.kristallwald);
 });
+
+test('Tiefsee: Wasser-Gel statt Fels (Verlauf, heller Meniskus-Rand, Blasen), Maske und Deckkraft unverändert, deterministisch', () => {
+  // Fester Block mit Luft links und oben: Kantenpixel müssen deutlich heller sein als das Innere (Kontur lesbar).
+  const bitmap = new Uint8Array(B * H);
+  for (let y = 40; y < H; y += 1) for (let x = 40; x < B; x += 1) bitmap[y * B + x] = 1;
+  const neu = () => { const d = new Uint8ClampedArray(B * H * 4); for (let i = 0; i < B * H; i += 1) { d[i * 4] = 120; d[i * 4 + 1] = 110; d[i * 4 + 2] = 100; d[i * 4 + 3] = bitmap[i] ? 255 : 0; } return d; };
+  const a = neu(); const b = neu(); const vorher = Uint8Array.from(bitmap);
+  assert.equal(gradeBiom(a, bitmap, B, H, 'tiefsee', 7), true);
+  gradeBiom(b, bitmap, B, H, 'tiefsee', 7);
+  assert.deepEqual(a, b);
+  assert.deepEqual(bitmap, vorher);
+  for (let i = 0; i < B * H; i += 1) assert.equal(a[i * 4 + 3], bitmap[i] ? 255 : 0);
+  const lum = (x, y) => { const o = (y * B + x) * 4; return 0.3 * a[o] + 0.59 * a[o + 1] + 0.11 * a[o + 2]; };
+  let rand = 0; let innen = 0; let n = 0;
+  for (let x = 60; x < 200; x += 1) { rand += lum(x, 41); innen += lum(x, 120); n += 1; }
+  assert.ok(rand / n > innen / n + 40, `Meniskus-Rand deutlich heller als das Innere (${Math.round(rand / n)} vs ${Math.round(innen / n)})`);
+  // Blau/Türkis-Wasser: Blau dominiert Rot überall im Inneren; nach unten dunkler (Trübung).
+  let rotZuBlau = 0;
+  for (let x = 60; x < 200; x += 1) { const o = (120 * B + x) * 4; if (a[o + 2] > a[o]) rotZuBlau += 1; }
+  assert.equal(rotZuBlau, 140);
+  let oben = 0; let unten = 0;
+  for (let x = 60; x < 200; x += 1) { oben += lum(x, 60); unten += lum(x, H - 6); }
+  assert.ok(unten < oben, 'Tiefenverlauf: unten dunkler');
+  // Biolumineszenz/Blasen: einzelne helle Türkis-Pixel im Inneren.
+  let leucht = 0;
+  for (let y = 60; y < H - 8; y += 1) for (let x = 60; x < B - 8; x += 1) { const o = (y * B + x) * 4; if (a[o + 1] > 170 && a[o] < 120) leucht += 1; }
+  assert.ok(leucht > 8, `Leuchtpixel: ${leucht}`);
+  assert.ok(HOEHLEN_FUELLUNG.tiefsee.deckkraft >= 220, 'Höhlen: dunkles Wasser');
+});
