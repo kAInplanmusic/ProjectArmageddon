@@ -14,6 +14,7 @@
  * @module gelaendeStil
  */
 import { tinteStoffe } from './stoffOptik.js';
+import { gradeBiom, HOEHLEN_FUELLUNG } from './biomGrading.js';
 import { glatt } from './mathe.js';
 import { zeichneDetails } from './gelaendeDetails.js';
 import {
@@ -382,15 +383,19 @@ export function daempfeInnenkanten(d, bitmap, breite, hoehe, staerke = 0.82) {
   return betroffen;
 }
 
-export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 0, stoffkarte = null) {
+export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 0, stoffkarte = null, biom = null) {
   const ctx = layer.getContext('2d');
   const bild = ctx.createImageData(breite, hoehe);
   const d = bild.data;
   for (let i = 0, n = breite * hoehe; i < n; i += 1) if (bitmap[i]) d[i * 4 + 3] = 255;
   const ergebnis = faerbeGelaende(d, bitmap, breite, hoehe, palette, seed, stoffkarte);
+  // Biom-Grading der Biome 15 bis 20 (reine Optik, `biomGrading.js`).
+  if (biom) gradeBiom(d, bitmap, breite, hoehe, biom, seed);
   // Hohlräume als Räume lesbar machen (LOOK-4 Stufe 3): erst eingeschlossene Luft
   // dunkel füllen (sonst scheint der Himmel durch), dann die Fels-Kanten abdunkeln.
-  fuelleHoehlenluft(d, bitmap, breite, hoehe);
+  const fuellung = biom ? HOEHLEN_FUELLUNG[biom] : null;
+  if (fuellung) fuelleHoehlenluft(d, bitmap, breite, hoehe, fuellung.farbe, fuellung.deckkraft);
+  else fuelleHoehlenluft(d, bitmap, breite, hoehe);
   daempfeInnenkanten(d, bitmap, breite, hoehe);
   ctx.putImageData(bild, 0, 0);
   zeichneBueschel(ctx, ergebnis.liste, ergebnis.saum, seed);

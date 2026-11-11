@@ -31,7 +31,8 @@ export const SONDER_KULISSEN = Object.freeze({
   tempelstadt: Object.freeze(['tempelstadt/hell', 'tempelstadt/dunkel', 'tempelstadt/hoehle']),
   tiefsee: Object.freeze(['tiefsee/hell', 'tiefsee/dunkel', 'tiefsee/hoehle']),
   dimensionsriss: Object.freeze(['dimensionsriss/hell', 'dimensionsriss/dunkel', 'dimensionsriss/hoehle']),
-  kristallwald: Object.freeze(['kristallwald/hell', 'kristallwald/dunkel', 'kristallwald/hoehle']),
+  // Fantasywald (Biom 20): verzauberte Lichtung und leuchtende Baumriesen; das Tagbild `kristallwald/hell` (blauer Himmel) bleibt im Katalog, ist aber nicht mehr in der Wahl.
+  kristallwald: Object.freeze(['forest/fantasy_glade', 'kristallwald/dunkel', 'kristallwald/hoehle']),
 });
 
 /** Katalogfamilie für den Höhlenblick jedes klassischen Sonderbioms. */

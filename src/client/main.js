@@ -1967,7 +1967,7 @@ class Game {
     } else {
       this.setSceneryFromSeed(seed, preset, terrain.sonderbiom);
     }
-    this.renderer.stoffkarte = terrain.stoffkarte ?? null;
+    this.renderer.stoffkarte = terrain.stoffkarte ?? null; this.renderer.gelaendeBiom = terrain.sonderbiom ?? null;
     this.renderer.buildTerrainLayer(terrain.bitmap, terrain.width, terrain.height);
     this.renderer.gefuehlZuruecksetzen();
     this.hud.log(`Terrain aus Seed ${seed} rekonstruiert`, 'neutral');
@@ -3129,7 +3129,7 @@ class Game {
   }
 
   #afterWorldReady(bitmap, water) {
-    this.renderer.stoffkarte = this.match.stoffkarte ?? null;
+    this.renderer.stoffkarte = this.match.stoffkarte ?? null; this.renderer.gelaendeBiom = this.match.sonderbiom ?? null;
     this.renderer.buildTerrainLayer(bitmap, this.match.width, this.match.height);
     /*
      * Neue Karte: Alles, was sich das Gefühl gemerkt hat, gehört zur ALTEN.

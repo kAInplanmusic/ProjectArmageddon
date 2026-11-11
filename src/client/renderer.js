@@ -664,7 +664,7 @@ export class Renderer {
     layer.height = height;
 
     // Ein Zug statt Backen + Zurücklesen + Veredeln (siehe `baueGelaendeEbene`): pixelgleich, ohne Doppelarbeit.
-    baueGelaendeEbene(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0, this.stoffkarte ?? null);
+    baueGelaendeEbene(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0, this.stoffkarte ?? null, this.gelaendeBiom ?? null);
     this.terrainLayer = layer;
     this.#baePflanzen(bitmap, width, height);
     /** Bitmap und Maße für Messwerkzeuge, die den Aufbau erneut messen. */
@@ -689,7 +689,7 @@ export class Renderer {
     const layer = document.createElement('canvas');
     layer.width = q.width;
     layer.height = q.height;
-    baueGelaendeEbene(layer, q.bitmap, q.width, q.height, this.palette, this.scenery?.seed ?? 0, this.stoffkarte ?? null);
+    baueGelaendeEbene(layer, q.bitmap, q.width, q.height, this.palette, this.scenery?.seed ?? 0, this.stoffkarte ?? null, this.gelaendeBiom ?? null);
     this.terrainLayer = layer;
     this.#texturStand = anzahlStoffTexturen();
     return true;

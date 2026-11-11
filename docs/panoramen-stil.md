@@ -50,11 +50,11 @@ sind nur der klassischen Kulissenfamilie (`config/backdrops.js`) zugeordnet, nic
 | `baum_wegegabelung` | keins | open | Wiesenlandschaft mit Weg, kein Sonderbiom passt |
 | `baum_weitblick` | keins | open | Wiese mit Einzelbaum und Fernsicht |
 | `bergsee` | kristallarchipel | alpine | Klarer tuerkiser Bergsee mit Wasserflaeche; kuehle Eis-/Inselstimmung (schwach) |
-| `birke_gemaelde` | kristallwald | forest | Dunkler, nebliger Birkenwald; Uralter Wald |
+| `birke_gemaelde` | (keins, seit 2026-11-11) | forest | Dunkler, nebliger Birkenwald; Uralter Wald |
 | `feldweg_morgen` | keins | open | Felder und Feldweg |
 | `fluss_goldhaus` | surreal | fantasy | Goldener Wuerfelbau am Fluss unter Wolken, ungewoehnliche Architektur |
 | `gewitter_abendrot` | dimensionsriss | open | Violett-rosa Plasma-aehnlicher Himmel ueber dunkler Linie |
-| `halbmond_huegel` | kristallwald | forest | Dunkler bewaldeter Huegel mit Halbmond |
+| `halbmond_huegel` | (keins, seit 2026-11-11) | forest | Dunkler bewaldeter Huegel mit Halbmond |
 | `herbstbaeume_dunst` | keins | forest | Herbstbaeume im Dunst auf Wiese |
 | `herbstwiese` | keins | forest | Herbstbaeume mit tiefer Sonne |
 | `huegelweide` | keins | open | Huegelweide mit Wald, Weg |

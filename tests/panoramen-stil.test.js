@@ -28,7 +28,7 @@ test('Katalog: 32 Motive x 4 Arten, Dateien vorhanden (1920 Quelle, 1280 Laufzei
   for (const m of PANORAMEN_STIL) assert.equal(BACKDROPS_PANORAMA.filter(b => b.motiv === m.name).map(b => b.art).join(), ARTEN_PANORAMA.map(a => a.id).join());
 });
 
-test('Zuordnung stimmt mit zuordnung.json ueberein; 13 Motive ohne Sonderbiom', () => {
+test('Zuordnung stimmt mit zuordnung.json ueberein; 15 Motive ohne Sonderbiom', () => {
   assert.deepEqual(Object.keys(zuordnung).sort(), PANORAMEN_STIL.map(m => m.name).sort());
   for (const m of PANORAMEN_STIL) {
     const z = zuordnung[m.name];
@@ -38,7 +38,7 @@ test('Zuordnung stimmt mit zuordnung.json ueberein; 13 Motive ohne Sonderbiom', 
     assert.deepEqual(m.autoArten ? [...m.autoArten] : undefined, z.autoArten, m.name);
     for (const b of m.biome) assert.ok(SONDERBIOM_IDS_FASSUNG_7.includes(b), `${m.name}: ${b}`);
   }
-  assert.equal(PANORAMEN_STIL.filter(m => m.biome.length === 0).length, 13);
+  assert.equal(PANORAMEN_STIL.filter(m => m.biome.length === 0).length, 15);
 });
 
 test('Objekte: Palette der Familie, Licht, Ragnarok-Kennung, findeKulisse', () => {

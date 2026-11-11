@@ -30,12 +30,10 @@
    "grund": "Klarer tuerkiser Bergsee mit Wasserflaeche; kuehle Eis-/Inselstimmung (schwach)"
   },
   "birke_gemaelde": {
-   "biome": [
-    "kristallwald"
-   ],
+   "biome": [],
    "familie": "forest",
-   "staerke": "stark",
-   "grund": "Dunkler, nebliger Birkenwald; Uralter Wald"
+   "staerke": "keins",
+   "grund": "Dunkler, nebliger Birkenwald; Uralter Wald (seit 2026-11-11 kein Fantasywald-Motiv mehr)"
   },
   "feldweg_morgen": {
    "biome": [],
@@ -60,12 +58,10 @@
    "grund": "Violett-rosa Plasma-aehnlicher Himmel ueber dunkler Linie; hell zeigt blauen Wiesenhimmel, kein Riss (Einschaetzung 2026-11-10: nicht automatisch)"
   },
   "halbmond_huegel": {
-   "biome": [
-    "kristallwald"
-   ],
+   "biome": [],
    "familie": "forest",
-   "staerke": "schwach",
-   "grund": "Dunkler bewaldeter Huegel mit Halbmond; gruener Huegel ohne Kristallmotiv (nicht automatisch)"
+   "staerke": "keins",
+   "grund": "Dunkler bewaldeter Huegel mit Halbmond; nicht automatisch"
   },
   "herbstbaeume_dunst": {
    "biome": [],

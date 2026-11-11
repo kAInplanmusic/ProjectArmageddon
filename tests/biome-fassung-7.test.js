@@ -216,7 +216,8 @@ test('Kulissen: 24 Bilder, alle Dateien vorhanden, jede Zuordnung zeigt auf eine
   for (const id of NEU) {
     const liste = SONDER_KULISSEN[id];
     assert.ok(liste && liste.length === 3, `${id}: Kulissen`);
-    for (const k of liste) assert.ok(BACKDROPS_NEU.some(b => b.key === k), `${id}: ${k}`);
+    // Fantasywald (2026-11-11): darf zusätzlich das klassische Bild forest/fantasy_glade nutzen.
+    for (const k of liste) assert.ok(BACKDROPS_NEU.some(b => b.key === k) || (id === 'kristallwald' && klassisch.has(k)), `${id}: ${k}`);
     assert.ok(!liste.some(k => k.endsWith('/ragnarok')));
     const gesehen = new Set();
     for (let s = 1; s <= 200; s += 1) {

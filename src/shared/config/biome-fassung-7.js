@@ -123,22 +123,25 @@ export const BIOME_FASSUNG_7 = Object.freeze({
     },
     pflanzen: { dichte: 0.3, arten: ['kristall', 'pilz'] },
   },
+  // Fantasywald (Biom 20, 2026-11-11 auf Wunsch des Auftraggebers): die Kennung `kristallwald` bleibt aus technischen
+  // Gründen (Replays, Stoffrezept, Biomliste), nur Name, Beschreibung und Darstellung sind neu. Form, Wasser und Stoffe
+  // sind unverändert (Engine-Daten, siehe `docs/biome-20.md`).
   kristallwald: {
-    label: 'Versteinerter Kristallwald',
-    beschreibung: 'Uralte, versteinerte Baumriesen mit Kristallzweigen, Moos, Leuchtpilzen und einem Binnensee.',
+    label: 'Fantasywald',
+    beschreibung: 'Verzauberter Leuchtwald: bemooste dunkle Stämme, violett-türkise Leuchtpilze und Glühpflanzen, Feenlichter, Riesenfarn, leichter Nebel und ein Binnensee.',
     fraktion: 'shinobi',
     mapPreset: 'hills',
     sky: ['dawn_mist', 'crystal_glow', 'moonlit_night', 'aurora', 'clear_day'],
     water: ['shallow_lake', 'void'],
-    landmarks: ['forest_line', 'crystal_spires', 'rock_arch', 'mountain_ridge'],
-    ambient: ['fireflies', 'glimmer', 'fog_banks', 'haze', 'birds'],
-    ground: boden([84, 120, 96], [30, 46, 44]),
-    groundVarianten: [boden([84, 120, 96], [30, 46, 44]), boden([104, 128, 100], [40, 52, 44]), boden([76, 108, 118], [28, 42, 54])],
+    landmarks: ['forest_line', 'mushroom_grove', 'rock_arch', 'mountain_ridge'],
+    ambient: ['fireflies', 'spores', 'fog_banks', 'glimmer', 'haze'],
+    ground: boden([70, 118, 76], [24, 38, 46]),
+    groundVarianten: [boden([70, 118, 76], [24, 38, 46]), boden([84, 112, 96], [30, 40, 56]), boden([64, 112, 104], [22, 40, 52])],
     form: { steilheit: [0.3, 0.5], landanteil: [0.4, 0.55], wasser: [0.04, 0.16], terrassen: [0.2, 0.6], zerklueftung: [1, 1.5], hoehlung: [0.02, 0.1], lippen: [0.1, 0.4] },
     stoffe: {
       deck: [['erde', 20]], kern: 'fels',
       adern: [{ stoff: 'holz', dichte: 0.12, ab: 8, groesse: 5 }, { stoff: 'kristall', dichte: 0.14, ab: 14, groesse: 5 }, { stoff: 'pilz', dichte: 0.07, ab: 16 }],
     },
-    pflanzen: { dichte: 0.8, arten: ['kristall', 'pilz', 'farn', 'busch'] },
+    pflanzen: { dichte: 0.8, arten: ['pilz', 'farn', 'busch', 'farn', 'pilz'] },
   },
 });
