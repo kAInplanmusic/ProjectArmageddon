@@ -15,13 +15,16 @@ const FORMATE = [
 ];
 const SEEDS = ['20260921', '80', '5', '123'];
 
-async function oeffne(page, seed) {
+async function oeffne(page, seed, karte = null) {
   const fehler = [];
   page.on('pageerror', e => fehler.push(String(e)));
   await page.goto('/');
   await page.locator('#fraktion-auswahl summary').click();
   await page.locator('#cfg-fraktion-0').selectOption('pirates');
   await page.locator('#cfg-fraktion-1').selectOption('machina');
+  // Optional: Karte festnageln. Die Menü-Vorgabe ist 24:9/groß (4704×1764); die Software-Rasterung im Test
+  // braucht dort so lange je Bild, dass ein ~1,5 s langer Schuss zwischen zwei Bildern endet (frames 0).
+  if (karte) await page.evaluate(k => { document.getElementById('cfg-kartenformat').value = k.format; document.getElementById('cfg-kartengroesse').value = k.groesse; }, karte);
   await page.locator('#cfg-seed').fill(seed);
   await page.locator('#start-button').click();
   await expect(page.locator('#menu-overlay')).toBeHidden();
@@ -94,7 +97,7 @@ test.describe('Kamera: Geschossverfolgung und Bedienung', () => {
   test.use({ viewport: { width: 1280, height: 720 } });
 
   test('Das Geschoss bleibt im Bild, die Kamera verlässt die Karte nie', async ({ page }) => {
-    const fehler = await oeffne(page, '20260929');
+    const fehler = await oeffne(page, '20260929', { format: '16:9', groesse: 'mittel' });
     await ruhe(page);
     await page.evaluate(() => {
       const w = window;
