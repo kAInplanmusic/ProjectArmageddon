@@ -10,6 +10,9 @@
  * Wasser entsteht über die Karte `autonom` mit Seed 24683: Schuss (0,65 rad, Kraft 50) trifft den See.
  * Klassenfassung 2 (Standard des Servers, Scout schießt kräftiger) verschob den Schuss; Winkel und Kraft des Wasserfalls wurden dafür nachgemessen (vorher 0,9 rad, Kraft 90).
  * Waffenfassung 11 (Standard; Start-Waffe und Munition geändert) verschob den Schuss erneut: Gemessen mit der Engine über Winkel 0,3 bis 1,3 und Kraft 40 bis 100 trifft Seed 377 den See bei 0,65 rad, Kraft 50 (Nachbarwerte 0,6 und 0,7 bei Kraft 50 ebenfalls).
+ * Wind- und Bodenobjektfassung (Standard des Servers) verschoben den Schuss ein drittes Mal: Die Nachrechnung nahm bis dahin
+ * nur die Klassenfassung des Servers mit und traf Wasser, der Server (mit Wind je Zug) traf Fels. Jetzt rechnet sie mit allen
+ * Standard-Fassungen des Servers; gemessen (2026-11-11, Seed 377, Kraft 50): Wasser bei 0,75 bis 0,9 rad, gewählt 0,85.
  * Das Biom ist fest `klassisch`: Ohne diese Wahl zieht der Seed seit den Sonderbiomen oft ein anderes Gelände,
  * und der Schuss träfe nicht mehr den See. Die Messwerte werden vorab mit der Engine nachgerechnet (Abweichung = klarer Fehler, kein Rätselraten).
  */
@@ -19,6 +22,14 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { MatchController } from '../../src/engine/match.js';
 import { KLASSEN_STANDARD } from '../../src/shared/config/klassen-fassung.js';
+import { GUENTHER_FASSUNG_STANDARD } from '../../src/shared/config/guenther.js';
+import { COOKIE_STANDARD } from '../../src/shared/config/cookie.js';
+import { FEUER_STANDARD } from '../../src/shared/config/feuer.js';
+import { BEWEGUNG_STANDARD } from '../../src/shared/config/bewegung.js';
+import { BODENOBJEKTE_STANDARD } from '../../src/shared/config/bodenobjekte.js';
+import { SEIL_STANDARD } from '../../src/shared/config/seil.js';
+import { WIND_STANDARD } from '../../src/shared/config/wind.js';
+import { ZUGREGELN_STANDARD } from '../../src/shared/config/zugregeln.js';
 import {
   starteTestserver, stoppeTestserver, hakeHudLog, hudMeldungen, schneideServernachrichtenMit,
 } from './helfer/online-match.mjs';
@@ -32,13 +43,16 @@ test.beforeAll(async () => { server = await starteTestserver({ port: PORT, repoR
 test.afterAll(async () => { await stoppeTestserver(server?.process); });
 
 const FAELLE = [
-  { name: 'Wasser', seed: 377, winkel: 0.65, kraft: 50, material: 'wasser', zaehler: 'wasser' },
+  { name: 'Wasser', seed: 377, winkel: 0.85, kraft: 50, material: 'wasser', zaehler: 'wasser' },
   { name: 'Land', seed: 24681, winkel: 0.5, kraft: 30, material: 'erde', zaehler: 'explosion' },
 ];
 
 /** Rechnet den Schuss mit der Engine nach (dieselben Optionen wie die Lobby) und liefert das Material. */
 function erwartetesMaterial({ seed, winkel, kraft }) {
-  const m = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom', biom: 'klassisch', klassen: KLASSEN_STANDARD });
+  const m = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom', biom: 'klassisch',
+    // Dieselben Fassungen wie der Server (`lobbySession.js`): Wind je Zug, Bodenobjekte, Zugregeln usw. verschieben den Schuss.
+    klassen: KLASSEN_STANDARD, guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD,
+    zugregeln: ZUGREGELN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, wind: WIND_STANDARD });
   m.start();
   const id = m.activePlayerId;
   m.fire(id, winkel, kraft, m.inventory.getActiveWeaponId(id));

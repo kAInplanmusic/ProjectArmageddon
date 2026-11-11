@@ -139,7 +139,7 @@ export class KameraeffekteBedienung {
       knopf.setAttribute('aria-pressed', String(an));
       knopf.setAttribute('title', titel);
       // Nur den Text ersetzen, nicht das Zeichen davor.
-      const span = knopf.querySelector('span');
+      const span = knopf.querySelector('span:not([aria-hidden])');
       if (span) span.textContent = `${text}: ${an ? 'an' : 'aus'}`;
       else knopf.textContent = `${text}: ${an ? 'an' : 'aus'}`;
     }

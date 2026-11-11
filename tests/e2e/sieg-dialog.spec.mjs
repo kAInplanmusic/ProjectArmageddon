@@ -42,7 +42,10 @@ test('„Revanche“ startet ein neues Match auf derselben Karte', async ({ page
   expect(await page.evaluate(() => window.__PA__.game.match.seedManager.baseSeed)).toBe(4);
   // Und der Zustand ist sauber: Modus lokal, R fragt nicht ins Leere, der Abbruchknopf ist da.
   expect(await page.evaluate(() => window.__PA__.game.mode)).toBe('local');
+  // Der Abbruchknopf liegt seit 2026-11-04 im Einstellungs-Dropdown der Kopfzeile (nicht mehr offen im HUD).
+  await page.locator('#hud-menue-knopf').click();
   await expect(page.locator('#hud-abort')).toBeVisible();
+  await page.locator('#hud-menue-knopf').click();
 
   // Nach der Revanche fragt R nach einem LAUFENDEN Match — nicht nach einem Geist.
   const laeuft = await page.evaluate(() => (window.__PA__.game.match?.world.tickCount ?? 0));

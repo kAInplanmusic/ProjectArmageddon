@@ -135,8 +135,8 @@ test.describe('Hilfe-Bereich', () => {
   test('Die Kopplung und die wirkungslosen Werte werden genannt', async ({ page }) => {
     /*
      * Beide Hinweise verlangt der Entwurf ausdrücklich:
-     *  - Die Übersicht zeigt neun Kombinationen, im Match sind drei erreichbar.
-     *    Ohne Hinweis wäre sie irreführend.
+     *  - Ab Klassenfassung 3: Es gibt drei Klassen ohne Unterklassen (vor Fassung 3: neun
+     *    Kombinationen, drei erreichbar). Ohne Hinweis wäre die Übersicht irreführend.
      *  - drag/mass/Tempo liest der Motor nicht. Ohne Hinweis sähen sie wie
      *    Spielwerte aus.
      */
@@ -145,7 +145,9 @@ test.describe('Hilfe-Bereich', () => {
     const hinweis = page.locator('#hilfe-inhalt .h-hinweis');
     await expect(hinweis).toBeVisible();
     const text = await hinweis.innerText();
-    expect(text).toMatch(/drei der neun|drei von neun/i);
+    // Klassenfassung 3 (nahkampf/fernkampf/okkultist, keine Unterklassen) hat keine neun Kombinationen mehr;
+    // die Kopplung heißt jetzt „drei Klassen ohne Unterklassen“. Die ältere Formulierung gilt nur für Fassung < 3.
+    expect(text).toMatch(/drei Klassen ohne Unterklassen|drei der neun|drei von neun/i);
     expect(text).toMatch(/drag/);
   });
 

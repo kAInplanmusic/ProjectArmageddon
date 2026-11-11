@@ -223,6 +223,25 @@ test('Die gezeigte Kulisse ist die Ableitung des Kartencharakters', async ({ pag
           himmel: kulisse.szene?.himmel ?? null,
           wasser: kulisse.szene?.wasser ?? null,
           bildKey: kulisse.key,
+          // Das gemalte Bild wählt die Familie zuerst nach der Kartenart (Höhle, Insel, Schlucht, Ruinenstadt; main.js
+          // `#applyBackdrop` über `motivFamilieFuerArt`), erst dann nach dem Charakter. Die generative Szene kennt nur den Charakter.
+          erwartetBild: (await import('/src/client/sonderKulissen.js')).motivFamilieFuerArt(match.kartencharakter?.kartenart) ?? modul.biomFuerCharakter(match.kartencharakter),
+          // Familie (= Kulissenbiom) des gemalten Bildes. Seit den Panorama-Kulissen (N-35) beginnt der Schlüssel bei jeder
+          // dritten Karte nicht mehr mit dem Biom, sondern mit 'stil/' (Motiv einer Familie) oder 'foto/' (Foto je Biom).
+          bildFamilie: await (async () => {
+            const key = String(kulisse.key ?? '');
+            const [art, id] = key.split('/');
+            if (art === 'stil') {
+              const { getBackdropPanorama, PANORAMEN_STIL } = await import('/src/shared/config/backdrops-panorama.js');
+              const eintrag = getBackdropPanorama(id);
+              return eintrag ? PANORAMEN_STIL.find(m => m.name === eintrag.motiv)?.familie ?? null : null;
+            }
+            if (art === 'foto') {
+              const { FOTOS_JE_BIOM } = await import('/src/client/panoramen.js');
+              return Object.keys(FOTOS_JE_BIOM).find(b => FOTOS_JE_BIOM[b].includes(id)) ?? null;
+            }
+            return art || null;
+          })(),
         };
       });
 
@@ -237,7 +256,7 @@ test('Die gezeigte Kulisse ist die Ableitung des Kartencharakters', async ({ pag
         expect(stand.bildKey, `Seed ${seed}: Sonderbiom mit Bildkulisse`).toBeNull();
       } else {
         expect(stand.bildKey, `Seed ${seed}: kein gemaltes Bild`).toBeTruthy();
-        expect(String(stand.bildKey).split('/')[0], `Seed ${seed}: das Bild folgt nicht dem Charakter`).toBe(stand.erwartet);
+        expect(stand.bildFamilie, `Seed ${seed}: das Bild (${stand.bildKey}) folgt nicht der Karte`).toBe(stand.erwartetBild);
       }
     }
   }

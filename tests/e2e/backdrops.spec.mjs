@@ -269,11 +269,17 @@ test('Die Kulissenauswahl im Menü ist vollständig', async ({ page }) => {
     return {
       kulissen: modul.ALL_BACKDROPS.length,
       biome: modul.BACKDROP_BIOMES.length,
+      fotos: Object.keys((await import('/src/client/panoramen.js')).FOTOS).length,
     };
   });
 
-  expect(stand.optionen, 'Es fehlen Kulissen in der Auswahl').toBe(katalog.kulissen + 2);
-  expect(stand.gruppen, 'Es fehlen Biomgruppen in der Auswahl').toBe(katalog.biome);
+  /*
+   * Zusätzlich zum Katalog führt das Menü die Gruppe „Panoramafotografien" (foto/…, Einträge aus
+   * src/client/panoramen.js FOTOS). Die frühere Annahme „Katalog + 2" kannte sie nicht (201 statt 162
+   * Optionen, 17 statt 16 Gruppen); die Vollständigkeitsprüfung gilt nun für beide Quellen.
+   */
+  expect(stand.optionen, 'Es fehlen Kulissen in der Auswahl').toBe(katalog.kulissen + katalog.fotos + 2);
+  expect(stand.gruppen, 'Es fehlen Biomgruppen in der Auswahl').toBe(katalog.biome + 1);
   expect(stand.generativZuerst).toBe('generativ');
   // Die Untergrenze aus der ursprünglichen Zusage bleibt stehen.
   expect(katalog.kulissen).toBeGreaterThanOrEqual(60);
@@ -407,6 +413,8 @@ for (const breite of [1024, 1600]) {
 test('Menü reicht Kartenformat, Größenstufe und Hagel bis in die Partie durch', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
+  // Größenstufe und Format liegen im eingeklappten Bereich „Erweitert“.
+  await page.locator('#cfg-erweitert').evaluate(d => { d.open = true; });
   await page.selectOption('#cfg-kartengroesse', 'kompakt');
   await page.selectOption('#cfg-kartenformat', '9:16');
   await page.selectOption('#cfg-wetter', 'hagel');

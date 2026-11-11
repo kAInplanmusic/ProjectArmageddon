@@ -33,7 +33,10 @@ for (const [breite, hoehe] of [[390, 844], [412, 915]]) {
 
       // Nicht bedienbar: Der Startknopf liegt unter dem Hinweis, #app ist inert, ein Tipp startet nichts.
       expect(await page.evaluate(() => document.getElementById('app').inert)).toBe(true);
+      // Das Menü ist länger als ein Telefonfenster (Startknopf liegt unterhalb, y > Fensterhöhe): erst in den
+      // sichtbaren Bereich scrollen, sonst liefert elementFromPoint null und der Test prüfte nichts.
       const start = await page.locator('#start-button').evaluate(knopf => {
+        knopf.scrollIntoView({ block: 'center' });
         const r = knopf.getBoundingClientRect();
         const oben = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
         return { obenImHinweis: Boolean(oben?.closest('#dreh-hinweis')), x: r.x + r.width / 2, y: r.y + r.height / 2 };

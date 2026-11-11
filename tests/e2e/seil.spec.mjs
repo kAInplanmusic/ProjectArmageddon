@@ -48,6 +48,10 @@ async function stelleUnterDecke(page) {
     for (let x = 120; x < m.width - 120; x += 6) {
       for (let y = 40; y < m.height - 40; y += 1) {
         if (fest(x, y) || !fest(x, y + 1)) continue; // y: Luft, darunter Boden
+        // Nicht im Wasser: Das Seil löst sich dort planmäßig (Grund 'wasser', engine/seil.js). Auf den heutigen,
+        // größeren Karten (24:9/groß, Geländefassung 12) lag die erste Fundstelle am Kartenrand unter dem
+        // Wasserspiegel — das Seil hing und fiel sofort wieder ab, der Test maß dann „haengt bleibt false“.
+        if ([-60, 0, 60].some(dx => (m.waterLevelAt(x + dx, y) ?? 0) > 0)) continue;
         let frei = true;
         for (let dy = 1; dy <= 40 && frei; dy += 1) for (const dx of [-10, 0, 10]) if (fest(x + dx, y - dy)) frei = false;
         if (!frei) continue;

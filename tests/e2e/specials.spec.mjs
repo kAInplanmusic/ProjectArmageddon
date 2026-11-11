@@ -221,9 +221,11 @@ test('Das Match bleibt nach allen Effekten lauffähig', async ({ page }) => {
       }
     }
 
-    // Bis zum Spielende simulieren.
+    // Bis zum Spielende simulieren. Obergrenze nur als Netz gegen eine Endlosschleife: Mit den acht Effekten
+    // (Heilung, Schild, Rüstung …) endet dieses Match gemessen nach ~81 600 Schritten (Runde 22, Mahlstrom);
+    // die frühere Grenze 60 000 (1000 s Spielzeit) reichte dafür nicht mehr. Der Test verlangt weiterhin 'gameover'.
     let guard = 0;
-    while (match.status === 'playing' && guard < 60_000) {
+    while (match.status === 'playing' && guard < 300_000) {
       match.step();
       match.consumeEvents();
       guard += 1;
