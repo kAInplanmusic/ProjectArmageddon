@@ -539,41 +539,85 @@ function dichteGruppe(maske, rng, B, H, stat, archipel = false) {
   return Math.round(H * 0.8);
 }
 
+/** Standardläufe von `raeumeAuf`: Lufttaschen unter 9000 und Felskrümel unter 1200 (Pixel bei 2560×1440, wachsen mit der Fläche). */
+const AUFRAEUM_LAEUFE = Object.freeze([[0, 9000], [1, 1200]]);
+
 /**
  * Räumt eine Höhlenmaske auf: Kleine abgeschlossene Lufttaschen werden zu Fels, winzige freie Felskrümel zu Luft. Übrig bleiben große
  * Räume und Gänge — keine Perlenketten aus Blasen. Ein Lauf über die Maske (Flutfüllung mit eigenem Stapel, 4-Nachbarn).
  */
-function raeumeAuf(maske) {
+function raeumeAuf(maske, laeufe = AUFRAEUM_LAEUFE) {
   const B = maske.breite;
   const H = maske.hoehe;
   // Schwellen gelten für 2560×1440 und wachsen mit der Fläche.
   const flaeche = (B * H) / (2560 * 1440);
   const bm = maske.bitmap;
-  const stapel = new Int32Array(B * H);
-  // Zwei getrennte Läufe mit frischer Markierung: Das Füllen der Lufttaschen verbindet sonst Felskrümel mit dem Land,
-  // und ein veralteter Befund würde das ganze Land wegräumen.
-  for (const [art, schwelle] of [[0, 9000 * flaeche], [1, 1200 * flaeche]]) {
-    const marke = new Uint8Array(B * H);
-    for (let start = 0; start < B * H; start += 1) {
-      if (marke[start] || bm[start] !== art) continue;
-      let n = 0;
-      let oben = false;
-      let sp = 0;
-      stapel[sp++] = start;
-      marke[start] = 1;
-      while (sp > 0) {
-        const i = stapel[--sp];
+  // Zwei getrennte Läufe mit frischem Befund: Das Füllen der Lufttaschen verbindet sonst Felskrümel mit dem Land,
+  // und ein veralteter Befund würde das ganze Land wegräumen. (Ältere Fassung: Flutfüllung je Zelle; hier dieselbe Zerlegung
+  // in 4-zusammenhängende Flächen, aber über Zeilenläufe mit Union-Find — Ergebnis Bit für Bit gleich, rund zehnmal schneller.)
+  let kap = 1 << 14;
+  let vonX = new Int32Array(kap);
+  let bisX = new Int32Array(kap);
+  let wurzel = new Int32Array(kap);
+  const zeilenAnfang = new Int32Array(H + 1);
+  const finde = (i) => {
+    while (wurzel[i] !== i) { wurzel[i] = wurzel[wurzel[i]]; i = wurzel[i]; }
+    return i;
+  };
+  for (const [art, basis] of laeufe) {
+    const schwelle = basis * flaeche;
+    let n = 0;
+    for (let y = 0; y < H; y += 1) {
+      zeilenAnfang[y] = n;
+      const zeile = y * B;
+      let x = 0;
+      while (x < B) {
+        if (bm[zeile + x] !== art) { x += 1; continue; }
+        const x0 = x;
+        while (x < B && bm[zeile + x] === art) x += 1;
+        if (n === kap) {
+          kap *= 2;
+          const v2 = new Int32Array(kap); v2.set(vonX); vonX = v2;
+          const b2 = new Int32Array(kap); b2.set(bisX); bisX = b2;
+          wurzel = new Int32Array(kap);
+        }
+        vonX[n] = x0;
+        bisX[n] = x;
         n += 1;
-        const x = i % B;
-        const y = (i - x) / B;
-        if (y === 0) oben = true;
-        if (x > 0 && !marke[i - 1] && bm[i - 1] === art) { marke[i - 1] = 1; stapel[sp++] = i - 1; }
-        if (x < B - 1 && !marke[i + 1] && bm[i + 1] === art) { marke[i + 1] = 1; stapel[sp++] = i + 1; }
-        if (y > 0 && !marke[i - B] && bm[i - B] === art) { marke[i - B] = 1; stapel[sp++] = i - B; }
-        if (y < H - 1 && !marke[i + B] && bm[i + B] === art) { marke[i + B] = 1; stapel[sp++] = i + B; }
       }
-      // Luft am oberen Rand ist der Himmel; Fels am Rand gehört zum Land.
-      if (!oben && n < schwelle) fuelle(bm, B, H, start, art, 1 - art);
+    }
+    zeilenAnfang[H] = n;
+    for (let i = 0; i < n; i += 1) wurzel[i] = i;
+    // Läufe benachbarter Zeilen, die sich in x überlappen, gehören zu einer Fläche.
+    for (let y = 1; y < H; y += 1) {
+      let a = zeilenAnfang[y - 1];
+      const aEnde = zeilenAnfang[y];
+      let b = aEnde;
+      const bEnde = zeilenAnfang[y + 1];
+      while (a < aEnde && b < bEnde) {
+        if (vonX[a] < bisX[b] && vonX[b] < bisX[a]) {
+          const ra = finde(a);
+          const rb = finde(b);
+          if (ra !== rb) wurzel[ra < rb ? rb : ra] = ra < rb ? ra : rb;
+        }
+        if (bisX[a] < bisX[b]) a += 1; else b += 1;
+      }
+    }
+    const groesse = new Float64Array(n);
+    const amHimmel = new Uint8Array(n);
+    for (let y = 0; y < H; y += 1) {
+      for (let i = zeilenAnfang[y]; i < zeilenAnfang[y + 1]; i += 1) {
+        const r = finde(i);
+        groesse[r] += bisX[i] - vonX[i];
+        if (y === 0) amHimmel[r] = 1;
+      }
+    }
+    // Luft am oberen Rand ist der Himmel; Fels am Rand gehört zum Land.
+    for (let y = 0; y < H; y += 1) {
+      for (let i = zeilenAnfang[y]; i < zeilenAnfang[y + 1]; i += 1) {
+        const r = finde(i);
+        if (!amHimmel[r] && groesse[r] < schwelle) bm.fill(1 - art, y * B + vonX[i], y * B + bisX[i]);
+      }
     }
   }
 }
@@ -937,6 +981,185 @@ function nahtBruecke(maske, rng, s, wasserY, stat) {
   return true;
 }
 
+/** Fassung 11: Landstücke unter dieser Größe (Pixel bei 2560×1440, wachsen mit der Fläche) schweben nicht mehr in der Karte. */
+const SPLITTER_LAEUFE = Object.freeze([[1, 5000]]);
+/** Breite (px) der Böschung an jeder Seite der Mischzone (Fassung 11): die Höhen beider Zonen gleichen sich über Mischzone + 2·Auslauf an. */
+const NAHT_AUSLAUF = 400;
+
+/**
+ * Das Land einer Zonenmaske im Streifen `[xa, xb)` (Weltspalten), das auf dem Grund steht: alles, was von einer festen Zelle der Zeile
+ * `wasserY − 60` aus zusammenhängt (4-Nachbarn, Flutfüllung im Streifen). Alles andere ist Schwebendes (Inseln, Platten über dem Stand).
+ * @returns {{stand:Uint8Array, breite:number, c0:number, oberkante:Int32Array}} `stand` zeilenweise über `breite` Spalten ab `c0`
+ *   (Spalte der Zonenmaske); `oberkante[i]` die oberste Standzeile der Spalte `c0 + i` oder −1
+ */
+function standLand(z, xa, xb, wasserY) {
+  const B = z.sub.breite;
+  const H = z.sub.hoehe;
+  const bm = z.sub.bitmap;
+  const c0 = Math.max(0, xa - z.xa);
+  const c1 = Math.min(B, xb - z.xa);
+  const bw = Math.max(0, c1 - c0);
+  const stand = new Uint8Array(bw * H);
+  const oberkante = new Int32Array(bw).fill(-1);
+  const yT = Math.min(H - 1, wasserY - 60);
+  const stapel = new Int32Array(bw * H);
+  let sp = 0;
+  for (let i = 0; i < bw; i += 1) {
+    if (bm[yT * B + c0 + i] && !stand[yT * bw + i]) { stand[yT * bw + i] = 1; stapel[sp++] = yT * bw + i; }
+  }
+  while (sp > 0) {
+    const k = stapel[--sp];
+    const i = k % bw;
+    const y = (k - i) / bw;
+    if (i > 0 && !stand[k - 1] && bm[y * B + c0 + i - 1]) { stand[k - 1] = 1; stapel[sp++] = k - 1; }
+    if (i < bw - 1 && !stand[k + 1] && bm[y * B + c0 + i + 1]) { stand[k + 1] = 1; stapel[sp++] = k + 1; }
+    if (y > 0 && !stand[k - bw] && bm[(y - 1) * B + c0 + i]) { stand[k - bw] = 1; stapel[sp++] = k - bw; }
+    if (y < H - 1 && !stand[k + bw] && bm[(y + 1) * B + c0 + i]) { stand[k + bw] = 1; stapel[sp++] = k + bw; }
+  }
+  for (let i = 0; i < bw; i += 1) for (let y = 0; y < H; y += 1) if (stand[y * bw + i]) { oberkante[i] = y; break; }
+  return { stand, breite: bw, c0, oberkante };
+}
+
+/**
+ * Fassung 11: Mischzone mit Böschung. In jeder Spalte steht das Land, das auf dem Grund sitzt, auf einer Höhe, die weich zwischen den
+ * Oberkanten beider Zonen überblendet wird (Rampe über Mischzone + 2·Auslauf; ohne Land auf dem Grund zählt die Wasserlinie): der Landkörper
+ * wird dazu senkrecht verschoben. Schwebendes (Inseln, Platten über dem Stand) bleibt, wo es ist; wo eine Seite nur Wasser oder Schwebendes hat, füllt die Rampe auf. Welche
+ * Zone in der Mischzone gilt, entscheidet wie zuvor das Rauschen. So endet eine Landmasse neben Wasser oder Inseln in einer Böschung
+ * statt in einer Wand.
+ */
+function mischeNaht(bm, width, height, wasserY, links, rechts, x0, x1, feld) {
+  const xa = Math.max(0, x0 - NAHT_AUSLAUF);
+  const xb = Math.min(width, x1 + NAHT_AUSLAUF);
+  const spanne = xb - xa;
+  const SL = standLand(links, xa, xb, wasserY);
+  const SR = standLand(rechts, xa, xb, wasserY);
+  const zelle = (z, S, x, y, d, gb) => {
+    const B = z.sub.breite;
+    const c = Math.max(0, Math.min(B - 1, x - z.xa));
+    const i = Math.max(0, Math.min(S.breite - 1, c - S.c0));
+    const roh = z.sub.bitmap[y * B + c];
+    if (gb < 0) return roh;
+    // Schwebendes unverändert; der Landkörper (Stand) um `d` verschoben.
+    if (roh && !S.stand[y * S.breite + i]) return 1;
+    const yy = y - d;
+    return yy >= 0 && yy < height ? S.stand[yy * S.breite + i] : 0;
+  };
+  const luecke = (z, S, x) => S.oberkante[Math.max(0, Math.min(S.breite - 1, Math.max(0, Math.min(z.sub.breite - 1, x - z.xa)) - S.c0))];
+  for (let x = xa; x < xb; x += 1) {
+    const u = (x - xa + 0.5) / spanne;
+    const w = u * 0.6 + u * u * (3 - 2 * u) * 0.4;
+    const gL = luecke(links, SL, x);
+    const gR = luecke(rechts, SR, x);
+    const hL = gL < 0 ? wasserY : gL;
+    const hR = gR < 0 ? wasserY : gR;
+    const hs = hL * (1 - w) + hR * w;
+    const dL = Math.round(hs - hL);
+    const dR = Math.round(hs - hR);
+    const hsRund = Math.round(hs);
+    const t = Math.max(0, Math.min(1, (x - x0) / ZONEN_UEBERLAPP));
+    const inMisch = x >= x0 && x < x1;
+    // Außerhalb der Mischzone besitzt eine Zone die Spalte schon; ohne Verschiebung und Füllung bleibt sie, wie sie ist.
+    if (!inMisch && x < x0 && dL === 0 && !(gL < 0 && gR >= 0)) continue;
+    if (!inMisch && x >= x1 && dR === 0 && !(gR < 0 && gL >= 0)) continue;
+    for (let y = 0; y < height; y += 1) {
+      const nimmRechts = (t - 0.5) * 2 + (inMisch ? feld(x - x0, y) * 0.8 : 0) > 0;
+      let v = nimmRechts ? zelle(rechts, SR, x, y, dR, gR) : zelle(links, SL, x, y, dL, gL);
+      // Steht auf der gewählten Seite kein Land auf dem Grund, auf der anderen schon: die Böschung füllt unter der Rampe auf.
+      if (!v && y >= hsRund && y < wasserY && (nimmRechts ? gR < 0 && gL >= 0 : gL < 0 && gR >= 0)) v = 1;
+      bm[y * width + x] = v;
+    }
+  }
+}
+
+/**
+ * Fassung 11: verbindet die großen Landmassen der Karte durch Träger-Brücken (Planke von Kante zu Kante, Stützen bis zum Grund, wo die
+ * Planke nahe über dem Wasser liegt). Eine Landmasse zählt, wenn ihre Oberkante in mindestens 8 % der Spalten trocken (über der
+ * Wasserlinie) liegt. Benachbarte Landmassen (nach der mittleren Spalte geordnet) verbindet eine Brücke zwischen den nächsten
+ * Oberkantenpunkten mit 24 bis 800 px waagerechtem Abstand und höchstens 1,2 Steigung. Das erledigt die Prüfung „alles trockene Land auf
+ * EINER Fläche“ (`terrainGen3.zonenSpielbar`) an der Karte selbst, statt die Karte zu verwerfen. Rechnet auf einem Viertel der Auflösung.
+ */
+function verbindeLandmassen(maske, rng, wasserY, stat) {
+  const B = maske.breite;
+  const H = maske.hoehe;
+  const S = 4;
+  const w = Math.floor(B / S);
+  const h = Math.floor(H / S);
+  const bm = maske.bitmap;
+  const klein = new Uint8Array(w * h);
+  for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) klein[y * w + x] = bm[(y * S + 2) * B + x * S + 2];
+  const marke = new Int32Array(w * h).fill(-1);
+  const stapel = new Int32Array(w * h);
+  let anzahl = 0;
+  for (let i = 0; i < w * h; i += 1) {
+    if (!klein[i] || marke[i] >= 0) continue;
+    let sp = 0;
+    stapel[sp++] = i;
+    marke[i] = anzahl;
+    while (sp > 0) {
+      const k = stapel[--sp];
+      const x = k % w;
+      const y = (k - x) / w;
+      if (x > 0 && klein[k - 1] && marke[k - 1] < 0) { marke[k - 1] = anzahl; stapel[sp++] = k - 1; }
+      if (x < w - 1 && klein[k + 1] && marke[k + 1] < 0) { marke[k + 1] = anzahl; stapel[sp++] = k + 1; }
+      if (y > 0 && klein[k - w] && marke[k - w] < 0) { marke[k - w] = anzahl; stapel[sp++] = k - w; }
+      if (y < h - 1 && klein[k + w] && marke[k + w] < 0) { marke[k + w] = anzahl; stapel[sp++] = k + w; }
+    }
+    anzahl += 1;
+  }
+  // Oberkante je Spalte und ihre Landmasse (nur trocken).
+  const flaecheVon = new Int32Array(w).fill(-1);
+  const hoeheVon = new Int32Array(w).fill(-1);
+  const spalten = new Map();
+  for (let x = 0; x < w; x += 1) {
+    for (let y = 0; y < h; y += 1) {
+      if (marke[y * w + x] < 0) continue;
+      if (y * S < wasserY - 20) {
+        flaecheVon[x] = marke[y * w + x];
+        hoeheVon[x] = y * S;
+        let l = spalten.get(flaecheVon[x]);
+        if (!l) { l = []; spalten.set(flaecheVon[x], l); }
+        l.push(x);
+      }
+      break;
+    }
+  }
+  const gross = [...spalten.entries()].filter(([, l]) => l.length >= w * 0.08).map(([id, l]) => ({ id, l, mitte: l.reduce((a, c) => a + c, 0) / l.length }));
+  gross.sort((a, b) => a.mitte - b.mitte);
+  const wurzel = new Map(gross.map((g) => [g.id, g.id]));
+  const finde = (i) => { while (wurzel.get(i) !== i) i = wurzel.get(i); return i; };
+  for (let i = 0; i + 1 < gross.length; i += 1) {
+    const A = gross[i];
+    const Bf = gross[i + 1];
+    if (finde(A.id) === finde(Bf.id)) continue;
+    let beste = null;
+    for (let a = 0; a < A.l.length; a += 2) {
+      for (let b = 0; b < Bf.l.length; b += 2) {
+        const xa = A.l[a];
+        const xb = Bf.l[b];
+        const dx = (xb - xa) * S;
+        if (dx < 24 || dx > 800) continue;
+        const dy = hoeheVon[xb] - hoeheVon[xa];
+        if (Math.abs(dy) > dx * 1.2) continue;
+        const d = dx * dx + dy * dy;
+        if (!beste || d < beste.d) beste = { d, xa: xa * S + 2, xb: xb * S + 2, ya: hoeheVon[xa], yb: hoeheVon[xb] };
+      }
+    }
+    if (!beste) continue;
+    const { xa, xb, ya, yb } = beste;
+    bruecke(maske, xa - 6, xb + 6, ya + 4, yb + 4);
+    if (Math.max(ya, yb) > wasserY - 450) {
+      const stuetzen = Math.max(1, Math.round((xb - xa) / 170) - 1);
+      for (let k = 1; k <= stuetzen; k += 1) {
+        const t = k / (stuetzen + 1);
+        pfeiler(maske, rng, xa + (xb - xa) * t, ya + (yb - ya) * t + 8, wasserY + 175, 26);
+      }
+      stat.pfeiler += stuetzen;
+    }
+    stat.bruecken += 1;
+    wurzel.set(finde(A.id), finde(Bf.id));
+  }
+}
+
 /**
  * Mehrzonen-Karte für breite Formate (Geländefassung 10, `config.gelaende` ≥ 10).
  *
@@ -950,7 +1173,7 @@ function nahtBruecke(maske, rng, s, wasserY, stat) {
  * @returns {{bitmap:Uint8Array, wasserY:number, bauteile:object, art:string, umlauf:boolean, rund:boolean, planetenart:null, zonen:string[]}}
  *   `art` ist die Art der mittleren Zone (damit Kulisse und Charakter weiter eine gültige Kartenart sehen)
  */
-export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10 }) {
+export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10, speicher = null }) {
   const n = zonenZahl(width);
   const maske = new Maske(width, height);
   maske.begehbar = fassung >= 8;
@@ -958,42 +1181,69 @@ export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10
   const stat = neuesStat();
   const wasserY = Math.round(height * ZONEN_WASSER);
   const mitte = Math.floor(n / 2);
-  const zonen = [];
-  for (let i = 0; i < n; i += 1) {
-    let wahl;
-    if (i === mitte && ZONEN_ARTEN.includes(art)) {
-      wahl = art;
-    } else {
-      // Nie dieselbe Art wie die Nachbarzone (links); die letzte Zone auch nicht wie die erste, solange es Auswahl gibt.
-      const erlaubt = ZONEN_ARTEN.filter((a) => a !== zonen[i - 1] && !(i === n - 1 && n > 2 && a === zonen[0]));
-      wahl = erlaubt[Math.floor(rng.next() * erlaubt.length)];
-    }
-    zonen.push(wahl);
-  }
+  let zonen = [];
   const halb = ZONEN_UEBERLAPP / 2;
   const zb = width / n;
   const maske2 = [];
-  for (let i = 0; i < n; i += 1) {
+  const baueZone = (i, artI) => {
     const xa = i === 0 ? 0 : Math.round(i * zb - halb);
     const xb = i === n - 1 ? width : Math.round((i + 1) * zb + halb);
     const sub = new Maske(xb - xa, height);
     sub.begehbar = maske.begehbar;
     sub.fensterZu = maske.fensterZu;
-    ZONEN_BAUER[zonen[i]](sub, rng, sub.breite, height, stat);
-    maske2.push({ xa, xb, sub });
+    const eigen = fassung >= 11 ? neuesStat() : stat;
+    ZONEN_BAUER[artI](sub, rng, sub.breite, height, eigen);
+    return { xa, xb, sub, stat: eigen };
+  };
+  // Fassung 11: Der Zwischenspeicher des Aufrufers hält die gebauten Zonen über die Ziehungen hinweg. Eine misslungene Karte zieht nur EINE Zone
+  // neu (reihum, die ausdrücklich gewählte Mittelzone bleibt); die übrigen Zonen kosten nichts, die Mischzonen bekommen frisches Rauschen.
+  const wiederholung = fassung >= 11 && speicher && speicher.zonen && speicher.zonen.length === n;
+  if (wiederholung) {
+    zonen = speicher.zonen.slice();
+    let k = speicher.naechste % n;
+    if (n > 1 && k === mitte && ZONEN_ARTEN.includes(art)) k = (k + 1) % n;
+    speicher.naechste = k + 1;
+    const erlaubt = ZONEN_ARTEN.filter((a) => a !== zonen[k] && a !== zonen[k - 1] && a !== zonen[k + 1]
+      && !(n > 2 && k === 0 && a === zonen[n - 1]) && !(n > 2 && k === n - 1 && a === zonen[0]));
+    zonen[k] = erlaubt[Math.floor(rng.next() * erlaubt.length)];
+    speicher.zonen = zonen;
+    speicher.maske2[k] = baueZone(k, zonen[k]);
+  } else {
+    for (let i = 0; i < n; i += 1) {
+      let wahl;
+      if (i === mitte && ZONEN_ARTEN.includes(art)) {
+        wahl = art;
+      } else {
+        // Nie dieselbe Art wie die Nachbarzone (links); die letzte Zone auch nicht wie die erste, solange es Auswahl gibt.
+        const erlaubt = ZONEN_ARTEN.filter((a) => a !== zonen[i - 1] && !(i === n - 1 && n > 2 && a === zonen[0]));
+        wahl = erlaubt[Math.floor(rng.next() * erlaubt.length)];
+      }
+      zonen.push(wahl);
+    }
+    for (let i = 0; i < n; i += 1) maske2.push(baueZone(i, zonen[i]));
+    if (fassung >= 11 && speicher) { speicher.zonen = zonen; speicher.maske2 = maske2; speicher.naechste = 0; }
   }
+  if (wiederholung) maske2.push(...speicher.maske2);
+  if (fassung >= 11) for (const z of maske2) for (const k of Object.keys(stat)) stat[k] += z.stat[k];
   const bm = maske.bitmap;
   const aus = (z, x, y) => z.sub.bitmap[y * z.sub.breite + (x - z.xa)];
   // Zone i besitzt die Spalten [von_i, bis_i); dazwischen liegt je Naht eine Mischzone von 300 px.
   const von = (i) => (i === 0 ? 0 : Math.round(i * zb + halb));
   const bis = (i) => (i === n - 1 ? width : Math.round((i + 1) * zb - halb));
   for (let i = 0; i < n; i += 1) {
-    for (let x = von(i); x < bis(i); x += 1) for (let y = 0; y < height; y += 1) bm[y * width + x] = aus(maske2[i], x, y);
+    const z = maske2[i];
+    const v = von(i);
+    const b = bis(i);
+    for (let y = 0; y < height; y += 1) bm.set(z.sub.bitmap.subarray(y * z.sub.breite + (v - z.xa), y * z.sub.breite + (b - z.xa)), y * width + v);
   }
   // Mischzone je Naht: zweidimensionales Rauschen entscheidet punktweise, ob links oder rechts gilt; der rechte Anteil wächst über die Naht.
   for (let i = 0; i + 1 < n; i += 1) {
     const feld = rausch2(rng, ZONEN_UEBERLAPP, height, 90);
     const x0 = bis(i);
+    if (fassung >= 11) {
+      mischeNaht(bm, width, height, wasserY, maske2[i], maske2[i + 1], x0, von(i + 1), feld);
+      continue;
+    }
     for (let x = x0; x < von(i + 1); x += 1) {
       const t = (x - x0) / ZONEN_UEBERLAPP;
       for (let y = 0; y < height; y += 1) {
@@ -1005,7 +1255,13 @@ export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10
   // Grund: unterhalb der Wasserlinie massiv (wie bei den Einzelkarten), davor Wasser.
   maske.rechteck(0, wasserY + 170, width, height);
   raeumeAuf(maske);
-  for (let i = 1; i < n; i += 1) nahtBruecke(maske, rng, Math.round(i * zb), wasserY, stat);
+  if (fassung >= 11) {
+    // Fassung 11: Schwebereste (kleine Landstücke abseits der Hauptfläche) weg, dann Brücken zwischen den großen Landmassen.
+    raeumeAuf(maske, SPLITTER_LAEUFE);
+    verbindeLandmassen(maske, rng, wasserY, stat);
+  } else {
+    for (let i = 1; i < n; i += 1) nahtBruecke(maske, rng, Math.round(i * zb), wasserY, stat);
+  }
   return { bitmap: maske.bitmap, wasserY, bauteile: stat, art: zonen[mitte], umlauf: false, rund: false, planetenart: null, zonen };
 }
 

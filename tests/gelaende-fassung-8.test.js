@@ -28,7 +28,7 @@ test('Marke: Fassung 8 ist gültig, 7 bleibt gültig, Unbekanntes fällt auf den
   assert.ok(GELAENDE_STANDARD >= GELAENDE_KLAR);
   assert.equal(normalisiereGelaende(GELAENDE_BIOME_20), GELAENDE_BIOME_20);
   assert.equal(normalisiereGelaende(8), 8);
-  assert.equal(normalisiereGelaende(10), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(10), 10); // gültig und unverändert (Standard ist seit Fassung 11 höher)
 });
 
 /** Wo Kristall-Violett oder Grau-Fels der Leitstoff ist (N-29). */

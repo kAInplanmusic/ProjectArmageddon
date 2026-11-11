@@ -49,6 +49,12 @@
  *     Mischzone und Träger-Brücken an den Nähten; die Spielbarkeitsprüfung rechnet dort mit fester Wurfweite (939 px) statt
  *     proportional zur Breite. Karten unter 2800 px bleiben Bit für Bit die der Fassung 9; die Fassungen 1 bis 9 bleiben gleich.
  *
+ *
+ *   - `GELAENDE_NAHT` (11): Zonenkarten (ab 2800 px) ohne Wand an den Nähten (Höhenangleichung über Mischzone + Auslauf, Böschung statt
+ *     Klippe), ohne Schwebereste (kleine Landstücke abseits der Hauptfläche) und mit Brücken über jede Lücke im trockenen Land;
+ *     dazu ein schnelleres Aufräumen (`raeumeAuf`, Ergebnis unverändert). Karten unter 2800 px und die Fassungen 1 bis 10 bleiben
+ *     Bit für Bit gleich.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
@@ -75,11 +81,13 @@ export const GELAENDE_OHNE_SCHACHT = 9;
 export const GELAENDE_WEIT = 10;
 /** Ab dieser Kartenbreite (px) wirkt die Fassung 10 (Zonenkarte, Kistenverteilung); darunter bleibt alles wie in 9. */
 export const GELAENDE_WEIT_AB_BREITE = 2800;
-export const GELAENDE_STANDARD = GELAENDE_WEIT;
+/** Fassung 11: Zonenkarten mit Böschung an den Nähten, ohne Schwebereste, mit Brücken über alle Lücken (`terrainKomposition.erzeugeZonenKarte`). */
+export const GELAENDE_NAHT = 11;
+export const GELAENDE_STANDARD = GELAENDE_NAHT;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */

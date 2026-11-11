@@ -80,7 +80,7 @@ import { biomFuerCharakter } from './biomwahl.js';
 import { baueStoffkarte, STOFF_FORK } from './stoffkarte.js';
 import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
-import { erzeugeKompositionsKarte, erzeugeZonenKarte, ZONEN_AB_BREITE } from './terrainKomposition.js';
+import { erzeugeKompositionsKarte, erzeugeZonenKarte, zonenZahl, ZONEN_AB_BREITE } from './terrainKomposition.js';
 import { pruefeErreichbarkeit, findeFlaechen } from './erreichbarkeit.js';
 import { GELAENDE_KOMPOSITION, GELAENDE_WEIT, KARTENARTEN } from './config/gelaende.js';
 
@@ -687,10 +687,11 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
   let karte = null;
   let kennzahlen = null;
   let versuch = 1;
+  const speicher = {};
   for (; versuch <= 8; versuch += 1) {
     const art = height > width * 1.2 ? 'hochkant' : (kartenart ?? BAUTEIL_ARTEN[Math.floor(rng.next() * BAUTEIL_ARTEN.length)]);
     const zonen = fassung >= GELAENDE_WEIT && width >= ZONEN_AB_BREITE && height <= width * 1.2;
-    karte = zonen ? erzeugeZonenKarte({ rng, width, height, art: kartenart, fassung }) : erzeugeKompositionsKarte({ rng, width, height, art, fassung });
+    karte = zonen ? erzeugeZonenKarte({ rng, width, height, art: kartenart, fassung, speicher }) : erzeugeKompositionsKarte({ rng, width, height, art, fassung });
     karte.surface = oberflaechen(karte.bitmap, width, height);
     kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
     let urteil = pruefeBauteilKarte(kennzahlen);
@@ -698,6 +699,8 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
     else if (urteil.ok && !spawnErreichbar(karte.bitmap, width, height, karte.art)) urteil = { ok: false, grund: 'Spawnspalten erreichen einander nicht' };
     if (urteil.ok) break;
     ablehnungen.push(`${karte.art}: ${urteil.grund}`);
+    // Fassung 11: Die nächste Ziehung baut nur die Zone neu, in der die Prüfung scheiterte (ohne Ort reihum).
+    if (zonen && urteil.ort !== undefined) speicher.naechste = Math.min(zonenZahl(width) - 1, Math.floor((urteil.ort / width) * zonenZahl(width)));
   }
   const ok = versuch <= 8;
   charakter.kartenart = karte.art;
@@ -765,11 +768,12 @@ function zonenSpielbar(bitmap, width, height, wasserY) {
     if (oben[x] === groesste || zaehler.get(oben[x]) >= w * 0.3) trocken.push(x);
   }
   // Alle Standplätze auf EINER Fläche: zwei große Landmassen teilen die Figuren, und die Engine-Prüfung (Hauptfläche = wo die meisten stehen) schlägt an.
-  if (trocken.some((x) => oben[x] !== oben[trocken[0]])) return { ok: false, grund: 'trockenes Land liegt auf getrennten Flächen' };
+  const fremd = trocken.find((x) => oben[x] !== oben[trocken[0]]);
+  if (fremd !== undefined) return { ok: false, grund: 'trockenes Land liegt auf getrennten Flächen', ort: fremd * S };
   if (trocken.length < w * 0.4) return { ok: false, grund: `zu wenig trockenes Land (${((trocken.length / w) * 100).toFixed(0)} %)` };
-  if (trocken[0] > w * 0.25 || trocken.at(-1) < w * 0.75) return { ok: false, grund: 'Land erreicht die äußeren Viertel nicht' };
+  if (trocken[0] > w * 0.25 || trocken.at(-1) < w * 0.75) return { ok: false, grund: 'Land erreicht die äußeren Viertel nicht', ort: trocken[0] > w * 0.25 ? 0 : width - 1 };
   for (let i = 1; i < trocken.length; i += 1) {
-    if ((trocken[i] - trocken[i - 1]) * S > WURFWEITE_ZONEN) return { ok: false, grund: 'Lücke zwischen Landmassen über Wurfweite' };
+    if ((trocken[i] - trocken[i - 1]) * S > WURFWEITE_ZONEN) return { ok: false, grund: 'Lücke zwischen Landmassen über Wurfweite', ort: trocken[i - 1] * S };
   }
   return { ok: true };
 }

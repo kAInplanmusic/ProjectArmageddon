@@ -28,10 +28,11 @@ const karte = (seed, width, height, fassung) => erzeugeAutonomeKarte({ rng: new 
 
 test('Marke: Fassung 10 ist gültig und der Standard, 9 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_WEIT, 10);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_WEIT);
+  assert.ok(GELAENDE_STANDARD >= GELAENDE_WEIT); // seit Fassung 11 höher (`gelaende-fassung-11.test.js`)
   assert.equal(normalisiereGelaende(GELAENDE_OHNE_SCHACHT), 9);
   assert.equal(normalisiereGelaende(10), 10);
-  assert.equal(normalisiereGelaende(11), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(10), 10);
+  assert.equal(normalisiereGelaende(12), GELAENDE_STANDARD);
   assert.equal(ZONEN_AB_BREITE, GELAENDE_WEIT_AB_BREITE);
 });
 
@@ -73,7 +74,7 @@ test('Breite Karte: Matchstart über mehrere Seeds und 8 bis 10 Figuren, alle er
     [1, 2, 4, '24:9', 'gross'], [2, 2, 5, '24:9', 'gross'], [3, 4, 2, '24:9', 'gross'], [4, 2, 5, '24:9', 'riesig'],
     [5, 3, 3, '24:9', 'riesig'], [6, 2, 4, '16:9', 'gross'],
   ]) {
-    const m = new MatchController({ seed, teams, playersPerTeam: proTeam, kartentyp: 'autonom', maxRounds: 2, format, groesse, zerstoerung: 5 });
+    const m = new MatchController({ seed, teams, playersPerTeam: proTeam, kartentyp: 'autonom', maxRounds: 2, format, groesse, zerstoerung: 5, gelaende: GELAENDE_WEIT });
     m.start();
     assert.ok(m.width >= GELAENDE_WEIT_AB_BREITE, `${format}/${groesse}: breit`);
     assert.equal(m.gelaende, GELAENDE_WEIT);
