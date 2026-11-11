@@ -23,7 +23,7 @@ export const HOEHLEN_FUELLUNG = Object.freeze({
   schlackeschmiede: Object.freeze({ farbe: [34, 20, 18], deckkraft: 225 }),
   kristallarchipel: Object.freeze({ farbe: [22, 52, 84], deckkraft: 190 }),
   tempelstadt: Object.freeze({ farbe: [40, 28, 24], deckkraft: 215 }),
-  tiefsee: Object.freeze({ farbe: [3, 16, 34], deckkraft: 228 }),
+  tiefsee: Object.freeze({ farbe: [8, 40, 72], deckkraft: 222 }),
   kristallwald: Object.freeze({ farbe: [14, 22, 34], deckkraft: 220 }),
 });
 
@@ -88,20 +88,24 @@ function randAbstand(bitmap, breite, hoehe) {
   for (let y = 0; y < hoehe; y += 1) {
     for (let x = 0; x < breite; x += 1) {
       const i = y * breite + x; let v = dist[i];
-      if (!v) continue;
-      if (x === 0 || y === 0) { v = 3; } else {
-        v = Math.min(v, dist[i - 1] + 2, dist[i - breite] + 2, dist[i - breite - 1] + 3, x + 1 < breite ? dist[i - breite + 1] + 3 : 255);
-      }
+      if (v === 0) continue;
+      if (x === 0 || y === 0) { dist[i] = 3; continue; }
+      let c = dist[i - 1] + 2; if (c < v) v = c;
+      c = dist[i - breite] + 2; if (c < v) v = c;
+      c = dist[i - breite - 1] + 3; if (c < v) v = c;
+      if (x + 1 < breite) { c = dist[i - breite + 1] + 3; if (c < v) v = c; }
       dist[i] = v > 255 ? 255 : v;
     }
   }
   for (let y = hoehe - 1; y >= 0; y -= 1) {
     for (let x = breite - 1; x >= 0; x -= 1) {
       const i = y * breite + x; let v = dist[i];
-      if (!v) continue;
-      if (x === breite - 1 || y === hoehe - 1) { v = Math.min(v, 3); } else {
-        v = Math.min(v, dist[i + 1] + 2, dist[i + breite] + 2, dist[i + breite + 1] + 3, x > 0 ? dist[i + breite - 1] + 3 : 255);
-      }
+      if (v === 0) continue;
+      if (x === breite - 1 || y === hoehe - 1) { if (v > 3) dist[i] = 3; continue; }
+      let c = dist[i + 1] + 2; if (c < v) v = c;
+      c = dist[i + breite] + 2; if (c < v) v = c;
+      c = dist[i + breite + 1] + 3; if (c < v) v = c;
+      if (x > 0) { c = dist[i + breite - 1] + 3; if (c < v) v = c; }
       dist[i] = v > 255 ? 255 : v;
     }
   }
@@ -114,6 +118,9 @@ function wasserFarbe(t) {
   const w = t < 0.5 ? t / 0.5 : (t - 0.5) / 0.5; const p = t < 0.5 ? a : m; const q = t < 0.5 ? m : u;
   return [p[0] + (q[0] - p[0]) * w, p[1] + (q[1] - p[1]) * w, p[2] + (q[2] - p[2]) * w];
 }
+
+/** Felder, die langsam variieren, werden nur alle 4 Pixel in x ausgewertet (Zeitgewinn, optisch gleich). */
+const SCHRITT = 4;
 
 /**
  * Tiefsee-Gelände als Wasser-Gel: statt Fels ein tiefenabhängiger Farbverlauf mit weicher Strömungs-Kaustik,
@@ -132,6 +139,9 @@ function gradeTiefsee(d, bitmap, breite, hoehe, seed) {
   const lauf = new Int32Array(breite);
   const bx = new Float32Array(Math.ceil(breite / BZ) + 1); const by = new Float32Array(bx.length); const br = new Float32Array(bx.length);
   let bandNr = -1;
+  let wx = 0; let wy = 0; let weich = 0; let hf = 0;
+  // Gewählte Variante (Reihe A/B/C verglichen): breite, sanfte Kaustik, seltene Adern, weiter Meniskus-Schein.
+  const cw = 0.34; const cs = 0.3; const hs0 = 0.62; const RW = 16;
   for (let y = 0; y < hoehe; y += 1) {
     const t = y / hoehe;
     const farbe = wasserFarbe(t);
@@ -152,41 +162,48 @@ function gradeTiefsee(d, bitmap, breite, hoehe, seed) {
       lauf[x] += 1;
       const o = idx * 4;
       if (d[o + 3] === 0) continue;
+      if ((x & (SCHRITT - 1)) === 0 || x === 0) {
+        wx = (warpX(x, y) - 0.5) * 46 * s; wy = (warpY(x, y) - 0.5) * 46 * s;
+        weich = licht(x, y); hf = haufen(x, y);
+      }
       const lum = (0.3 * d[o] + 0.59 * d[o + 1] + 0.11 * d[o + 2]) / 160;
-      const wx = (warpX(x, y) - 0.5) * 46 * s; const wy = (warpY(x, y) - 0.5) * 46 * s;
       const n1 = stroem1(x + wx, y + wy); const n2 = stroem2(x - wy, y + wx);
-      const weich = licht(x, y);
       // Grundfarbe: Tiefenverlauf, leicht von der alten Helligkeit (Schichtung) und weichem Licht moduliert.
-      let k = (0.9 + 0.16 * Math.min(1.6, lum)) * (0.8 + 0.4 * weich) * (0.9 + 0.2 * n2);
+      const k = (0.9 + 0.16 * (lum < 1.6 ? lum : 1.6)) * (0.8 + 0.4 * weich) * (0.9 + 0.2 * n2);
       let r = farbe[0] * k; let gr = farbe[1] * k; let b = farbe[2] * k;
-      // Kaustik: feines Netz heller Linien, nach unten ausklingend.
+      // Kaustik: weiches Netz heller Linien, nach unten ausklingend.
       const c = Math.abs(n1 + n2 - 1);
-      if (c < 0.2) { const f = (1 - c / 0.2); const f2 = f * f * f * (0.2 + 0.8 * oben) * 0.5; r += 70 * f2; gr += 175 * f2; b += 190 * f2; }
-      // Biolumineszente Adern in Gruppen, nach unten kräftiger.
-      const av = Math.abs(ader(x + wy, y - wx) - 0.5) * 2;
-      const hf = haufen(x, y); const stark = (0.25 + 0.75 * t) * Math.max(0, Math.min(1, (hf - 0.5) / 0.2));
-      if (stark > 0 && av < 0.04) { const f = 1 - av / 0.04; const f2 = f * f * Math.min(1, stark * 1.5); r += 20 * f2; gr += 235 * f2; b += 180 * f2; } else if (stark > 0 && av < 0.12) { const f = (1 - (av - 0.04) / 0.08) * stark * 0.3; gr += 90 * f; b += 70 * f; }
+      if (c < cw) { const f = (1 - c / cw); const f2 = f * f * f * (0.2 + 0.8 * oben) * cs; r += 70 * f2; gr += 175 * f2; b += 190 * f2; }
+      // Biolumineszente Adern nur in Gruppen, nach unten kräftiger.
+      const hs = (hf - hs0) / 0.2;
+      if (hs > 0) {
+        const stark = (0.25 + 0.75 * t) * (hs > 1 ? 1 : hs);
+        const av = Math.abs(ader(x + wy, y - wx) - 0.5) * 2;
+        if (av < 0.04) { const f = 1 - av / 0.04; const f2 = f * f * (stark * 1.5 > 1 ? 1 : stark * 1.5); r += 20 * f2; gr += 235 * f2; b += 180 * f2; } else if (av < 0.12) { const f = (1 - (av - 0.04) / 0.08) * stark * 0.3; gr += 90 * f; b += 70 * f; }
+      }
       const pk = plankton(x, y); if (pk > 0.93) { const f = (pk - 0.93) / 0.07 * 0.8; gr += 190 * f; b += 150 * f; r += 20 * f; }
       // Blasen: heller Ring, aufgehellter Innenraum, Glanzpunkt.
-      const kz = Math.floor(x / BZ);
+      const kz = (x / BZ) | 0;
       for (let kk = kz - 1; kk <= kz + 1; kk += 1) {
         if (kk < 0 || kk >= bx.length || br[kk] === 0) continue;
-        const dx = x - bx[kk]; const dy = y - by[kk]; const rad = br[kk];
+        const rad = br[kk];
+        const dy = y - by[kk]; if (dy > rad + 1.6 || dy < -rad - 1.6) continue;
+        const dx = x - bx[kk];
         const q2 = dx * dx + dy * dy;
         if (q2 > (rad + 1.6) * (rad + 1.6)) continue;
         const dd = Math.sqrt(q2);
         if (dd > rad - 1.1) { const f = Math.max(0, 1 - Math.abs(dd - rad) / 1.5) * 0.9; r += 90 * f; gr += 190 * f; b += 200 * f; } else { r += 8; gr += 28; b += 36; }
         if (dx < -rad * 0.2 && dy < -rad * 0.2 && dx > -rad * 0.65 && dy > -rad * 0.65 && dd < rad * 0.7) { r += 100; gr += 120; b += 120; }
       }
-      // Trübung mit der Tiefe: Richtung dunkles Blau, nie unter einen Mindestwert.
+      // Trübung mit der Tiefe: Richtung dunkles Blau.
       const trueb = 0.18 * t;
       r += (4 - r) * trueb; gr += (22 - gr) * trueb; b += (50 - b) * trueb;
       // Meniskus-Rand: dünne helle Linie direkt an der Kante, weicher Schein nach innen (oben stärker, innen flacher).
       const e = dist[idx] / 2 / s;
-      if (e < 12) {
+      if (e < RW) {
         const oberkante = lauf[x] < 14 * s ? 1 : 0.55;
         const linie = e < 1.8 ? 1 - e / 1.8 : 0;
-        const schein = (1 - e / 12) * (1 - e / 12);
+        const schein = (1 - e / RW) * (1 - e / RW);
         const f = Math.min(1, linie * 0.95 + schein * 0.5) * oberkante;
         r += (175 - r) * f * 0.8 + 18 * schein; gr += (238 - gr) * f * 0.8 + 70 * schein * oberkante; b += (250 - b) * f * 0.8 + 76 * schein * oberkante;
       }
@@ -195,6 +212,73 @@ function gradeTiefsee(d, bitmap, breite, hoehe, seed) {
       d[o + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
     }
   }
+}
+
+/**
+ * Höhlenwasser der Tiefsee: die schon gefüllte (halbtransparente) Höhlenluft bekommt einen weichen Tiefenverlauf,
+ * leichtes Licht und einen Kaustik-Hauch, bleibt aber deutlich dunkler als das Wassergel-Gelände.
+ * Verändert nur Farbe, nie Maske oder Deckkraft.
+ */
+export function veredleHoehlenwasser(d, bitmap, breite, hoehe, seed = 0) {
+  const s = Math.max(1, breite / 2560);
+  const licht = gitter(seed + 961, breite, hoehe, 140 * s);
+  const s1 = gitter(seed + 962, breite, hoehe, 40 * s); const s2 = gitter(seed + 963, breite, hoehe, 26 * s);
+  let n = 0;
+  for (let y = 0; y < hoehe; y += 1) {
+    const t = y / hoehe;
+    for (let x = 0; x < breite; x += 1) {
+      const idx = y * breite + x;
+      if (bitmap[idx]) continue;
+      const o = idx * 4;
+      if (d[o + 3] === 0) continue;
+      const l = 0.75 + 0.5 * licht(x, y);
+      let r = (10 - 6 * t) * l; let g = (50 - 24 * t) * l; let b = (86 - 34 * t) * l;
+      const c = Math.abs(s1(x, y) + s2(x, y) - 1);
+      if (c < 0.22) { const f = 1 - c / 0.22; const f2 = f * f * f * (1 - t * 0.6) * 0.3; r += 25 * f2; g += 110 * f2; b += 130 * f2; }
+      d[o] = r > 255 ? 255 : r; d[o + 1] = g > 255 ? 255 : g; d[o + 2] = b > 255 ? 255 : b;
+      n += 1;
+    }
+  }
+  return n;
+}
+
+/**
+ * Seegras auf der Tiefsee-Oberkante: höhere, leicht biolumineszente Wedel mit hellem Schein, gut gegen die Kulisse lesbar.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {Uint8Array} bitmap - 1 = fest; die Standorte folgen jeder nach oben offenen Kante (auch Simse und Höhlenböden)
+ * @returns {number} Zahl der Wedel
+ */
+export function zeichneSeegras(ctx, bitmap, breite, hoehe, seed) {
+  const s = Math.max(1, breite / 2560);
+  const liste = [];
+  const raster = Math.max(5, Math.round(6 * s));
+  for (let x = 6; x < breite - 6; x += raster) {
+    if (hash2(x, 3, seed + 975) > 0.2) continue;
+    for (let y = 4; y < hoehe - 2; y += 1) {
+      const i = y * breite + x;
+      if (bitmap[i] && !bitmap[i - breite] && !bitmap[i - 3 * breite]) { liste.push({ x, y, h: 4 + 8 * hash2(x, y, seed + 976) }); break; }
+    }
+  }
+  let n = 0;
+  ctx.save();
+  ctx.lineCap = 'round';
+  for (const b of liste) {
+    const wedel = 2 + (hash2(b.x, 7, seed + 971) > 0.5 ? 1 : 0);
+    for (let i = 0; i < wedel; i += 1) {
+      const h = (16 + 18 * hash2(b.x, i, seed + 972) + b.h) * s;
+      const x0 = b.x + (i - wedel / 2) * 3.2 * s;
+      const sw = (hash2(b.x, i + 9, seed + 973) - 0.5) * 16 * s;
+      const kopf = hash2(b.x, i + 4, seed + 974) > 0.7;
+      ctx.beginPath(); ctx.moveTo(x0, b.y + 1); ctx.quadraticCurveTo(x0 + sw * 1.4, b.y - h * 0.55, x0 + sw, b.y - h);
+      ctx.strokeStyle = 'rgba(60, 230, 200, 0.22)'; ctx.lineWidth = 7 * s; ctx.stroke();
+      ctx.strokeStyle = 'rgb(14, 120, 118)'; ctx.lineWidth = 3.6 * s; ctx.stroke();
+      ctx.strokeStyle = 'rgb(96, 236, 200)'; ctx.lineWidth = 1.6 * s; ctx.stroke();
+      if (kopf) { ctx.fillStyle = 'rgb(170, 255, 230)'; ctx.beginPath(); ctx.arc(x0 + sw, b.y - h, 2.4 * s, 0, Math.PI * 2); ctx.fill(); }
+      n += 1;
+    }
+  }
+  ctx.restore();
+  return n;
 }
 
 /**

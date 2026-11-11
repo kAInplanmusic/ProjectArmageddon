@@ -3,7 +3,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { gradeBiom, GRADING_BIOME, HOEHLEN_FUELLUNG } from '../src/client/biomGrading.js';
+import { gradeBiom, GRADING_BIOME, HOEHLEN_FUELLUNG, veredleHoehlenwasser, zeichneSeegras } from '../src/client/biomGrading.js';
 import { SONDER_KULISSEN } from '../src/client/sonderKulissen.js';
 import { NEUE_BIOME } from '../src/shared/config/biome-neu.js';
 
@@ -88,4 +88,25 @@ test('Tiefsee: Wasser-Gel statt Fels (Verlauf, heller Meniskus-Rand, Blasen), Ma
   for (let y = 60; y < H - 8; y += 1) for (let x = 60; x < B - 8; x += 1) { const o = (y * B + x) * 4; if (a[o + 1] > 170 && a[o] < 120) leucht += 1; }
   assert.ok(leucht > 8, `Leuchtpixel: ${leucht}`);
   assert.ok(HOEHLEN_FUELLUNG.tiefsee.deckkraft >= 220, 'Höhlen: dunkles Wasser');
+});
+
+test('Tiefsee: Höhlenwasser ist erkennbar blau (nicht fast schwarz), Seegras wird auf Oberkanten gezeichnet', () => {
+  const f = HOEHLEN_FUELLUNG.tiefsee.farbe;
+  assert.ok(0.3 * f[0] + 0.59 * f[1] + 0.11 * f[2] > 25 && f[2] > f[0] + 40, 'Füllfarbe: dunkles, aber erkennbares Blau');
+  // Fester Boden unten, darüber Luft; eine „Höhle“ (Luftpixel mit Deckkraft 222) in der Mitte des Blocks.
+  const bitmap = new Uint8Array(B * H); const d = new Uint8ClampedArray(B * H * 4);
+  for (let y = 100; y < H; y += 1) for (let x = 0; x < B; x += 1) bitmap[y * B + x] = 1;
+  for (let y = 130; y < 170; y += 1) for (let x = 60; x < 200; x += 1) { bitmap[y * B + x] = 0; const o = (y * B + x) * 4; d[o] = f[0]; d[o + 1] = f[1]; d[o + 2] = f[2]; d[o + 3] = HOEHLEN_FUELLUNG.tiefsee.deckkraft; }
+  const n = veredleHoehlenwasser(d, bitmap, B, H, 3);
+  assert.equal(n, 40 * 140);
+  let lumSumme = 0;
+  for (let y = 130; y < 170; y += 1) for (let x = 60; x < 200; x += 1) { const o = (y * B + x) * 4; lumSumme += 0.3 * d[o] + 0.59 * d[o + 1] + 0.11 * d[o + 2]; assert.equal(d[o + 3], HOEHLEN_FUELLUNG.tiefsee.deckkraft); assert.ok(d[o + 2] > d[o]); }
+  assert.ok(lumSumme / (40 * 140) > 20, `Höhlenwasser nicht schwarz: ${Math.round(lumSumme / (40 * 140))}`);
+  // Seegras: Zeichenaufrufe ausreichend, Standorte nur auf der Oberkante (y = 100).
+  const aufrufe = { stroke: 0, ys: new Set() };
+  const ctx = new Proxy({}, { get: (_, k) => (k === 'stroke' ? () => { aufrufe.stroke += 1; } : k === 'moveTo' ? (x, y) => aufrufe.ys.add(Math.round(y)) : () => {}), set: () => true });
+  const wedel = zeichneSeegras(ctx, bitmap, B, H, 3);
+  assert.ok(wedel >= 8, `Wedel: ${wedel}`);
+  assert.equal(aufrufe.stroke, wedel * 3);
+  assert.ok([...aufrufe.ys].every(y => y === 101), 'Wedel wurzeln auf der Oberkante');
 });

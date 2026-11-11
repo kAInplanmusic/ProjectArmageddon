@@ -14,7 +14,7 @@
  * @module gelaendeStil
  */
 import { tinteStoffe } from './stoffOptik.js';
-import { gradeBiom, HOEHLEN_FUELLUNG } from './biomGrading.js';
+import { gradeBiom, HOEHLEN_FUELLUNG, veredleHoehlenwasser, zeichneSeegras } from './biomGrading.js';
 import { glatt } from './mathe.js';
 import { zeichneDetails } from './gelaendeDetails.js';
 import {
@@ -396,11 +396,12 @@ export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 
   const fuellung = biom ? HOEHLEN_FUELLUNG[biom] : null;
   if (fuellung) fuelleHoehlenluft(d, bitmap, breite, hoehe, fuellung.farbe, fuellung.deckkraft);
   else fuelleHoehlenluft(d, bitmap, breite, hoehe);
+  if (biom === 'tiefsee') veredleHoehlenwasser(d, bitmap, breite, hoehe, seed);
   daempfeInnenkanten(d, bitmap, breite, hoehe);
   ctx.putImageData(bild, 0, 0);
   // Tiefsee: statt braunen Halmen und grauen Kieseln Seegras-Büschel, keine Steine/Tropfsteine (Wasser-Gel-Optik).
-  const saum = biom === 'tiefsee' ? { ...ergebnis.saum, bueschel: [[16, 104, 112], [86, 226, 196]] } : ergebnis.saum;
-  zeichneBueschel(ctx, ergebnis.liste, saum, seed);
+  if (biom === 'tiefsee') zeichneSeegras(ctx, bitmap, breite, hoehe, seed);
+  else zeichneBueschel(ctx, ergebnis.liste, ergebnis.saum, seed);
   if (biom !== 'tiefsee') zeichneDetails(ctx, bitmap, breite, hoehe, ergebnis.art, ergebnis.saum, palette, seed);
   return ergebnis.liste;
 }
