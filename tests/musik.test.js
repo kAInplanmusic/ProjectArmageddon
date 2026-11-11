@@ -39,9 +39,10 @@ test('Jedes Stück hat seine Datei, plausible Größe und Dauer', () => {
   }
 });
 
-test('Gesamtgröße der Musik bleibt unter 4 MB', () => {
+test('Gesamtgröße der Musik bleibt unter 6,5 MB', () => {
+  // Grenze von 4 auf 6,5 MB angehoben: Das Titellied (2,0 MB) kam hinzu. Gestreamt wird ohnehin nur das laufende Stück.
   const summe = MANIFEST.stuecke.reduce((a, s) => a + statSync(join(ORDNER, s.datei)).size, 0);
-  assert.ok(summe < 4_000_000, `${summe} Bytes`);
+  assert.ok(summe < 6_500_000, `${summe} Bytes`);
 });
 
 test('Dateien tragen den Titel als Metadatum', () => {
@@ -87,9 +88,10 @@ test('waehleNaechstes wiederholt nie direkt und mischt ohne Zurücklegen', () =>
     letzte = s.id;
     folge.push(s.id);
   }
-  // Jede Runde aus drei Stücken enthält jedes genau einmal.
-  for (let i = 0; i + 3 <= folge.length; i += 3) {
-    assert.equal(new Set(folge.slice(i, i + 3)).size, 3, `Runde ab ${i} nicht vollständig`);
+  // Jede Runde aus allen Stücken enthält jedes genau einmal.
+  const n = kand.length;
+  for (let i = 0; i + n <= folge.length; i += n) {
+    assert.equal(new Set(folge.slice(i, i + n)).size, n, `Runde ab ${i} nicht vollständig`);
   }
   assert.equal(new Set(folge).size, kand.length);
 });

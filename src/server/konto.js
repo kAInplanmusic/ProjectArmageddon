@@ -222,13 +222,15 @@ function ablehnung(status, fehler, code) {
  * @param {Bremse} [optionen.bremse]
  */
 export class KontoDienst {
-  constructor({ speicher, logger = null, jetzt = () => Date.now(), sitzungsdauerMs = SITZUNGSDAUER_MS, bremse = null } = {}) {
+  constructor({ speicher, logger = null, jetzt = () => Date.now(), sitzungsdauerMs = SITZUNGSDAUER_MS, bremse = null, externPruefer = null } = {}) {
     if (!speicher) throw new Error('KontoDienst braucht einen Speicher');
     this.speicher = speicher;
     this.logger = logger;
     this.jetzt = jetzt;
     this.sitzungsdauerMs = sitzungsdauerMs;
     this.bremse = bremse ?? new Bremse({ jetzt });
+    /** Prüfer für Spieltoken der Webseite (`webAnbindung.js`): `(token, jetztMs) => {id, name} | null`. */
+    this.externPruefer = externPruefer;
   }
 
   /**
@@ -320,6 +322,7 @@ export class KontoDienst {
    */
   kontoFuerToken(token) {
     if (typeof token !== 'string' || token.length === 0) return null;
+    if (this.externPruefer && token.startsWith('pa1.')) return this.#externesKonto(token);
     const hash = tokenHash(token);
     const sitzung = this.speicher.sitzungFinden(hash);
     if (!sitzung) return null;
@@ -328,6 +331,29 @@ export class KontoDienst {
       return null;
     }
     return this.speicher.kontoNachId(sitzung.kontoId);
+  }
+
+  /**
+   * Konto zu einem Spieltoken der Webseite. Die Nutzerdatenbank der Webseite ist die Quelle der Identität;
+   * hier liegt nur ein Spiegel (lokale Kennung `w-<Nutzer-ID>`) für Rangliste und Sitzplätze. Der Spiegel
+   * hat keinen gültigen Passworthash — eine Anmeldung per Passwort ist für ihn unmöglich.
+   */
+  #externesKonto(token) {
+    const wer = this.externPruefer(token, this.jetzt());
+    if (!wer) return null;
+    const id = `w-${wer.id}`;
+    const vorhanden = this.speicher.kontoNachId(id);
+    if (vorhanden) return vorhanden;
+    const name = String(wer.name).normalize('NFC').trim().slice(0, NAME_MAX);
+    let klein = nameSchluessel(name);
+    let anzeige = name;
+    if (this.speicher.kontoNachNameKlein(klein)) { // lokales Konto gleichen Namens: Kennung anhängen
+      anzeige = `${name.slice(0, NAME_MAX - 5)}~${wer.id.slice(0, 4)}`;
+      klein = nameSchluessel(anzeige);
+    }
+    const konto = this.speicher.kontoAnlegen({ id, name: anzeige, nameKlein: klein, passwortHash: 'extern', jetzt: this.jetzt() });
+    if (konto) this.logger?.info('konto_extern', 'Konto der Webseite gespiegelt', { kontoId: id });
+    return konto ?? this.speicher.kontoNachId(id);
   }
 
   /** Liest den Token aus `Authorization: Bearer …`. */

@@ -1,69 +1,44 @@
 /**
- * Web-Zugang (Option D, docs/zugang-www.md): Login, Sitzung und Server-Start auf Abruf als reine
- * Web-Standard-Funktionen (Request -> Response), unabhängig vom Hoster. Die Netlify-Funktionen
- * unter `netlify/functions/` rufen nur `behandle()` bzw. `notAus()` auf.
+ * Web-Zugang (Option D, docs/zugang-www.md): Konten (Registrieren, Anmelden, Passwort ändern), Spieltoken,
+ * Statistik-Meldung und Server-Start auf Abruf als reine Web-Standard-Funktionen (Request -> Response),
+ * unabhängig vom Hoster. Die Netlify-Funktionen unter `netlify/functions/` rufen nur `behandle()` bzw.
+ * `notAusAuftrag()` auf. Die Nutzerlogik steht in `nutzer.mjs`, der Speicher in `speicher.mjs`.
  *
- * Keine Abhängigkeiten, nur Node >= 22 (fetch, node:crypto). Alle Geheimnisse kommen aus
- * Umgebungsvariablen des Hosters (nie aus Dateien, nie in Antworten oder Logs):
- *   HCLOUD_TOKEN            Hetzner-Projekt-Token
- *   PA_WEB_PASSWORT_HASH    `pbkdf2$<Runden>$<salz-hex>$<hash-hex>` (Seite /passwort-hash.html oder passwort-hash.mjs)
- *   PA_WEB_GEHEIMNIS        zufälliger Schlüssel für das Sitzungs-Cookie (mind. 32 Zeichen)
- *   PA_WEB_ORIGIN           erlaubte Herkunft(en) der Seite, kommagetrennt (Vorgabe https://www.projectarmageddon.de)
+ * Keine Abhängigkeiten außer `@netlify/blobs` (nur in der Funktion, nur über `speicher.mjs`), Node >= 22.
+ * Alle Geheimnisse kommen aus Umgebungsvariablen des Hosters (nie aus Dateien, nie in Antworten oder Logs):
+ *   HCLOUD_TOKEN         Hetzner-Projekt-Token
+ *   PA_WEB_GEHEIMNIS     zufälliger Schlüssel für Sitzungs-Cookie und Hintergrundauftrag (mind. 32 Zeichen)
+ *   PA_SPIEL_GEHEIMNIS   gemeinsames Geheimnis mit dem Spielserver: Spieltoken, Statistik-Signatur (mind. 32 Zeichen)
+ *   PA_REGISTRIER_HASH   Hash des Anmeldepassworts für die Registrierung
+ *   PA_START_HASH        Hash des Startpassworts (Server starten, Not-aus)
+ *   PA_KONTEN_SAAT       optional: JSON `[{"name","email","hash"}]` fester Konten (nur Hashes), beim ersten Aufruf angelegt
+ *   PA_WEB_ORIGIN        erlaubte Herkunft(en) der Seite, kommagetrennt (Vorgabe https://www.projectarmageddon.de)
  * Optional: PA_NAME, PA_SERVER_TYP (cpx22), PA_ORT (fsn1), PA_DOMAIN, PA_ACME_EMAIL, PA_IDLE_MINUTES,
  *   PA_GRACE_MINUTES, PA_MAX_RUNTIME_MINUTES, PA_MAX_MACHINE_MINUTES, PA_GIT_URL, PA_GIT_REF, PA_NODE_MAJOR,
  *   PA_HCLOUD_API, PA_WEB_FRISCH (nein = ohne Abbild nicht starten), PA_WEB_IP_HEADER.
  *
- * Grenze, ehrlich: Das Login schützt das STARTEN (und damit die Kosten). Der Spielserver unter der
- * sslip.io-Adresse ist öffentlich erreichbar; Konten/Passwörter des Spiels schützen dort die Spieler.
+ * Grenze, ehrlich: Das Startpasswort schützt das STARTEN (und damit die Kosten). Der Spielserver unter der
+ * sslip.io-Adresse ist öffentlich erreichbar; ohne gültiges Spieltoken spielt man dort als Gast.
  */
-import { createHmac, pbkdf2 as pbkdf2Cb, randomBytes, timingSafeEqual } from 'node:crypto';
-import { promisify } from 'node:util';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { GEHEIMNIS_MIN, pruefeMeldung, stelleSpieltokenAus } from '../../../src/server/webAnbindung.js';
+import { hashePasswort, pruefeGeheimnis, pruefePbkdf2 as pruefePasswort, RUNDEN } from './hash.mjs';
+import { NutzerDienst, cookieAusKopf, cookieLoeschen, cookieSetzen, neueSitzung, nutzerOeffentlich } from './nutzer.mjs';
+import { erzeugeBlobSpeicher } from './speicher.mjs';
 
-const pbkdf2 = promisify(pbkdf2Cb);
-export const RUNDEN = 600_000;
-export const SITZUNG_SEKUNDEN = 12 * 3600;
+export { hashePasswort, pruefePasswort, RUNDEN };
 const L_SERVER = 'projectarmageddon-server';
 const L_IP = 'projectarmageddon-ip';
 const L_ABBILD = 'projectarmageddon-snapshot';
-
-// ---------------------------------------------------------------- Passwort -----
-export async function hashePasswort(passwort, salz = randomBytes(16), runden = RUNDEN) {
-  const h = await pbkdf2(String(passwort), salz, runden, 32, 'sha256');
-  return `pbkdf2$${runden}$${salz.toString('hex')}$${h.toString('hex')}`;
-}
-
-export async function pruefePasswort(passwort, gespeichert) {
-  const [art, n, salz, hash] = String(gespeichert ?? '').split('$');
-  const runden = Number(n);
-  if (art !== 'pbkdf2' || !(runden >= 1000 && runden <= 5_000_000) || !/^[0-9a-f]+$/.test(salz ?? '') || !/^[0-9a-f]+$/.test(hash ?? '')) return false;
-  const soll = Buffer.from(hash, 'hex');
-  const ist = await pbkdf2(String(passwort), Buffer.from(salz, 'hex'), runden, soll.length, 'sha256');
-  return ist.length === soll.length && timingSafeEqual(ist, soll);
-}
-
-// ---------------------------------------------------------------- Sitzung -------
-const mac = (geheimnis, text) => createHmac('sha256', geheimnis).update(text).digest('base64url');
-export function neueSitzung(geheimnis, jetztMs) {
-  const bis = Math.floor(jetztMs / 1000) + SITZUNG_SEKUNDEN;
-  const nutz = `v1.${bis}.${randomBytes(9).toString('base64url')}`;
-  return `${nutz}.${mac(geheimnis, nutz)}`;
-}
-export function sitzungGueltig(wert, geheimnis, jetztMs) {
-  const teile = String(wert ?? '').split('.');
-  if (teile.length !== 4 || teile[0] !== 'v1') return false;
-  const soll = Buffer.from(mac(geheimnis, teile.slice(0, 3).join('.')));
-  const ist = Buffer.from(teile[3]);
-  return soll.length === ist.length && timingSafeEqual(soll, ist) && Number(teile[1]) > jetztMs / 1000;
-}
-const cookieWert = req => /(?:^|;\s*)pa_web=([A-Za-z0-9_.-]+)/.exec(req.headers.get('cookie') ?? '')?.[1] ?? '';
 
 // ---------------------------------------------------------------- Konfiguration -
 export function leseKonfig(env) {
   const origins = String(env.PA_WEB_ORIGIN || 'https://www.projectarmageddon.de').split(',').map(s => s.trim().toLowerCase().replace(/\/+$/, '')).filter(Boolean);
   return {
-    token: env.HCLOUD_TOKEN ?? '', hash: env.PA_WEB_PASSWORT_HASH ?? '', geheimnis: env.PA_WEB_GEHEIMNIS ?? '',
+    token: env.HCLOUD_TOKEN ?? '', geheimnis: env.PA_WEB_GEHEIMNIS ?? '', spielGeheimnis: env.PA_SPIEL_GEHEIMNIS ?? '',
+    registrierHash: env.PA_REGISTRIER_HASH ?? '', startHash: env.PA_START_HASH ?? '', saat: env.PA_KONTEN_SAAT ?? '',
     origins, api: (env.PA_HCLOUD_API || 'https://api.hetzner.cloud/v1').replace(/\/+$/, ''),
     name: env.PA_NAME || 'pa-spiel', typ: env.PA_SERVER_TYP || 'cpx22', ort: env.PA_ORT || 'fsn1',
     domain: env.PA_DOMAIN || '', acme: env.PA_ACME_EMAIL || '',
@@ -73,7 +48,10 @@ export function leseKonfig(env) {
     nodeMajor: env.PA_NODE_MAJOR || '22', frisch: env.PA_WEB_FRISCH !== 'nein', ipKopf: (env.PA_WEB_IP_HEADER || 'x-nf-client-connection-ip').toLowerCase(),
   };
 }
-export const konfigFehler = k => (!k.token ? 'HCLOUD_TOKEN fehlt' : !k.hash ? 'PA_WEB_PASSWORT_HASH fehlt' : k.geheimnis.length < 32 ? 'PA_WEB_GEHEIMNIS fehlt oder ist kürzer als 32 Zeichen' : '');
+/** Grundlage für alles (Konten, Spieltoken). Server-Start braucht zusätzlich `startFehler`. */
+export const konfigFehler = k => (k.geheimnis.length < 32 ? 'PA_WEB_GEHEIMNIS fehlt oder ist kürzer als 32 Zeichen'
+  : k.spielGeheimnis.length < GEHEIMNIS_MIN ? 'PA_SPIEL_GEHEIMNIS fehlt oder ist kürzer als 32 Zeichen' : '');
+export const startFehler = k => (!k.token ? 'HCLOUD_TOKEN fehlt' : !k.startHash ? 'PA_START_HASH fehlt' : '');
 export const sslipHost = ip => `${String(ip).replace(/\./g, '-')}.sslip.io`;
 
 // ---------------------------------------------------------------- Hetzner -------
@@ -97,6 +75,7 @@ export function baueUserData(k, domain, installer, modus) {
     'HOST=127.0.0.1', 'PORT=3000', 'LOG_LEVEL=info', 'LOG_FORMAT=json',
     'PA_STATE_PATH=/var/lib/projectarmageddon/lobbies.json', 'PA_KONTEN_PFAD=/var/lib/projectarmageddon/konten.db',
     'PA_ERLAUBE_OEFFENTLICH=no', 'PA_BUILD=0',
+    'PA_SPIEL_GEHEIMNIS_DATEI=/run/projectarmageddon/spiel-geheimnis', `PA_STATISTIK_URL=${k.origins[0]}/api/web/statistik`,
     `PA_ERLAUBTE_ORIGINS=${['https://' + domain, ...k.origins].join(',')}`, `PA_EIGENER_ORIGIN=https://${domain}`, 'PA_VERTRAUTE_PROXYS=127.0.0.1,::1',
     'PA_SICHERUNG_DIR=/var/lib/projectarmageddon/sicherungen', 'PA_SICHERUNG_BEHALTEN=10',
     `PA_IDLE_MINUTES=${k.idle}`, `PA_GRACE_MINUTES=${k.grace}`, `PA_MAX_RUNTIME_MINUTES=${k.maxRt}`, `PA_MAX_MACHINE_MINUTES=${k.maxM}`,
@@ -112,6 +91,7 @@ export function baueUserData(k, domain, installer, modus) {
     ssh_pwauth: false, disable_root: true,
     write_files: [
       w('/run/projectarmageddon/hcloud-token', '0600', `${k.token}\n`),
+      w('/run/projectarmageddon/spiel-geheimnis', '0600', `${k.spielGeheimnis}\n`),
       w('/etc/projectarmageddon/betrieb.env', '0600', `${env.join('\n')}\n`),
       w('/etc/projectarmageddon/boot.env', '0600', `${boot.join('\n')}\n`),
       w('/etc/systemd/system/caddy.service.d/pa.conf', '0644', caddy),
@@ -228,13 +208,25 @@ export async function notAus(k, deps, log = () => {}) {
 }
 
 // ---------------------------------------------------------------- HTTP-Schicht --
-const versuche = new Map(); // ip -> { n, bis }  (je Funktionsinstanz; bestmöglich, siehe docs/zugang-www.md)
-export function leereLimit() { versuche.clear(); }
-
 const kopf = (extra = {}) => ({ 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', ...extra });
 const antwort = (code, obj, extra) => new Response(JSON.stringify(obj), { status: code, headers: kopf(extra) });
+const ablehnung = r => antwort(r.status, { fehler: r.fehler, code: r.code }, r.status === 429 ? { 'retry-after': '900' } : undefined);
+const gleich = (a, b) => { const x = Buffer.from(String(a)); const y = Buffer.from(String(b)); return x.length === y.length && timingSafeEqual(x, y); };
 
-/** Ein Aufruf. `deps`: { env, fetch, sleep, jetzt, installer } — für Tests ersetzbar. */
+/** Auftrag an die Hintergrundfunktion: kurzlebig (60 s) und mit dem Cookie-Geheimnis signiert (statt Cookie + Startpasswort weiterzureichen). */
+export const auftragsKopf = (k, jetztMs) => { const e = Math.floor(jetztMs / 1000) + 60; return `${e}.${createHmac('sha256', k.geheimnis).update(`not-aus.${e}`).digest('base64url')}`; };
+const auftragGueltig = (k, wert, jetztMs) => { const [e, m] = String(wert ?? '').split('.'); return Number(e) * 1000 > jetztMs && m !== undefined && gleich(createHmac('sha256', k.geheimnis).update(`not-aus.${e}`).digest('base64url'), m); };
+
+const saatErledigt = new WeakSet(); // je Speicher-Objekt (= je Funktionsinstanz) einmal; die Saat selbst ist idempotent
+const standardSpeicher = { wert: null };
+async function dienstFuer(k, deps) {
+  const speicher = deps.speicher ?? (standardSpeicher.wert ??= await erzeugeBlobSpeicher());
+  const dienst = new NutzerDienst({ speicher, jetzt: deps.jetzt, sleep: deps.sleep });
+  if (k.saat && !saatErledigt.has(speicher)) { await dienst.saat(k.saat); saatErledigt.add(speicher); }
+  return dienst;
+}
+
+/** Ein Aufruf. `deps`: { env, fetch, sleep, jetzt, installer, speicher } — für Tests ersetzbar. */
 export async function behandle(req, depsIn = {}) {
   const deps = { env: process.env, fetch: globalThis.fetch, sleep: ms => new Promise(r => setTimeout(r, ms)), jetzt: Date.now, installer: ladeInstaller, ...depsIn };
   const k = leseKonfig(deps.env);
@@ -242,48 +234,84 @@ export async function behandle(req, depsIn = {}) {
   if (fehl) return antwort(500, { fehler: `Einrichtung unvollständig: ${fehl}` });
   const url = new URL(req.url);
   const aktion = url.pathname.replace(/\/+$/, '').split('/').pop();
-  const origin = (req.headers.get('origin') ?? '').toLowerCase();
-  const gleicheSeite = origin === '' ? req.method === 'GET' : k.origins.includes(origin);
-  if (req.method !== 'GET' && (!gleicheSeite || req.headers.get('x-pa-web') !== '1')) return antwort(403, { fehler: 'Herkunft nicht erlaubt' });
   const ip = (req.headers.get(k.ipKopf) ?? req.headers.get('x-forwarded-for')?.split(',')[0] ?? '?').trim();
-  const angemeldet = sitzungGueltig(cookieWert(req), k.geheimnis, deps.jetzt());
 
-  if (aktion === 'login' && req.method === 'POST') {
-    const t = deps.jetzt();
-    const f = versuche.get(ip);
-    if (f && f.n >= 5 && f.bis > t) return antwort(429, { fehler: 'Zu viele Versuche. Später erneut.' }, { 'retry-after': '900' });
-    let eingabe = ''; try { eingabe = String((await req.json()).passwort ?? '').slice(0, 200); } catch { /* leer */ }
-    if (await pruefePasswort(eingabe, k.hash)) {
-      versuche.delete(ip);
-      const c = `pa_web=${neueSitzung(k.geheimnis, t)}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${SITZUNG_SEKUNDEN}`;
-      return antwort(200, { ok: true }, { 'set-cookie': c });
-    }
-    versuche.set(ip, { n: (f && f.bis > t ? f.n : 0) + 1, bis: t + 15 * 60_000 });
-    await deps.sleep(600);
-    return antwort(401, { fehler: 'Falsches Passwort.' });
-  }
-  if (aktion === 'logout' && req.method === 'POST') return antwort(200, { ok: true }, { 'set-cookie': 'pa_web=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0' });
-  if (!angemeldet) return antwort(401, { fehler: 'Bitte anmelden.' });
   try {
-    if (aktion === 'status' && req.method === 'GET') return antwort(200, await ermittleStatus(k, deps));
-    if (aktion === 'start' && req.method === 'POST') {
-      const r = await starten(k, deps);
-      return antwort(r.code, r.code < 300 ? { zustand: 'startet', hinweis: r.text } : { fehler: r.text });
+    // Meldung des Spielservers: keine Sitzung, keine Herkunft — nur die Signatur zählt.
+    if (aktion === 'statistik' && req.method === 'POST') {
+      const body = await req.text();
+      if (body.length > 64_000 || !pruefeMeldung(k.spielGeheimnis, req.headers.get('x-pa-zeit'), req.headers.get('x-pa-signatur'), body, deps.jetzt())) return antwort(401, { fehler: 'Signatur ungültig' });
+      let m = null; try { m = JSON.parse(body); } catch { /* ungültig */ }
+      const r = await (await dienstFuer(k, deps)).statistikVerbuchen(m);
+      return r.ok ? antwort(200, { ok: true, ergebnisse: r.ergebnisse }) : ablehnung(r);
     }
-    if (aktion === 'not-aus' && req.method === 'POST') {
-      if (deps.notAusStarten) { await deps.notAusStarten(req); return antwort(202, { zustand: 'sichert', hinweis: 'Not-aus läuft im Hintergrund (Abbild, Prüfung, Löschen).' }); }
+
+    const origin = (req.headers.get('origin') ?? '').toLowerCase();
+    const gleicheSeite = origin === '' ? req.method === 'GET' : k.origins.includes(origin);
+    if (req.method !== 'GET' && (!gleicheSeite || req.headers.get('x-pa-web') !== '1')) return antwort(403, { fehler: 'Herkunft nicht erlaubt' });
+    const dienst = await dienstFuer(k, deps);
+    const koerper = async () => { try { const b = await req.json(); return b && typeof b === 'object' ? b : {}; } catch { return {}; } };
+    const t = deps.jetzt();
+    const setzeCookie = n => ({ 'set-cookie': cookieSetzen(neueSitzung(k.geheimnis, n.id, n.sv, t)) });
+
+    if (aktion === 'registrieren' && req.method === 'POST') {
+      const b = await koerper();
+      const r = await dienst.registrieren({ email: b.email, name: b.name, passwort: b.passwort, anmeldepasswort: b.anmeldepasswort, ip, anmeldepasswortHash: k.registrierHash });
+      return r.ok ? antwort(200, { ok: true, nutzer: nutzerOeffentlich(r.nutzer) }, setzeCookie(r.nutzer)) : ablehnung(r);
+    }
+    if (aktion === 'login' && req.method === 'POST') {
+      const b = await koerper();
+      const r = await dienst.anmelden({ kennung: b.kennung, passwort: b.passwort, ip });
+      return r.ok ? antwort(200, { ok: true, nutzer: nutzerOeffentlich(r.nutzer) }, setzeCookie(r.nutzer)) : ablehnung(r);
+    }
+    if (aktion === 'logout' && req.method === 'POST') return antwort(200, { ok: true }, { 'set-cookie': cookieLoeschen });
+
+    const nutzer = await dienst.nutzerAusSitzung(cookieAusKopf(req.headers.get('cookie')), k.geheimnis);
+    if (!nutzer) return antwort(401, { fehler: 'Bitte anmelden.' });
+
+    if (aktion === 'ich' && req.method === 'GET') return antwort(200, { nutzer: nutzerOeffentlich(nutzer) });
+    if (aktion === 'passwort-aendern' && req.method === 'POST') {
+      const b = await koerper();
+      const r = await dienst.passwortAendern({ nutzer, altes: b.altes, neues: b.neues });
+      return r.ok ? antwort(200, { ok: true }, setzeCookie(r.nutzer)) : ablehnung(r);
+    }
+    if (aktion === 'spieltoken' && req.method === 'POST') {
+      const x = stelleSpieltokenAus(k.spielGeheimnis, { nutzerId: nutzer.id, name: nutzer.name }, t);
+      return antwort(200, { token: x.token, laeuftAb: x.laeuftAb, name: nutzer.name });
+    }
+
+    if (aktion === 'status' && req.method === 'GET') {
+      if (!k.token) return antwort(500, { fehler: 'Einrichtung unvollständig: HCLOUD_TOKEN fehlt' });
+      return antwort(200, await ermittleStatus(k, deps));
+    }
+    if ((aktion === 'start' || aktion === 'not-aus') && req.method === 'POST') {
+      const sf = startFehler(k);
+      if (sf) return antwort(500, { fehler: `Einrichtung unvollständig: ${sf}` });
+      const b = await koerper();
+      if ((await dienst.gesperrt(`s:${nutzer.id}`, 5)) || (await dienst.gesperrt(`s:${ip}`, 10))) return antwort(429, { fehler: 'Zu viele Versuche. Bitte in 15 Minuten erneut.' }, { 'retry-after': '900' });
+      if (typeof b.startcode !== 'string' || !(await pruefeGeheimnis(b.startcode.slice(0, 200), k.startHash))) {
+        await dienst.fehlversuch(`s:${nutzer.id}`); await dienst.fehlversuch(`s:${ip}`); await deps.sleep(600);
+        return antwort(403, { fehler: 'Startcode falsch.' });
+      }
+      await dienst.entlaste(`s:${nutzer.id}`); await dienst.entlaste(`s:${ip}`);
+      if (aktion === 'start') {
+        const r = await starten(k, deps);
+        return antwort(r.code, r.code < 300 ? { zustand: 'startet', hinweis: r.text } : { fehler: r.text });
+      }
+      // Not-aus dauert Minuten: eine Hintergrundfunktion (bis 15 min) übernimmt; sie prüft den signierten Auftrag selbst.
+      if (deps.notAusStarten) { await deps.notAusStarten(req, auftragsKopf(k, t)); return antwort(202, { zustand: 'sichert', hinweis: 'Not-aus läuft im Hintergrund (Abbild, Prüfung, Löschen).' }); }
       return antwort(501, { fehler: 'Kein Hintergrundauftrag verdrahtet' });
     }
   } catch (e) {
-    return antwort(502, { fehler: String(e?.message ?? e).replaceAll(k.token, '***') });
+    return antwort(502, { fehler: String(e?.message ?? e).replaceAll(k.token || '\u0000', '***').replaceAll(k.spielGeheimnis, '***').replaceAll(k.geheimnis, '***') });
   }
   return antwort(404, { fehler: 'unbekannt' });
 }
 
-/** Hintergrundauftrag (Netlify `*-background`): prüft Sitzung und Herkunft selbst, dann notAus(). */
+/** Hintergrundauftrag (Netlify `*-background`): prüft den signierten Auftrag (kein Cookie, kein Startpasswort), dann notAus(). */
 export async function notAusAuftrag(req, depsIn = {}) {
   const deps = { env: process.env, fetch: globalThis.fetch, sleep: ms => new Promise(r => setTimeout(r, ms)), jetzt: Date.now, ...depsIn };
   const k = leseKonfig(deps.env);
-  if (konfigFehler(k) || req.method !== 'POST' || !k.origins.includes((req.headers.get('origin') ?? '').toLowerCase()) || req.headers.get('x-pa-web') !== '1' || !sitzungGueltig(cookieWert(req), k.geheimnis, deps.jetzt())) return antwort(403, { fehler: 'abgelehnt' });
+  if (konfigFehler(k) || startFehler(k) || req.method !== 'POST' || !auftragGueltig(k, req.headers.get('x-pa-auftrag'), deps.jetzt())) return antwort(403, { fehler: 'abgelehnt' });
   try { return antwort(200, { ergebnis: await notAus(k, deps) }); } catch (e) { return antwort(502, { fehler: String(e?.message ?? e).replaceAll(k.token, '***') }); }
 }

@@ -14,6 +14,7 @@
 #
 #  Vorher hat cloud-init (write_files) geschrieben:
 #    /run/projectarmageddon/hcloud-token   tmpfs, 0600 — das Token NIE auf die Platte
+#    /run/projectarmageddon/spiel-geheimnis tmpfs, 0600 (später root:pa 0640) — Geheimnis für Spieltoken/Statistik
 #    /etc/projectarmageddon/betrieb.env    Betriebsparameter (keine Geheimnisse)
 #    /etc/projectarmageddon/boot.env       PA_GIT_URL, PA_GIT_REF, PA_NODE_MAJOR, PA_DOMAIN,
 #                                          PA_ACME_EMAIL, PA_SSH (ja|nein)
@@ -172,7 +173,15 @@ beleg_melden() {
   } | sed 's/  */ /g' | fold -w 50 | while IFS= read -r l; do etikett projectarmageddon-zeile "$l"; sleep 3; done
 }
 
+# Das Spiel-Geheimnis (Spieltoken, Statistik-Signatur) liegt wie das Token nur im tmpfs; der Dienst (Gruppe pa) liest es.
+spielgeheimnis_freigeben() {
+  [ -f /run/projectarmageddon/spiel-geheimnis ] || return 0
+  id pa >/dev/null 2>&1 || return 0
+  chown root:pa /run/projectarmageddon/spiel-geheimnis && chmod 0640 /run/projectarmageddon/spiel-geheimnis || true
+}
+
 starten() {
+  spielgeheimnis_freigeben
   phase start
   # Zustand des Leerlauf-Zählers aus dem Abbild verwerfen: sonst gilt der neue Server sofort als lange unbenutzt.
   rm -f /var/lib/projectarmageddon/first-seen /var/lib/projectarmageddon/last-active /var/lib/projectarmageddon/last-sample-* 2>/dev/null || true
@@ -244,6 +253,7 @@ frisch() {
   paket=$(ls release/projectarmageddon-*.tar.gz | head -n1)
   phase deploy
   id pa >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin pa
+  spielgeheimnis_freigeben
   install -d -m 755 "$BASIS"
   install -d -m 700 /etc/projectarmageddon
   cp deploy/systemd/projectarmageddon.service deploy/systemd/projectarmageddon-idle.service deploy/systemd/projectarmageddon-idle.timer /etc/systemd/system/

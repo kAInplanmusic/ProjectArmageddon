@@ -1,52 +1,27 @@
 /**
- * Web-Zugang (Option D, docs/zugang-www.md): Login, Start-Knopf und Statusseite VOR dem Spiel.
+ * Web-Zugang (Option D, docs/zugang-www.md): Anmeldung vor dem Spiel, Startscreen mit Startcode-Feld,
+ * Serverstatus und Spieltoken.
  *
- * Wird nur in dem Build geladen, der mit PA_WEB_BUILD=1 entsteht (vite.config.mjs) und neben
- * `pa-web.json` liegt. Ohne diese Datei (Server liefert den Client selbst aus) tut das Modul nichts.
- * Kein Einfluss auf Engine oder Replay: Nach „bereit" wird nur das Feld „Online: Server" gesetzt —
- * dieselbe Adresse, die der Client ohnehin als Spielserver kennt (`serverBasis()` in konto.js).
+ * Wird nur in dem Build geladen, der mit PA_WEB_BUILD=1 entsteht (vite.config.mjs) und neben `pa-web.json`
+ * liegt. Ohne diese Datei (Server liefert den Client selbst aus) tut das Modul nichts.
+ * Kein Einfluss auf Engine oder Replay.
+ *
+ * Ablauf: 1. Login/Registrieren (`webAnmeldung.js`). 2. Der normale Startscreen des Spiels (Logo, Titellied
+ * über die Menümusik) bekommt eine Leiste: Konto (Passwort ändern, Abmelden), ein unbeschriftetes Feld
+ * (aria-label „Startcode") und eine Statuszeile. Der Startcode fährt den Server hoch; läuft er schon, spielen
+ * Angemeldete ohne Code. 3. Bei „bereit" wird „Online: Server" gesetzt und ein kurzlebiges Spieltoken
+ * (`/api/web/spieltoken`) als Sitzung des Spiels abgelegt (`konto.js`), das regelmäßig erneuert wird.
  */
-const API = '/api/web';
+import { loescheSitzung, serverBasis, speichereSitzung } from './konto.js';
+import { statusText, versionenPassen, ruf, fehlerText } from './webApi.js';
+import { stilEinfuegen, zeigeAnmeldung, zeigePasswortDialog } from './webAnmeldung.js';
+
+export { versionenPassen };
 const TAKT_MS = 5000;
+const TAKT_BEREIT_MS = 30_000;
+const TOKEN_ERNEUERN_MS = 25 * 60_000;
 
-async function ruf(pfad, methode = 'GET', body = null) {
-  const r = await fetch(`${API}/${pfad}`, {
-    method: methode, credentials: 'same-origin',
-    headers: methode === 'GET' ? {} : { 'content-type': 'application/json', 'x-pa-web': '1' },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  let daten = {}; try { daten = await r.json(); } catch { /* leer */ }
-  return { ok: r.ok, status: r.status, daten };
-}
-
-const TEXTE = {
-  aus: 'Der Spielserver ist aus. Er fährt auf Knopfdruck hoch (ca. 2 bis 4 Minuten) und sichert sich nach Leerlauf selbst.',
-  startet: 'Der Server wird gestartet. Diese Seite aktualisiert sich selbst.',
-  sichert: 'Der Server sichert sich gerade und verschwindet. Danach kannst du ihn neu starten.',
-  bereit: 'Der Server ist bereit.',
-};
-
-export function versionenPassen(client, server) {
-  if (!client || !server) return true;
-  return (!client.version || !server.version || client.version === server.version) && (!client.gitSha || !server.gitSha || client.gitSha === server.gitSha);
-}
-
-function baue() {
-  const w = document.createElement('div');
-  w.id = 'pa-web-start';
-  w.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#14161a;color:#e8e8e8;font:16px system-ui;padding:1rem';
-  w.innerHTML = '<div style="max-width:30rem;width:100%"><h1 style="margin:0 0 1rem">ProjectArmageddon</h1><p id="pa-web-text"></p><div id="pa-web-bereich"></div></div>';
-  document.body.appendChild(w);
-  return { wurzel: w, text: w.querySelector('#pa-web-text'), bereich: w.querySelector('#pa-web-bereich') };
-}
-const knopf = (beschriftung, tat, rot = false) => {
-  const b = document.createElement('button');
-  b.textContent = beschriftung; b.onclick = tat;
-  b.style.cssText = `display:block;width:100%;font:inherit;padding:.8rem;margin:.4rem 0;border-radius:.4rem;border:1px solid #555;color:#fff;background:${rot ? '#7a1f1f' : '#232830'}`;
-  return b;
-};
-
-export async function starteWebStart() {
+export async function starteWebStart(doc = document) {
   let konfig = null;
   try {
     const r = await fetch('pa-web.json', { cache: 'no-store' });
@@ -54,61 +29,106 @@ export async function starteWebStart() {
     konfig = await r.json();
   } catch { return; }
   if (!konfig?.gateway) return;
-  const ui = baue();
-  let timer = null;
 
-  const zeigeLogin = (meldung = '') => {
-    clearTimeout(timer);
-    ui.text.textContent = meldung || 'Bitte anmelden, um den Spielserver zu starten.';
-    ui.bereich.replaceChildren();
-    const feld = document.createElement('input');
-    feld.type = 'password'; feld.placeholder = 'Passwort'; feld.autocomplete = 'current-password';
-    feld.style.cssText = 'display:block;width:100%;box-sizing:border-box;font:inherit;padding:.8rem;border-radius:.4rem;border:1px solid #555;background:#232830;color:#fff';
-    const los = async () => {
-      const r = await ruf('login', 'POST', { passwort: feld.value });
-      if (r.ok) return aktualisiere(); zeigeLogin(r.daten.fehler ?? 'Anmeldung fehlgeschlagen.');
-    };
-    feld.onkeydown = e => { if (e.key === 'Enter') los(); };
-    ui.bereich.append(feld, knopf('Anmelden', los));
-    feld.focus();
+  let timer = null; let tokenTimer = null; let leiste = null; let letzter = null;
+  const el = (tag, eig = {}, ...kinder) => { const e = doc.createElement(tag); Object.assign(e, eig); e.append(...kinder); return e; };
+
+  const holeToken = async () => {
+    const r = await ruf('spieltoken', 'POST', {});
+    if (r.status === 401) { await abgelaufen(); return false; }
+    if (r.ok) speichereSitzung({ token: r.daten.token, name: r.daten.name, server: serverBasis() });
+    return r.ok;
   };
 
-  const aktualisiere = async () => {
+  const stoppe = () => { clearTimeout(timer); clearInterval(tokenTimer); };
+
+  async function abgelaufen() { stoppe(); leiste?.remove(); leiste = null; loescheSitzung(); await anmelden(); }
+
+  async function anmelden() {
+    const nutzer = await zeigeAnmeldung(doc);
+    zeigeLeiste(nutzer);
+  }
+
+  function zeigeLeiste(nutzer) {
+    stilEinfuegen(doc);
+    doc.getElementById('konto-browser')?.setAttribute('hidden', ''); // das Konto des Spielservers ersetzt die Webseite
+    const marke = doc.querySelector('#menu-overlay .menu-marke') ?? doc.body;
+    leiste = el('div', { className: 'pa-web-leiste', id: 'pa-web-leiste' });
+    const kopf = el('div', { className: 'pa-web-zeile' }, 'Angemeldet als ', el('b', { textContent: nutzer.name }));
+    const pw = el('button', { type: 'button', textContent: 'Passwort ändern' });
+    pw.onclick = async () => { if (await zeigePasswortDialog(doc)) meldung('Passwort geändert.'); };
+    const aus = el('button', { type: 'button', textContent: 'Abmelden' });
+    aus.onclick = async () => { await ruf('logout', 'POST', {}); await abgelaufen(); };
+    kopf.append(pw, aus);
+
+    // Unbeschriftetes Feld (kein sichtbares Label), für Hilfstechnik trotzdem benannt.
+    const code = el('input', { type: 'text', id: 'pa-startcode', name: 'startcode', autocomplete: 'off', autocapitalize: 'none', spellcheck: false, maxLength: 200 });
+    code.setAttribute('aria-label', 'Startcode'); code.setAttribute('autocorrect', 'off'); code.setAttribute('data-1p-ignore', ''); code.setAttribute('data-lpignore', 'true');
+    const notaus = el('button', { type: 'button', textContent: 'Not-aus', hidden: true });
+    notaus.title = 'Server sichern und löschen (Startcode ins Feld eingeben)';
+    const status = el('p', { className: 'pa-web-status', id: 'pa-web-status', style: 'margin:0' });
+    status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+    const zeile = el('div', { className: 'pa-web-zeile' }, code, notaus);
+    leiste.append(kopf, zeile, status);
+    marke.append(leiste);
+
+    const meldung = t => { status.textContent = t; };
+    leiste.meldung = meldung;
+    const eingabeLeeren = () => { code.value = ''; };
+
+    code.onkeydown = async e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const wert = code.value;
+      if (!wert) return;
+      if (letzter && letzter.zustand !== 'aus') { meldung(`${statusText(letzter)} Der Startcode wird nur zum Hochfahren gebraucht.`); eingabeLeeren(); return; }
+      const r = await ruf('start', 'POST', { startcode: wert });
+      eingabeLeeren();
+      if (r.status === 401) return abgelaufen();
+      if (!r.ok) { meldung(fehlerText(r, 'Start fehlgeschlagen.')); return; } // Meldung bleibt bis zur nächsten Abfrage stehen
+      meldung('Server wird gestartet …');
+      aktualisiere();
+    };
+    notaus.onclick = async () => {
+      if (!code.value) { meldung('Für den Not-aus den Startcode in das Feld eingeben.'); code.focus(); return; }
+      if (!doc.defaultView.confirm('Not-aus: Server herunterfahren, Abbild prüfen, löschen?')) return;
+      const r = await ruf('not-aus', 'POST', { startcode: code.value });
+      eingabeLeeren();
+      meldung(r.ok ? 'Not-aus läuft …' : fehlerText(r, 'Not-aus fehlgeschlagen.'));
+    };
+
+    holeToken();
+    tokenTimer = setInterval(() => { if (!doc.hidden) holeToken(); }, TOKEN_ERNEUERN_MS);
+    leiste.notaus = notaus;
+    aktualisiere();
+  }
+
+  async function aktualisiere() {
     clearTimeout(timer);
+    if (!leiste) return;
     let r;
-    try { r = await ruf('status'); } catch { ui.text.textContent = 'Keine Verbindung zum Zugang. Neuer Versuch …'; timer = setTimeout(aktualisiere, TAKT_MS); return; }
-    if (r.status === 401) return zeigeLogin();
-    if (!r.ok) { ui.text.textContent = r.daten.fehler ?? `Fehler ${r.status}`; timer = setTimeout(aktualisiere, TAKT_MS * 2); return; }
-    const s = r.daten;
-    ui.text.textContent = TEXTE[s.zustand] ?? s.zustand;
-    ui.bereich.replaceChildren();
-    if (s.zustand === 'aus') {
-      ui.bereich.append(knopf(s.abbild ? 'Server starten' : 'Server starten (erste Einrichtung, dauert länger)', async () => {
-        const a = await ruf('start', 'POST', {});
-        if (!a.ok) ui.text.textContent = a.daten.fehler ?? 'Start fehlgeschlagen.';
-        aktualisiere();
-      }));
-    } else if (s.zustand === 'startet') {
-      ui.text.textContent += s.phase ? ` (Phase: ${s.phase})` : '';
-    } else if (s.zustand === 'bereit') {
+    try { r = await ruf('status'); } catch { leiste.meldung('Keine Verbindung zum Zugang. Neuer Versuch …'); timer = setTimeout(aktualisiere, TAKT_MS); return; }
+    if (r.status === 401) return abgelaufen();
+    if (!r.ok) { leiste.meldung(r.daten.fehler ?? `Fehler ${r.status}`); timer = setTimeout(aktualisiere, TAKT_MS * 2); return; }
+    const s = r.daten; letzter = s;
+    let text = statusText(s);
+    leiste.notaus.hidden = !(s.zustand === 'startet' || s.zustand === 'bereit');
+    if (s.zustand === 'bereit') {
       let clientVersion = null;
       try { clientVersion = await (await fetch('version.json', { cache: 'no-store' })).json(); } catch { /* ohne Vergleich */ }
-      const feld = document.getElementById('cfg-server');
-      if (feld) { feld.value = s.spielUrl; feld.dispatchEvent(new Event('input', { bubbles: true })); feld.dispatchEvent(new Event('change', { bubbles: true })); }
-      const oeffnen = () => ui.wurzel.remove();
-      if (versionenPassen(clientVersion, s)) return oeffnen();
-      ui.text.textContent = `Achtung: Die Seite (${clientVersion?.version} ${clientVersion?.gitSha ?? ''}) und der Server (${s.version} ${s.gitSha ?? ''}) haben unterschiedliche Versionen. Das Spielen kann scheitern.`;
-      ui.bereich.append(knopf('Trotzdem spielen', oeffnen));
+      const feld = doc.getElementById('cfg-server');
+      if (feld && feld.value !== s.spielUrl) { feld.value = s.spielUrl; feld.dispatchEvent(new Event('input', { bubbles: true })); feld.dispatchEvent(new Event('change', { bubbles: true })); }
+      await holeToken();
+      if (!versionenPassen(clientVersion, s)) text += ` Achtung: Seite (${clientVersion?.version} ${clientVersion?.gitSha ?? ''}) und Server (${s.version} ${s.gitSha ?? ''}) haben unterschiedliche Versionen, das Spielen kann scheitern.`;
     }
-    if (s.zustand !== 'bereit') {
-      if (s.zustand !== 'sichert') ui.bereich.append(knopf('Not-aus (Abbild sichern, Server löschen)', async () => {
-        if (!confirm('Not-aus: Server herunterfahren, Abbild prüfen, löschen?')) return;
-        const a = await ruf('not-aus', 'POST', {}); ui.text.textContent = a.ok ? 'Not-aus läuft …' : (a.daten.fehler ?? 'Not-aus fehlgeschlagen.');
-      }, true));
-      timer = setTimeout(aktualisiere, TAKT_MS);
-    }
-  };
-  aktualisiere();
+    leiste.meldung(text);
+    timer = setTimeout(() => { if (doc.hidden) timer = setTimeout(aktualisiere, TAKT_MS); else aktualisiere(); }, s.zustand === 'bereit' ? TAKT_BEREIT_MS : TAKT_MS);
+  }
+
+  // Schon angemeldet (Cookie gültig)? Dann direkt zum Startscreen, sonst das Anmeldefenster.
+  let ich = null;
+  try { ich = await ruf('ich'); } catch { /* Anmeldefenster */ }
+  if (ich?.ok) zeigeLeiste(ich.daten.nutzer); else await anmelden();
 }
 
 if (typeof document !== 'undefined') starteWebStart();

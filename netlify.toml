@@ -1,5 +1,6 @@
 # Option D (docs/zugang-www.md): statischer Client + Login/Start als Funktionen. Keine Geheimnisse in dieser Datei —
-# HCLOUD_TOKEN, PA_WEB_PASSWORT_HASH, PA_WEB_GEHEIMNIS setzt der Auftraggeber in der Netlify-Oberfläche.
+# HCLOUD_TOKEN, PA_WEB_GEHEIMNIS, PA_SPIEL_GEHEIMNIS, PA_REGISTRIER_HASH, PA_START_HASH, PA_KONTEN_SAAT setzt der
+# Auftraggeber in der Netlify-Oberfläche (docs/zugang-www.md). Nutzerdaten liegen in Netlify Blobs (kein Zusatzkonto).
 [build]
   command = "npm ci && PA_WEB_BUILD=1 npm run build"
   publish = "dist"

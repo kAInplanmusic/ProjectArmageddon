@@ -121,6 +121,8 @@ export class Musik {
   #versteckt = false;
   #aufgegeben = false;
   #fehlversuche = 0;
+  /** Das Titellied lädt nicht: das Menü fällt auf die übrigen Menüstücke zurück. */
+  #titelDefekt = false;
   #zaehler = { ueberblendungen: 0, ducken: 0, fehler: 0, starts: 0 };
   #hoerer = new Set();
 
@@ -407,13 +409,19 @@ export class Musik {
       const h = hymnenStueck(this.#hymnen, this.#hymne, this.#hymnenNamen[this.#hymne] ?? this.#hymne);
       if (h) { this.#starteStueck(h); return; }
     }
-    const kandidaten = stueckeFuer(this.#manifest, this.#stimmung);
+    const kandidaten = stueckeFuer(this.#manifestAktuell(), this.#stimmung);
     let runde = this.#runde.filter(id => kandidaten.some(k => k.id === id));
     if (runde.length >= kandidaten.length) runde = [];
     const stueck = waehleNaechstes(kandidaten, this.#letzteId, runde, this.#zufall);
     if (!stueck) return;
     this.#runde = [...runde, stueck.id];
     this.#starteStueck(stueck);
+  }
+
+  /** Das Manifest ohne ein defektes Titellied (sonst unverändert). */
+  #manifestAktuell() {
+    if (!this.#titelDefekt) return this.#manifest;
+    return { ...this.#manifest, stuecke: this.#manifest.stuecke.filter(s => s.titellied !== true) };
   }
 
   #starteStueck(stueck) {
@@ -491,6 +499,7 @@ export class Musik {
       this.#spieleNaechstes();
       return;
     }
+    if (stueck?.titellied === true) this.#titelDefekt = true;
     this.#fehlversuche += 1;
     const gesamt = this.#manifest.stuecke.length;
     if (this.#fehlversuche >= gesamt) {

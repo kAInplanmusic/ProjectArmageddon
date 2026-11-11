@@ -40,6 +40,7 @@ import { SIMULATION_HZ } from '../shared/config/network.js';
 import { TokenBucket, RATE_TRENNEN_NACH } from './rateLimit.js';
 import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
 import { KontoDienst } from './konto.js';
+import { baueExternPruefer, baueMeldung, leseSpielGeheimnis, sendeMeldung } from './webAnbindung.js';
 import { oeffneSpeicher } from './kontoSpeicher.js';
 import { verbuchePartie, rangliste, bestwerte, ranglistenStand, siegquote, kdVerhaeltnis } from './bestenliste.js';
 /*
@@ -876,7 +877,7 @@ export class GameServer {
     if (this.#kontenDienst) return this.#kontenDienst;
     try {
       const speicher = oeffneSpeicher({ pfad: this.#kontenPfad, art: this.#kontenArt });
-      this.#kontenDienst = new KontoDienst({ speicher, logger: this.logger });
+      this.#kontenDienst = new KontoDienst({ speicher, logger: this.logger, externPruefer: baueExternPruefer(leseSpielGeheimnis()) });
       this.logger.info('konten_offen', 'Kontospeicher geöffnet', {
         art: speicher.art,
         pfad: speicher.pfad,
@@ -928,6 +929,7 @@ export class GameServer {
    * Gäste und lokale Partien zählen nicht.
    */
   #partieVerbuchen({ lobby, stats }) {
+    this.#meldeAnWeb({ lobby, stats });
     const seats = lobby?.seats ?? [];
     if (!seats.some(seat => seat.kontoId)) return;
     const dienst = this.#holeKonten();
@@ -956,6 +958,19 @@ export class GameServer {
         grund: ergebnis.grund,
       });
     }
+  }
+
+  /** Meldet die Partie signiert an die Nutzerdatenbank der Webseite (nur mit Geheimnis und `PA_STATISTIK_URL`). */
+  #meldeAnWeb({ lobby, stats }) {
+    const url = process.env.PA_STATISTIK_URL;
+    const geheimnis = leseSpielGeheimnis();
+    if (!url || !geheimnis) return;
+    const jetztMs = Date.now();
+    const nutzlast = baueMeldung({ lobby, stats, jetztMs });
+    if (!nutzlast) return;
+    void sendeMeldung({ url, geheimnis, nutzlast, jetztMs }).then(r => {
+      this.logger.info('web_statistik', r.ok ? 'Partie an die Webseite gemeldet' : 'Meldung an die Webseite fehlgeschlagen', { lobbyId: lobby.id, status: r.status });
+    });
   }
 
   /**

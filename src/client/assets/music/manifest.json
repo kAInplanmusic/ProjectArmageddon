@@ -1,10 +1,11 @@
 {
   "version": 1,
-  "hinweis": "Neue Stücke: Datei mit scripts/musik-kodieren.sh erzeugen und hier eintragen. stimmung: menu | match | intensiv. dauer in Sekunden (ffprobe). Urheber und Rechteinhaber aller Stücke: Patrick Hilf (siehe MASTERDOTO, Musik-System, und CREDITS.md).",
+  "hinweis": "Neue Stücke: Datei mit scripts/musik-kodieren.sh erzeugen und hier eintragen. stimmung: menu | match | intensiv. dauer in Sekunden (ffprobe). Titellied: vom Auftraggeber geliefert (/tmp/theme/ProjectArmageddon_Theme.mp3, 150 s), mit scripts/musik-kodieren.sh kodiert; titellied=true = im Menü allein gespielt (Schleife mit Überblendung). Urheber und Rechteinhaber aller Stücke: Patrick Hilf (siehe MASTERDOTO, Musik-System, und CREDITS.md).",
   "urheber": "Patrick Hilf",
   "stuecke": [
     { "id": "heathcliff", "titel": "Heathcliff", "datei": "heathcliff.mp3", "dauer": 75.9, "stimmung": ["menu", "match"] },
     { "id": "thief", "titel": "Thief", "datei": "thief.mp3", "dauer": 90.7, "stimmung": ["menu", "match"] },
+    { "id": "titellied", "titel": "Titellied", "datei": "titellied.mp3", "dauer": 149.5, "stimmung": ["menu"], "titellied": true },
     { "id": "cliffhanger", "titel": "Cliffhanger", "datei": "cliffhanger.mp3", "dauer": 84.7, "stimmung": ["match", "intensiv"] }
   ]
 }

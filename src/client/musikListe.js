@@ -38,7 +38,8 @@ export function pruefeManifest(manifest) {
 
 /**
  * Die Stücke für eine Stimmung. Gibt es für die Stimmung keines, gilt der
- * Rückfall: `intensiv` → `match`, alles andere → alle Stücke. Es gibt also
+ * Rückfall: `intensiv` → `match`, alles andere → alle Stücke. Ein Stück mit
+ * `titellied: true` (Menü) verdrängt dort die übrigen Menüstücke. Es gibt also
  * immer etwas zu spielen, solange das Manifest nicht leer ist.
  * @param {{stuecke: object[]}} manifest
  * @param {string} stimmung
@@ -46,6 +47,11 @@ export function pruefeManifest(manifest) {
  */
 export function stueckeFuer(manifest, stimmung) {
   const alle = manifest?.stuecke ?? [];
+  // Titellied: Gibt es für das Menü eines (`"titellied": true`), läuft im Menü nur dieses (Schleife).
+  if (stimmung === 'menu') {
+    const titel = alle.filter(s => s.titellied === true && s.stimmung?.includes('menu'));
+    if (titel.length > 0) return titel;
+  }
   const treffer = alle.filter(s => s.stimmung?.includes(stimmung));
   if (treffer.length > 0) return treffer;
   if (stimmung === 'intensiv') return stueckeFuer(manifest, 'match');
