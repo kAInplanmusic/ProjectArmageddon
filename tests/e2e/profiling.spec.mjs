@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { bildStatistik } from '../../src/client/messung/statistik.js';
 
 /**
  * Browser-Profiling: die Laufzeit der ANZEIGE im echten Chrome.
@@ -112,7 +113,7 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
    * Commit sofort mit der eingestellten Kraft — gemessen wird also der Weg des
    * Spielers, nicht ein Direktaufruf des Motors.
    */
-  const zahlen = await page.evaluate(async ({ anzahl, feuern, zeitgrenze }) => {
+  const roh = await page.evaluate(async ({ anzahl, feuern, zeitgrenze }) => {
     const zeiten = [];
     let schuesse = 0;
     let vorher = null;
@@ -150,27 +151,15 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
       requestAnimationFrame(bild);
     });
 
-    const sortiert = [...zeiten].sort((a, b) => a - b);
-    const perzentil = anteil => (
-      sortiert[Math.min(sortiert.length - 1, Math.floor(sortiert.length * anteil))] ?? 0
-    );
-    const summe = zeiten.reduce((a, b) => a + b, 0);
-
+    // Die Kennzahlen rechnet `bildStatistik` (src/client/messung/statistik.js) — dieselbe Rechnung wie die Messseite.
     return {
-      bilder: zeiten.length,
-      mittel: zeiten.length > 0 ? summe / zeiten.length : 0,
-      p50: perzentil(0.5),
-      p95: perzentil(0.95),
-      p99: perzentil(0.99),
-      max: sortiert[sortiert.length - 1] ?? 0,
-      ueber16: zeiten.filter(z => z > 16.7).length,
-      ueber33: zeiten.filter(z => z > 33.4).length,
-      fps: zeiten.length > 0 ? 1000 / (summe / zeiten.length) : 0,
+      zeiten,
       schuesse,
       abgebrochen,
       dauerMs: Math.round(performance.now() - start),
     };
   }, { anzahl: bilder, feuern, zeitgrenze: MESS_ZEITGRENZE_MS });
+  const zahlen = { ...bildStatistik(roh.zeiten), schuesse: roh.schuesse, abgebrochen: roh.abgebrochen, dauerMs: roh.dauerMs };
 
   /*
    * Speicher: `performance.memory` ist eine Chrome-Erweiterung und NUR mit

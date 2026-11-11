@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#0d0f12" />
+  <title>ProjectArmageddon – Leistungsmessung</title>
+  <!--
+    Eigenständige Messseite (Z579): rendert automatisch feste Szenen und misst Bildzeiten auf dem
+    Gerät. Kein Server, kein Login. Logik: src/client/messung/. Ablauf und Schritt-für-Schritt-
+    Anleitung: docs/probe-knoten-und-hardware.md, Abschnitt B.
+  -->
+  <style>
+    :root { color-scheme: dark; --bg:#0d0f12; --flaeche:#181c22; --linie:#2c333d; --text:#e8eaed; --leise:#9aa4b2; --akzent:#f4a261; --gut:#7bd88f; --schlecht:#ff7a7a; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;
+      padding:max(1rem,env(safe-area-inset-top)) max(1rem,env(safe-area-inset-right)) max(2rem,env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left)); }
+    main { max-width: 60rem; margin: 0 auto; }
+    h1 { font-size:1.4rem; margin:.2rem 0 .6rem; }
+    h2 { font-size:1.1rem; margin:1.6rem 0 .5rem; }
+    p { margin:.4rem 0; }
+    .leise { color:var(--leise); font-size:.92rem; }
+    .karte { background:var(--flaeche); border:1px solid var(--linie); border-radius:.7rem; padding:1rem; margin:.8rem 0; }
+    ol.schritte { margin:.4rem 0; padding-left:1.3rem; } ol.schritte li { margin:.35rem 0; }
+    button { font:inherit; min-height:3.2rem; padding:.7rem 1.1rem; border-radius:.6rem; border:1px solid var(--linie); background:#232a33; color:var(--text); cursor:pointer; touch-action:manipulation; }
+    button:disabled { opacity:.45; cursor:default; }
+    button.gross { width:100%; font-size:1.2rem; font-weight:600; background:var(--akzent); color:#1a1209; border-color:var(--akzent); }
+    .knoepfe { display:grid; grid-template-columns:repeat(auto-fit,minmax(11rem,1fr)); gap:.6rem; margin:.8rem 0; }
+    .tabelle { overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--linie); border-radius:.5rem; }
+    table { border-collapse:collapse; width:100%; font-size:.86rem; font-variant-numeric:tabular-nums; }
+    th,td { padding:.35rem .55rem; text-align:left; border-bottom:1px solid var(--linie); white-space:nowrap; }
+    th { color:var(--leise); font-weight:600; position:sticky; top:0; background:var(--flaeche); }
+    dl.geraet { display:grid; grid-template-columns:max-content 1fr; gap:.2rem 1rem; margin:0; font-size:.9rem; } dl.geraet dd { margin:0; word-break:break-word; }
+    textarea { width:100%; min-height:9rem; background:#0a0c0f; color:var(--text); border:1px solid var(--linie); border-radius:.5rem; padding:.6rem; font:12px/1.4 ui-monospace,Menlo,Consolas,monospace; }
+    #status { min-height:1.5rem; }
+    .warn { color:var(--akzent); } .fehler { color:var(--schlecht); }
+    /* Während der Messung: schmale Leiste über dem Vollbild-Frame (Fortschritt + Abbrechen) */
+    #leiste { position:fixed; left:0; right:0; top:0; z-index:5; display:none; align-items:center; gap:.6rem; padding:.25rem .6rem; background:rgba(13,15,18,.82); font-size:.8rem; }
+    #leiste button { min-height:1.9rem; padding:.15rem .7rem; font-size:.8rem; }
+    body.misst #leiste { display:flex; }
+    body.misst main { visibility:hidden; }
+  </style>
+</head>
+<body data-zustand="bereit">
+  <div id="leiste" role="status" aria-live="polite"><span id="leiste-text">Messung läuft …</span><button id="abbrechen" type="button">Abbrechen</button></div>
+  <main>
+    <h1>Leistungsmessung</h1>
+    <p class="leise">Misst auf diesem Gerät, wie flüssig ProjectArmageddon Karten, Biome, Explosionen und Wasser zeichnet.
+      Ohne Server, ohne Anmeldung. Das Ergebnis schickst du danach per Knopfdruck weiter.</p>
+
+    <section class="karte" aria-labelledby="vorb">
+      <h2 id="vorb" style="margin-top:0">Vorher</h2>
+      <ol class="schritte">
+        <li><strong>Gerät quer halten</strong> (Querformat), Hochformat zeigt nur den Dreh-Hinweis.</li>
+        <li><strong>Bildschirm nicht sperren</strong> und die Seite nicht verlassen: Die Messung dauert bis zu 3 Minuten.
+          Am iPhone vorher Einstellungen → Anzeige &amp; Helligkeit → Automatische Sperre → „Nie“ (oder die Seite einfach vorn lassen).</li>
+        <li>Stromsparmodus ausschalten (er halbiert die Bildrate und verfälscht die Messung), Gerät am besten am Ladekabel.</li>
+        <li>Andere Apps und Browser-Tabs schließen.</li>
+        <li><strong>Währenddessen nichts antippen.</strong> Du siehst das Spiel kurz mehrere Szenen durchlaufen; das ist gewollt.</li>
+      </ol>
+      <p class="leise" id="wach-hinweis"></p>
+    </section>
+
+    <button id="start" class="gross" type="button">Messung starten</button>
+    <p id="status" role="status" aria-live="polite" class="leise"></p>
+    <section id="spur" class="karte" hidden></section>
+
+    <section id="ergebnis" hidden aria-labelledby="erg-titel">
+      <h2 id="erg-titel">Ergebnis</h2>
+      <p id="fazit"></p>
+      <p id="hinweis" class="warn"></p>
+      <div class="knoepfe">
+        <button id="kopieren" type="button">Ergebnis kopieren</button>
+        <button id="teilen" type="button">Teilen …</button>
+        <button id="speichern" type="button">Als Datei sichern</button>
+      </div>
+      <p id="aktion-status" class="leise" role="status" aria-live="polite"></p>
+      <h2>Gerät</h2>
+      <dl class="geraet" id="geraet"></dl>
+      <h2>Aufbau je Szene</h2>
+      <div class="tabelle"><table id="t-aufbau"></table></div>
+      <h2>Bildzeiten je Phase</h2>
+      <div class="tabelle"><table id="t-bilder"></table></div>
+      <h2>Rohdaten (JSON)</h2>
+      <p class="leise">Falls Kopieren oder Teilen nicht klappt: Text lange antippen, „Alles auswählen“, „Kopieren“.</p>
+      <textarea id="json" readonly spellcheck="false"></textarea>
+    </section>
+  </main>
+  <script type="module" src="/src/client/messung/messseite.js"></script>
+</body>
+</html>

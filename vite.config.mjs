@@ -19,7 +19,8 @@ export default defineConfig({
     // Web-Zugang (docs/zugang-www.md): nur dieser Build lädt Login/Start-Seite und bekommt `pa-web.json`.
     name: 'pa-web-zugang',
     apply: 'build',
-    transformIndexHtml: { order: 'pre', handler: () => [{ tag: 'script', attrs: { type: 'module', src: '/src/client/webStart.js' }, injectTo: 'body' }] },
+    // Nur die Spielseite: die Messseite (messung.html) bleibt ohne Zugangsschicht erreichbar und lädt sie auch nicht.
+    transformIndexHtml: { order: 'pre', handler: (_html, ctx) => (String(ctx?.path ?? '').endsWith('/messung.html') ? [] : [{ tag: 'script', attrs: { type: 'module', src: '/src/client/webStart.js' }, injectTo: 'body' }]) },
     generateBundle() {
       this.emitFile({ type: 'asset', fileName: 'pa-web.json', source: '{"gateway":true}\n' });
     },
@@ -47,6 +48,8 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     target: 'es2022',
+    // Zwei Einstiegsseiten: das Spiel und die eigenständige Messseite (src/client/messung/, nicht im Spiel-Bündel).
+    rollupOptions: { input: { index: 'index.html', messung: 'messung.html' } },
     // Kleine Bilddateien bleiben URLs: Base64 würde den Start-JavaScript-Block aufblähen.
     assetsInlineLimit: 0,
     // BUILD-1: Das Modul-Preload-Polyfill (~0,5 KiB) ist für `target: es2022` unnötig —

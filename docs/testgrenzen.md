@@ -37,6 +37,19 @@ schaltet Chrome auf **SwiftShader** um: 48,2 ms je Mio. Pixel, 5,6 fps —
 Faktor 3,5. Geprüft wird deshalb der Aufwand JE MILLION PIXEL (Grenze 30 ms)
 statt eines fps-Festwerts, der für eine viermal kleinere Karte galt.
 
+**Rendern auf Zielgeräten (Z579, Stand 2026-11-11): eine Messseite statt Kommandozeile.**
+Die Sandbox rastert in Software (SwiftShader); ihre Bildzeiten (auf den großen Karten über
+100 ms je Bild, bei 6272×2352 teils über 250 ms) sagen über iPhone oder Laptop nichts. Deshalb gibt
+es `messung.html` (nach dem Deploy: https://www.projectarmageddon.de/messung.html): Ein Knopf
+„Messung starten“ spielt ohne Server sieben feste Szenen ab (16:9 mittel, 24:9 groß 4704×1764,
+24:9 riesig 6272×2352; klassisch, Tiefsee, Fantasywald, Schlackeschmiede; Explosionen, Wasser,
+drei Zoomstufen), misst Bildzeiten, Terrain-Neuaufbau, Grading, Ladezeit, Geräteinfo und liefert
+Tabelle, „Ergebnis kopieren“ und „Teilen“. Entscheidung des Auftraggebers: **erst das iPhone, dann der
+Asus-Laptop**. Schritt für Schritt ohne Kommandozeile: `docs/probe-knoten-und-hardware.md`, Abschnitt B.
+Was die Software-Rasterung belegt: dass die Seite durchläuft und das JSON dem Schema `pa-messung/1`
+entspricht (`tests/e2e/messung.spec.mjs`, Plan `?plan=test`); **was sie nicht belegt:** jede echte Zahl.
+Die Messung auf den Geräten **steht aus**; das Spiel dort ist bis dahin ungemessen.
+
 Der einzige übersprungene Test ist der Aufschlag-Test: Er überspringt sich mit
 Begründung, wenn Untergrund UND Differenz beide auffällig sind.
 
