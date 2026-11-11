@@ -1,5 +1,5 @@
 /**
- * Seil (Ninja Rope, Seilfassung 2: `config/seil.js`, `engine/seil.js`).
+ * Seil (Ninja Rope, Seilfassung 2 und 3: `config/seil.js`, `engine/seil.js`).
  *
  * Gehalten wird: (1) die belegten Werte (Länge je Stufe, Schüsse, Tempogrenze, Umrechnung 50 → 60 Hz), (2) das
  * Pendel ist deterministisch und schwingt mit der Pendeldauer der Schwerkraft, kürzeres Seil = schneller,
@@ -14,7 +14,7 @@ import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, ReplayPlayer } from '../src/engine/replay.js';
 import { CharacterSystem } from '../src/engine/systems/characterSystem.js';
 import { SeilSystem, pendelSchritt, seilStrahl } from '../src/engine/seil.js';
-import { SEIL, SEIL_ALT, SEIL_NINJA, SEIL_STANDARD, normalisiereSeil, seilStufe, WA_SCHRITTE_JE_SEKUNDE } from '../src/shared/config/seil.js';
+import { SEIL, SEIL_ALT, SEIL_NINJA, SEIL_FEIN, SEIL_STANDARD, SEIL_FASSUNG_2, SEIL_FASSUNG_3, seilWerte, normalisiereSeil, seilStufe, WA_SCHRITTE_JE_SEKUNDE } from '../src/shared/config/seil.js';
 import { pruefeSeilEingabe } from '../src/shared/validation.js';
 import { LobbyManager } from '../src/server/lobby.js';
 import { LobbySession } from '../src/server/gameServer.js';
@@ -85,8 +85,11 @@ test('Schwerkraft am Seil = Schwerkraft der Figuren (kein Ruck beim Loslassen)',
   assert.equal(SEIL.schwerkraft, new CharacterSystem().gravity);
 });
 
-test('Versionsmarke: 1 = kein Seil, 2 = Ninja Rope (Standard); unbekannt fällt auf den Standard', () => {
-  assert.equal(SEIL_STANDARD, SEIL_NINJA);
+test('Versionsmarke: 1 = kein Seil, 2 = Ninja Rope, 3 = festgelegte Werte (Standard); unbekannt fällt auf den Standard', () => {
+  assert.equal(SEIL_STANDARD, SEIL_FEIN);
+  assert.equal(SEIL_FEIN, 3);
+  assert.equal(normalisiereSeil(SEIL_NINJA), SEIL_NINJA);
+  assert.equal(normalisiereSeil(SEIL_FEIN), SEIL_FEIN);
   assert.equal(normalisiereSeil(SEIL_ALT), SEIL_ALT);
   assert.equal(normalisiereSeil(7), SEIL_STANDARD);
   assert.equal(new MatchController({ seed: 1 }).seilSystem, null, 'ohne Marke kein Seil');
@@ -229,7 +232,7 @@ test('Regeln: nicht nach dem Schuss, nicht unter den Horizont, nicht fremd, Nahk
 const KOPF = { seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000, maxRounds: 99 };
 
 /** Spielt eine feste Seilfolge und zeichnet sie auf. */
-function seilPartie(seil = SEIL_NINJA) {
+function seilPartie(seil = SEIL_STANDARD) {
   const m = new MatchController({ ...KOPF, seil });
   m.start();
   const rec = new ReplayRecorder({ ...KOPF, seil });
@@ -262,14 +265,14 @@ test('Motor: zwei Läufe derselben Seilfolge ergeben denselben Zustandshash', ()
 test('Aufzeichnung: Seilschuss, Schwung, Lösen spielen exakt nach; die Marke steht im Kopf', () => {
   const { m, rec } = seilPartie();
   const dok = JSON.parse(JSON.stringify(rec.toJSON()));
-  assert.equal(dok.config.seil, SEIL_NINJA);
+  assert.equal(dok.config.seil, SEIL_STANDARD);
   assert.ok(dok.entries.some(e => e.kind === 'seil' && e.aktion === 'schuss' && typeof e.winkel === 'number'));
   const spieler = new ReplayPlayer(ReplayRecorder.fromJSON(dok).toJSON());
   while (spieler.step());
   assert.equal(spieler.match.stateHash(), m.stateHash());
 });
 
-test('Ohne Marke bitgleich: Fassung 1 und 2 ohne Seilbenutzung haben dieselben Hashes', () => {
+test('Ohne Marke bitgleich: Fassung 1, 2 und 3 ohne Seilbenutzung haben dieselben Hashes', () => {
   const lauf = seil => {
     const m = new MatchController({ ...KOPF, seil });
     m.start();
@@ -282,6 +285,7 @@ test('Ohne Marke bitgleich: Fassung 1 und 2 ohne Seilbenutzung haben dieselben H
     return hashes;
   };
   assert.deepEqual(lauf(SEIL_NINJA), lauf(SEIL_ALT));
+  assert.deepEqual(lauf(SEIL_FEIN), lauf(SEIL_ALT));
 });
 
 test('Altaufzeichnung ohne Marke: lädt als Fassung 1, Seileingaben laufen ins Leere', () => {
@@ -340,7 +344,7 @@ test('Server: lehnt ungültige und fremde Seil-Nachrichten ab, nimmt gültige an
 });
 
 test('Waffe vom Seil: ein Schuss löst das Seil, der Zug läuft weiter wie nach jedem Schuss', () => {
-  const m = new MatchController({ ...KOPF, seil: SEIL_NINJA });
+  const m = new MatchController({ ...KOPF, seil: SEIL_STANDARD });
   m.start();
   los(m, 5);
   const id = m.activePlayerId;
@@ -351,4 +355,179 @@ test('Waffe vom Seil: ein Schuss löst das Seil, der Zug läuft weiter wie nach 
   assert.equal(m.fire(id, 1, 40, waffe).ok, true);
   assert.equal(m.seilSystem.haengt(id), false);
   assert.equal(m.seilSystem.schiessen(id, Math.PI / 2).ok, false, 'nach dem Schuss kein neues Seil');
+});
+
+// ------------------------------------------------------------------ Fassung 2 bitgleich, Fassung 3 (festgelegte Werte)
+
+/** Die feste Seilfolge aus `seilPartie`, aber mit den Zustandshashes nach jedem Schwungwechsel (Goldwerte). */
+function hashFolge(seil) {
+  const m = new MatchController({ ...KOPF, seil });
+  m.start();
+  const id = m.activePlayerId;
+  los(m, 10);
+  const winkel = schiesseIrgendwohin(m.seilSystem, id);
+  const hashes = [];
+  for (let i = 0; i < 12; i += 1) {
+    m.seilSystem.eingabe(id, { aktion: 'steuer', sx: i % 4 < 2 ? 1 : -1, sy: i < 6 ? -1 : 0 });
+    los(m, 10);
+    hashes.push(m.stateHash());
+  }
+  m.seilSystem.eingabe(id, { aktion: 'loesen' });
+  los(m, 200);
+  return { winkel, hashes, ende: m.stateHash() };
+}
+
+test('Fassung 2 bleibt bitgleich: Goldwerte der Hashes (vor Fassung 3 gemessen) und alte Wertetabelle', () => {
+  assert.deepEqual(hashFolge(SEIL_NINJA), {
+    winkel: 0,
+    hashes: ['17ca0daa', '8e02bf21', '9dbbfb25', '5b22292', '441afaeb', '84fda83', '1e2c497d', '8d899c', 'df4fe62f', 'e3caf607', 'fb38b7ec', '58225c2e'],
+    ende: '1f61f632',
+  });
+  assert.equal(seilWerte(SEIL_NINJA), SEIL_FASSUNG_2);
+  const alt = { kletterTempo: 2.5, minLaenge: 20, schwung: 0.05, reibung: 0.999, abprall: 0.3, schwerkraft: 0.42, bodenReibung: 0.86, standardStufe: 5 };
+  for (const [k, v] of Object.entries(alt)) assert.equal(SEIL_FASSUNG_2[k], v, `Fassung 2: ${k}`);
+});
+
+test('Fassung 2: das Pendel (reine Funktion, alte Tabelle) liefert dieselben Zahlen wie vor Fassung 3', () => {
+  const t = gelaende();
+  let s = { x: 500 + 200 * Math.sin(0.5), y: 50 + 200 * Math.cos(0.5), vx: 0, vy: 0, punkte: [{ x: 500, y: 50 }], laenge: 200, maxLaenge: 465, sx: 0, sy: 0 };
+  for (let i = 0; i < 600; i += 1) {
+    const a = { sx: i % 90 < 45 ? 1 : -1, sy: i % 200 < 30 ? -1 : 0 };
+    s = { ...s, ...a, ...pendelSchritt(t, { ...s, ...a }, SEIL_FASSUNG_2) };
+  }
+  assert.deepEqual({ x: s.x, y: s.y, vx: s.vx, vy: s.vy, laenge: s.laenge }, {
+    x: 496.55775671449396, y: 69.70154717689422, vx: -0.398948933427107, vy: -0.06555578450617361, laenge: 20,
+  });
+});
+
+test('Fassung 3: festgelegte Werte, Rest wie Fassung 2, Standard neuer Partien', () => {
+  const erwartet = { kletterTempo: 3.2, schwung: 0.07, reibung: 0.99995, abprall: 0.25, minLaenge: 18, standardStufe: 5, schwerkraft: 0.42 };
+  for (const [k, v] of Object.entries(erwartet)) assert.equal(SEIL_FASSUNG_3[k], v, `Fassung 3: ${k}`);
+  assert.equal(SEIL, SEIL_FASSUNG_3, 'SEIL = Standard = Fassung 3');
+  assert.equal(seilWerte(SEIL_FEIN), SEIL_FASSUNG_3);
+  assert.equal(SEIL_FASSUNG_3.schwerkraft, new CharacterSystem().gravity);
+  for (const k of ['laengen', 'schuesse', 'maxTempo', 'bodenReibung', 'maxKnicke', 'haltedauer', 'winkelMax', 'verboteneKategorien']) {
+    assert.deepEqual(SEIL_FASSUNG_3[k], SEIL_FASSUNG_2[k], `unverändert: ${k}`);
+  }
+  assert.equal(new MatchController({ seed: 1 }).seil, SEIL_ALT, 'ohne Angabe im Kopf: kein Seil (alte Dateien); der Server/Client übergibt SEIL_STANDARD');
+  assert.equal(Object.isFrozen(SEIL_FASSUNG_2) && Object.isFrozen(SEIL_FASSUNG_3), true);
+});
+
+test('Fassung 3: deterministisch, anderer Verlauf als Fassung 2, Goldwerte, Replay spielt exakt nach', () => {
+  const a = hashFolge(SEIL_FEIN);
+  assert.deepEqual(a, hashFolge(SEIL_FEIN));
+  assert.notEqual(a.ende, hashFolge(SEIL_NINJA).ende, 'andere Werte, anderer Zustand');
+  assert.deepEqual(a, {
+    winkel: 0,
+    hashes: ['1be6d2d0', 'aa1234c3', 'ad350b76', '8b94e432', 'e668d1f7', 'a06e292b', '91c33597', '8da588f', '3759967', '4ccc7a8d', '1d05714d', '4858475a'],
+    ende: 'edcf1da1',
+  });
+  const { m, rec } = seilPartie(SEIL_FEIN);
+  const dok = JSON.parse(JSON.stringify(rec.toJSON()));
+  assert.equal(dok.config.seil, SEIL_FEIN);
+  const spieler = new ReplayPlayer(ReplayRecorder.fromJSON(dok).toJSON());
+  while (spieler.step());
+  assert.equal(spieler.match.seil, SEIL_FEIN);
+  assert.equal(spieler.match.stateHash(), m.stateHash());
+});
+
+test('Fassung 2 im Replay: SeilSystem benutzt die alte Tabelle (Replay mit config.seil 2 spielt exakt nach)', () => {
+  const { m, rec } = seilPartie(SEIL_NINJA);
+  const dok = JSON.parse(JSON.stringify(rec.toJSON()));
+  assert.equal(dok.config.seil, SEIL_NINJA);
+  const spieler = new ReplayPlayer(ReplayRecorder.fromJSON(dok).toJSON());
+  while (spieler.step());
+  assert.equal(spieler.match.stateHash(), m.stateHash());
+  assert.equal(m.stateHash(), hashFolge(SEIL_NINJA).ende, 'dieselbe Folge, derselbe Hash wie der Goldwert');
+});
+
+/** Pendel mit Fassung-3-Werten; Energie je Masse E = v²/2 − g·y (y nach unten). */
+function energieLauf(werte, start, ticks, absicht = () => ({ sx: 0, sy: 0 })) {
+  const t = gelaende();
+  let s = { vx: 0, vy: 0, maxLaenge: 465, sx: 0, sy: 0, ...start };
+  const energie = z => 0.5 * (z.vx * z.vx + z.vy * z.vy) - werte.schwerkraft * z.y;
+  const e0 = energie(s);
+  let eMax = e0;
+  let tempoMax = 0;
+  let ausgelenkt = 0;
+  for (let i = 0; i < ticks; i += 1) {
+    const a = absicht(i, s);
+    s = { ...s, ...a, ...pendelSchritt(t, { ...s, ...a }, werte) };
+    assert.ok(Number.isFinite(s.x + s.y + s.vx + s.vy), `endlich bei Takt ${i}`);
+    assert.ok(Math.hypot(s.x - 500, s.y - 50) <= s.laenge + 1, 'nie weiter als die Seillänge (±1 px: beim Einholen schließt der Zwang erst im folgenden Takt; in Fassung 2 ebenso, gemessen 0,48 px)');
+    eMax = Math.max(eMax, energie(s));
+    tempoMax = Math.max(tempoMax, Math.hypot(s.vx, s.vy));
+    if (i >= ticks - 600) ausgelenkt = Math.max(ausgelenkt, Math.abs(s.x - 500));
+  }
+  return { e0, eMax, eEnde: energie(s), tempoMax, ausgelenkt, s };
+}
+
+test('Fassung 3: Pendel ohne Schwung — keine Energiezunahme, Energieverlust plausibel, bleibt stabil (reibung 0,99995)', () => {
+  for (const [ang, laenge] of [[0.5, 200], [1.4, 400], [3.0, 250]]) {
+    const start = { x: 500 + laenge * Math.sin(ang), y: 50 + laenge * Math.cos(ang), punkte: [{ x: 500, y: 50 }], laenge };
+    const r = energieLauf(SEIL_FASSUNG_3, start, 36000); // 10 Minuten
+    assert.ok(r.eMax <= r.e0 + 0.5, `Energie wächst nicht (Anfang ${r.e0.toFixed(2)}, Höchst ${r.eMax.toFixed(2)})`);
+    assert.ok(r.eEnde <= r.e0 + 0.5, 'Endenergie nicht über der Anfangsenergie');
+    assert.ok(r.eEnde >= -SEIL_FASSUNG_3.schwerkraft * (50 + laenge) - 1, 'nie unter dem tiefsten Punkt (Ruhelage)');
+    assert.ok(r.tempoMax <= SEIL_FASSUNG_3.maxTempo + 0.5, `Tempo ${r.tempoMax.toFixed(2)}`);
+  }
+  // Plausibel: schwächer gedämpft als Fassung 2 (0,999), aber nicht verlustfrei — nach 60 s ist die Auslenkung deutlich
+  // kleiner als am Anfang (der Verlust kommt zum großen Teil aus Zwang und Schrittverfahren, nicht aus `reibung`).
+  const start = { x: 500 + 200 * Math.sin(0.5), y: 50 + 200 * Math.cos(0.5), punkte: [{ x: 500, y: 50 }], laenge: 200 };
+  const amplitude = (werte, ticks) => {
+    const t = gelaende();
+    let s = { vx: 0, vy: 0, maxLaenge: 465, sx: 0, sy: 0, ...start };
+    let weite = 0;
+    for (let i = 0; i < ticks; i += 1) { s = { ...s, ...pendelSchritt(t, s, werte) }; if (i >= ticks - 300) weite = Math.max(weite, Math.abs(s.x - 500)); }
+    return weite;
+  };
+  const a3 = amplitude(SEIL_FASSUNG_3, 1200); // 20 s
+  const a2 = amplitude(SEIL_FASSUNG_2, 1200);
+  assert.ok(a3 > a2, `Fassung 3 schwingt länger nach (${a3.toFixed(1)} > ${a2.toFixed(1)} px nach 20 s)`);
+  assert.ok(a3 < 0.5 * 96, `bleibt gedämpft (${a3.toFixed(1)} px nach 20 s, Anfang rund 96 px)`);
+});
+
+test('Fassung 3: Dauerschwung und Klettern bleiben stabil (Tempo begrenzt, keine ungültigen Zahlen, nie im Gelände)', () => {
+  const start = { x: 500, y: 250, punkte: [{ x: 500, y: 50 }], laenge: 200 };
+  const r = energieLauf(SEIL_FASSUNG_3, start, 7200, (i, s) => ({ sx: s.vx >= 0 ? 1 : -1, sy: Math.floor(i / 90) % 2 ? 1 : -1 }));
+  assert.ok(r.tempoMax <= SEIL_FASSUNG_3.maxTempo + 0.5, `Tempo ${r.tempoMax.toFixed(2)} (Grenze ${SEIL_FASSUNG_3.maxTempo.toFixed(2)})`);
+  // Schwung in Hindernissen, 20 Minuten deterministische Zufallssteuerung: Knickzahl begrenzt, Figur nie im Fels.
+  const t = { width: 1200, height: 800, isSolid: (x, y) => y < 50 || y >= 700 || (x >= 560 && x < 600 && y >= 120 && y < 260) || (x >= 380 && x < 420 && y >= 150 && y < 300) };
+  let z = 12345;
+  const zufall = () => { z = (z * 1103515245 + 12345) & 0x7fffffff; return z / 0x7fffffff; };
+  let s = { x: 700, y: 80, vx: 0, vy: 0, punkte: [{ x: 500, y: 50 }], laenge: 250, maxLaenge: 465, sx: 0, sy: 0 };
+  let sx = 0; let sy = 0;
+  for (let i = 0; i < 72000; i += 1) {
+    if (i % 20 === 0) { sx = Math.floor(zufall() * 3) - 1; sy = Math.floor(zufall() * 3) - 1; }
+    s = { ...s, sx, sy, ...pendelSchritt(t, { ...s, sx, sy }, SEIL_FASSUNG_3) };
+    assert.ok(Number.isFinite(s.x + s.y + s.vx + s.vy), `endlich bei Takt ${i}`);
+    assert.ok(s.punkte.length <= SEIL_FASSUNG_3.maxKnicke);
+    assert.equal(t.isSolid(Math.floor(s.x), Math.floor(s.y)), false, `Figur im Gelände bei Takt ${i}`);
+    assert.ok(Math.hypot(s.vx, s.vy) <= SEIL_FASSUNG_3.maxTempo + 0.5);
+  }
+});
+
+test('Fassung 3: minLaenge 18 wird eingehalten (Einholen, Strahl) und Einholtempo 3,2 px/Takt', () => {
+  const t = gelaende();
+  let s = { x: 500, y: 250, vx: 0, vy: 0, punkte: [{ x: 500, y: 50 }], laenge: 200, maxLaenge: 465, sx: 0, sy: -1 };
+  const laengen = [];
+  for (let i = 0; i < 200; i += 1) { s = { ...s, ...pendelSchritt(t, s, SEIL_FASSUNG_3) }; laengen.push(s.laenge); }
+  assert.equal(Math.min(...laengen), 18, 'nie unter 18 px');
+  assert.ok(Math.abs((laengen[0] - 200) + 3.2) < 1e-9, `erster Takt holt 3,2 px ein (${laengen[0]})`);
+  // Fassung 2 hielt 20 px.
+  let s2 = { ...s, laenge: 200, y: 250, vx: 0, vy: 0, punkte: [{ x: 500, y: 50 }] };
+  for (let i = 0; i < 200; i += 1) s2 = { ...s2, ...pendelSchritt(t, s2, SEIL_FASSUNG_2) };
+  assert.equal(s2.laenge, 20);
+  // Strahl: ein Anker dicht an der Figur ergibt höchstens die Mindestlänge des jeweiligen Seils.
+  const nah = seilStrahl({ width: 1200, height: 800, isSolid: (x, y) => y < 290 }, 500, 300, Math.PI / 2, 465, SEIL_FASSUNG_3.minLaenge);
+  assert.equal(nah.treffer, true);
+  assert.equal(nah.laenge, 18);
+  // Im Spiel: das SeilSystem nimmt die Mindestlänge der Partiefassung.
+  for (const [fassung, soll] of [[SEIL_FEIN, 18], [SEIL_NINJA, 20]]) {
+    const { m } = attrappe({ width: 1200, height: 800, isSolid: (x, y) => y < 290 }, { x: 500, y: 300 });
+    m.seil = fassung;
+    const seil = new SeilSystem(m, () => false, 5);
+    assert.equal(seil.schiessen(1, Math.PI / 2).ok, true);
+    assert.equal(seil.snapshot().laenge, soll, `Fassung ${fassung}`);
+  }
 });

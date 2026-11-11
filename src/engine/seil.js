@@ -1,5 +1,5 @@
 /**
- * SeilSystem: das Seil (Ninja Rope aus Worms Armageddon), Seilfassung 2 (`config/seil.js`).
+ * SeilSystem: das Seil (Ninja Rope aus Worms Armageddon), Seilfassung 2 und 3 (`config/seil.js`, Tabelle je Fassung).
  *
  * ## Modell
  *
@@ -29,7 +29,7 @@
  * @module engine/seil
  */
 import { PLAYER_HALF_WIDTH, PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
-import { SEIL, seilStufe } from '../shared/config/seil.js';
+import { SEIL, seilStufe, seilWerte } from '../shared/config/seil.js';
 import { WET_LEVEL } from '../shared/config/water.js';
 import { getWeapon } from '../shared/config/weapons.js';
 
@@ -69,7 +69,7 @@ export function sichtBlock(terrain, ax, ay, bx, by) {
  *
  * @returns {{treffer:false}|{treffer:true, x:number, y:number, hx:number, hy:number, laenge:number}}
  */
-export function seilStrahl(terrain, x, y, winkel, maxLaenge) {
+export function seilStrahl(terrain, x, y, winkel, maxLaenge, minLaenge = SEIL.minLaenge) {
   const rx = Math.cos(winkel);
   const ry = -Math.sin(winkel);
   for (let d = 1; d <= maxLaenge; d += 1) {
@@ -78,7 +78,7 @@ export function seilStrahl(terrain, x, y, winkel, maxLaenge) {
     if (py < 0 || px < 0 || px >= terrain.width) return { treffer: false };
     if (fest(terrain, px, py)) {
       const a = Math.max(0, d - 1);
-      return { treffer: true, x: x + rx * a, y: y + ry * a, hx: Math.floor(px), hy: Math.floor(py), laenge: Math.max(SEIL.minLaenge, a) };
+      return { treffer: true, x: x + rx * a, y: y + ry * a, hx: Math.floor(px), hy: Math.floor(py), laenge: Math.max(minLaenge, a) };
     }
   }
   return { treffer: false };
@@ -263,6 +263,7 @@ export class SeilSystem {
   #haengt = null;
   /** Laufende Serie: `{id, rest}` — verbleibende Seilschüsse in der Luft (Infinity = unbegrenzt). */
   #serie = null;
+  #werte = SEIL;
   #absicht = { sx: 0, sy: 0, bis: -1 };
 
   /**
@@ -272,6 +273,7 @@ export class SeilSystem {
    */
   constructor(match, hatGeschossen, stufe = SEIL.standardStufe) {
     this.#match = match;
+    this.#werte = seilWerte(match.seil); // Wertetabelle der Seilfassung der Partie (2 oder 3); ohne Angabe der Standard
     this.#hatGeschossen = hatGeschossen;
     this.#stufe = seilStufe(stufe);
   }
@@ -320,7 +322,7 @@ export class SeilSystem {
     const welt = m.world;
     const x = welt.getComponent(playerId, 'Position', 'x') ?? 0;
     const y = welt.getComponent(playerId, 'Position', 'y') ?? 0;
-    const strahl = seilStrahl(m.terrain, x, y, winkel, this.#stufe.laenge);
+    const strahl = seilStrahl(m.terrain, x, y, winkel, this.#stufe.laenge, this.#werte.minLaenge);
     if (!strahl.treffer) return { ok: false, errors: ['Das Seil findet keinen Halt'] };
     this.#serie = { id: playerId, rest: neueSerie ? this.#stufe.schuesse - 1 : this.#serie.rest - 1 };
     this.#haengt = {
@@ -384,7 +386,7 @@ export class SeilSystem {
     const erg = pendelSchritt(m.terrain, {
       x, y, vx: welt.getComponent(h.id, 'Velocity', 'x') ?? 0, vy: welt.getComponent(h.id, 'Velocity', 'y') ?? 0,
       punkte: h.punkte, laenge: h.laenge, maxLaenge: h.maxLaenge, sx: absicht.sx, sy: absicht.sy,
-    });
+    }, this.#werte);
     welt.setComponent(h.id, 'Position', 'x', erg.x);
     welt.setComponent(h.id, 'Position', 'y', erg.y);
     welt.setComponent(h.id, 'Velocity', 'x', erg.vx);

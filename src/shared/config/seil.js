@@ -10,7 +10,10 @@
  *     abgelehnt, der Zustand trägt keinen Schlüssel `seil` (Hashes bleiben bitgleich).
  *   - `SEIL_NINJA` (2): `SeilSystem` (`engine/seil.js`) mit den Werten unten. Auch hier trägt der Zustand den
  *     Schlüssel `seil` nur, solange ein Seil hängt oder eine Neuwurf-Serie läuft: Eine Partie, in der niemand das
- *     Seil benutzt, hat dieselben Hashes wie ohne Seil.
+ *     Seil benutzt, hat dieselben Hashes wie ohne Seil. Werte: `SEIL_FASSUNG_2` (unverändert, bitgleich).
+ *   - `SEIL_FEIN` (3, 2026-11-11): dieselbe Mechanik, andere Werte (`SEIL_FASSUNG_3`): kletterTempo, schwung, reibung,
+ *     abprall, minLaenge — Festlegung des Auftraggebers (Playtest-Wert, keine WA-Messung). Standard neuer Partien.
+ *     Fassung 2 und alle alten Replays bleiben bitgleich (`seilWerte(2)` liefert die alte Tabelle).
  *
  * ## Quellen und Umrechnung (Stand 2026-11-03, Auftrag `docs/auftraege/seil.md`)
  *
@@ -28,9 +31,10 @@
  * schneller als in WA (300 px: 2,8 s statt 4,4 s je volle Schwingung). Wer das WA-Zeitmaß will, setzt
  * `schwerkraft` auf 0,1667 (dann fällt die Figur am Seil langsamer als beim Sprung).
  *
- * Jede Zahl unten trägt ihre Herkunft: **belegt** (Quelle) oder **Annäherung** (geschätzt, mit Begründung).
- * Nachjustieren: Wert hier ändern, `npm test` (Seiltests prüfen Verhalten, nicht die Zahl), und — weil sich die
- * Physik ändert — eine NEUE Fassung (`SEIL_…` = 3) anlegen, damit Aufzeichnungen mit Fassung 2 gleich bleiben.
+ * Jede Zahl unten trägt ihre Herkunft: **belegt** (Quelle), **Annäherung** (geschätzt, mit Begründung) oder
+ * **Festlegung des Auftraggebers** (Playtest-Wert, keine WA-Messung).
+ * Nachjustieren: Die Tabelle einer bestehenden Fassung wird NIE geändert; eine neue Physik bekommt eine NEUE Fassung
+ * (`SEIL_…` = 4, eigene Tabelle in `SEIL_WERTE`), damit Aufzeichnungen mit Fassung 2 und 3 gleich bleiben.
  *
  * Reine Daten, kein Zufall, keine Uhr. Einheiten: Pixel und Takte (60 Hz).
  *
@@ -39,18 +43,20 @@
 
 export const SEIL_ALT = 1;
 export const SEIL_NINJA = 2;
-export const SEIL_STANDARD = SEIL_NINJA;
+export const SEIL_FEIN = 3;
+export const SEIL_STANDARD = SEIL_FEIN;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereBewegung`); das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereSeil(fassung) {
-  return fassung === SEIL_ALT || fassung === SEIL_NINJA ? fassung : SEIL_STANDARD;
+  return fassung === SEIL_ALT || fassung === SEIL_NINJA || fassung === SEIL_FEIN ? fassung : SEIL_STANDARD;
 }
 
 /** WA-Schritte je Sekunde (belegt, s. o.) und unser Takt — für die Umrechnung in den Kommentaren und im Test. */
 export const WA_SCHRITTE_JE_SEKUNDE = 50;
 export const TAKTE_JE_SEKUNDE = 60;
 
-export const SEIL = Object.freeze({
+/** Werte der Seilfassung 2 (`SEIL_NINJA`) — unverändert, damit Aufzeichnungen mit Fassung 2 bitgleich laufen. */
+export const SEIL_FASSUNG_2 = Object.freeze({
   /**
    * Größte Seillänge je Kraftstufe 1–5 in px. **Belegt** (worms2d.info „BattyRope", Worms Wiki): Stufe 1 = 294–297,
    * 2 = 336–339, 3 = 378–381, 4 = 420–423, 5 = 462–465 px. Genommen ist der obere Wert; Maßstab 1 : 1 (s. o.).
@@ -63,9 +69,9 @@ export const SEIL = Object.freeze({
    */
   schuesse: Object.freeze([1, 2, 2, 3, Infinity]),
   /**
-   * Kraftstufe neuer Partien. **Annäherung/Festlegung offen:** In WA legt das Schema die Stufe fest; welche Stufe
-   * das Standardschema hat, ist nicht belegt. Stufe 5 (längstes Seil, unbegrenzte Neuwürfe) ist das Seil der
-   * Rope-Race-Schemata. Der Auftraggeber entscheidet; eine Änderung braucht eine neue Fassung.
+   * Kraftstufe neuer Partien. **Festlegung des Auftraggebers 2026-11-11 (bestätigt, Playtest-Wert, keine WA-Messung):**
+   * Stufe 5 (längstes Seil, unbegrenzte Neuwürfe; in WA legt das Schema die Stufe fest, das Standardschema ist nicht
+   * belegt, Stufe 5 ist das Seil der Rope-Race-Schemata). Eine Änderung braucht eine neue Fassung.
    */
   standardStufe: 5,
   /**
@@ -88,25 +94,25 @@ export const SEIL = Object.freeze({
    */
   maxTempo: 16 * WA_SCHRITTE_JE_SEKUNDE / TAKTE_JE_SEKUNDE,
   /**
-   * Ein-/Ausfahren mit hoch/runter (px/Takt). **Annäherung**: In WA-Aufnahmen dauert das Einholen eines rund
+   * Ein-/Ausfahren mit hoch/runter (px/Takt). Fassung 2: **Annäherung**; Fassung 3: 3,2 (Festlegung des Auftraggebers 2026-11-11, Playtest-Wert, keine WA-Messung). In WA-Aufnahmen dauert das Einholen eines rund
    * 300 px langen Seils etwa zwei Sekunden → rund 150 px/s = 2,5 px/Takt.
    */
   kletterTempo: 2.5,
-  /** Kürzeste Seillänge (px). **Annäherung**: eine Figurenhöhe (20 px); kürzer hinge die Figur im Anker. */
+  /** Kürzeste Seillänge (px). Fassung 2: **Annäherung**, eine Figurenhöhe (20 px); Fassung 3: 18 (Festlegung des Auftraggebers 2026-11-11, Playtest-Wert, keine WA-Messung); kürzer hinge die Figur im Anker. */
   minLaenge: 20,
   /**
-   * Schwung mit links/rechts: Beschleunigung entlang der Kreisbahn (px/Takt²). **Annäherung**: 0,05 ≈ 12 % der
+   * Schwung mit links/rechts: Beschleunigung entlang der Kreisbahn (px/Takt²). Fassung 2: **Annäherung** 0,05 ≈ 12 % der
    * Schwerkraft; damit baut sich wie in WA erst nach zwei, drei Schwüngen ein Überschlag auf. Nicht belegt.
    */
   schwung: 0.05,
   /**
-   * Luftwiderstand am Seil: Faktor auf das Tempo je Takt. **Annäherung**: WA kennt eine „rope friction/drag" (die
+   * Luftwiderstand am Seil: Faktor auf das Tempo je Takt. Fassung 2: **Annäherung**; Fassung 3: 0,99995 (Festlegung des Auftraggebers 2026-11-11, Playtest-Wert, keine WA-Messung). WA kennt eine „rope friction/drag" (die
    * Option Unrestrict Rope „reduces" sie), ihr Wert ist nicht belegt. 0,999 = rund 6 % Verlust je Sekunde.
    */
   reibung: 0.999,
   /**
    * Prallt die Figur am Seil gegen Gelände, wird der Tempoanteil in die Wand mit −abprall zurückgeworfen.
-   * **Annäherung** (wie der Motor seitlich mit −0,2 dämpft, etwas lebhafter). Am Boden: kein Abprall, Bodenreibung.
+   * Fassung 2: **Annäherung**; Fassung 3: 0,25 (Festlegung des Auftraggebers 2026-11-11, Playtest-Wert, keine WA-Messung) (wie der Motor seitlich mit −0,2 dämpft, etwas lebhafter). Am Boden: kein Abprall, Bodenreibung.
    */
   abprall: 0.3,
   /** Bodenreibung, solange die Figur am Seil auf dem Boden schleift. **Abgeleitet**: wie `CharacterSystem` (0,86). */
@@ -129,6 +135,39 @@ export const SEIL = Object.freeze({
    */
   verboteneKategorien: Object.freeze(['melee']),
 });
+
+/**
+ * Werte der Seilfassung 3 (`SEIL_FEIN`, Standard): wie Fassung 2, nur diese fünf Werte sind gesetzt. Herkunft: **Festlegung
+ * des Auftraggebers 2026-11-11 (Playtest-Wert, keine WA-Messung)**. `standardStufe` 5 ist vom Auftraggeber bestätigt
+ * (unverändert); `schwerkraft` bleibt 0,42.
+ *
+ * Hinweis `reibung` 0,99995: nahezu reibungsfrei (rund 0,3 % Verlust je Sekunde statt 6 %); das Pendel verliert kaum
+ * Energie. Stabilität per Simulation geprüft (`tests/seil.test.js`).
+ */
+export const SEIL_FASSUNG_3 = Object.freeze({
+  ...SEIL_FASSUNG_2,
+  /** Ein-/Ausfahren (px/Takt). **Festlegung des Auftraggebers 2026-11-11 (Playtest-Wert, keine WA-Messung)**; Fassung 2: 2,5. */
+  kletterTempo: 3.2,
+  /** Kürzeste Seillänge (px). **Festlegung des Auftraggebers 2026-11-11 (Playtest-Wert, keine WA-Messung)**; Fassung 2: 20. */
+  minLaenge: 18,
+  /** Schwung links/rechts (px/Takt²). **Festlegung des Auftraggebers 2026-11-11 (Playtest-Wert, keine WA-Messung)**; Fassung 2: 0,05. */
+  schwung: 0.07,
+  /** Faktor auf das Tempo je Takt. **Festlegung des Auftraggebers 2026-11-11 (Playtest-Wert, keine WA-Messung)**; Fassung 2: 0,999. */
+  reibung: 0.99995,
+  /** Rückprall an Wänden. **Festlegung des Auftraggebers 2026-11-11 (Playtest-Wert, keine WA-Messung)**; Fassung 2: 0,3. */
+  abprall: 0.25,
+});
+
+/** Wertetabellen je Fassung (nur Fassungen mit Seil). */
+export const SEIL_WERTE = Object.freeze({ [SEIL_NINJA]: SEIL_FASSUNG_2, [SEIL_FEIN]: SEIL_FASSUNG_3 });
+
+/** Der Standard neuer Partien (Fassung 3); Werte, die in allen Fassungen gleich sind (Winkel, Waffen, Takt), liest man hier. */
+export const SEIL = SEIL_FASSUNG_3;
+
+/** Wertetabelle einer Fassung; unbekannt/ALT → Standard (ohne Seil wird sie nie benutzt). */
+export function seilWerte(fassung) {
+  return SEIL_WERTE[fassung] ?? SEIL_FASSUNG_3;
+}
 
 /** Länge, Schüsse und Stufe einer Kraftstufe (1–5, unbekannt = Standard). */
 export function seilStufe(stufe = SEIL.standardStufe) {
