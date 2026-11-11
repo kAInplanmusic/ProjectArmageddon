@@ -182,6 +182,12 @@ export class Uebersichtskarte {
     this.rahmen.hidden = !zeigen;
     this.knopf.setAttribute('aria-pressed', String(zeigen));
     if (!zeigen || !state) return;
+    // Oben rechts unter der Kopfzeile statt unten rechts: Unten rechts liegt der FEUER-Knopf (und bei Touch die
+    // Aktionsknöpfe); die Übersicht verdeckte ihn in jeder Standardpartie (zoom-200-prozent.spec, 1440x900: Karte
+    // y 758-888, FEUER y 779-843).
+    const kopf = globalThis.document?.getElementById('hud-top')?.getBoundingClientRect();
+    const oben = Math.round((kopf?.bottom ?? 0) + 8);
+    if (this.rahmen.style.top !== `${oben}px`) { this.rahmen.style.top = `${oben}px`; this.rahmen.style.bottom = 'auto'; }
     const karte = k.karte;
     const kante = Math.min(MAX_KANTE, Math.round((globalThis.innerWidth ?? 1280) * 0.22));
     const bild = uebersichtsGroesse(karte, Math.max(120, kante));
