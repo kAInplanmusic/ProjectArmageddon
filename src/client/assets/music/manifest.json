@@ -5,7 +5,7 @@
   "stuecke": [
     { "id": "heathcliff", "titel": "Heathcliff", "datei": "heathcliff.mp3", "dauer": 75.9, "stimmung": ["menu", "match"] },
     { "id": "thief", "titel": "Thief", "datei": "thief.mp3", "dauer": 90.7, "stimmung": ["menu", "match"] },
-    { "id": "titellied", "titel": "Titellied", "datei": "titellied.mp3", "dauer": 149.5, "stimmung": ["menu"], "titellied": true },
+    { "id": "titellied", "titel": "ProjectArmageddon", "urheber": "kAIn plan", "datei": "titellied.mp3", "dauer": 149.5, "stimmung": ["menu"], "titellied": true },
     { "id": "cliffhanger", "titel": "Cliffhanger", "datei": "cliffhanger.mp3", "dauer": 84.7, "stimmung": ["match", "intensiv"] }
   ]
 }

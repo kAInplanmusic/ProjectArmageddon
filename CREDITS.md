@@ -4,8 +4,8 @@
 
 Die Musikstücke in `src/client/assets/music/` — **Heathcliff**, **Thief**, **Cliffhanger** —
 stammen von und gehören **Patrick Hilf** (Urheber und Rechteinhaber/Lizenzgeber, Angabe des
-Auftraggebers). Das **Titellied** (`titellied.mp3`, Menü und Startscreen) hat der Auftraggeber geliefert; eine
-Urheberangabe liegt dazu nicht vor und wird hier nicht erfunden (offen: vom Auftraggeber bestätigen lassen). Weitere Stücke werden hier und in `manifest.json` (`urheber`) ergänzt.
+Auftraggebers). Das **Titellied** (`titellied.mp3`, Menü und Startscreen) stammt von **kAIn plan** („kAIn plan - ProjectArmageddon“); Lizenzhalter aller Lieder ist der Auftraggeber
+(Angabe des Auftraggebers 2026-11-11). Weitere Stücke werden hier und in `manifest.json` (`urheber`) ergänzt.
 
 ## Grafiken
 
