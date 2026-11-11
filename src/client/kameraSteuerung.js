@@ -21,6 +21,7 @@
  */
 
 import { KameraeffekteBedienung } from './kameraEffekteBedienung.js';
+import { Uebersichtskarte } from './uebersichtskarte.js';
 
 /** Zoomfaktor je Rastschritt des Mausrads. */
 const RAD_FAKTOR = 1.12;
@@ -46,6 +47,8 @@ export class KameraSteuerung {
     this.kameraeffekte = new KameraeffekteBedienung({
       doc: canvas?.ownerDocument ?? globalThis.document ?? null,
     });
+    // Übersichtskarte (Minimap, Taste M) und Übersichtszoom (Taste O) für breite Karten; ohne DOM ein No-op.
+    this.uebersicht = new Uebersichtskarte({ doc: canvas?.ownerDocument ?? globalThis.document ?? null, kamera, regie, tastaturFrei });
     this.#binde(tastaturFrei);
     this.aktualisiereKnopf();
   }
@@ -65,7 +68,23 @@ export class KameraSteuerung {
     this.aktualisiereKnopf();
   }
 
-  aktualisiereKnopf() {
+  /** Übersichtszoom (Taste O): ganze Karte zeigen; ein zweiter Druck stellt die Führung wieder her. */
+  uebersichtsZoom() {
+    const k = this.kamera();
+    if (!k) return false;
+    const ganz = k.zoomGanzeKarte;
+    if (k.zoom <= ganz * 1.02 && this.regie.uebersteuert) {
+      this.regie.setzeModus('frei'); this.regie.setzeModus('folgt'); // setzt den Eingriff zurück
+    } else {
+      this.regie.uebersteuere();
+      k.setzeAnsicht(k.karte.b / 2, k.karte.h / 2, ganz);
+    }
+    this.aktualisiereKnopf();
+    return true;
+  }
+
+  aktualisiereKnopf(state = null, gelaende = null, reduziert = false) {
+    if (state && this.uebersicht) { this.uebersicht.setzeReduziert(reduziert); this.uebersicht.aktualisiere(state, gelaende); }
     if (!this.knopf) return;
     const frei = this.regie.modus === 'frei';
     const text = this.knopf.querySelector('[data-kamera-text]');
@@ -136,6 +155,7 @@ export class KameraSteuerung {
 
     window.addEventListener('keydown', ev => {
       if (ev.repeat || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      if (ev.key === 'o' || ev.key === 'O') { if (tastaturFrei(ev)) this.uebersichtsZoom(); return; }
       if (ev.key !== 'c' && ev.key !== 'C') return;
       if (!tastaturFrei(ev)) return;
       this.umschalten();

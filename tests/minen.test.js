@@ -509,7 +509,7 @@ function baueAbwurfSystem(seed = 1) {
 
 test('Marke 5: Biomobjekte sind Standard, Marken 3 und 4 bleiben gültig', () => {
   assert.equal(BODENOBJEKTE_ABWURF, 4);
-  assert.equal(BODENOBJEKTE_STANDARD, 5);
+  assert.equal(BODENOBJEKTE_STANDARD, 6);
   assert.equal(normalisiereBodenobjekte(3), BODENOBJEKTE_FAESSER);
   assert.equal(normalisiereBodenobjekte(4), BODENOBJEKTE_ABWURF);
 });
@@ -686,4 +686,23 @@ test('Replay mit Biomobjektfassung 5 reproduziert neue Größen und unverändert
     assert.equal(a.match.stateHash(), b.match.stateHash());
     assert.ok(a.match.getState().bodenobjekte.filter(o => o.typ === 'fass').every(o => bodenobjekte === 5 ? o.biomobjekt === 'schrott' : !o.biomobjekt));
   }
+});
+
+test('Marke 6: breite Karten bekommen mehr liegende Bodenobjekte, bis 2560 px bleibt alles wie Marke 5', () => {
+  assert.equal(normalisiereBodenobjekte(6), 6);
+  let klein5 = 0, klein6 = 0, breit5 = 0, breit6 = 0;
+  const zaehle = m => m.getState().bodenobjekte.length;
+  for (let seed = 1; seed <= 12; seed += 1) {
+    const basis = { seed, teams: 2, playersPerTeam: 2, preset: 'hills' };
+    const k5 = new MatchController({ ...basis, bodenobjekte: 5 }); k5.start();
+    const k6 = new MatchController({ ...basis, bodenobjekte: 6 }); k6.start();
+    assert.deepEqual(k6.getState().bodenobjekte, k5.getState().bodenobjekte, `Seed ${seed}: kleine Karte weicht ab`);
+    klein5 += zaehle(k5); klein6 += zaehle(k6);
+    const b5 = new MatchController({ ...basis, bodenobjekte: 5, format: '24:9', groesse: 'gross' }); b5.start();
+    const b6 = new MatchController({ ...basis, bodenobjekte: 6, format: '24:9', groesse: 'gross' }); b6.start();
+    breit5 += zaehle(b5); breit6 += zaehle(b6);
+    assert.ok(zaehle(b6) <= Math.round(MINEN.liegendMax * 2.5) + Math.round(FAESSER.liegendMax * 2.5));
+  }
+  assert.equal(klein6, klein5);
+  assert.ok(breit6 > breit5 * 1.4, `breite Karte: Marke 6 ${breit6} gegen Marke 5 ${breit5}`);
 });

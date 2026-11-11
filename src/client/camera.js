@@ -41,8 +41,11 @@
  * (2560 px bei „groß", 5120 px bei „Krieg"), aber nur als 1280-px-Fenster
  * erscheint: Die Führung (`kameraRegie.js`) will rund 1400 Kartenpixel Breite
  * zeigen, und das ist auf der Kriegskarte Zoom ≈ 3,6.
+ *
+ * Das Minimum 0,25 (früher 0,35) lässt die breiteste Karte (6272 px, 24:9) auf einem 1568-px-Schirm
+ * noch ganz zeigen (Übersichtszoom, Taste O); bei 0,35 wäre sie erst ab 2195 px Schirmbreite ganz sichtbar.
  */
-export const ZOOM_GRENZEN = Object.freeze({ min: 0.35, max: 4 });
+export const ZOOM_GRENZEN = Object.freeze({ min: 0.25, max: 4 });
 
 /**
  * Wie weit die Kamera einer Bewegung folgt (0 = starr, 1 = sofort).

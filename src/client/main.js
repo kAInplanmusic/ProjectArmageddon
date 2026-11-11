@@ -3475,7 +3475,7 @@ class Game {
       }
       // Rest-Schritt: Schub der nicht scrollenden Achse weich annähern.
       this.kamera.schritt();
-      this.kameraSteuerung.aktualisiereKnopf();
+      this.kameraSteuerung.aktualisiereKnopf(state, this.renderer.terrainLayer, this.renderer.reducedMotion); // Übersichtskarte (Taste M)
     }
 
     this.renderer.render(state, {

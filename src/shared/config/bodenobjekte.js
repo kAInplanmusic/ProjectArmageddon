@@ -11,6 +11,7 @@
  *   - `BODENOBJEKTE_MINEN` (2): `BodenobjektSystem` (`engine/systems/bodenobjektSystem.js`) mit eigenem
  *     Seed-Zweig `BODENOBJEKTE`.
  *   - `BODENOBJEKTE_ABWURF` (4): wie 3, dazu fallen Fässer wie Kisten vom Himmel (je Runde mit `FAESSER.abwurfChance`, Flugzeit `FAESSER.flugTicks`).
+ *   - `BODENOBJEKTE_BREIT` (6): wie 5, dazu wachsen Zahl liegender Minen und Fässer und die Fass-Obergrenze auf Karten über 2560 px Breite (Faktor Breite/2560, höchstens 2,5); bis 2560 px bitgleich zu 5.
  *   - `BODENOBJEKTE_FAESSER` (3): wie 2, dazu Fässer (siehe `FAESSER`): liegen von Anfang an auf der Karte, explodieren bei einer
  *     Explosion in der Nähe (auch einer anderen Mine oder eines Fasses, Kettenreaktion) und lösen dabei Minen mit aus.
  *
@@ -37,7 +38,11 @@ export const BODENOBJEKTE_MINEN = 2;
 export const BODENOBJEKTE_FAESSER = 3;
 export const BODENOBJEKTE_ABWURF = 4;
 export const BODENOBJEKTE_BIOM = 5;
-export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_BIOM;
+export const BODENOBJEKTE_BREIT = 6;
+export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_BREIT;
+/** Fassung 6: Faktor = Breite / Basis, höchstens `MAX` (wie die Kisten der Geländefassung 10). Bis zur Basis 1, also bitgleich zu Fassung 5. */
+export const BODENOBJEKTE_BREIT_BASIS = 2560;
+export const BODENOBJEKTE_BREIT_MAX = 2.5;
 export const BIOMOBJEKTE = Object.freeze({
   vulkan: { label: 'Dampfventil', farbe: '#ac5a34', licht: '#fff1a2', schaden: 12, radius: 100, rueckstoss: 260, gelaendeSchaden: 8, schadensart: 'fire' },
   eiswueste: { label: 'Eislinse', farbe: '#70cce6', licht: '#e4fbff', schaden: 22, radius: 78, rueckstoss: 25, gelaendeSchaden: 66, schadensart: 'ice' },
@@ -46,7 +51,7 @@ export const BIOMOBJEKTE = Object.freeze({
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereBewegung`); das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBodenobjekte(fassung) {
-  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER || fassung === BODENOBJEKTE_ABWURF || fassung === BODENOBJEKTE_BIOM ? fassung : BODENOBJEKTE_STANDARD;
+  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER || fassung === BODENOBJEKTE_ABWURF || fassung === BODENOBJEKTE_BIOM || fassung === BODENOBJEKTE_BREIT ? fassung : BODENOBJEKTE_STANDARD;
 }
 
 /** Ausgang einer Auslösung. */

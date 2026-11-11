@@ -24,7 +24,7 @@
  * @module BodenobjektSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { MINEN, FAESSER, BIOMOBJEKTE, MINEN_AUSGANG, minenAusgang } from '../../shared/config/bodenobjekte.js';
+import { MINEN, FAESSER, BIOMOBJEKTE, BODENOBJEKTE_BREIT_BASIS, BODENOBJEKTE_BREIT_MAX, MINEN_AUSGANG, minenAusgang } from '../../shared/config/bodenobjekte.js';
 import { damageTypeId } from '../damageTypes.js';
 import { wendeExplosionAn } from '../explosion.js';
 import { freierPlatz } from '../turret.js';
@@ -43,6 +43,7 @@ export class BodenobjektSystem {
   #faesser;
   #biom;
   #abwurf;
+  #faktor = 1;
   #minen = new Map();
   #naechsteId = 1;
 
@@ -51,12 +52,16 @@ export class BodenobjektSystem {
    * @param {object} optionen.rng - Seed-Zweig `BODENOBJEKTE`
    * @param {object} optionen.world - ECS-Welt (für Figuren und Explosionswirkung)
    * @param {object} optionen.events - Ereigniswarteschlange des Matches
+   * @param {boolean} [optionen.breit=false] - Bodenobjektfassung 6: Zahl und Obergrenzen wachsen mit der Kartenbreite
    * @param {boolean} [optionen.abwurf=false] - Bodenobjektfassung 4: Fässer fallen wie Kisten vom Himmel (`rundenWurf`)
    * @param {boolean} [optionen.faesser=false] - Bodenobjektfassung 3: liegende Fässer und Explosionsketten über Fässer
    * @param {object} optionen.q - Abfragen: `breite`, `surfaceYAt(x)`, `bodenNahe(x, y)`, `waterLevelAt(x, y)`,
    *   `startplaetze()` → [{x, y}] (Mindestabstand zu liegenden Minen)
    */
-  constructor({ rng, world, events, q, faesser = false, abwurf = false, biom = null }) {
+  constructor({ rng, world, events, q, faesser = false, abwurf = false, biom = null, breit = false }) {
+    // Bodenobjektfassung 6: auf breiter Karte wachsen Zahl und Obergrenzen der Bodenobjekte mit der Breite (Faktor Breite/2560, 1 bis 2,5);
+    // bis 2560 px Breite ist der Faktor 1 und der Zufallsstrom identisch zur Fassung 5.
+    this.#faktor = breit ? Math.max(1, Math.min(BODENOBJEKTE_BREIT_MAX, q.breite / BODENOBJEKTE_BREIT_BASIS)) : 1;
     this.#faesser = faesser;
     this.#biom = Object.hasOwn(BIOMOBJEKTE, biom) ? biom : null;
     this.#abwurf = abwurf;
@@ -153,7 +158,8 @@ export class BodenobjektSystem {
    * viel verbraucht. Abstand zu Startplätzen und untereinander, nur trockener Boden.
    */
   setzeLiegende() {
-    const anzahl = MINEN.liegendMin + this.#rng.nextIntBelow(MINEN.liegendMax - MINEN.liegendMin + 1);
+    const maxN = Math.round(MINEN.liegendMax * this.#faktor);
+    const anzahl = Math.round(MINEN.liegendMin * this.#faktor) + this.#rng.nextIntBelow(maxN - Math.round(MINEN.liegendMin * this.#faktor) + 1);
     const VERSUCHE = 12;
     const start = this.#q.startplaetze();
     for (let i = 0; i < anzahl; i += 1) {
@@ -180,7 +186,8 @@ export class BodenobjektSystem {
 
   /** Liegende Fässer (Bodenobjektfassung 3): wie die liegenden Minen, mit eigener Anzahl und denselben Abständen. */
   #setzeFaesser(start) {
-    const anzahl = (this.#biom ? 1 : FAESSER.liegendMin) + this.#rng.nextIntBelow(FAESSER.liegendMax - FAESSER.liegendMin + 1);
+    const minF = Math.round((this.#biom ? 1 : FAESSER.liegendMin) * this.#faktor);
+    const anzahl = minF + this.#rng.nextIntBelow(Math.round(FAESSER.liegendMax * this.#faktor) - Math.round(FAESSER.liegendMin * this.#faktor) + 1);
     const VERSUCHE = 12;
     for (let i = 0; i < anzahl; i += 1) {
       let gesetzt = false;
@@ -212,7 +219,7 @@ export class BodenobjektSystem {
     const chance = this.#rng.next();
     const zufallX = this.#rng.next();
     if (chance >= FAESSER.abwurfChance) return;
-    if ([...this.#minen.values()].filter(o => o.typ === OBJEKT_TYP.FASS).length >= FAESSER.maximum) return;
+    if ([...this.#minen.values()].filter(o => o.typ === OBJEKT_TYP.FASS).length >= Math.round(FAESSER.maximum * this.#faktor)) return;
     const links = FAESSER.abwurfRand;
     const x = Math.round(links + zufallX * (this.#q.breite - 2 * links));
     const platz = freierPlatz({

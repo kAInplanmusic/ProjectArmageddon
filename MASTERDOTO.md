@@ -6,7 +6,7 @@ Diese Datei ist **keine Arbeitsliste** mehr. Die einzige offene Liste steht in
 
 Nur die von `check:docs` geprüften Kennzahlen bleiben als Kompatibilitätsvermerk:
 
-- **2842/2842** grün, Dateizahl **307**
+- **2851/2851** grün (Rechnung: HEAD 2842 + 9; Gesamtlauf nach Zusammenführung mit Gelände 12 und Seil steht aus, siehe README), Dateizahl **309**
 - **22 Gates in 105.2 s | fehlgeschlagen: 0**
 - Node `>=22` festgeschrieben
 - `docs/matrix-terrain-waffen-wirkung.md`: 150 Waffen
