@@ -1071,6 +1071,226 @@ function mischeNaht(bm, width, height, wasserY, links, rechts, x0, x1, feld) {
   }
 }
 
+/** Fassung 12: größte Steigung (Höhenunterschied je Spalte) des Rampenprofils an einer Naht. Die Engine steigt bis 1,4 (gemessen, `config/bewegung.js`: 3 px Stufe, Vorlauf 2 px). */
+export const NAHT_STEIGUNG_MAX = 1.0;
+/** Fassung 12: schmalere senkrechte Hohlräume (Luft zwischen Fels, beidseitig begrenzt) werden gefüllt; 64 px = 4,5 Figurenbreiten. */
+export const SCHACHT_MIN_BREITE = 64;
+/** Fassung 12: Brückenplanke: Dicke (zwei Figurenhöhen), größte Steigung, Abstand der Stützen, Stützenbreite. */
+export const BRUECKE_DICKE = 40;
+export const BRUECKE_STEIGUNG_MAX = 0.8;
+/** Fassung 12: größte Fensterbreite je Seite der Mischzone (px). */
+const NAHT_AUSLAUF_MAX = 850;
+/** Fassung 12: Dicke der geschlossenen Kruste unter dem Rampenprofil (px). */
+const NAHT_KRUSTE = 24;
+/** Fassung 12: freier Raum über dem Rampenprofil (px): zwei Figurenhöhen, auch Schwebendes wird dort entfernt (Kopffreiheit, keine Kanten an der Rampe). */
+const NAHT_FREI = 40;
+/** Fassung 12: Länge (px) der Landerampe an jedem Brückenende. */
+const LANDERAMPE_LAENGE = 420;
+/** Fassung 12: freier Raum über der Planke (px) auf der ganzen Spanne. */
+const BRUECKE_FREI = 44;
+const BRUECKE_STUETZEN_ABSTAND = 180;
+const BRUECKE_STUETZEN_BREITE = 40;
+
+/**
+ * Fassung 12: Mischzone mit Rampenprofil, ohne die Zonen zu verschieben. Das Profil `hs(x)` überblendet die Oberkanten beider Zonen wie in Fassung 11
+ * und wird auf `NAHT_STEIGUNG_MAX` begrenzt (Relaxation vor und zurück). In jeder Spalte gilt die Zelle der gewählten Zone unverändert, nur
+ * an der Oberfläche wird nachgeformt: Land, das auf dem Grund steht und über dem Profil liegt, wird abgetragen; zwischen Profil und eigener
+ * Oberkante der Zone (oder dem Grund, wenn die Zone hier kein Land hat) wird aufgeschüttet. Höhlen und Pyramiden darunter bleiben unverzerrt.
+ */
+function mischeNaht12(bm, width, height, wasserY, links, rechts, x0, x1, feld) {
+  // Fenster: mindestens NAHT_AUSLAUF je Seite; es wächst (bis NAHT_AUSLAUF_MAX), bis der Höhenunterschied der beiden Fensterränder mit der
+  // größten Steigung zu überbrücken ist.
+  const xaMax = Math.max(0, x0 - NAHT_AUSLAUF_MAX);
+  const xbMax = Math.min(width, x1 + NAHT_AUSLAUF_MAX);
+  const SL = standLand(links, xaMax, xbMax, wasserY);
+  const SR = standLand(rechts, xaMax, xbMax, wasserY);
+  const idx = (z, S, x) => Math.max(0, Math.min(S.breite - 1, Math.max(0, Math.min(z.sub.breite - 1, x - z.xa)) - S.c0));
+  const kante = (z, S, x) => { const g = S.oberkante[idx(z, S, x)]; return g < 0 ? wasserY : g; };
+  let auslauf = NAHT_AUSLAUF;
+  while (auslauf < NAHT_AUSLAUF_MAX) {
+    const a = Math.max(0, x0 - auslauf);
+    const b = Math.min(width, x1 + auslauf);
+    if (Math.abs(kante(rechts, SR, b - 1) - kante(links, SL, a)) <= 0.85 * NAHT_STEIGUNG_MAX * (b - a)) break;
+    auslauf += 50;
+  }
+  const xa = Math.max(0, x0 - auslauf);
+  const xb = Math.min(width, x1 + auslauf);
+  const spanne = xb - xa;
+  const gL = new Int32Array(spanne);
+  const gR = new Int32Array(spanne);
+  const hs = new Float64Array(spanne);
+  for (let i = 0; i < spanne; i += 1) {
+    const x = xa + i;
+    gL[i] = SL.oberkante[idx(links, SL, x)];
+    gR[i] = SR.oberkante[idx(rechts, SR, x)];
+    const u = (i + 0.5) / spanne;
+    const w = u * 0.6 + u * u * (3 - 2 * u) * 0.4;
+    const hL = gL[i] < 0 ? wasserY : gL[i];
+    const hR = gR[i] < 0 ? wasserY : gR[i];
+    hs[i] = hL * (1 - w) + hR * w;
+  }
+  // Die Ränder gehören den Zonen: das Profil beginnt und endet auf deren Oberkante (die Fensterwahl oben macht den Höhenunterschied überbrückbar) und
+  // bleibt innerhalb des Kegels, den die Steigungsgrenze von beiden Rändern aus erlaubt.
+  const a0 = hs[0];
+  const aN = hs[spanne - 1];
+  for (let i = 0; i < spanne; i += 1) {
+    const lo = Math.max(a0 - NAHT_STEIGUNG_MAX * i, aN - NAHT_STEIGUNG_MAX * (spanne - 1 - i));
+    const hi = Math.min(a0 + NAHT_STEIGUNG_MAX * i, aN + NAHT_STEIGUNG_MAX * (spanne - 1 - i));
+    if (lo <= hi) hs[i] = Math.max(lo, Math.min(hi, hs[i]));
+  }
+  // Steigung begrenzen: abwechselnd vorwärts und rückwärts, bis nichts mehr ändert (Abstand benachbarter Spalten höchstens NAHT_STEIGUNG_MAX).
+  for (let pass = 0; pass < 12; pass += 1) {
+    let geaendert = false;
+    for (let i = 1; i < spanne; i += 1) {
+      const lo = hs[i - 1] - NAHT_STEIGUNG_MAX;
+      const hi = hs[i - 1] + NAHT_STEIGUNG_MAX;
+      if (hs[i] < lo) { hs[i] = lo; geaendert = true; } else if (hs[i] > hi) { hs[i] = hi; geaendert = true; }
+    }
+    for (let i = spanne - 2; i >= 0; i -= 1) {
+      const lo = hs[i + 1] - NAHT_STEIGUNG_MAX;
+      const hi = hs[i + 1] + NAHT_STEIGUNG_MAX;
+      if (hs[i] < lo) { hs[i] = lo; geaendert = true; } else if (hs[i] > hi) { hs[i] = hi; geaendert = true; }
+    }
+    if (!geaendert) break;
+  }
+  // Ecken abrunden (Mittelwert über ±RUND Spalten, zweimal; ein Mittelwert hat keine größere Steigung als sein Eingang). Zu den Fensterrändern
+  // hin klingt die Rundung aus, damit das Profil dort genau in die Oberkante der Zone übergeht (keine Stufe am Rand).
+  const RUND = 28;
+  const roh = hs.slice();
+  for (let m = 0; m < 2; m += 1) {
+    const kopie = hs.slice();
+    for (let i = 0; i < spanne; i += 1) {
+      let sum = 0;
+      for (let j = -RUND; j <= RUND; j += 1) sum += kopie[Math.max(0, Math.min(spanne - 1, i + j))];
+      hs[i] = sum / (2 * RUND + 1);
+    }
+  }
+  for (let i = 0; i < spanne; i += 1) {
+    const t = Math.min(1, Math.min(i, spanne - 1 - i) / (4 * RUND));
+    hs[i] = roh[i] + (hs[i] - roh[i]) * t;
+  }
+  const grund = Math.min(height, wasserY + 170);
+  const zelle = (z, S, x, y, h, g) => {
+    const B = z.sub.breite;
+    const c = Math.max(0, Math.min(B - 1, x - z.xa));
+    const roh = z.sub.bitmap[y * B + c];
+    if (y < h) return y >= h - NAHT_FREI ? 0 : roh && S.stand[y * S.breite + (c - S.c0 < 0 ? 0 : Math.min(S.breite - 1, c - S.c0))] ? 0 : roh;
+    if (roh) return 1;
+    // Kruste: unter dem Profil bleibt eine geschlossene Schicht, auch wo darunter eine Höhle beginnt (sonst fällt die Oberfläche in einen Spalt).
+    if (y < h + NAHT_KRUSTE && h < wasserY - 8) return 1;
+    // Aufschütten: zwischen Profil und eigener Oberkante der Zone; ohne Land in der Zone bis zum Grund (nur wenn das Profil Land verlangt).
+    if (g >= 0) return y < g ? 1 : 0;
+    return h < wasserY - 8 && y < grund ? 1 : 0;
+  };
+  for (let x = xa; x < xb; x += 1) {
+    const i = x - xa;
+    const h = Math.round(hs[i]);
+    const inMisch = x >= x0 && x < x1;
+    const t = Math.max(0, Math.min(1, (x - x0) / ZONEN_UEBERLAPP));
+    const hL = gL[i] < 0 ? wasserY : gL[i];
+    const hR = gR[i] < 0 ? wasserY : gR[i];
+    const gleichL = h === hL && !(gL[i] < 0 && h < wasserY - 8);
+    const gleichR = h === hR && !(gR[i] < 0 && h < wasserY - 8);
+    if (!inMisch && x < x0 && gleichL) continue;
+    if (!inMisch && x >= x1 && gleichR) continue;
+    for (let y = 0; y < height; y += 1) {
+      const nimmRechts = (t - 0.5) * 2 + (inMisch ? feld(x - x0, y) * 0.8 : 0) > 0;
+      bm[y * width + x] = nimmRechts ? zelle(rechts, SR, x, y, h, gR[i]) : zelle(links, SL, x, y, h, gL[i]);
+    }
+  }
+  return { xa, xb, profil: Int32Array.from(hs, Math.round) };
+}
+
+/**
+ * Fassung 12: füllt schmale senkrechte Hohlräume. Eine Luftzelle über der Wasserlinie ist „schmal", wenn der waagerechte Luftlauf, in dem sie
+ * liegt, beidseitig von Fels begrenzt und kürzer als `SCHACHT_MIN_BREITE` ist. Zusammenhängende schmale Zellen (4-Nachbarn), die sich
+ * über mindestens `SCHACHT_MIN_BREITE` Zeilen erstrecken, sind Schächte oder Risse und werden Fels. Flache Spitzen von Kammern und Gängen
+ * (kurze Ausdehnung) bleiben.
+ * @returns {number} gefüllte Zellen
+ */
+function fuelleSchaechte(maske, wasserY) {
+  const B = maske.breite;
+  const H = Math.min(maske.hoehe, wasserY);
+  const bm = maske.bitmap;
+  const schmal = new Uint8Array(B * H);
+  for (let y = 0; y < H; y += 1) {
+    let x = 0;
+    while (x < B) {
+      if (bm[y * B + x]) { x += 1; continue; }
+      const a = x;
+      while (x < B && !bm[y * B + x]) x += 1;
+      if (a > 0 && x < B && x - a < SCHACHT_MIN_BREITE) schmal.fill(1, y * B + a, y * B + x);
+    }
+  }
+  let stapel = new Int32Array(1 << 16);
+  const sichere = (n) => { if (n >= stapel.length) { const g = new Int32Array(stapel.length * 2); g.set(stapel); stapel = g; } };
+  // Zustand: 1 schmal, 2 besucht (Ausdehnung zu klein), 3 besucht (Schacht, wird gefüllt)
+  const flute = (k0, von, nach, messe) => {
+    let sp = 0;
+    let yMin = H;
+    let yMax = 0;
+    let n = 0;
+    stapel[sp++] = k0;
+    schmal[k0] = nach;
+    while (sp > 0) {
+      const k = stapel[--sp];
+      n += 1;
+      const x = k % B;
+      const y = (k - x) / B;
+      if (messe) { if (y < yMin) yMin = y; if (y > yMax) yMax = y; } else bm[k] = 1;
+      sichere(sp + 4);
+      if (x > 0 && schmal[k - 1] === von) { schmal[k - 1] = nach; stapel[sp++] = k - 1; }
+      if (x < B - 1 && schmal[k + 1] === von) { schmal[k + 1] = nach; stapel[sp++] = k + 1; }
+      if (y > 0 && schmal[k - B] === von) { schmal[k - B] = nach; stapel[sp++] = k - B; }
+      if (y < H - 1 && schmal[k + B] === von) { schmal[k + B] = nach; stapel[sp++] = k + B; }
+    }
+    return messe ? yMax - yMin + 1 : n;
+  };
+  let gefuellt = 0;
+  for (let k0 = 0; k0 < B * H; k0 += 1) {
+    if (schmal[k0] !== 1) continue;
+    if (flute(k0, 1, 2, true) >= SCHACHT_MIN_BREITE) gefuellt += flute(k0, 2, 3, false);
+  }
+  return gefuellt;
+}
+
+/**
+ * Fassung 12: Landerampe am Brückenende. Ab der Planke folgt die Oberfläche dem Land jenseits der Kante mit höchstens `NAHT_STEIGUNG_MAX` je Spalte
+ * (Land darüber wird abgetragen, Mulden werden aufgeschüttet), bis sie die natürliche Oberkante erreicht (höchstens `LANDERAMPE_LAENGE` px).
+ * So endet die Brücke nicht an einer Stufe oder Wand, die ein Gehender nicht nimmt.
+ */
+function landeRampe(maske, x, y, richtung, wasserY) {
+  let linie = y;
+  let gleich = 0;
+  for (let i = 0; i <= LANDERAMPE_LAENGE; i += 1) {
+    const c = x + richtung * i;
+    if (c < 1 || c >= maske.breite - 1) break;
+    const ziel = oben(maske, c);
+    if (ziel < 0 || ziel >= wasserY - 20) break;
+    linie += Math.max(-NAHT_STEIGUNG_MAX, Math.min(NAHT_STEIGUNG_MAX, ziel - linie));
+    const l = Math.round(linie);
+    if (l < ziel) maske.rechteck(c, l, c + 1, ziel);
+    else if (l > ziel) maske.rechteck(c, ziel, c + 1, l, 0);
+    // Kruste unter der Linie (auch wo darunter Luft liegt, etwa unter einem dünnen Überhang).
+    maske.rechteck(c, l, c + 1, l + NAHT_KRUSTE, 1);
+    // Freier Raum über der Landerampe (zwei Figurenhöhen), damit kein Überhang den Weg verengt.
+    maske.rechteck(c, l - NAHT_FREI, c + 1, l, 0);
+    gleich = l === ziel ? gleich + 1 : 0;
+    if (gleich >= 40) break;
+  }
+}
+
+/** Fassung 12: Brücke aus einer 40 px dicken Planke, bündig mit den Landkanten (Oberkante bei `y0` links, `y1` rechts, linear, an den Enden 12 px in das Land hinein). */
+function bruecke12(maske, x0, x1, y0, y1) {
+  const n = Math.max(1, Math.round(x1 - x0));
+  const E = 12;
+  for (let x = x0 - E; x < x1 + E; x += 1) {
+    const t = Math.max(0, Math.min(1, (x - x0) / n));
+    const y = Math.round(y0 + (y1 - y0) * t);
+    maske.rechteck(x, y, x + 1, y + BRUECKE_DICKE);
+  }
+}
+
 /**
  * Fassung 11: verbindet die großen Landmassen der Karte durch Träger-Brücken (Planke von Kante zu Kante, Stützen bis zum Grund, wo die
  * Planke nahe über dem Wasser liegt). Eine Landmasse zählt, wenn ihre Oberkante in mindestens 8 % der Spalten trocken (über der
@@ -1078,7 +1298,7 @@ function mischeNaht(bm, width, height, wasserY, links, rechts, x0, x1, feld) {
  * Oberkantenpunkten mit 24 bis 800 px waagerechtem Abstand und höchstens 1,2 Steigung. Das erledigt die Prüfung „alles trockene Land auf
  * EINER Fläche“ (`terrainGen3.zonenSpielbar`) an der Karte selbst, statt die Karte zu verwerfen. Rechnet auf einem Viertel der Auflösung.
  */
-function verbindeLandmassen(maske, rng, wasserY, stat) {
+function verbindeLandmassen(maske, rng, wasserY, stat, v12 = false) {
   const B = maske.breite;
   const H = maske.hoehe;
   const S = 4;
@@ -1125,6 +1345,8 @@ function verbindeLandmassen(maske, rng, wasserY, stat) {
   }
   const gross = [...spalten.entries()].filter(([, l]) => l.length >= w * 0.08).map(([id, l]) => ({ id, l, mitte: l.reduce((a, c) => a + c, 0) / l.length }));
   gross.sort((a, b) => a.mitte - b.mitte);
+  const liste = [];
+  const kandidaten = [];
   const wurzel = new Map(gross.map((g) => [g.id, g.id]));
   const finde = (i) => { while (wurzel.get(i) !== i) i = wurzel.get(i); return i; };
   for (let i = 0; i + 1 < gross.length; i += 1) {
@@ -1139,25 +1361,74 @@ function verbindeLandmassen(maske, rng, wasserY, stat) {
         const dx = (xb - xa) * S;
         if (dx < 24 || dx > 800) continue;
         const dy = hoeheVon[xb] - hoeheVon[xa];
-        if (Math.abs(dy) > dx * 1.2) continue;
+        if (Math.abs(dy) > dx * (v12 ? BRUECKE_STEIGUNG_MAX : 1.2)) continue;
         const d = dx * dx + dy * dy;
-        if (!beste || d < beste.d) beste = { d, xa: xa * S + 2, xb: xb * S + 2, ya: hoeheVon[xa], yb: hoeheVon[xb] };
+        if (v12) kandidaten.push({ d, xa: xa * S + 2, xb: xb * S + 2, ya: hoeheVon[xa], yb: hoeheVon[xb] });
+        else if (!beste || d < beste.d) beste = { d, xa: xa * S + 2, xb: xb * S + 2, ya: hoeheVon[xa], yb: hoeheVon[xb] };
       }
     }
+    if (v12) {
+      // Fassung 12: nächstes Paar, über dessen Planke der Weg frei ist (nichts Festes in den zwei Figurenhöhen darüber, kein Land mitten in der Spanne).
+      kandidaten.sort((p, q) => p.d - q.d);
+      beste = kandidaten.find((c) => {
+        // Genaue Oberkanten der Endspalten (das Viertelraster liegt bis 3 px daneben); die Steigungsgrenze gilt für die gebaute Planke.
+        c.ya = oben(maske, c.xa);
+        c.yb = oben(maske, c.xb);
+        if (Math.abs(c.yb - c.ya) > (c.xb - c.xa) * BRUECKE_STEIGUNG_MAX) return false;
+        for (let x = c.xa + 16; x <= c.xb - 16; x += 4) {
+          const y = c.ya + ((c.yb - c.ya) * (x - c.xa)) / (c.xb - c.xa);
+          for (let yy = Math.floor((y - BRUECKE_FREI) / S); yy <= Math.floor((y + 4) / S); yy += 1) if (yy >= 0 && yy < h && klein[yy * w + Math.floor(x / S)]) return false;
+        }
+        return true;
+      }) ?? null;
+      kandidaten.length = 0;
+    }
     if (!beste) continue;
-    const { xa, xb, ya, yb } = beste;
-    bruecke(maske, xa - 6, xb + 6, ya + 4, yb + 4);
-    if (Math.max(ya, yb) > wasserY - 450) {
-      const stuetzen = Math.max(1, Math.round((xb - xa) / 170) - 1);
-      for (let k = 1; k <= stuetzen; k += 1) {
-        const t = k / (stuetzen + 1);
-        pfeiler(maske, rng, xa + (xb - xa) * t, ya + (yb - ya) * t + 8, wasserY + 175, 26);
+    let { xa, xb } = beste;
+    if (v12) {
+      // Genaue Oberkanten an den Endspalten (das Viertelraster liegt bis 3 px daneben). Liegt das Land jenseits der Kante schon über der Planke
+      // (die Planke ginge in den Fels), beginnt die Brücke erst dort, wo sie aus dem Fels tritt: bündig, ohne Stufe.
+      let ya = oben(maske, xa);
+      let yb = oben(maske, xb);
+      const a0 = xa;
+      const b0 = xb;
+      const ya0 = ya;
+      const yb0 = yb;
+      const linie = (x) => ya0 + ((yb0 - ya0) * (x - a0)) / (b0 - a0);
+      while (xa + 1 < b0 && oben(maske, xa + 1) >= 0 && oben(maske, xa + 1) <= linie(xa + 1) + 2) xa += 1;
+      while (xb - 1 > xa && oben(maske, xb - 1) >= 0 && oben(maske, xb - 1) <= linie(xb - 1) + 2) xb -= 1;
+      if (xb - xa < 24) { xa = a0; xb = b0; ya = ya0; yb = yb0; } else if (xa !== a0 || xb !== b0) { ya = Math.round(linie(xa)); yb = Math.round(linie(xb)); }
+      liste.push({ xa, xb, ya, yb });
+      bruecke12(maske, xa, xb, ya, yb);
+      landeRampe(maske, xb, yb, 1, wasserY);
+      landeRampe(maske, xa, ya, -1, wasserY);
+      const clear = wasserY - Math.max(ya, yb) - BRUECKE_DICKE;
+      if (clear > 120) {
+        const stuetzen = Math.max(1, Math.round((xb - xa) / BRUECKE_STUETZEN_ABSTAND) - 1);
+        for (let k = 1; k <= stuetzen; k += 1) {
+          const t = k / (stuetzen + 1);
+          const px = Math.round(xa + (xb - xa) * t);
+          maske.rechteck(px - BRUECKE_STUETZEN_BREITE / 2, ya + (yb - ya) * t + BRUECKE_DICKE - 2, px + BRUECKE_STUETZEN_BREITE / 2, wasserY + 175);
+        }
+        stat.pfeiler += stuetzen;
       }
-      stat.pfeiler += stuetzen;
+    } else {
+      const { ya, yb } = beste;
+      liste.push({ xa, xb, ya, yb });
+      bruecke(maske, xa - 6, xb + 6, ya + 4, yb + 4);
+      if (Math.max(ya, yb) > wasserY - 450) {
+        const stuetzen = Math.max(1, Math.round((xb - xa) / 170) - 1);
+        for (let k = 1; k <= stuetzen; k += 1) {
+          const t = k / (stuetzen + 1);
+          pfeiler(maske, rng, xa + (xb - xa) * t, ya + (yb - ya) * t + 8, wasserY + 175, 26);
+        }
+        stat.pfeiler += stuetzen;
+      }
     }
     stat.bruecken += 1;
     wurzel.set(finde(A.id), finde(Bf.id));
   }
+  return liste;
 }
 
 /**
@@ -1226,6 +1497,8 @@ export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10
   if (wiederholung) maske2.push(...speicher.maske2);
   if (fassung >= 11) for (const z of maske2) for (const k of Object.keys(stat)) stat[k] += z.stat[k];
   const bm = maske.bitmap;
+  const naehte = [];
+  let bruecken = [];
   const aus = (z, x, y) => z.sub.bitmap[y * z.sub.breite + (x - z.xa)];
   // Zone i besitzt die Spalten [von_i, bis_i); dazwischen liegt je Naht eine Mischzone von 300 px.
   const von = (i) => (i === 0 ? 0 : Math.round(i * zb + halb));
@@ -1240,6 +1513,10 @@ export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10
   for (let i = 0; i + 1 < n; i += 1) {
     const feld = rausch2(rng, ZONEN_UEBERLAPP, height, 90);
     const x0 = bis(i);
+    if (fassung >= 12) {
+      naehte.push(mischeNaht12(bm, width, height, wasserY, maske2[i], maske2[i + 1], x0, von(i + 1), feld));
+      continue;
+    }
     if (fassung >= 11) {
       mischeNaht(bm, width, height, wasserY, maske2[i], maske2[i + 1], x0, von(i + 1), feld);
       continue;
@@ -1258,11 +1535,14 @@ export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10
   if (fassung >= 11) {
     // Fassung 11: Schwebereste (kleine Landstücke abseits der Hauptfläche) weg, dann Brücken zwischen den großen Landmassen.
     raeumeAuf(maske, SPLITTER_LAEUFE);
-    verbindeLandmassen(maske, rng, wasserY, stat);
+    if (fassung >= 12) fuelleSchaechte(maske, wasserY);
+    bruecken = verbindeLandmassen(maske, rng, wasserY, stat, fassung >= 12);
+    // Stützen neben einer Wand lassen Schlitze: noch einmal füllen.
+    if (fassung >= 12) fuelleSchaechte(maske, wasserY);
   } else {
     for (let i = 1; i < n; i += 1) nahtBruecke(maske, rng, Math.round(i * zb), wasserY, stat);
   }
-  return { bitmap: maske.bitmap, wasserY, bauteile: stat, art: zonen[mitte], umlauf: false, rund: false, planetenart: null, zonen };
+  return { bitmap: maske.bitmap, wasserY, bauteile: stat, art: zonen[mitte], umlauf: false, rund: false, planetenart: null, zonen, naehte, bruecken };
 }
 
 /**

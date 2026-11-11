@@ -707,7 +707,7 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
   Object.assign(charakter, BAUTEIL_CHARAKTER[karte.art] ?? {});
   const material = typeof rng.fork === 'function' ? baueMaterialfeld(rng.fork(MATERIAL_FORK), width, height, karte.bitmap) : null;
   return {
-    bitmap: karte.bitmap, surface: karte.surface, wasserY: karte.wasserY, material, kartenart: karte.art, bauteile: karte.bauteile,
+    bitmap: karte.bitmap, surface: karte.surface, wasserY: karte.wasserY, material, kartenart: karte.art, bauteile: karte.bauteile, zonen: karte.zonen ?? null, naehte: karte.naehte ?? null, bruecken: karte.bruecken ?? null,
     charakter, versuche: ok ? versuch : 9, kennzahlen, ablehnungen,
     ...(ok ? {} : { warnung: `Keine spielbare Karte nach 8 Versuchen (zuletzt: ${ablehnungen.at(-1)})` }),
     ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom, fassung),

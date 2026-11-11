@@ -47,7 +47,7 @@ test('Marke: Fassung 7 ist gültig und der Standard, 1 bis 6 bleiben gültig, Un
   // Seit Fassung 8 (N-29, `gelaende-fassung-8.test.js`) ist der Standard höher; Fassung 7 bleibt gültig.
   assert.ok(GELAENDE_STANDARD >= GELAENDE_BIOME_20);
   for (const f of [1, 2, 3, 4, 5, 6, 7]) assert.equal(normalisiereGelaende(f), f);
-  assert.equal(normalisiereGelaende(11), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(13), GELAENDE_STANDARD);
   assert.equal(normalisiereGelaende(undefined), GELAENDE_STANDARD);
 });
 

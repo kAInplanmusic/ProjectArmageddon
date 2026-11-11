@@ -26,10 +26,10 @@ const karte = (seed, width, height, fassung) => erzeugeAutonomeKarte({ rng: new 
 
 test('Marke: Fassung 11 ist gültig und der Standard, 10 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_NAHT, 11);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_NAHT);
+  assert.ok(GELAENDE_STANDARD >= GELAENDE_NAHT, 'seit Fassung 12 ist der Standard höher; Fassung 11 bleibt gültig');
   assert.equal(normalisiereGelaende(10), 10);
   assert.equal(normalisiereGelaende(11), 11);
-  assert.equal(normalisiereGelaende(12), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(13), GELAENDE_STANDARD);
 });
 
 test('Fassung 10 bleibt bitgleich: Goldwerte vom Stand vor Fassung 11 (schnelleres Aufräumen, Zonenkopie), schmale Karten gleich zu 10', () => {
@@ -128,14 +128,14 @@ test('Kosten: wenige Ziehungen je Karte (gross und riesig), nie die Notkarte nac
   assert.ok(summeRiesig <= 4 * 1.5, `riesig: ${summeRiesig} Ziehungen für 4 Karten`);
 });
 
-test('Matchstart (Standard 11): 8 bis 10 Figuren, alle erreichbar mit fester Wurfweite 939 px', () => {
+test('Matchstart (Standard, seit Fassung 12 die 12): 8 bis 10 Figuren, alle erreichbar mit fester Wurfweite 939 px', () => {
   for (const [seed, teams, proTeam, format, groesse] of [
     [1, 2, 4, '24:9', 'gross'], [2, 2, 5, '24:9', 'gross'], [3, 4, 2, '24:9', 'gross'], [4, 2, 5, '24:9', 'riesig'],
     [5, 3, 3, '24:9', 'riesig'], [6, 2, 4, '16:9', 'gross'],
   ]) {
     const m = new MatchController({ seed, teams, playersPerTeam: proTeam, kartentyp: 'autonom', maxRounds: 2, format, groesse, zerstoerung: 5 });
     m.start();
-    assert.equal(m.gelaende, GELAENDE_NAHT);
+    assert.equal(m.gelaende, GELAENDE_STANDARD);
     const figuren = (m.getState().entities ?? []).filter((e) => e.alive && e.type !== 'crate').map((e) => ({ x: e.x, y: e.y, teamId: e.teamId }));
     assert.ok(figuren.length >= 8, `${seed}: mindestens 8 Figuren (${figuren.length})`);
     assert.equal(m.erreichbarkeit?.ok, true, `${seed} ${format}/${groesse}: Engine-Prüfung (${m.erreichbarkeit?.grund})`);

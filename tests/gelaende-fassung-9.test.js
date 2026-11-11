@@ -29,7 +29,7 @@ test('Marke: Fassung 9 ist gültig (und nicht mehr der Standard seit 10), 8 blei
   assert.equal(normalisiereGelaende(GELAENDE_KLAR), GELAENDE_KLAR);
   assert.equal(normalisiereGelaende(9), 9);
   assert.equal(normalisiereGelaende(10), 10);
-  assert.equal(normalisiereGelaende(11), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(13), GELAENDE_STANDARD);
 });
 
 const START = (seed, biom, teams, ppt, gelaende) => {
