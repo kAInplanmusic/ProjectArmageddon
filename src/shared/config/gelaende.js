@@ -62,6 +62,11 @@
  *     (keine Schächte, in die eine Figur fällt und nicht mehr herauskommt). Brücken: 40 px dick (zwei Figurenhöhen), bündig mit dem
  *     Land, höchstens 0,8 Steigung, Stützen. Karten unter 2800 px und die Fassungen 1 bis 11 bleiben Bit für Bit gleich.
  *
+ *   - `GELAENDE_FORM` (13): Feinschliff der Fassung 12 (`terrainKomposition`): Brückenstützen als kegelige Felspfeiler mit Fuß statt 40-px-Masten;
+ *     das Rampenprofil der Nähte ist eine weiche, leicht gewellte Kurve (Zielsteigung 0,6 statt Gerade an der Grenze) und erhält Wasserbecken der
+ *     Zonen; hohe senkrechte Felswände zu trockenem Land (Fall ≥ 200 px) bekommen eine steile Schutthalde; auf Karten unter 2800 px füllt `fuelleSchaechte` die
+ *     Schächte (auch den Vulkan-Schlot). Fassung 12 und alle älteren bleiben Bit für Bit gleich.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
@@ -92,11 +97,13 @@ export const GELAENDE_WEIT_AB_BREITE = 2800;
 export const GELAENDE_NAHT = 11;
 /** Fassung 12: begehbare Rampen statt Verschiebung der Zonen, keine Schächte, dicke Brücken mit Stützen (`terrainKomposition.erzeugeZonenKarte`). */
 export const GELAENDE_RAMPE = 12;
-export const GELAENDE_STANDARD = GELAENDE_RAMPE;
+/** Fassung 13: kegelige Brückenpfeiler, geschwungene Rampen mit Wasserbecken, Schutthalden an hohen Wänden, Schachtfüllung auch unter 2800 px. */
+export const GELAENDE_FORM = 13;
+export const GELAENDE_STANDARD = GELAENDE_FORM;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE || fassung === GELAENDE_FORM ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */

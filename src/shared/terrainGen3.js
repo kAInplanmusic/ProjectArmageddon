@@ -80,9 +80,9 @@ import { biomFuerCharakter } from './biomwahl.js';
 import { baueStoffkarte, STOFF_FORK } from './stoffkarte.js';
 import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
-import { erzeugeKompositionsKarte, erzeugeZonenKarte, zonenZahl, ZONEN_AB_BREITE } from './terrainKomposition.js';
+import { erzeugeKompositionsKarte, erzeugeZonenKarte, fuelleSchaechteKarte, zonenZahl, ZONEN_AB_BREITE } from './terrainKomposition.js';
 import { pruefeErreichbarkeit, findeFlaechen } from './erreichbarkeit.js';
-import { GELAENDE_KOMPOSITION, GELAENDE_WEIT, KARTENARTEN } from './config/gelaende.js';
+import { GELAENDE_FORM, GELAENDE_KOMPOSITION, GELAENDE_WEIT, KARTENARTEN } from './config/gelaende.js';
 
 /**
  * Die zwölf Achsen des Charakters.
@@ -692,6 +692,8 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
     const art = height > width * 1.2 ? 'hochkant' : (kartenart ?? BAUTEIL_ARTEN[Math.floor(rng.next() * BAUTEIL_ARTEN.length)]);
     const zonen = fassung >= GELAENDE_WEIT && width >= ZONEN_AB_BREITE && height <= width * 1.2;
     karte = zonen ? erzeugeZonenKarte({ rng, width, height, art: kartenart, fassung, speicher }) : erzeugeKompositionsKarte({ rng, width, height, art, fassung });
+    // Fassung 13: auch Karten unter 2800 px bekommen keine Schächte (der Vulkan-Schlot gehört dazu); die Prüfung unten gilt für die gefüllte Karte.
+    if (fassung >= GELAENDE_FORM && !zonen && art !== 'hochkant') fuelleSchaechteKarte(karte.bitmap, width, height, karte.wasserY);
     karte.surface = oberflaechen(karte.bitmap, width, height);
     kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
     let urteil = pruefeBauteilKarte(kennzahlen);

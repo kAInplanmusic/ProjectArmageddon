@@ -89,13 +89,13 @@ function rampenStuecke(k, width, height) {
   return { o, stuecke };
 }
 
-test('Marke: Fassung 12 ist gültig und der Standard, 10 und 11 bleiben gültig, Unbekanntes fällt auf den Standard', () => {
+test('Marke: Fassung 12 ist gültig (Standard ist seit Fassung 13 die 13), 10 und 11 bleiben gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_RAMPE, 12);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_RAMPE);
+  assert.equal(GELAENDE_STANDARD, 13);
   assert.equal(normalisiereGelaende(10), 10);
   assert.equal(normalisiereGelaende(11), 11);
   assert.equal(normalisiereGelaende(12), 12);
-  assert.equal(normalisiereGelaende(13), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(14), GELAENDE_STANDARD);
 });
 
 test('Fassung 11 bleibt bitgleich (Goldwerte vom Stand vor Fassung 12); Karten unter 2800 px sind in 11 und 12 gleich', () => {
@@ -210,7 +210,7 @@ test('Brücken: ≥ 40 px dick, Steigung ≤ 0,8, freier Raum darüber, von Kant
 test('Engine: Figuren laufen mit Bewegungssystem und Schwerkraft über die Rampen (gross, Seeds 3 und 5)', () => {
   let laeufe = 0;
   for (const seed of [3, 5]) {
-    const m = new MatchController({ seed, teams: 2, playersPerTeam: 1, kartentyp: 'autonom', maxRounds: 2, format: '24:9', groesse: 'gross', zerstoerung: 5, turnDurationMs: 1e9, bewegung: 2 });
+    const m = new MatchController({ seed, teams: 2, playersPerTeam: 1, kartentyp: 'autonom', maxRounds: 2, format: '24:9', groesse: 'gross', zerstoerung: 5, turnDurationMs: 1e9, bewegung: 2, gelaende: GELAENDE_RAMPE });
     m.start();
     assert.equal(m.gelaende, GELAENDE_RAMPE);
     const k = karteMotor(seed, m.width, m.height, GELAENDE_RAMPE);
