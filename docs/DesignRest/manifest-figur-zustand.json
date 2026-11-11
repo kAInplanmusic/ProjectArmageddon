@@ -54,27 +54,15 @@
   ]
  },
  "fehlendeHocke": [
-  "beasts/10_flame-jaws",
   "beasts/22_sonic-blossom",
   "datacult/20_buffer-flow-swarm",
   "machina/11_heavy-battery-moerser-bot",
   "machina/20_grid-drifter-datastream",
   "machina/22_overlord-kernel-panic",
-  "pirates/20_voodoo-witch-morgana",
   "pixel/02_pyrofox-b",
   "pixel/12_shieldmon",
   "pixel/20_phantomal-a",
-  "pixel/22_arcanus-b",
-  "rodentia/00_commander-chewk",
-  "rodentia/02_vanguard-captain-rix",
-  "rodentia/10_sharpshooter-quill",
-  "rodentia/12_volley-captain-spark",
-  "rodentia/20_alchemage-nibble",
-  "rodentia/22_grand-conduit-vex",
   "shinobi/11_rauch-meister-genzi",
-  "undead/11_pitcher-igor",
-  "xeno/01_stalker-predax",
-  "xeno/11_desintegrator-kael",
   "xeno/20_harbinger-zeta"
  ],
  "figuren": {
@@ -118,14 +106,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "daempfen",
     "zustandZelle0": {
      "befund": "tiefe Vierbeinerhaltung, keine Wasserspritzer",
      "kandidat": false,
      "geprueft": false,
      "grund": "zustand zeigt vierbeinige Haltung, das Aktionsblatt eine aufrechte; Anatomie weicht ab"
-    }
+    },
+    "aktionsZelle": 3,
+    "herkunft": "zustand:0, Skala 0.79 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "beasts/11_ember-tails": {
@@ -478,14 +468,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "kniende Hexe mit Hut und Robe",
      "kandidat": true,
      "geprueft": false,
      "grund": "Kauerpose brauchbar; Freigabe erst nach Einzelbildabnahme gegen die Seitenansicht"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "zustand:0, Skala 0.87 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "pirates/21_storm-schamane-hooky": {
@@ -628,14 +620,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "stehender Krieger",
      "kandidat": false,
      "geprueft": false,
      "grund": "keine Kauerpose"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "zustand:0, Skala 1.00 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "rodentia/00_commander-chewk": {
@@ -648,14 +642,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "Kauerpose mit Hand am Boden",
      "kandidat": true,
      "geprueft": false,
      "grund": "Pose brauchbar; Stiefel und Rüstungsdetails weichen von der Seitenansicht ab"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "zustand:0, Skala 0.84 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "rodentia/01_berzerker-fang": {
@@ -678,14 +674,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "stehend",
      "kandidat": false,
      "geprueft": false,
      "grund": "keine Kauerpose"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "zustand:0, Skala 0.75 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "rodentia/10_sharpshooter-quill": {
@@ -698,14 +696,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "stehend",
      "kandidat": false,
      "geprueft": false,
      "grund": "keine Kauerpose"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "neu erzeugt (Together FLUX.1 Kontext aus dem Seitenbild), Skala 0.81 (Sicht vom Agenten freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "rodentia/11_grenadier-skitter": {
@@ -728,14 +728,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "stehend",
      "kandidat": false,
      "geprueft": false,
      "grund": "keine Kauerpose"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "zustand:0, Skala 0.93 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "rodentia/20_alchemage-nibble": {
@@ -748,14 +750,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "stehend, Arme ausgestellt",
      "kandidat": false,
      "geprueft": false,
      "grund": "keine Kauerpose"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "zustand:0, Skala 0.85 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "rodentia/21_technomancer-squeak": {
@@ -778,14 +782,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "stehend in Robe",
      "kandidat": false,
      "geprueft": false,
      "grund": "keine Kauerpose"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "zustand:0, Skala 0.95 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "shinobi/00_shred-katana-hanzmon": {
@@ -938,14 +944,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "geducktes Skelett, Hände am Boden",
      "kandidat": true,
      "geprueft": false,
      "grund": "Pose und Identität passen; Freigabe erst nach Einzelbildabnahme"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "zustand:0, Skala 0.96 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "undead/12_vessel-plague-skull": {
@@ -1008,14 +1016,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "geduckte Jägerhaltung",
      "kandidat": true,
      "geprueft": false,
      "grund": "Pose passend; Klingen müssen in der Zelle sichtbar bleiben"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "neu erzeugt (Together FLUX.1 Kontext aus dem Seitenbild), Skala 0.73 (Sicht vom Agenten freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "xeno/02_vortex-grabber": {
@@ -1048,14 +1058,16 @@
     "waffe": false
    },
    "hocke": {
-    "imAktionsblatt": false,
+    "imAktionsblatt": true,
     "ersatz": "menschlich",
     "zustandZelle0": {
      "befund": "stehend, Umhang",
      "kandidat": false,
      "geprueft": false,
      "grund": "keine Kauerpose"
-    }
+    },
+    "aktionsZelle": 6,
+    "herkunft": "neu erzeugt (Together FLUX.1 Kontext aus dem Seitenbild), Skala 0.71 (Sicht vom Agenten freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
    }
   },
   "xeno/12_plasma-maw-zorg": {

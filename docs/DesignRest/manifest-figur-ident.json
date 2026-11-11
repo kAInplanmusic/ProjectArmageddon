@@ -319,6 +319,7 @@
    "aktion": "beasts/10_flame-jaws__aktion.webp",
    "zustand": "beasts/10_flame-jaws__zustand.webp",
    "rollen": {
+    "hocke": 3,
     "idle": [
      4,
      5
@@ -348,6 +349,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       3
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (zustand:0, Skala 0.79); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        4,
@@ -2861,6 +2869,7 @@
    "aktion": "pirates/20_voodoo-witch-morgana__aktion.webp",
    "zustand": "pirates/20_voodoo-witch-morgana__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -2890,6 +2899,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (zustand:0, Skala 0.87); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -3782,6 +3798,7 @@
    "aktion": "pixel/22_arcanus-b__aktion.webp",
    "zustand": "pixel/22_arcanus-b__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -3811,6 +3828,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (zustand:0, Skala 1.00); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -3860,6 +3884,7 @@
    "aktion": "rodentia/00_commander-chewk__aktion.webp",
    "zustand": "rodentia/00_commander-chewk__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -3889,6 +3914,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (zustand:0, Skala 0.84); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -4024,6 +4056,7 @@
    "aktion": "rodentia/02_vanguard-captain-rix__aktion.webp",
    "zustand": "rodentia/02_vanguard-captain-rix__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -4053,6 +4086,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (zustand:0, Skala 0.75); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -4102,6 +4142,7 @@
    "aktion": "rodentia/10_sharpshooter-quill__aktion.webp",
    "zustand": "rodentia/10_sharpshooter-quill__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -4131,6 +4172,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (neu erzeugt); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -4266,6 +4314,7 @@
    "aktion": "rodentia/12_volley-captain-spark__aktion.webp",
    "zustand": "rodentia/12_volley-captain-spark__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -4295,6 +4344,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (zustand:0, Skala 0.93); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -4345,6 +4401,7 @@
    "aktion": "rodentia/20_alchemage-nibble__aktion.webp",
    "zustand": "rodentia/20_alchemage-nibble__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -4374,6 +4431,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (zustand:0, Skala 0.85); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -4510,6 +4574,7 @@
    "aktion": "rodentia/22_grand-conduit-vex__aktion.webp",
    "zustand": "rodentia/22_grand-conduit-vex__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -4539,6 +4604,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (zustand:0, Skala 0.95); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -5701,6 +5773,7 @@
    "aktion": "undead/11_pitcher-igor__aktion.webp",
    "zustand": "undead/11_pitcher-igor__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -5730,6 +5803,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (zustand:0, Skala 0.96); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -6217,6 +6297,7 @@
    "aktion": "xeno/01_stalker-predax__aktion.webp",
    "zustand": "xeno/01_stalker-predax__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -6246,6 +6327,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (neu erzeugt); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,
@@ -6470,6 +6558,7 @@
    "aktion": "xeno/11_desintegrator-kael__aktion.webp",
    "zustand": "xeno/11_desintegrator-kael__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -6499,6 +6588,13 @@
      "grund": "Bauplan Zweibeiner; Beinpaar plausibel, Frame nicht einzeln gesichtet."
     },
     "rollen": {
+     "hocke": {
+      "zellen": [
+       6
+      ],
+      "frei": true,
+      "grund": "2026-11-11 Hocke nachgezogen (neu erzeugt); Zelle am Kontaktbogen docs/abnahme/figuren/hocke-neu-12-bipeden.jpg gesichtet, Abnahme durch den Auftraggeber offen."
+     },
      "idle": {
       "zellen": [
        0,

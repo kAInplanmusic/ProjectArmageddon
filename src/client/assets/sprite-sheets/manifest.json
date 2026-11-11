@@ -91,6 +91,7 @@
    "walk": "beasts/10_flame-jaws__walk.webp",
    "zustand": "beasts/10_flame-jaws__zustand.webp",
    "rollen": {
+    "hocke": 3,
     "idle": [
      4,
      5
@@ -109,7 +110,8 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "zustand:0, Skala 0.79 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "beasts/11_ember-tails": {
    "aktion": "beasts/11_ember-tails__aktion.webp",
@@ -865,6 +867,7 @@
    "walk": "pirates/20_voodoo-witch-morgana__walk.webp",
    "zustand": "pirates/20_voodoo-witch-morgana__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -883,7 +886,8 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "zustand:0, Skala 0.87 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "pirates/21_storm-schamane-hooky": {
    "aktion": "pirates/21_storm-schamane-hooky__aktion.webp",
@@ -1147,6 +1151,7 @@
    "walk": "pixel/22_arcanus-b__walk.webp",
    "zustand": "pixel/22_arcanus-b__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1165,13 +1170,15 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "zustand:0, Skala 1.00 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "rodentia/00_commander-chewk": {
    "aktion": "rodentia/00_commander-chewk__aktion.webp",
    "walk": "rodentia/00_commander-chewk__walk.webp",
    "zustand": "rodentia/00_commander-chewk__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1190,7 +1197,8 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "zustand:0, Skala 0.84 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "rodentia/01_berzerker-fang": {
    "aktion": "rodentia/01_berzerker-fang__aktion.webp",
@@ -1223,6 +1231,7 @@
    "walk": "rodentia/02_vanguard-captain-rix__walk.webp",
    "zustand": "rodentia/02_vanguard-captain-rix__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1241,13 +1250,15 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "zustand:0, Skala 0.75 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "rodentia/10_sharpshooter-quill": {
    "aktion": "rodentia/10_sharpshooter-quill__aktion.webp",
    "walk": "rodentia/10_sharpshooter-quill__walk.webp",
    "zustand": "rodentia/10_sharpshooter-quill__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1266,7 +1277,8 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "neu erzeugt (Together FLUX.1 Kontext aus dem Seitenbild), Skala 0.81 (Sicht vom Agenten freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "rodentia/11_grenadier-skitter": {
    "aktion": "rodentia/11_grenadier-skitter__aktion.webp",
@@ -1299,6 +1311,7 @@
    "walk": "rodentia/12_volley-captain-spark__walk.webp",
    "zustand": "rodentia/12_volley-captain-spark__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1317,13 +1330,15 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "zustand:0, Skala 0.93 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "rodentia/20_alchemage-nibble": {
    "aktion": "rodentia/20_alchemage-nibble__aktion.webp",
    "walk": "rodentia/20_alchemage-nibble__walk.webp",
    "zustand": "rodentia/20_alchemage-nibble__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1342,7 +1357,8 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "zustand:0, Skala 0.85 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "rodentia/21_technomancer-squeak": {
    "aktion": "rodentia/21_technomancer-squeak__aktion.webp",
@@ -1375,6 +1391,7 @@
    "walk": "rodentia/22_grand-conduit-vex__walk.webp",
    "zustand": "rodentia/22_grand-conduit-vex__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1393,7 +1410,8 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "zustand:0, Skala 0.95 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "shinobi/00_shred-katana-hanzmon": {
    "aktion": "shinobi/00_shred-katana-hanzmon__aktion.webp",
@@ -1737,6 +1755,7 @@
    "walk": "undead/11_pitcher-igor__walk.webp",
    "zustand": "undead/11_pitcher-igor__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1755,7 +1774,8 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "zustand:0, Skala 0.96 (Sicht freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "undead/12_vessel-plague-skull": {
    "aktion": "undead/12_vessel-plague-skull__aktion.webp",
@@ -1892,6 +1912,7 @@
    "walk": "xeno/01_stalker-predax__walk.webp",
    "zustand": "xeno/01_stalker-predax__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1910,7 +1931,8 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "neu erzeugt (Together FLUX.1 Kontext aus dem Seitenbild), Skala 0.73 (Sicht vom Agenten freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "xeno/02_vortex-grabber": {
    "aktion": "xeno/02_vortex-grabber__aktion.webp",
@@ -1969,6 +1991,7 @@
    "walk": "xeno/11_desintegrator-kael__walk.webp",
    "zustand": "xeno/11_desintegrator-kael__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [
      0,
      1
@@ -1987,7 +2010,8 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "hockeHerkunft": "neu erzeugt (Together FLUX.1 Kontext aus dem Seitenbild), Skala 0.71 (Sicht vom Agenten freigegeben 2026-11-11, Abnahme Auftraggeber offen)"
   },
   "xeno/12_plasma-maw-zorg": {
    "aktion": "xeno/12_plasma-maw-zorg__aktion.webp",

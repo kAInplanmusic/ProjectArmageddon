@@ -1,7 +1,7 @@
 {
   "werkzeug": "check-sprites",
-  "zeit": "2026-11-10T14:47:57.732Z",
-  "dauerSekunden": 15.2,
+  "zeit": "2026-11-11T17:17:23.764Z",
+  "dauerSekunden": 26.1,
   "figuren": {
     "figuren": 81,
     "fraktionen": 9,
@@ -29,42 +29,6 @@
     "cookie": 14
   },
   "befunde": [],
-  "hinweise": [
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: beasts/01_shrew-quakes__aktion.webp Zelle 4",
-      "detail": "9 Flächen < 24 px"
-    },
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: beasts/01_shrew-quakes__walk.webp Zelle 2",
-      "detail": "8 Flächen < 24 px"
-    },
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: beasts/11_ember-tails__walk.webp Zelle 0",
-      "detail": "11 Flächen < 24 px"
-    },
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: datacult/02_chrome-code-shifter__walk.webp Zelle 6",
-      "detail": "25 Flächen < 24 px"
-    },
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: datacult/20_buffer-flow-swarm__walk.webp Zelle 3",
-      "detail": "17 Flächen < 24 px"
-    },
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: shinobi/11_rauch-meister-genzi__aktion.webp Zelle 1",
-      "detail": "8 Flächen < 24 px"
-    },
-    {
-      "bereich": "figuren",
-      "titel": "Splitter neben der Figur: shinobi/12_blowpipe-koga__walk.webp Zelle 4",
-      "detail": "8 Flächen < 24 px"
-    }
-  ],
+  "hinweise": [],
   "ampel": "gruen"
 }

@@ -37,12 +37,12 @@ function landung(typ, blatt) {
 
 // ---------------------------------------------------------------- A06: Bestand
 
-test('A06: genau die 22 dokumentierten Figuren haben keine Hockrolle, der Vorschlag nennt dieselbe Liste', () => {
+test('A06: genau die 10 dokumentierten Figuren haben keine Hockrolle (Nicht-Zweibeiner; die 12 Zweibeiner bekamen 2026-11-11 eine), der Vorschlag nennt dieselbe Liste', () => {
   const fehlt = Object.entries(manifest.figuren)
     .filter(([, e]) => !e.rollen?.hocke)
     .map(([k]) => k)
     .sort();
-  assert.equal(fehlt.length, 22);
+  assert.equal(fehlt.length, 10);
   assert.deepEqual(fehlt, [...vorschlag.fehlendeHocke].sort());
   for (const [k, e] of Object.entries(manifest.figuren)) {
     if (!fehlt.includes(k)) assert.ok(Number.isInteger(e.rollen.hocke), `${k} hat eine Hocke-Zelle`);

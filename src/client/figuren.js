@@ -14,6 +14,7 @@ import {
 import { platziereSchild } from './sichtbereich.js';
 import { zeichneMuendungsblitz } from './effektStil.js';
 import { stufeFuer, tonung } from './figurStufen.js';
+import { randlichtFuer, RAND_ALPHA_MAX } from './figurRandlicht.js';
 
 const KONTUR = PAL.kontur;
 const HELM = [78, 88, 60];
@@ -300,6 +301,12 @@ export function zeichneFigurSprite(ctx, fig, p) {
     zeichneImWasser(ctx, fig, stufe, p, pose, f, x0, y0, h, fuss, alpha);
     ctx.restore();
     return;
+  }
+  const saum = randlichtFuer(stufe);
+  if (saum) {
+    // SPR-6: heller Saum hinter dunklen Figuren (Stärke nach gemessener Kantenhelligkeit).
+    ctx.globalAlpha = alpha * RAND_ALPHA_MAX * saum.staerke;
+    ctx.drawImage(saum.bild, x0, y0, h, h);
   }
   ctx.globalAlpha = alpha;
   ctx.drawImage(stufe.bild, x0, y0, h, h);
