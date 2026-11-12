@@ -43,6 +43,15 @@ behalten die Teleportplattform. (Ein früherer Ansatz mit der Impulsbombe `pa_03
 - Anzeige: rotbrauner Zylinder mit Warnstreifen; Ereignisse `fass_placed`, `fass_exploded`.
 - Marke 3 ist die neue Standardfassung für neue Partien; Marke 2 (nur Minen) und 1 (nichts) laufen unverändert weiter.
 
+**Wurfmine im Bogen (Auftrag des Auftraggebers, 2026-11-12, Waffenfassung 22, `config/waffen-f22.js`):** Die Mine (`pa_127`) ist ab Fassung 22
+ein gewöhnliches Wurfgeschoss mit Schwerkraft und Wind (Werte wie die Handgranate: Tempo 56, Schwerkraftfaktor 1,2, Windfaktor 0,6). Beim ersten
+Aufprall (Gelände oder Figur) explodiert sie nicht: Das Geschoss entfällt, an der Aufprallstelle liegt eine scharfe Mine (Art „abgeworfen“,
+`BodenobjektSystem#setzeAn`, freier trockener Platz in der Nähe). Im Wasser oder ohne Platz entsteht nichts. Fassung 21 und älter legen die Mine
+weiter ohne Flugbahn (bitgleich). Die Fähigkeit steht allgemein im Waffenfeld `landetAls` (`'mine'` oder `'fass'`); ein Wurffass ist damit reine
+Daten. **Es gibt noch keine Fass-Waffe:** der Katalog hat genau 150 Plätze, und es wurde keine bestehende Waffe ohne Freigabe entfernt. Die Fässer als
+Kiste gibt es seit Bodenobjektfassung 4 (fallen wie Kisten vom Himmel). Offene Entscheidung: Welche Waffe gibt ihren Platz für das Wurffass ab, oder
+wird das Fass eine zweite Rolle der Mine?
+
 **Noch nicht gebaut:**
 
 1. **Fässer** außer den liegenden: keine Fässer als Kiste oder Wurf; kein Auslösen durch Direkttreffer eines Geschosses ohne Explosionsradius

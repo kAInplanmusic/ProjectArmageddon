@@ -329,6 +329,12 @@ export class ProjectileSystem {
           continue;
         }
 
+        // Waffenfassung 22: Wurfmine / Wurffass explodieren nicht, sie bleiben am Aufprallpunkt liegen (`landetAls`).
+        if (services.match?.landeAlsObjekt?.(entityId, hit.x, hit.y, owner)) {
+          world.removeEntity(entityId);
+          if (events) events.emit('projectile_impact', { entityId, x: hit.x, y: hit.y, target: hit.target ?? null });
+          continue;
+        }
         const blastRadius = world.getComponent(entityId, 'Projectile', 'blastRadius') || 0;
         this.#explode(world, entityId, hit.x, hit.y, world.getComponent(entityId, 'Projectile', 'bounces'), hit.target);
         if (events) {

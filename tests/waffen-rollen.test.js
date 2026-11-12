@@ -45,7 +45,7 @@ const BILDER_OHNE_PFAD = [
 ];
 
 /** Fassung 21: Wirkpfad im Motor weicht von der (noch nicht neu erzeugten) Rollentabelle ab. */
-const FASSUNG21_BILDRUECKSTAND = ['pa_079', 'pa_134', 'pa_135', 'pa_139'];
+const FASSUNG21_BILDRUECKSTAND = ['pa_079', 'pa_127', 'pa_134', 'pa_135', 'pa_139'];
 
 const idsAlle = WEAPONS.map(w => w.id);
 
@@ -77,10 +77,10 @@ test('BAL-11: Wirkpfad stimmt mit Motor und delivery überein, nicht mit dem Bil
     const effekt = buildEffect(waffe);
     const selbst = Boolean(effekt && SELF_TARGET_KINDS.has(effekt.kind));
     const erwartet = selbst ? 'selbst' : waffe.delivery === 'projectile' ? 'projektil' : 'strahl';
-    /* Fassung 21 (2026-11-11) hat vier Waffen umgestellt: Funkenkugel (pa_079) ist kein Portal mehr, Luftangriff,
+    /* Fassung 21 (2026-11-11) hat fünf Waffen umgestellt: Funkenkugel (pa_079) ist kein Portal mehr, die Mine (pa_127, Fassung 22) wird geworfen, Luftangriff,
      * Meteorregen und Höllenkanone fliegen als Geschoss. Die Rollentabelle und das Sprite-Manifest gehören dem
      * Animationsstrang und sind dort noch auf Fassung 20; solange sie nicht neu erzeugt sind, gilt hier der
-     * dokumentierte Rückstand (genau diese vier, nichts sonst). */
+     * dokumentierte Rückstand (genau diese fünf, nichts sonst). */
     if (FASSUNG21_BILDRUECKSTAND.includes(roh.id)) {
       assert.notEqual(wirkpfadFuer(roh.id), erwartet, `${roh.id}: Rückstand ist behoben — aus der Liste nehmen`);
       continue;

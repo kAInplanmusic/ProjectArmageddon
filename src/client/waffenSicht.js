@@ -139,6 +139,7 @@ export function waffenRolle(waffe, effekt = buildEffect(waffe), sp = null) {
  * @returns {string|null} `null` für gewöhnliche Angriffswaffen
  */
 export function wirkungsKennzahl(waffe, effekt = buildEffect(waffe)) {
+  if (waffe?.landetAls === 'mine') return 'Minenfunktion (wirft eine Mine)'; // Waffenfassung 22: Wurfmine
   if (!effekt) return null;
   switch (effekt.kind) {
     case 'heal':

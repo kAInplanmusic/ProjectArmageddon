@@ -143,7 +143,7 @@ test('W18 Radius: 0 trifft nur das Ziel, ein echter Radius trifft das zweite Zie
 // --------------------------------------------------------- Waffenversion
 
 test('W18 Waffenversion: Standard ist die aktuelle Fassung, Altfassungen sehen spätere Schichten nicht', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_FEUERWESEN + 1,
+  assert.equal(WAFFEN_STANDARD, WAFFEN_FEUERWESEN + 2,
     'WAFFEN_STANDARD muss die jüngste Fassung sein (21, Entscheidungen 2026-11-11) — sonst zeigt das Spiel alte Werte');
   assert.equal(WAFFEN_FEUERWESEN, WAFFEN_STREU + 1,
     'die neue Fassung ist genau eine Stufe nach der Streuung (20 nach 19, Feuerwesen)');

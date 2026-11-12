@@ -34,3 +34,16 @@ Marke: `config.waffen` 21 (`WAFFEN_ENTSCHEIDUNG`, `src/shared/config/waffen-f21.
    bei 40 px 1,99). Die Zünderwaffen sind heute keine Schwächlinge mehr; die Anhebung ist ein Feinschritt.
 4. Zündzeit: Eingabe `zuendzeit` (1, 3, 5; sonst Katalogwert) in `fire` / `input`; `validation.js` und `shooting.js` lehnen andere Werte ab; Replay-Eintrag trägt das Feld nur bei Wahl.
    Bedienung: Taste Z, Knopf `#hud-zuendzeit` (Tab/Enter, `aria-label`, Ansage im Protokoll), Touch-Knopf; Anzeige „Zünder N s“ im HUD.
+
+## Nachtrag 2026-11-12: Waffenfassung 22, Wurfmine im Bogen
+
+Auftrag: geworfene Mine und geworfenes Fass fliegen im Bogen wie ein Stein (Schwerkraft, Wind). Regeländerung hinter der Marke `config.waffen` = 22
+(Standard); Fassung 21 und älter bleiben bitgleich (`tests/waffen-fassung22.test.js`, Schicht-Vergleich aller 150 Waffen).
+
+| Teil | Stand |
+|---|---|
+| Mine als Geschoss | umgesetzt und getestet (Flug, Aufprallpunkt, kein Schaden, Besitzer/Team, deterministisch, ohne Bodenobjektfassung kein Objekt) |
+| Aufprall legt Objekt | `ProjectileSystem` → `services.match.landeAlsObjekt` → `BodenobjektSystem#setzeAn` |
+| Wurffass | Fähigkeit `landetAls: 'fass'` vorhanden (Datenänderung genügt); **keine Waffe**, weil der Katalog genau 150 Plätze hat und keine bestehende Waffe ohne Freigabe entfällt |
+| Fass als Kiste | besteht seit Bodenobjektfassung 4 (fällt wie eine Kiste vom Himmel) |
+| Nicht geprüft | Aussehen des fliegenden Geschosses im Browser (der Animationsstrang kennt den Wirkpfad der Mine noch nicht, Rückfall auf das Standardgeschoss), Klang |

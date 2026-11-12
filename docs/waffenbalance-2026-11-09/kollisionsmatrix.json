@@ -1,9 +1,9 @@
 {
   "ticket": "BAL-12",
   "titel": "Reale Treffer- und Kollisionsmatrix",
-  "sourceCommit": "ca1180cc002cca481ea1526f9ed689824a2c41af",
+  "sourceCommit": "eba2b330cce2c3871126837f2d0831c3466810da",
   "versions": {
-    "waffen": 21,
+    "waffen": 22,
     "klassen": 3,
     "schaden": 2,
     "wind": 2,
@@ -6252,46 +6252,52 @@
     {
       "id": "pa_127",
       "name": "Mine",
-      "art": "selbst",
+      "art": "angriff",
       "category": "tech",
-      "kind": "mine",
-      "rollenDistanz": null,
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 417,
+      "rollenDistanzErreicht": true,
       "probe": {
-        "ok": true,
-        "errors": [],
-        "route": "selbst",
-        "kind": "mine",
-        "projectileId": null,
-        "nutzen": {
-          "art": "mine",
-          "wert": 1,
-          "mineId": 3,
-          "mineArt": "abgeworfen"
+        "distance": 250,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
         },
-        "vorher": {
-          "x": 853,
-          "y": 711,
-          "hp": 100
+        "ticks": 21,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 629.97,
+          "y": 86.914,
+          "target": 2
         },
-        "nachher": {
-          "x": 853,
-          "y": 713,
-          "hp": 100
+        "schaden": {
+          "ereignisse": 0,
+          "zielVerlust": 0,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 1000
+          }
         },
-        "munitionVorher": 3,
-        "munitionNachher": 2,
         "ereignisArten": [
           "shot",
-          "mine_placed",
-          "special_effect",
-          "weapon_cooldown",
-          "turn_end",
-          "turn_start",
-          "landed"
+          "projectile_spawn",
+          "projectile_impact"
         ],
         "quelle": "fire+step",
         "kontrollierteExplosion": false
-      }
+      },
+      "versuche": 1
     },
     {
       "id": "pa_128",
@@ -7389,13 +7395,20 @@
   ],
   "summary": {
     "waffen": 150,
-    "angriff": 113,
-    "selbst": 37,
-    "angriffMitKollision": 113,
+    "angriff": 114,
+    "selbst": 36,
+    "angriffMitKollision": 114,
     "angriffMitSchaden": 113,
-    "angriffNurKollision": [],
-    "selbstMitNutzen": 37,
-    "rollenDistanzErreicht": 100
+    "angriffNurKollision": [
+      {
+        "id": "pa_127",
+        "name": "Mine",
+        "art": "projectile_impact",
+        "begruendung": "Wurfmine (Fassung 22): Aufprall belegt, danach liegt eine Mine, kein Schaden beim Aufprall"
+      }
+    ],
+    "selbstMitNutzen": 36,
+    "rollenDistanzErreicht": 101
   },
   "kontrollfall": {
     "schaden": 40,

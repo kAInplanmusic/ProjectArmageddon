@@ -48,12 +48,15 @@ const schuss = (session, token) => session.handleInput(token, { angle: 0, power:
 test('Server: neue Partien legen mit pa_127 eine Mine (Waffenfassung und Bodenobjektfassung des Servers)', async () => {
   const p = await partie();
   try {
-    assert.equal(getWaffe(MINE, p.match.waffen).special, 'mine', `Waffenfassung ${p.match.waffen}: pa_127 ist die Mine`);
+    assert.ok(getWaffe(MINE, p.match.waffen).special === 'mine' || getWaffe(MINE, p.match.waffen).landetAls === 'mine', `Waffenfassung ${p.match.waffen}: pa_127 ist die Mine`);
     assert.ok(p.match.bodenobjekte >= 2, `Bodenobjektfassung ${p.match.bodenobjekte} kennt Minen`);
     p.match.inventory.register(p.am.entityId, [MINE]);
     const ergebnis = schuss(p.session, p.am.token);
     assert.equal(ergebnis.ok, true, `Gegenprobe abgelehnt: ${ergebnis.errors?.join(', ')}`);
-    assert.equal(eigeneMinen(p.match, p.am.entityId).length, 1, 'genau eine Mine des Werfers im Zustand');
+    // Fassung 22: die Mine fliegt im Bogen und liegt erst nach dem Aufprall; ältere Fassungen legen sie sofort.
+    const gelegt = [];
+    for (let i = 0; i < 400; i += 1) { p.match.step(); for (const e of p.match.consumeEvents()) if (e.type === 'mine_placed') gelegt.push(e.payload); }
+    assert.equal(gelegt.filter(m => m.ownerId === p.am.entityId).length, 1, 'genau eine Mine des Werfers wurde gelegt (sie kann danach schon ausgelöst haben)');
   } finally { await p.schliessen(); }
 });
 

@@ -288,7 +288,8 @@ test('W09: Heilzauber zeigt Heilmenge, Schild seinen Wert, Mine ihre Funktion', 
   assert.match(wirkungsKennzahl(getWaffe('pa_101')), /^Schild 55/);
   assert.match(wirkungsKennzahl(getWaffe('pa_084')), /^Verstärkung ×1\.7/);
   assert.match(wirkungsKennzahl(getWaffe('pa_087')), /^Versetzen 80/);
-  assert.match(wirkungsKennzahl(getWaffe('pa_127')), /^Minenfunktion/);
+  assert.match(wirkungsKennzahl(getWaffe('pa_127', 21)), /^Minenfunktion \(legt/);
+  assert.match(wirkungsKennzahl(getWaffe('pa_127')), /^Minenfunktion \(wirft/); // Fassung 22: Wurfmine
   // HUD-Zeile: Heilzauber nicht als „35 DMG“.
   const hudTexte = texteVon(hudMit(15, 'pa_092').liste).join(' | ');
   assert.match(hudTexte, /Heilung 40/);

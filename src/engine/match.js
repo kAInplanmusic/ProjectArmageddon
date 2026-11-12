@@ -669,6 +669,8 @@ export class MatchController {
         zuenderBleibtLiegen: this.waffen >= WAFFEN_ZUENDER,
         // Windfassung 2 (AERO): Wasser setzt den Windfaktor 0 (`projectileSystem.js`).
         wasserWindStill: this.windFassung >= WIND_JE_ZUG,
+        // Waffenfassung 22: Wurfmine/Wurffass bleiben am Aufprallpunkt liegen (`projectileSystem.js`).
+        landeAlsObjekt: (id, x, y, besitzer) => this.#landeAlsObjekt(id, x, y, besitzer),
       },
     };
   }
@@ -1695,6 +1697,15 @@ export class MatchController {
       this.#world.getComponent(playerId, 'Position', 'y') ?? 0,
       Math.cos(angle) < 0 ? -1 : 1, power, { ownerId: playerId, teamId: spieler.teamId },
     );
+  }
+
+  /** Waffenfassung 22: Wurfmine/Wurffass (`landetAls`) bleiben am Aufprallpunkt liegen. `true` = behandelt, das Geschoss entfällt. */
+  #landeAlsObjekt(projectileId, x, y, ownerId) {
+    const typ = { mine: 'mine', fass: 'fass' }[getWaffe(this.#shotsInFlight.get(projectileId), this.waffen)?.landetAls];
+    if (!typ) return false;
+    this.#shotsInFlight.delete(projectileId);
+    this.#bodenobjekte?.setzeAn(x, y, { typ, ownerId, teamId: this.#players.find(e => e.entityId === ownerId)?.teamId ?? null });
+    return true;
   }
 
   #deployTurret(playerId, effect) {

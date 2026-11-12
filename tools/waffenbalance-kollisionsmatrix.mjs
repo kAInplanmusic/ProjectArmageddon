@@ -96,9 +96,11 @@ function kandidaten(weapon) {
 /** Ein Nachweis zählt, wenn die Engine eine echte Kollision meldet UND die
  *  Waffe ihre Rolle erfüllt: Schaden am Ziel oder (Zünderwaffe) Armierung im
  *  freien Flug am Ziel. */
-function istNachweis(probe) {
+function istNachweis(probe, weapon = null) {
   if (!probe.ok || !probe.kollision) return false;
   if (probe.schaden.ereignisse > 0) return true;
+  // Fassung 22: Wurfmine/Wurffass (`landetAls`) richten beim Aufprall keinen Schaden an, sie bleiben liegen.
+  if (weapon?.landetAls && probe.kollision.art === 'projectile_impact') return true;
   return probe.kollision.art === 'fuse_armed' && probe.kollision.imFreien === true;
 }
 
@@ -153,7 +155,7 @@ for (const base of WEAPONS) {
       distance: k.distance, angle: probe.angle, power: probe.power, art: k.art,
       kollision: probe.kollision?.art ?? null, schaden: probe.schaden.ereignisse,
     });
-    if (istNachweis(probe)) { gewaehlt = { ...probe, art: k.art, rollenDistanz: rolle }; break; }
+    if (istNachweis(probe, weapon)) { gewaehlt = { ...probe, art: k.art, rollenDistanz: rolle }; break; }
   }
   if (!gewaehlt) {
     console.error(`${weapon.id} ${weapon.displayName}: KEIN Nachweis in ${versuche.length} Versuchen`);
@@ -194,7 +196,7 @@ const selbstw = ergebnis.waffen.filter(w => w.art === 'selbst');
 const mitKollision = angriff.filter(w => w.probe?.kollision);
 const mitSchaden = angriff.filter(w => (w.probe?.schaden.ereignisse ?? 0) > 0);
 const nurKollision = angriff.filter(w => w.probe?.kollision && (w.probe?.schaden.ereignisse ?? 0) === 0)
-  .map(w => ({ id: w.id, name: w.name, art: w.probe.kollision.art, begruendung: 'Zünderwaffe: Kollision belegt, Schaden 0 — offene Entscheidung GP-1 (Radius 0 vs. Art)' }));
+  .map(w => ({ id: w.id, name: w.name, art: w.probe.kollision.art, begruendung: w.probe.kollision.art === 'projectile_impact' ? 'Wurfmine (Fassung 22): Aufprall belegt, danach liegt eine Mine, kein Schaden beim Aufprall' : 'Zünderwaffe: Kollision belegt, Schaden 0 — offene Entscheidung GP-1 (Radius 0 vs. Art)' }));
 const selbstMitNutzen = selbstw.filter(w => w.probe?.nutzen);
 
 ergebnis.summary = {
@@ -214,13 +216,13 @@ ergebnis.szenarien = szenarien();
 fs.mkdirSync(ZIEL, { recursive: true });
 fs.writeFileSync(path.join(ZIEL, 'kollisionsmatrix.json'), JSON.stringify(ergebnis, null, 2) + '\n');
 
-/* Vertrag: 150 Waffen, 113 Angriff, 37 Selbst — und jeder Nachweis vollständig. */
+/* Vertrag: 150 Waffen, 114 Angriff, 36 Selbst — und jeder Nachweis vollständig. */
 if (!NUR) {
   assert.equal(ergebnis.summary.waffen, 150);
-  assert.equal(ergebnis.summary.angriff, 113);
-  assert.equal(ergebnis.summary.selbst, 37);
-  assert.equal(ergebnis.summary.angriffMitKollision, 113, 'nicht jede Angriffswaffe hat eine Kollision');
-  assert.equal(ergebnis.summary.selbstMitNutzen, 37, 'nicht jede Selbstwirkung hat einen Nutzwert');
+  assert.equal(ergebnis.summary.angriff, 114);
+  assert.equal(ergebnis.summary.selbst, 36);
+  assert.equal(ergebnis.summary.angriffMitKollision, 114, 'nicht jede Angriffswaffe hat eine Kollision');
+  assert.equal(ergebnis.summary.selbstMitNutzen, 36, 'nicht jede Selbstwirkung hat einen Nutzwert');
   for (const w of angriff) {
     assert.ok(w.probe?.kollision, `${w.id}: Kollision fehlt`);
     assert.equal(w.probe.kontrollierteExplosion, false, `${w.id}: Explosionsaufruf statt Kollision`);
@@ -229,12 +231,12 @@ if (!NUR) {
   assert.equal(ergebnis.kontrollfall.kollisionsEreignisse, 0,
     'Der kontrollierte Explosionsaufruf darf kein Kollisionsereignis erzeugen');
 }
-console.log(`\nFertig: ${ergebnis.summary.waffen} Waffen, ${ergebnis.summary.angriffMitKollision}/113 Kollisionen, `
-  + `${ergebnis.summary.angriffMitSchaden}/113 mit Schaden, ${ergebnis.summary.selbstMitNutzen}/37 Selbstwirkungen mit Nutzen.`);
+console.log(`\nFertig: ${ergebnis.summary.waffen} Waffen, ${ergebnis.summary.angriffMitKollision}/114 Kollisionen, `
+  + `${ergebnis.summary.angriffMitSchaden}/114 mit Schaden, ${ergebnis.summary.selbstMitNutzen}/36 Selbstwirkungen mit Nutzen.`);
 console.log(`Kontrollfall: wendeExplosionAn richtet ${ergebnis.kontrollfall.schaden} Schaden an, `
   + `meldet aber ${ergebnis.kontrollfall.kollisionsEreignisse} Kollisionsereignisse.`);
 if (!NUR) {
-  console.log(`Rollenentfernung erreicht: ${ergebnis.summary.rollenDistanzErreicht}/113`
+  console.log(`Rollenentfernung erreicht: ${ergebnis.summary.rollenDistanzErreicht}/114`
     + (ergebnis.summary.angriffNurKollision.length ? `; nur Kollision: ${ergebnis.summary.angriffNurKollision.map(w => w.id).join(', ')}` : ''));
 }
 

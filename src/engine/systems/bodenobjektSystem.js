@@ -100,6 +100,23 @@ export class BodenobjektSystem {
     });
   }
 
+  /**
+   * Waffenfassung 22: Wurfmine / Wurffass bleiben dort liegen, wo das Geschoss aufgeprallt ist (freier trockener Platz in der Nähe,
+   * dieselbe Platzsuche wie `wirf`). Ohne Platz (Wasser, Fels ringsum) oder bei voller Karte entsteht nichts.
+   *
+   * @returns {object|null}
+   */
+  setzeAn(x, y, { typ = OBJEKT_TYP.MINE, ownerId = null, teamId = null } = {}) {
+    if (typ === OBJEKT_TYP.FASS && !this.#faesser) return null;
+    const platz = freierPlatz({
+      breite: this.#q.breite,
+      surfaceYAt: px => this.#q.surfaceYAt(px),
+      bodenNahe: (px, py) => this.#q.bodenNahe(px, py),
+      waterLevelAt: (px, py) => this.#q.waterLevelAt(px, py),
+    }, x, y);
+    return platz ? this.lege(platz.x, platz.y, { ownerId, teamId, art: MINEN_ART.ABGEWORFEN, typ }) : null;
+  }
+
   /** Zustand für Anzeige, Hash und Netz: feste Reihenfolge (Kennung aufsteigend), nur Zahlen und Kennworte. */
   snapshot() {
     return [...this.#minen.values()]
