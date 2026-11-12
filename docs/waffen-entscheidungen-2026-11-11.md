@@ -44,6 +44,6 @@ Auftrag: geworfene Mine und geworfenes Fass fliegen im Bogen wie ein Stein (Schw
 |---|---|
 | Mine als Geschoss | umgesetzt und getestet (Flug, Aufprallpunkt, kein Schaden, Besitzer/Team, deterministisch, ohne Bodenobjektfassung kein Objekt) |
 | Aufprall legt Objekt | `ProjectileSystem` → `services.match.landeAlsObjekt` → `BodenobjektSystem#setzeAn` |
-| Wurffass | Fähigkeit `landetAls: 'fass'` vorhanden (Datenänderung genügt); **keine Waffe**, weil der Katalog genau 150 Plätze hat und keine bestehende Waffe ohne Freigabe entfällt |
+| Wurffass | Fähigkeit `landetAls: 'fass'` vorhanden (Datenänderung genügt); **keine Waffe**, weil der Katalog genau 150 Plätze hat. **Auftraggeber 2026-11-12: Wurffass entfällt, die 150 Waffen bleiben** (keine Waffe wird gestrichen; die Fähigkeit `landetAls: 'fass'` bleibt ungenutzt im Code) |
 | Fass als Kiste | besteht seit Bodenobjektfassung 4 (fällt wie eine Kiste vom Himmel) |
 | Nicht geprüft | Aussehen des fliegenden Geschosses im Browser (der Animationsstrang kennt den Wirkpfad der Mine noch nicht, Rückfall auf das Standardgeschoss), Klang |
