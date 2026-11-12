@@ -18,6 +18,7 @@
 import { PARAMETER } from './figurTypen.js';
 import { MODUS, waehleRolle, frameFuer, waehleEmotion } from './figurSheets.js';
 import { TWO_PI } from './mathe.js';
+import { angstAn, istSalto, saltoWinkel, saltoVersatz } from './figurReaktion.js';
 
 /** Geschwindigkeit (px/s), ab der die Figur als laufend gilt. */
 const LAUF_SCHWELLE = 18;
@@ -92,7 +93,7 @@ function neuerZustand(x, y, jetzt) {
     landeDauer: 0.22, absprungT: 99, inLuft: false,
     schussT: 99, feuerVorher: 0, trefferVorher: 0, hitT: 99, hitDir: 1, hitHaerte: 0.5, hitStaerke: 0,
     modi: 0, rolle: null, frame: null, hockeArt: null,
-    aktivVorher: false, zugT: 99, kipp: 0, neig: 0, zielBlick: 0, drehT: 99,
+    aktivVorher: false, zugT: 99, kipp: 0, neig: 0, zielBlick: 0, drehT: 99, salto: 0, vHoch: 0, angst: { rest: 0, weg: 1 },
     hpVerz: -1, hpLetzt: -1, hpHalt: 0, ergebnisT: 0,
     pose: { dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0, tint: 0, neigung: 0, zug: 0, hpVerz: 1 },
   };
@@ -104,6 +105,8 @@ export class FigurPosen {
     this.zustaende = new Map();
     /** Wird bei einer Landung gerufen: `(x, y, staerke 0..1, typ, entityId)`. */
     this.beiLandung = null;
+    /** Wiederverwendeter Versatz der Salto-Drehung. */
+    this.versatzTmp = { dx: 0, dy: 0 };
   }
 
   /**
@@ -154,8 +157,14 @@ export class FigurPosen {
       if (Math.abs(vx) > 6) z.blick = vx > 0 ? 1 : -1;
       // Absprung: erster Schritt in die Luft nach oben.
       const luftJetzt = z.vy < -LUFT_SCHWELLE;
-      if (luftJetzt && !z.inLuft) z.absprungT = 0; else z.absprungT += dt;
+      if (luftJetzt && !z.inLuft) {
+        z.absprungT = 0;
+        // FIGUREN-B (B6): Rückwärtssalto an der Absprunggeschwindigkeit erkennen (Drehung siehe unten).
+        z.salto = istSalto(vx, f) ? Math.sign(vx) : 0; z.vHoch = 0;
+      } else z.absprungT += dt;
       z.inLuft = luftJetzt || z.faellt;
+      if (!z.inLuft) z.salto = 0;
+      else if (-z.vy > z.vHoch) z.vHoch = -z.vy;
       z.schussT += dt; z.hitT += dt; z.zugT += dt; z.drehT += dt;
       if (z.hpHalt > 0) z.hpHalt -= dt;
     }
@@ -279,6 +288,22 @@ export class FigurPosen {
     z.kipp += (kippZiel - z.kipp) * Math.min(1, Math.max(0, dt) * 10);
     p.rot += z.kipp;
 
+    // B6: Rückwärtssalto — Drehung über den Flug, um die Körpermitte (Pose bleibt sonst unverändert).
+    if (z.salto !== 0 && luft && z.vHoch > 60) {
+      const w = saltoWinkel(0.5 + 0.5 * clamp(z.vy / z.vHoch, -1, 1), z.salto);
+      const v = saltoVersatz(w, this.versatzTmp);
+      p.rot += w; p.dx += v.dx; p.dy += v.dy;
+    }
+
+    // B3: Angst vor einem Einschlag im Umkreis von 150 px (1,0 bis 1,5 s): ducken, vom Einschlag weglehnen, zittern.
+    const angst = angstAn(entity.x, entity.y, id, jetzt, z.angst);
+    if (angst.rest > 0 && !luft && !lauf && z.hitT >= TREFFER_FRAME_DAUER) {
+      const k = Math.min(1, angst.rest * 4) * (blatt?.emotion?.angst ? 0.4 : 1);
+      p.sy *= 1 - 0.07 * k; p.sx *= 1 + 0.03 * k;
+      p.rot += angst.weg * 0.07 * k;
+      p.dx += Math.sin(jetzt * 55 + id) * 0.55 * k;
+    }
+
     // Drehen zur anderen Seite: kurzes Zusammenziehen.
     if (z.drehT < 0.16) p.sx *= 1 - 0.14 * Math.sin(Math.PI * z.drehT / 0.16);
 
@@ -349,7 +374,7 @@ export class FigurPosen {
       z.frame = frameFuer(blatt, z.rolle, zyk, Math.sin(ph * TWO_PI * par.atemHz) > 0 ? 1 : 0);
       // Emotionen (Sheet `sprite-sheets-emotion`): nur im Stand, nur wenn das Blatt geladen ist.
       if (z.rolle === 'idle' && blatt.emotion) {
-        const name = waehleEmotion({ ergebnis: erg, hp, aktiv, winkelSin: Math.sin(winkel), zeit: jetzt, id });
+        const name = waehleEmotion({ ergebnis: erg, hp, aktiv, winkelSin: Math.sin(winkel), zeit: jetzt, id, angst: angst.rest > 0 && z.hitT >= TREFFER_FRAME_DAUER });
         const emotion = name ? blatt.emotion[name] : null;
         if (emotion) { z.frame = emotion; z.emotion = name; }
       }

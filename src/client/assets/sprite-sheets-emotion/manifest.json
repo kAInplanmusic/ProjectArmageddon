@@ -1,6 +1,6 @@
 {
  "version": 2,
- "hinweis": "8 Posen (4x2, Zelle 256): Angst, Blinzeln, Schulterzucken, Jubel, Zittern, Kopf hoch, Kopf runter, Waffenwechsel. \"gueltig\" = Zellen, deren Farbverteilung zum Seitenbild der Figur passt (Identität, nicht Pose); erzeugt mit scripts/sprites-erzeugen/emotion-pruefen.py",
+ "hinweis": "8 Posen (4x2, Zelle 256): Angst, Blinzeln, Schulterzucken, Jubel, Zittern, Kopf hoch, Kopf runter, Waffenwechsel. \"gueltig\" = Zellen, deren Farbverteilung zum Seitenbild der Figur passt (Identität, nicht Pose); \"identitaet\" = Laufzeitfreigabe nach Sichtprüfung (nur diese Zellen zeigt der Client); erzeugt mit scripts/sprites-erzeugen/emotion-pruefen.py",
  "figuren": {
   "beasts/00_pikamon": {
    "datei": "beasts/00_pikamon__emotion.webp",
@@ -23,7 +23,22 @@
     0.114,
     0.203,
     0.162
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "beasts/01_shrew-quakes": {
    "datei": "beasts/01_shrew-quakes__emotion.webp",
@@ -46,7 +61,22 @@
     0.112,
     0.07,
     0.152
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "beasts/02_storm-talon": {
    "datei": "beasts/02_storm-talon__emotion.webp",
@@ -69,7 +99,22 @@
     0.071,
     0.05,
     0.051
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "beasts/10_flame-jaws": {
    "datei": "beasts/10_flame-jaws__emotion.webp",
@@ -92,7 +137,22 @@
     0.138,
     0.113,
     0.105
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "beasts/11_ember-tails": {
    "datei": "beasts/11_ember-tails__emotion.webp",
@@ -115,7 +175,20 @@
     0.158,
     0.136,
     0.167
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     4,
+     5,
+     6
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "beasts/12_magma-plate": {
    "datei": "beasts/12_magma-plate__emotion.webp",
@@ -138,7 +211,22 @@
     0.051,
     0.058,
     0.07
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "beasts/20_decay-spawn": {
    "datei": "beasts/20_decay-spawn__emotion.webp",
@@ -184,7 +272,19 @@
     0.336,
     0.278,
     0.272
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     4,
+     5
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "beasts/22_sonic-blossom": {
    "datei": "beasts/22_sonic-blossom__emotion.webp",
@@ -207,7 +307,22 @@
     0.154,
     0.213,
     0.189
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "datacult/00_nullpointer-exception": {
    "datei": "datacult/00_nullpointer-exception__emotion.webp",
@@ -230,7 +345,22 @@
     0.269,
     0.277,
     0.28
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "datacult/01_datapath-replicant": {
    "datei": "datacult/01_datapath-replicant__emotion.webp",
@@ -245,15 +375,30 @@
     7
    ],
    "abstand": [
-    0.143,
-    0.117,
-    0.095,
-    0.131,
-    0.097,
-    0.093,
-    0.098,
-    0.116
-   ]
+    0.152,
+    0.124,
+    0.129,
+    0.112,
+    0.129,
+    0.122,
+    0.141,
+    0.14
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "datacult/02_chrome-code-shifter": {
    "datei": "datacult/02_chrome-code-shifter__emotion.webp",
@@ -276,7 +421,22 @@
     0.043,
     0.036,
     0.04
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "datacult/10_quantum-qubit-knight": {
    "datei": "datacult/10_quantum-qubit-knight__emotion.webp",
@@ -299,7 +459,22 @@
     0.212,
     0.181,
     0.226
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "datacult/11_synapse-streamer": {
    "datei": "datacult/11_synapse-streamer__emotion.webp",
@@ -322,7 +497,22 @@
     0.167,
     0.145,
     0.14
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "datacult/12_arcology-agent": {
    "datei": "datacult/12_arcology-agent__emotion.webp",
@@ -345,7 +535,22 @@
     0.308,
     0.32,
     0.309
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "datacult/20_buffer-flow-swarm": {
    "datei": "datacult/20_buffer-flow-swarm__emotion.webp",
@@ -368,7 +573,22 @@
     0.221,
     0.206,
     0.216
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "datacult/21_hyper-link-hound": {
    "datei": "datacult/21_hyper-link-hound__emotion.webp",
@@ -391,7 +611,22 @@
     0.342,
     0.32,
     0.343
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "datacult/22_ethereo": {
    "datei": "datacult/22_ethereo__emotion.webp",
@@ -406,15 +641,30 @@
     7
    ],
    "abstand": [
-    0.171,
-    0.353,
-    0.25,
-    0.137,
-    0.143,
-    0.129,
-    0.267,
-    0.269
-   ]
+    0.142,
+    0.187,
+    0.189,
+    0.196,
+    0.176,
+    0.194,
+    0.202,
+    0.23
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "machina/00_chassis-endo-t8": {
    "datei": "machina/00_chassis-endo-t8__emotion.webp",
@@ -429,15 +679,30 @@
     7
    ],
    "abstand": [
-    0.206,
-    0.281,
-    0.217,
-    0.178,
-    0.209,
-    0.29,
-    0.19,
-    0.17
-   ]
+    0.121,
+    0.122,
+    0.132,
+    0.124,
+    0.128,
+    0.125,
+    0.132,
+    0.131
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "machina/01_slasher-cyber-jax": {
    "datei": "machina/01_slasher-cyber-jax__emotion.webp",
@@ -460,7 +725,20 @@
     0.168,
     0.225,
     0.155
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     2,
+     3,
+     4,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "machina/02_hydra-titan-mech": {
    "datei": "machina/02_hydra-titan-mech__emotion.webp",
@@ -475,15 +753,30 @@
     7
    ],
    "abstand": [
-    0.138,
-    0.164,
-    0.137,
-    0.211,
     0.15,
-    0.163,
-    0.167,
-    0.168
-   ]
+    0.146,
+    0.154,
+    0.156,
+    0.17,
+    0.158,
+    0.164,
+    0.167
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "machina/10_recon-luchs-01": {
    "datei": "machina/10_recon-luchs-01__emotion.webp",
@@ -498,15 +791,28 @@
     7
    ],
    "abstand": [
-    0.146,
-    0.165,
-    0.146,
-    0.157,
-    0.137,
-    0.155,
-    0.154,
-    0.117
-   ]
+    0.123,
+    0.123,
+    0.115,
+    0.134,
+    0.134,
+    0.118,
+    0.142,
+    0.162
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "machina/11_heavy-battery-moerser-bot": {
    "datei": "machina/11_heavy-battery-moerser-bot__emotion.webp",
@@ -529,7 +835,22 @@
     0.119,
     0.139,
     0.139
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "machina/12_ordnance-rail-viper": {
    "datei": "machina/12_ordnance-rail-viper__emotion.webp",
@@ -552,7 +873,22 @@
     0.139,
     0.128,
     0.142
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "machina/20_grid-drifter-datastream": {
    "datei": "machina/20_grid-drifter-datastream__emotion.webp",
@@ -575,7 +911,20 @@
     0.374,
     0.21,
     0.243
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     5,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "machina/21_proxy-glitch-hack": {
    "datei": "machina/21_proxy-glitch-hack__emotion.webp",
@@ -590,15 +939,30 @@
     7
    ],
    "abstand": [
-    0.206,
-    0.186,
-    0.153,
-    0.174,
-    0.182,
-    0.198,
-    0.158,
-    0.179
-   ]
+    0.224,
+    0.181,
+    0.207,
+    0.192,
+    0.18,
+    0.181,
+    0.164,
+    0.184
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "machina/22_overlord-kernel-panic": {
    "datei": "machina/22_overlord-kernel-panic__emotion.webp",
@@ -613,15 +977,30 @@
     7
    ],
    "abstand": [
-    0.215,
-    0.186,
-    0.154,
-    0.202,
-    0.181,
-    0.192,
-    0.176,
-    0.187
-   ]
+    0.175,
+    0.148,
+    0.161,
+    0.187,
+    0.172,
+    0.159,
+    0.155,
+    0.163
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pirates/00_captain-sven": {
    "datei": "pirates/00_captain-sven__emotion.webp",
@@ -644,7 +1023,19 @@
     0.107,
     0.102,
     0.183
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pirates/01_swashbuckler-piet": {
    "datei": "pirates/01_swashbuckler-piet__emotion.webp",
@@ -667,7 +1058,20 @@
     0.16,
     0.136,
     0.122
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pirates/02_iron-hook-harry": {
    "datei": "pirates/02_iron-hook-harry__emotion.webp",
@@ -690,7 +1094,22 @@
     0.118,
     0.079,
     0.112
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pirates/10_cannoneer-klaus": {
    "datei": "pirates/10_cannoneer-klaus__emotion.webp",
@@ -705,15 +1124,30 @@
     7
    ],
    "abstand": [
-    0.195,
-    0.232,
-    0.221,
-    0.198,
-    0.195,
-    0.189,
-    0.198,
-    0.224
-   ]
+    0.187,
+    0.166,
+    0.191,
+    0.18,
+    0.196,
+    0.165,
+    0.168,
+    0.241
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pirates/11_sniper-marie": {
    "datei": "pirates/11_sniper-marie__emotion.webp",
@@ -728,15 +1162,29 @@
     7
    ],
    "abstand": [
-    0.075,
-    0.094,
-    0.094,
-    0.084,
-    0.083,
-    0.105,
-    0.081,
-    0.164
-   ]
+    0.082,
+    0.07,
+    0.076,
+    0.059,
+    0.078,
+    0.064,
+    0.057,
+    0.05
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pirates/12_bombard-billy": {
    "datei": "pirates/12_bombard-billy__emotion.webp",
@@ -759,7 +1207,22 @@
     0.14,
     0.124,
     0.141
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pirates/20_voodoo-witch-morgana": {
    "datei": "pirates/20_voodoo-witch-morgana__emotion.webp",
@@ -782,7 +1245,21 @@
     0.403,
     0.182,
     0.162
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pirates/21_storm-schamane-hooky": {
    "datei": "pirates/21_storm-schamane-hooky__emotion.webp",
@@ -797,15 +1274,30 @@
     7
    ],
    "abstand": [
-    0.12,
-    0.15,
-    0.171,
-    0.16,
-    0.167,
-    0.142,
-    0.14,
-    0.13
-   ]
+    0.195,
+    0.125,
+    0.126,
+    0.115,
+    0.164,
+    0.124,
+    0.131,
+    0.149
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pirates/22_chanteyman-drake": {
    "datei": "pirates/22_chanteyman-drake__emotion.webp",
@@ -828,7 +1320,22 @@
     0.179,
     0.186,
     0.172
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pixel/00_nullpointer-exception": {
    "datei": "pixel/00_nullpointer-exception__emotion.webp",
@@ -851,7 +1358,22 @@
     0.091,
     0.087,
     0.094
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pixel/01_pyrofox-a": {
    "datei": "pixel/01_pyrofox-a__emotion.webp",
@@ -874,7 +1396,22 @@
     0.098,
     0.098,
     0.104
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pixel/02_pyrofox-b": {
    "datei": "pixel/02_pyrofox-b__emotion.webp",
@@ -897,7 +1434,22 @@
     0.295,
     0.288,
     0.294
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pixel/10_arcershorn-a": {
    "datei": "pixel/10_arcershorn-a__emotion.webp",
@@ -920,7 +1472,22 @@
     0.065,
     0.055,
     0.079
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pixel/11_pyrowand-a": {
    "datei": "pixel/11_pyrowand-a__emotion.webp",
@@ -943,7 +1510,22 @@
     0.124,
     0.141,
     0.133
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pixel/12_shieldmon": {
    "datei": "pixel/12_shieldmon__emotion.webp",
@@ -966,7 +1548,22 @@
     0.073,
     0.101,
     0.088
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pixel/20_phantomal-a": {
    "datei": "pixel/20_phantomal-a__emotion.webp",
@@ -989,7 +1586,22 @@
     0.089,
     0.095,
     0.109
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pixel/21_arcanus-a": {
    "datei": "pixel/21_arcanus-a__emotion.webp",
@@ -1012,7 +1624,22 @@
     0.102,
     0.104,
     0.118
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "pixel/22_arcanus-b": {
    "datei": "pixel/22_arcanus-b__emotion.webp",
@@ -1035,7 +1662,22 @@
     0.165,
     0.174,
     0.171
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "rodentia/00_commander-chewk": {
    "datei": "rodentia/00_commander-chewk__emotion.webp",
@@ -1058,7 +1700,22 @@
     0.149,
     0.178,
     0.163
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "rodentia/01_berzerker-fang": {
    "datei": "rodentia/01_berzerker-fang__emotion.webp",
@@ -1081,7 +1738,20 @@
     0.093,
     0.135,
     0.103
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "rodentia/02_vanguard-captain-rix": {
    "datei": "rodentia/02_vanguard-captain-rix__emotion.webp",
@@ -1104,7 +1774,20 @@
     0.178,
     0.173,
     0.145
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     3,
+     4,
+     5,
+     6
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "rodentia/10_sharpshooter-quill": {
    "datei": "rodentia/10_sharpshooter-quill__emotion.webp",
@@ -1127,7 +1810,21 @@
     0.086,
     0.091,
     0.132
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "rodentia/11_grenadier-skitter": {
    "datei": "rodentia/11_grenadier-skitter__emotion.webp",
@@ -1150,7 +1847,21 @@
     0.074,
     0.115,
     0.087
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "rodentia/12_volley-captain-spark": {
    "datei": "rodentia/12_volley-captain-spark__emotion.webp",
@@ -1173,7 +1884,20 @@
     0.05,
     0.114,
     0.097
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "rodentia/20_alchemage-nibble": {
    "datei": "rodentia/20_alchemage-nibble__emotion.webp",
@@ -1196,7 +1920,22 @@
     0.121,
     0.13,
     0.119
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "rodentia/21_technomancer-squeak": {
    "datei": "rodentia/21_technomancer-squeak__emotion.webp",
@@ -1219,7 +1958,20 @@
     0.107,
     0.087,
     0.076
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     2,
+     3,
+     4,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "rodentia/22_grand-conduit-vex": {
    "datei": "rodentia/22_grand-conduit-vex__emotion.webp",
@@ -1242,7 +1994,22 @@
     0.088,
     0.076,
     0.147
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "shinobi/00_shred-katana-hanzmon": {
    "datei": "shinobi/00_shred-katana-hanzmon__emotion.webp",
@@ -1265,7 +2032,20 @@
     0.112,
     0.15,
     0.204
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     5,
+     6
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "shinobi/01_kunoichi-wind-flapper": {
    "datei": "shinobi/01_kunoichi-wind-flapper__emotion.webp",
@@ -1288,7 +2068,21 @@
     0.104,
     0.134,
     0.081
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "shinobi/02_tetsubo-oni-brute": {
    "datei": "shinobi/02_tetsubo-oni-brute__emotion.webp",
@@ -1311,7 +2105,22 @@
     0.081,
     0.128,
     0.12
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "shinobi/10_dazzler-werner": {
    "datei": "shinobi/10_dazzler-werner__emotion.webp",
@@ -1334,7 +2143,21 @@
     0.103,
     0.121,
     0.098
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "shinobi/11_rauch-meister-genzi": {
    "datei": "shinobi/11_rauch-meister-genzi__emotion.webp",
@@ -1357,7 +2180,22 @@
     0.238,
     0.197,
     0.212
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "shinobi/12_blowpipe-koga": {
    "datei": "shinobi/12_blowpipe-koga__emotion.webp",
@@ -1380,7 +2218,21 @@
     0.022,
     0.019,
     0.119
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "shinobi/20_ninjutsu-master-goemon": {
    "datei": "shinobi/20_ninjutsu-master-goemon__emotion.webp",
@@ -1403,7 +2255,20 @@
     0.129,
     0.108,
     0.132
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "shinobi/21_talisman-sorcerer-jun": {
    "datei": "shinobi/21_talisman-sorcerer-jun__emotion.webp",
@@ -1418,15 +2283,30 @@
     7
    ],
    "abstand": [
-    0.125,
-    0.113,
-    0.169,
-    0.183,
     0.111,
+    0.111,
+    0.112,
+    0.096,
     0.101,
-    0.095,
-    0.126
-   ]
+    0.105,
+    0.132,
+    0.119
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "shinobi/22_vixen-kitsune": {
    "datei": "shinobi/22_vixen-kitsune__emotion.webp",
@@ -1441,15 +2321,30 @@
     7
    ],
    "abstand": [
-    0.224,
-    0.183,
-    0.185,
-    0.211,
-    0.18,
-    0.195,
-    0.196,
-    0.251
-   ]
+    0.114,
+    0.096,
+    0.101,
+    0.112,
+    0.119,
+    0.111,
+    0.107,
+    0.097
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "undead/00_bone-racker-karl": {
    "datei": "undead/00_bone-racker-karl__emotion.webp",
@@ -1472,7 +2367,22 @@
     0.049,
     0.053,
     0.048
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "undead/01_grave-zombie-kauer": {
    "datei": "undead/01_grave-zombie-kauer__emotion.webp",
@@ -1518,7 +2428,22 @@
     0.1,
     0.097,
     0.096
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "undead/10_archer-mortis": {
    "datei": "undead/10_archer-mortis__emotion.webp",
@@ -1541,7 +2466,15 @@
     0.266,
     0.207,
     0.184
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     1
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "undead/11_pitcher-igor": {
    "datei": "undead/11_pitcher-igor__emotion.webp",
@@ -1564,7 +2497,22 @@
     0.134,
     0.124,
     0.128
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "undead/12_vessel-plague-skull": {
    "datei": "undead/12_vessel-plague-skull__emotion.webp",
@@ -1587,7 +2535,22 @@
     0.088,
     0.087,
     0.071
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "undead/20_lich-king-alistair": {
    "datei": "undead/20_lich-king-alistair__emotion.webp",
@@ -1610,7 +2573,22 @@
     0.096,
     0.106,
     0.146
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "undead/21_scribe-necro-silas": {
    "datei": "undead/21_scribe-necro-silas__emotion.webp",
@@ -1633,7 +2611,22 @@
     0.124,
     0.12,
     0.128
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "undead/22_banshee-beatrice": {
    "datei": "undead/22_banshee-beatrice__emotion.webp",
@@ -1656,7 +2649,22 @@
     0.12,
     0.118,
     0.11
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "xeno/00_sgt-acid-xeno": {
    "datei": "xeno/00_sgt-acid-xeno__emotion.webp",
@@ -1694,15 +2702,30 @@
     7
    ],
    "abstand": [
-    0.245,
-    0.194,
-    0.208,
-    0.208,
-    0.313,
-    0.333,
-    0.217,
-    0.219
-   ]
+    0.26,
+    0.315,
+    0.329,
+    0.32,
+    0.289,
+    0.325,
+    0.33,
+    0.304
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "xeno/02_vortex-grabber": {
    "datei": "xeno/02_vortex-grabber__emotion.webp",
@@ -1725,7 +2748,20 @@
     0.271,
     0.197,
     0.258
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     3,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "xeno/10_drone-theta": {
    "datei": "xeno/10_drone-theta__emotion.webp",
@@ -1748,7 +2784,22 @@
     0.19,
     0.159,
     0.143
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "xeno/11_desintegrator-kael": {
    "datei": "xeno/11_desintegrator-kael__emotion.webp",
@@ -1771,7 +2822,20 @@
     0.189,
     0.167,
     0.144
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     1,
+     2,
+     3,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "xeno/12_plasma-maw-zorg": {
    "datei": "xeno/12_plasma-maw-zorg__emotion.webp",
@@ -1794,7 +2858,20 @@
     0.271,
     0.242,
     0.232
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     4,
+     5,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "xeno/20_harbinger-zeta": {
    "datei": "xeno/20_harbinger-zeta__emotion.webp",
@@ -1817,7 +2894,22 @@
     0.289,
     0.245,
     0.309
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "xeno/21_dark-matter-witch": {
    "datei": "xeno/21_dark-matter-witch__emotion.webp",
@@ -1840,7 +2932,22 @@
     0.232,
     0.227,
     0.216
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   },
   "xeno/22_null-entity-quark": {
    "datei": "xeno/22_null-entity-quark__emotion.webp",
@@ -1863,7 +2970,21 @@
     0.195,
     0.151,
     0.376
-   ]
+   ],
+   "identitaet": {
+    "freigabe": "geprueft",
+    "grundlage": "sichtpruefung",
+    "zellen": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "pruefer": "Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen"
+   }
   }
  }
 }

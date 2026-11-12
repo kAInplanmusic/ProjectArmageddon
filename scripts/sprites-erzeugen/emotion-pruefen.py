@@ -36,28 +36,28 @@ SICHTPRUEFUNG = {
     'beasts/21_cosmic-meditate': {'frei': [0, 1, 2, 4, 5], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/22_sonic-blossom': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'datacult/00_nullpointer-exception': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
-    'datacult/01_datapath-replicant': {'frei': [0, 2, 3, 4], 'sperre': []},  # 2026-11-03 Restposen per FLUX
+    'datacult/01_datapath-replicant': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
     'datacult/02_chrome-code-shifter': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 abgeleitet (emotion-ableiten.py)
     'datacult/11_synapse-streamer': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 ganzes Blatt neu (N-01)
     'datacult/12_arcology-agent': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
     'datacult/21_hyper-link-hound': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
-    'datacult/22_ethereo': {'frei': [0, 1, 2, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'machina/00_chassis-endo-t8': {'frei': [0, 1, 2, 4, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
+    'datacult/22_ethereo': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
+    'machina/00_chassis-endo-t8': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
     'machina/01_slasher-cyber-jax': {'frei': [0, 2, 3, 4, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'machina/02_hydra-titan-mech': {'frei': [3], 'sperre': []},
+    'machina/02_hydra-titan-mech': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
     'machina/11_heavy-battery-moerser-bot': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 3-D-Verfahren 2026-11-03
     'machina/12_ordnance-rail-viper': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 ganzes Blatt neu (gpt-image-2 per Together, Gruen-Schluessel streng), alle acht Zellen sichtgeprueft
     'machina/20_grid-drifter-datastream': {'frei': [0, 1, 2, 3, 5, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'machina/21_proxy-glitch-hack': {'frei': [0, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'machina/22_overlord-kernel-panic': {'frei': [0, 1, 3, 5, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
+    'machina/21_proxy-glitch-hack': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
+    'machina/22_overlord-kernel-panic': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
     'pirates/00_captain-sven': {'frei': [0, 1, 2, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; 2026-11-03 Restposen per FLUX
     'pirates/01_swashbuckler-piet': {'frei': [0, 1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; 2026-11-03 Restposen per FLUX
     'pirates/02_iron-hook-harry': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; bisher farbgeprüfte Zellen sichtgeprüft
-    'pirates/10_cannoneer-klaus': {'frei': [1], 'sperre': []},
-    'pirates/11_sniper-marie': {'frei': [1, 2, 5, 6, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; 2026-11-03 Restposen per FLUX
+    'pirates/10_cannoneer-klaus': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
+    'pirates/11_sniper-marie': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
     'pirates/12_bombard-billy': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'pirates/20_voodoo-witch-morgana': {'frei': [0, 1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'pirates/21_storm-schamane-hooky': {'frei': [1, 2, 3, 4], 'sperre': []},  # 2026-11-03 Restposen per FLUX; bisher farbgeprüfte Zellen sichtgeprüft
+    'pirates/21_storm-schamane-hooky': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
     'pirates/22_chanteyman-drake': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 abgeleitet (emotion-ableiten.py); bisher farbgeprüfte Zellen sichtgeprüft
     'pixel/00_nullpointer-exception': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
     'pixel/01_pyrofox-a': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 SPR-4: 8-Bit-Blatt neu (Runware gpt-image-2), alle acht Zellen sichtgeprueft
@@ -85,15 +85,15 @@ SICHTPRUEFUNG = {
     'shinobi/11_rauch-meister-genzi': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},
     'shinobi/12_blowpipe-koga': {'frei': [0, 1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'shinobi/20_ninjutsu-master-goemon': {'frei': [0, 1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'shinobi/21_talisman-sorcerer-jun': {'frei': [2, 3], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'shinobi/22_vixen-kitsune': {'frei': [0, 3, 4, 6, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
+    'shinobi/21_talisman-sorcerer-jun': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
+    'shinobi/22_vixen-kitsune': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
     'undead/02_grim-reaper-silas': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 ganzes Blatt neu (N-01)
     'undead/10_archer-mortis': {'frei': [1, 2, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'undead/12_vessel-plague-skull': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 B3: Blatt neu aus der neuen Seitenansicht (Runware gpt-image-2), alle acht Zellen sichtgeprueft
     'undead/20_lich-king-alistair': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 B3: Blatt neu aus der neuen Seitenansicht (Runware gpt-image-2), alle acht Zellen sichtgeprueft
     'undead/21_scribe-necro-silas': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 B3: Blatt neu aus der neuen Seitenansicht (Runware gpt-image-2), alle acht Zellen sichtgeprueft
     'undead/22_banshee-beatrice': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-10 B3: Blatt neu aus der neuen Seitenansicht (Runware gpt-image-2), alle acht Zellen sichtgeprueft
-    'xeno/01_stalker-predax': {'frei': [0, 4, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; 2026-11-03 Restposen per FLUX
+    'xeno/01_stalker-predax': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
     'xeno/02_vortex-grabber': {'frei': [0, 1, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'xeno/10_drone-theta': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Nachauftrag: ganzes Blatt im 3-D-Verfahren (TRELLIS, yaw 35, Neigung 5), schwebende Drohne
     'xeno/11_desintegrator-kael': {'frei': [1, 2, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
@@ -105,11 +105,28 @@ SICHTPRUEFUNG = {
     'datacult/20_buffer-flow-swarm': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},
     'undead/00_bone-racker-karl': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},
     'undead/11_pitcher-igor': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},
-    'machina/10_recon-luchs-01': {'frei': [1, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
+    'machina/10_recon-luchs-01': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-11 ganzes Blatt neu (gpt-image-2 per Together, Magenta-Grund), am Kontaktbogen /tmp/figuren-emo-vergleich.jpg sichtgeprueft
     'xeno/12_plasma-maw-zorg': {'frei': [0, 1, 2, 4, 5, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'datacult/10_quantum-qubit-knight': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Nachauftrag: ganzes Blatt neu, grün wie das Seitenbild (FLUX, Schwänze per Kontext-Bearbeitung entfernt)
 }
 
+
+# Nachpruefung am Kontaktbogen (2026-11-11, Agent): Zellen aus `frei`, in denen eine Waffe in der Hand liegt (Waffen werden im
+# Spiel als eigenes Sprite gezeichnet) oder die Figur nicht mehr dieselbe ist (Schwanz, anderer Koerper); sie bekommen KEINE
+# Laufzeitfreigabe (`identitaet.zellen`), bleiben aber in `gueltig` (Farbvormaske). Zahlen sind Zellennummern 0..7.
+NACHPRUEFUNG = {
+    'pirates/00_captain-sven': [5, 6],
+    'pirates/01_swashbuckler-piet': [6],
+    'pirates/11_sniper-marie': [7],
+    'rodentia/01_berzerker-fang': [6, 7],
+    'rodentia/10_sharpshooter-quill': [7],
+    'rodentia/11_grenadier-skitter': [6],
+    'rodentia/12_volley-captain-spark': [6, 7],
+    'shinobi/00_shred-katana-hanzmon': [4, 7],
+    'shinobi/20_ninjutsu-master-goemon': [6],
+    'undead/10_archer-mortis': [2, 4, 5, 6, 7],
+    'machina/10_recon-luchs-01': [2, 3],  # Vierbeiner: aufrechte Posen widersprechen dem Seitenbild
+}
 
 # Zellen, die `blick-aus-teilen.py` aus dem Seitenbild dreht (Blick hoch 5, Blick runter 6).
 AUS_TEILEN = {
@@ -156,12 +173,22 @@ def main():
         gueltig = [c for c, d in enumerate(abstand) if d is not None and d <= beste + SPIELRAUM and d <= OBERGRENZE]
         if sicht:
             gueltig = sorted((set(gueltig) | set(sicht['frei'])) - set(sicht['sperre']))
-        figuren[f'{fak}/{name}'] = {'datei': f'{fak}/{name}__emotion.webp', 'gueltig': gueltig, 'abstand': abstand}
+        eintrag = {'datei': f'{fak}/{name}__emotion.webp', 'gueltig': gueltig, 'abstand': abstand}
+        # Laufzeitfreigabe (`figurSheets.emotionFreigabe`): nur Zellen mit Sichtpruefung (SICHTPRUEFUNG `frei`), nicht die Farbvormaske.
+        if sicht:
+            zellen = sorted((set(sicht['frei']) & set(gueltig)) - set(NACHPRUEFUNG.get(f'{fak}/{name}', ())))
+            if zellen:
+                eintrag['identitaet'] = {
+                    'freigabe': 'geprueft', 'grundlage': 'sichtpruefung', 'zellen': zellen,
+                    'pruefer': 'Agent am Kontaktbogen (2026-11-03 bis 2026-11-11); Abnahme durch den Auftraggeber offen',
+                }
+        figuren[f'{fak}/{name}'] = eintrag
     pfad = EMO + 'manifest.json'
     m = json.load(open(pfad))
     m['version'] = 2
     m['hinweis'] = ('8 Posen (4x2, Zelle 256): Angst, Blinzeln, Schulterzucken, Jubel, Zittern, Kopf hoch, Kopf runter, Waffenwechsel. '
                     '"gueltig" = Zellen, deren Farbverteilung zum Seitenbild der Figur passt (Identität, nicht Pose); '
+                    '"identitaet" = Laufzeitfreigabe nach Sichtprüfung (nur diese Zellen zeigt der Client); '
                     'erzeugt mit scripts/sprites-erzeugen/emotion-pruefen.py')
     m['figuren'] = figuren
     json.dump(m, open(pfad, 'w'), indent=1, ensure_ascii=False)

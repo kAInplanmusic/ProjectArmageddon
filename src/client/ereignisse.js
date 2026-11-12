@@ -39,6 +39,8 @@ import { getWaffe, WAFFEN_STANDARD } from '../shared/config/waffen-fassung.js';
 import { materialAusEreignis, stoffSchluesselAmEinschlag, klassifiziereSchadensklang } from '../shared/einschlag.js';
 import { damageTypeName } from '../engine/damageTypes.js';
 import { familieVonArt, FAMILIEN_FARBEN } from './waffenOptik.js';
+import { meldeGefahr } from './figurReaktion.js';
+import { starteEpilog, weltZuFenster } from './todEpilog.js';
 
 /** Farben des Explosionsblitzes nach der Schadensart (N-08); `null` heißt: der bisherige orange Ton. */
 function blitzFarben(art) {
@@ -239,6 +241,18 @@ const ortVon = (k, id) => {
   return e && Number.isFinite(e.x) ? { x: e.x, y: e.y } : {};
 };
 
+/** Tod-Epilog (FIGUREN-B, B4): Spruch der Fraktion über dem Todesort; reine Darstellung, hält das Spiel nicht an. */
+const todEpilog = (k, id) => {
+  const r = k.renderer;
+  const e = k.findEntity?.(id);
+  if (!r || !e || !Number.isFinite(e.x)) return;
+  const x = e.x; const y = e.y;
+  starteEpilog({
+    fraktionId: r.fraktionVon?.(e) ?? null, reduziert: r.reducedMotion === true,
+    ort: () => weltZuFenster(r.kamera, r.canvas, x, y, r.cssFaktor ?? 1),
+  });
+};
+
 /** Mitte einer fallenden Geländeinsel aus ihren Spaltenläufen [x, y0, y1, …]. */
 const inselMitte = (runs, dy = 0) => {
   if (!Array.isArray(runs) || runs.length < 3) return {};
@@ -419,6 +433,7 @@ export const EREIGNIS_WIRKUNGEN = {
     k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4, { farben: blitzFarben(n.damageType) });
     k.renderer?.sheetEinschlag?.(n.x, n.y, n.radius || 12, n.damageType);
     k.renderer?.merkeEinschlag?.(n.x, n.y);
+    meldeGefahr(n.x, n.y); // FIGUREN-B (B3): Figuren im Umkreis von 150 px ducken sich
     /*
      * Der Klang zum Einschlag. Der Mischer entscheidet selbst, ob er etwas tut — ist der
      * Klang abgeschaltet oder gibt es kein Ausgabegerät, ist der Aufruf ein No-Op. Das
@@ -1214,11 +1229,13 @@ export const EREIGNIS_WIRKUNGEN = {
       const victim = k.match?.players?.find(player => player.entityId === n.entityId);
       k.hud?.log(`${victim?.label ?? `Entity ${n.entityId}`} ausgeschaltet`, 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n.entityId) });
+      todEpilog(k, n.entityId);
     },
     online: (k, n) => {
       kameraEffekte.ketteGlied('Figur');
       k.hud?.log('Eine Einheit wurde ausgeschaltet', 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n?.entityId) });
+      todEpilog(k, n?.entityId);
     },
   },
 

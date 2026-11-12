@@ -272,14 +272,15 @@ const ZITTERN_AB = 0.25;
 
 /**
  * Welche Emotion zeigt eine STEHENDE Figur? `null` = keine (dann gilt der Idle-Frame).
- * Reihenfolge: Jubel (Sieger) vor Zittern (Verlierer, wenig Leben) vor Blick beim Zielen vor Blinzeln.
+ * Reihenfolge: Jubel (Sieger) vor Zittern (Verlierer) vor Angst (Einschlag in 150 px, B3) vor Zittern (wenig Leben) vor Blick beim Zielen vor Blinzeln.
  *
- * @param {{ergebnis:number, hp:number, aktiv:boolean, winkelSin:number, zeit:number, id:number}} z
+ * @param {{ergebnis:number, hp:number, aktiv:boolean, winkelSin:number, zeit:number, id:number, angst?:boolean}} z
  * @returns {string|null} Name aus `EMOTIONEN`
  */
-export function waehleEmotion({ ergebnis, hp, aktiv, winkelSin, zeit, id }) {
+export function waehleEmotion({ ergebnis, hp, aktiv, winkelSin, zeit, id, angst = false }) {
   if (ergebnis > 0) return 'jubel';
   if (ergebnis < 0) return 'zittern';
+  if (angst) return 'angst';
   if (hp > 0 && hp <= ZITTERN_AB) return 'zittern';
   if (aktiv && winkelSin > BLICK_HOCH) return 'blickHoch';
   if (aktiv && winkelSin < BLICK_RUNTER) return 'blickRunter';
