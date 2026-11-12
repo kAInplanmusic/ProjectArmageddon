@@ -19,7 +19,7 @@ import { gehSchritt } from '../src/engine/systems/bewegungSystem.js';
 import { BEWEGUNG } from '../src/shared/config/bewegung.js';
 import { SCHACHT_MIN_BREITE, SCHACHT_MIN_BREITE_13, NAHT_STEIGUNG_MAX, BRUECKE_DICKE, BRUECKE_STEIGUNG_MAX } from '../src/shared/terrainKomposition.js';
 import {
-  GELAENDE_WEIT, GELAENDE_NAHT, GELAENDE_RAMPE, GELAENDE_FORM, GELAENDE_STANDARD, GELAENDE_WEIT_AB_BREITE, normalisiereGelaende,
+  GELAENDE_RAMPE, GELAENDE_FORM, GELAENDE_STANDARD, normalisiereGelaende,
 } from '../src/shared/config/gelaende.js';
 
 const hash = (bitmap) => {

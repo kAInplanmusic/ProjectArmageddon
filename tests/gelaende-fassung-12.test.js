@@ -122,7 +122,7 @@ test('Breite Karte in Fassung 12: deterministisch, anders als Fassung 11, Nähte
 });
 
 test('Keine Schächte: kein senkrechter Hohlraum schmaler als SCHACHT_MIN_BREITE und tiefer als dieselbe Länge (gross Seeds 9, 11 und riesig 3, 5: dort hat Fassung 11 Schächte)', () => {
-  const schaechte = (k, w, h) => {
+  const schaechte = (k, w, _h) => {
     // Luftläufe zwischen Fels, kürzer als die Mindestbreite; zählt senkrechte Folgen solcher Zellen gleicher Spalte von mindestens der Mindesttiefe.
     const schmal = new Uint8Array(w * k.wasserY);
     for (let y = 0; y < k.wasserY; y += 1) {

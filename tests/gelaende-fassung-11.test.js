@@ -14,7 +14,7 @@ import { SeededRandom } from '../src/shared/prng.js';
 import { erzeugeAutonomeKarte } from '../src/shared/terrainGen3.js';
 import { pruefeErreichbarkeit } from '../src/shared/erreichbarkeit.js';
 import {
-  GELAENDE_OHNE_SCHACHT, GELAENDE_WEIT, GELAENDE_NAHT, GELAENDE_STANDARD, GELAENDE_WEIT_AB_BREITE, normalisiereGelaende,
+  GELAENDE_WEIT, GELAENDE_NAHT, GELAENDE_STANDARD, GELAENDE_WEIT_AB_BREITE, normalisiereGelaende,
 } from '../src/shared/config/gelaende.js';
 
 const hash = (bitmap) => {

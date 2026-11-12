@@ -689,7 +689,7 @@ function hoehleTreppe(maske, rng, B, H, stat, y0, mitInsel) {
 }
 
 /** Setzt die zusammenhängende Fläche ab `start` (Wert `von`) auf `nach`. */
-function fuelle(bm, B, H, start, von, nach) {
+function _fuelle(bm, B, H, start, von, nach) {
   const stapel = [start];
   bm[start] = nach;
   while (stapel.length) {
