@@ -13,11 +13,20 @@ import {
 import { bodenArt } from './gelaendeStil.js';
 import { NEUE_BIOME } from '../shared/config/biome-neu.js';
 import { NEUE_ARTEN, zeichneNeuePflanze } from './pflanzenNeu.js';
+import { FANTASYWALD_BIOM } from './fantasywaldDeko.js';
 
 const BLATT = [46, 128, 30];
 const BLATT_DUNKEL = [22, 76, 24];
 const BLATT_HELL = [104, 196, 44];
 const STAMM = [92, 64, 40];
+
+/**
+ * Bewuchs des Fantasywalds (Client-Darstellung; die Datenliste in `config/biome-fassung-7.js` nennt nur Pilz und Farn): viel Leuchtpilz
+ * und Riesenfarn, dazwischen normaler Farn und Gestrüpp. Gilt nach Geländebiom, nicht nach Kulisse (die Lichtung ist ein Waldbild ohne eigene Kennung).
+ */
+const FANTASYWALD_PFLANZEN = Object.freeze({
+  dichte: 0.8, arten: Object.freeze(['riesenfarn', 'leuchtpilz', 'farn', 'leuchtpilz', 'riesenfarn', 'pilz', 'busch', 'leuchtpilz']),
+});
 
 /** Wie dicht wächst es in einem Biom (0 bis 1)? */
 const BEWUCHS = Object.freeze({
@@ -37,7 +46,7 @@ const BEWUCHS = Object.freeze({
  * @returns {Array<{art:string,x:number,y:number,h:number,spiegel:boolean,seed:number}>}
  */
 export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId, boden = 'gras') {
-  const profil = NEUE_BIOME[biomId]?.pflanzen ?? null;
+  const profil = biomId === FANTASYWALD_BIOM ? FANTASYWALD_PFLANZEN : (NEUE_BIOME[biomId]?.pflanzen ?? null);
   const dichte = profil ? profil.dichte : (BEWUCHS[biomId] ?? 0.2) * (boden === 'fels' || boden === 'asche' ? 0.5 : 1);
   const rows = new Int32Array(breite).fill(-1);
   for (let x = 0; x < breite; x += 1) {

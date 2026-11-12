@@ -72,6 +72,7 @@ import {
   fadenkreuzSegmente, pulsFaktor, blitzPuls, ladungAnteil,
 } from './weaponAnimation.js';
 import { drawAmbient } from './sceneryPainter.js';
+import { FANTASYWALD_BIOM, plaziereFantasyDeko, zeichneFantasyNebel, zeichneFeenlichter } from './fantasywaldDeko.js';
 import { zeichneWetterVorn, zeichneWetterWelt } from './wetterLicht.js';
 
 /** Darstellungsgröße des Soldaten gegenüber dem 14 × 20 Pixel großen Körper (nur Anzeige). */
@@ -135,6 +136,8 @@ export class Renderer {
     this.spiegelung = true;
     /** Streifen der Pflanzenebene, die tatsächlich aufgelegt werden. */
     this.pflanzenStreifen = [];
+    /** Fantasywald-Deko (Nebelbänke, Feenlichter) oder `null` (`fantasywaldDeko.js`). */
+    this.fantasyDeko = null;
     this.waterLayer = document.createElement('canvas');
     this.waterLayer.width = Math.ceil(this.width / WATER_SCALE);
     this.waterLayer.height = Math.ceil(this.height / WATER_SCALE);
@@ -373,6 +376,7 @@ export class Renderer {
     this.terrainLayer = null;
     this.pflanzenSchicht = null;
     this.pflanzenStreifen = [];
+    this.fantasyDeko = null;
     this.wasserFertig = false;
     this.pflanzen = [];
     // Auch die GPU-Nachbesserung braucht die neue Größe; ohne das Aufräumen
@@ -697,7 +701,10 @@ export class Renderer {
 
   /** Setzt Pflanzen auf das Gelände und zeichnet ihre Ebene (hinter dem Gelände, gecacht). */
   #baePflanzen(bitmap, width, height) {
-    this.pflanzen = plazierePflanzen(bitmap, width, height, this.scenery?.seed ?? 0, this.scenery?.biomeId ?? null, bodenArt(this.palette.surface));
+    // Fantasywald: Bewuchs nach Geländebiom (auch auf der Lichtungs-Kulisse, deren Kennung `forest` ist), dazu Nebel und Feenlichter.
+    const fantasy = this.gelaendeBiom === FANTASYWALD_BIOM;
+    this.fantasyDeko = fantasy ? plaziereFantasyDeko(bitmap, width, height, this.scenery?.seed ?? 0) : null;
+    this.pflanzen = plazierePflanzen(bitmap, width, height, this.scenery?.seed ?? 0, fantasy ? FANTASYWALD_BIOM : (this.scenery?.biomeId ?? null), bodenArt(this.palette.surface));
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -2329,6 +2336,8 @@ export class Renderer {
         if (scher !== 0) this.ctx.restore();
       }
     }
+    // Fantasywald: Nebelbänke liegen hinter dem Gelände, über den Hängen (reine Darstellung, `fantasywaldDeko.js`).
+    if (this.fantasyDeko) zeichneFantasyNebel(this.ctx, this.fantasyDeko, this.time / 60, this.reducedMotion);
     if (this.terrainLayer) {
       /*
        * Die Geländeschicht wird in Kartenkoordinaten gezeichnet (0, 0) — unter
@@ -2346,6 +2355,8 @@ export class Renderer {
     this.#drawNarben();
 
     zeichneWasser(this, water, wasserNeu);
+    // Feenlichter schweben über dem Gelände, aber unter den Figuren (Lesbarkeit der Figuren geht vor).
+    if (this.fantasyDeko) zeichneFeenlichter(this.ctx, this.fantasyDeko, this.time / 60, this.reducedMotion, this.partikelDichte);
     this.#drawBlastPreview(aimPreview, blastRadius);
     // Kackhaufen liegen auf dem Boden, Günther darüber.
     this.#drawPoopPiles(state.guenther?.haufen ?? []);

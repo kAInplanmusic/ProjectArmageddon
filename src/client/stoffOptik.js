@@ -24,6 +24,11 @@ const TEX_STAERKE = 0.85;
 const TEX_STAERKE_ERDE = 0.6;
 const TEX_MASKE = TEXTUR_GROESSE - 1;
 const TEX_MASKE2 = TEXTUR_GROESSE * 2 - 1;
+/** Gespiegelte Texturen: Grenze (px Abstand zur Spiegelachse), ab der von der versetzten zur unverschobenen Lage gewechselt wird, und ihre Welligkeit (± px). */
+export const SPIEGEL_MITTE = 128;
+export const SPIEGEL_WELLE = 24;
+/** Wellige Grenze als Tabelle über eine Periode (1024 px in Viererschritten): Summe zweier Sinuswellen, ganzzahlig. */
+const WELLE = Int8Array.from({ length: 256 }, (_, i) => Math.round(SPIEGEL_WELLE * (0.65 * Math.sin(i / 256 * Math.PI * 2 * 3 + 0.7) + 0.35 * Math.sin(i / 256 * Math.PI * 2 * 7 + 2.1))));
 /** Biom-Materialien (ab dieser Kennung) mit eigener Textur zeigen deren Farbe; die Basisstoffe bleiben wie früher. */
 const ERSTER_BIOM_STOFF = 18;
 /** Wie stark die Textur eines Biom-Materials die Farbe bestimmt (0 = nur Stofffarbe, 1 = nur Textur). */
@@ -62,15 +67,39 @@ function probe(tex, ganz, farbe, id, v, x, y, spiegel) {
   if (lage & 1) u = ~u;
   if (lage & 2) w = ~w;
   if (spiegel) {
-    // Nicht nahtlose Textur: gespiegelt kacheln (Periode 2 × Kantenlänge), Kachelkanten sind dann stetig.
-    u &= TEX_MASKE2; if (u > TEX_MASKE) u = TEX_MASKE2 - u;
-    w &= TEX_MASKE2; if (w > TEX_MASKE) w = TEX_MASKE2 - w;
+    /*
+     * Nicht nahtlose Textur: gespiegelt kacheln (Periode 2 × Kantenlänge), die Kachelkanten sind dann stetig. Das Spiegelbild
+     * zeigte aber an jeder Spiegelachse „Schmetterlingsrisse“ (Risse und Fugen laufen symmetrisch auseinander). Darum gibt es je
+     * Achse (u und v getrennt) zwei Lagen: die unverschobene und eine um eine halbe Kachel (256 px) versetzte, deren Achse genau in
+     * der Mitte der anderen liegt. Nahe einer Achse (Abstand < SPIEGEL_MITTE, die Grenze wellt um ± SPIEGEL_WELLE) gilt die versetzte
+     * Lage, sonst die unverschobene; pro Pixel genau EINE Probe (keine Überblendung, kein Ghosting, siehe `stoff-varianten.test.js`).
+     * Jedes Pixel liegt so mindestens ~100 px von der Achse der gezeigten Lage entfernt. Die versetzten Lagen werden transponiert
+     * gelesen (Achsenlage bleibt), damit Motive nicht im 256-px-Raster gleich ausgerichtet wiederkehren. Die Grenzen zwischen den
+     * Lagen sind wellige Schnitte durch die Textur (wie Bruchkanten), keine Linien einer Spiegelung.
+     */
+    const ua = u & TEX_MASKE2; const wa = w & TEX_MASKE2;
+    const du = (ua > TEX_MASKE ? TEX_MASKE2 - ua : ua); const dw = (wa > TEX_MASKE ? TEX_MASKE2 - wa : wa);
+    const au = Math.min(du, TEX_MASKE - du); const aw = Math.min(dw, TEX_MASKE - dw); // Abstand zur Achse, 0 .. 255
+    const verschoben = au < SPIEGEL_MITTE + WELLE[(wa >> 2) & 255];
+    const verschobenW = aw < SPIEGEL_MITTE + WELLE[(ua >> 2) & 255];
+    let uu = (verschoben ? u + 256 : u) & TEX_MASKE2; if (uu > TEX_MASKE) uu = TEX_MASKE2 - uu;
+    let ww = (verschobenW ? w + 256 : w) & TEX_MASKE2; if (ww > TEX_MASKE) ww = TEX_MASKE2 - ww;
+    const ti = ((verschoben || verschobenW ? (uu << 9) | ww : (ww << 9) | uu)) * 4;
+    const f = (id * VARIANTEN_MAX + v) * 3;
+    PROBE[0] = tex[ti] * farbe[f]; PROBE[1] = tex[ti + 1] * farbe[f + 1]; PROBE[2] = tex[ti + 2] * farbe[f + 2];
+    return;
   }
   const ti = (((w & TEX_MASKE) << 9) | (u & TEX_MASKE)) * 4;
   const f = (id * VARIANTEN_MAX + v) * 3;
   PROBE[0] = tex[ti] * farbe[f];
   PROBE[1] = tex[ti + 1] * farbe[f + 1];
   PROBE[2] = tex[ti + 2] * farbe[f + 2];
+}
+
+/** Einzelne Texturprobe als Dreierfeld (für Tests und Werkzeuge): wie im Pixelrumpf von `tinteStoffe`, ohne Verzerrungs- und Fleckenfeld. */
+export function texturProbe(tex, ganz, farbe, id, v, x, y, spiegel) {
+  probe(tex, ganz, farbe, id, v, x, y, spiegel);
+  return [PROBE[0], PROBE[1], PROBE[2]];
 }
 
 /** Platten im Läuferverband (64 x 32 px, jede Reihe versetzt): Fuge 1 px, Helligkeit je Platte leicht verschieden. */

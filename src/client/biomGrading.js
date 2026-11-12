@@ -7,8 +7,8 @@
  * Stoff und Kulisse, sondern durch Farbwelt und Oberfläche:
  *
  *  - schlackeschmiede: aufgehellte, warme Schlacke mit glühenden Lavaadern (heller nach unten, zur Schmelze hin);
- *  - kristallarchipel: eisige Facetten (Dreiecke mit Kantenlicht) statt fleckiger Wand;
- *  - tempelstadt: warmer Sandstein ohne Mooskleckse, dazu Zierfriese (goldenes Zickzack zwischen Fugen);
+ *  - kristallarchipel: eisige Facetten (unregelmäßige Voronoi-Zellen mit Kantenlicht) statt fleckiger Wand;
+ *  - tempelstadt: warmer Sandstein ohne Mooskleckse, dazu 40 px hohe Zierfriese (goldenes Zickzack zwischen Fugen und Goldkanten, in den meisten Bändern);
  *  - tiefsee: flüssigkeitsähnliches Wasser-Gel statt blauem Fels (halbtransparent anmutender Tiefenverlauf, Strömungs-Kaustik,
  *    heller Meniskus-Rand an jeder Kante, Blasen, biolumineszente Adern, Trübung mit der Tiefe), dunkles Wasser in den Höhlen;
  *  - dimensionsriss: nur leicht (Violett bleibt, Kontrast etwas höher);
@@ -50,18 +50,53 @@ const GRUND = {
   kristallwald: { saet: 0.55, kontrast: 1.12, mul: [0.42, 0.62, 0.6], add: [-2, 3, 5] },
 };
 
-/** Dreiecks-Facetten: Gitter im gescherten Raster, jede Hälfte einer Zelle mit eigener Helligkeit, Kantenlicht an den Fugen. */
-function facette(seed, x, y, groesse) {
-  const u = (x + y * 0.45) / groesse;
-  const v = (y - x * 0.32) / groesse;
-  const iu = Math.floor(u); const iv = Math.floor(v);
-  const fu = u - iu; const fv = v - iv;
-  const hälfte = fu + fv > 1 ? 1 : 0;
-  const hell = hash2(iu * 2 + hälfte, iv, seed) - 0.5;
-  const kante = Math.min(fu, fv, Math.abs(fu + fv - 1) * 0.7, 1 - fu, 1 - fv);
-  return { hell, kante: kante < 0.035 ? 1 - kante / 0.035 : 0 };
+/**
+ * Unregelmäßige Facetten (Voronoi-Zellen mit zufälligen Stützpunkten): Jede Zelle hat Form, Größe und Helligkeit für sich,
+ * die Fugen laufen schief und treffen sich in wechselnden Winkeln (kein Raster). Ein weiches Verzerrungsfeld biegt die Fugen
+ * zusätzlich, ein Neigungsanteil je Zelle (Licht von oben links) gibt jeder Fläche einen eigenen Verlauf.
+ * Gibt eine Abtastfunktion zurück; sie schreibt `hell` (um 0), `kante` (0 bis 1) und `rand` (Fugenabstand in px) in `FACETTE`.
+ */
+const FACETTE = { hell: 0, kante: 0, rand: 99 };
+export function voronoiFacetten(seed, breite, hoehe, groesse) {
+  const nx = Math.ceil(breite / groesse) + 4; const ny = Math.ceil(hoehe / groesse) + 4;
+  const px = new Float32Array(nx * ny); const py = new Float32Array(nx * ny); const hl = new Float32Array(nx * ny);
+  for (let iy = 0; iy < ny; iy += 1) {
+    for (let ix = 0; ix < nx; ix += 1) {
+      const k = iy * nx + ix;
+      px[k] = (ix - 1 + 0.12 + 0.76 * hash2(ix, iy, seed)) * groesse;
+      py[k] = (iy - 1 + 0.12 + 0.76 * hash2(ix, iy, seed + 1)) * groesse;
+      hl[k] = hash2(ix, iy, seed + 2) - 0.5;
+    }
+  }
+  const wx = gitter(seed + 3, breite, hoehe, groesse * 1.7); const wy = gitter(seed + 4, breite, hoehe, groesse * 1.7);
+  const amp = groesse * 0.32;
+  // Das Verzerrungsfeld ist weich (Wellenlänge ~80 px): alle `SCHRITT` Pixel in x neu ausgewertet (Zeitgewinn, optisch gleich).
+  let letzteY = -1; let letzteQ = -1; let dx0 = 0; let dy0 = 0;
+  return (x, y) => {
+    const q = x >> 2;
+    if (y !== letzteY || q !== letzteQ) { letzteY = y; letzteQ = q; dx0 = (wx(x, y) - 0.5) * amp; dy0 = (wy(x, y) - 0.5) * amp; }
+    const u = x + dx0; const v = y + dy0;
+    const cx = Math.floor(u / groesse) + 1; const cy = Math.floor(v / groesse) + 1;
+    let d1 = 1e9; let d2 = 1e9; let best = 0; let bdx = 0; let bdy = 0;
+    for (let j = cy - 1; j <= cy + 1; j += 1) {
+      if (j < 0 || j >= ny) continue;
+      for (let i = cx - 1; i <= cx + 1; i += 1) {
+        if (i < 0 || i >= nx) continue;
+        const k = j * nx + i;
+        const dx = u - px[k]; const dy = v - py[k];
+        const d = dx * dx + dy * dy;
+        if (d < d1) { d2 = d1; d1 = d; best = k; bdx = dx; bdy = dy; } else if (d < d2) d2 = d;
+      }
+    }
+    // Abstand zur Fuge (Näherung): Differenz der Abstände zu den beiden nächsten Stützpunkten.
+    const rand = Math.sqrt(d2) - Math.sqrt(d1);
+    const n = Math.sqrt(d1) + 1e-6;
+    FACETTE.hell = hl[best] + (-(bdx + bdy) / n) * 0.07 * Math.min(1, n / (groesse * 0.5));
+    FACETTE.rand = rand;
+    FACETTE.kante = rand < 2.6 ? 1 - rand / 2.6 : 0;
+    return FACETTE;
+  };
 }
-
 
 /** Weiches Gitterrauschen mit vorberechneten Gitterwerten und Hermite-Glättung (schnell, ohne Kanten); Rückgabe: Abtastfunktion (x, y) -> [0, 1]. */
 function gitter(seed, breite, hoehe, s) {
@@ -242,8 +277,12 @@ export function veredleHoehlenwasser(d, bitmap, breite, hoehe, seed = 0) {
   return n;
 }
 
+/** Höchste Wedelhöhe des Seegrases (px bei 2560 Breite): nicht höher als die Figurenbox (2 × `PLAYER_HALF_HEIGHT` = 20 px), damit an Kanten keine Figur hinter dem Gras verschwindet. */
+export const SEEGRAS_MAX = 20;
+
 /**
- * Seegras auf der Tiefsee-Oberkante: höhere, leicht biolumineszente Wedel mit hellem Schein, gut gegen die Kulisse lesbar.
+ * Seegras auf der Tiefsee-Oberkante: niedrige, leicht biolumineszente Wedel mit hellem Schein, gut gegen die Kulisse lesbar.
+ * Es liegt in der Geländeebene und damit HINTER allen Figuren (Reihenfolge in `Renderer.render`: Gelände, dann Entitäten).
  * @param {CanvasRenderingContext2D} ctx
  * @param {Uint8Array} bitmap - 1 = fest; die Standorte folgen jeder nach oben offenen Kante (auch Simse und Höhlenböden)
  * @returns {number} Zahl der Wedel
@@ -256,7 +295,7 @@ export function zeichneSeegras(ctx, bitmap, breite, hoehe, seed) {
     if (hash2(x, 3, seed + 975) > 0.2) continue;
     for (let y = 4; y < hoehe - 2; y += 1) {
       const i = y * breite + x;
-      if (bitmap[i] && !bitmap[i - breite] && !bitmap[i - 3 * breite]) { liste.push({ x, y, h: 4 + 8 * hash2(x, y, seed + 976) }); break; }
+      if (bitmap[i] && !bitmap[i - breite] && !bitmap[i - 3 * breite]) { liste.push({ x, y, h: 2 + 4 * hash2(x, y, seed + 976) }); break; }
     }
   }
   let n = 0;
@@ -265,7 +304,7 @@ export function zeichneSeegras(ctx, bitmap, breite, hoehe, seed) {
   for (const b of liste) {
     const wedel = 2 + (hash2(b.x, 7, seed + 971) > 0.5 ? 1 : 0);
     for (let i = 0; i < wedel; i += 1) {
-      const h = (16 + 18 * hash2(b.x, i, seed + 972) + b.h) * s;
+      const h = Math.min(SEEGRAS_MAX, 10 + 10 * hash2(b.x, i, seed + 972) + b.h) * s;
       const x0 = b.x + (i - wedel / 2) * 3.2 * s;
       const sw = (hash2(b.x, i + 9, seed + 973) - 0.5) * 16 * s;
       const kopf = hash2(b.x, i + 4, seed + 974) > 0.7;
@@ -297,6 +336,7 @@ export function gradeBiom(d, bitmap, breite, hoehe, biom, seed = 0) {
   if (!g) return false;
   if (biom === 'tiefsee') { gradeTiefsee(d, bitmap, breite, hoehe, seed); return true; }
   const [mr, mg, mb] = g.mul; const [ar, ag, ab] = g.add;
+  const facetten = biom === 'kristallarchipel' ? voronoiFacetten(seed + 911, breite, hoehe, Math.max(40, 46 * Math.max(1, breite / 2560))) : null;
   for (let y = 0; y < hoehe; y += 1) {
     const tiefe = y / hoehe;
     const band = y % 160;
@@ -336,22 +376,27 @@ export function gradeBiom(d, bitmap, breite, hoehe, biom, seed = 0) {
           break;
         }
         case 'kristallarchipel': {
-          const f = facette(seed + 911, x, y, 54);
-          const f2 = facette(seed + 912, x + 17, y + 9, 21);
-          const k = 1 + f.hell * 0.26 + f2.hell * 0.08;
+          const f = facetten(x, y);
+          // Zweite, feine Ebene als weiches Rauschen (statt eines zweiten Gitters): Helligkeit ohne erkennbare Anordnung.
+          const fein = glatt(seed + 912, x, y, 23) - 0.5;
+          const k = 1 + f.hell * 0.34 + fein * 0.1;
           r *= k; gr *= k; b *= k;
-          if (f.kante) { r += 22 * f.kante; gr += 44 * f.kante; b += 56 * f.kante; }
+          if (f.kante) { r += 24 * f.kante; gr += 48 * f.kante; b += 60 * f.kante; }
           break;
         }
         case 'tempelstadt': {
-          if (bandNr % 3 !== 1 && hash2(bandNr, 5, seed + 921) > 0.25) {
-            // Zierfries: Fuge oben und unten, dazwischen goldenes Zickzack.
-            if (band < 3 || (band >= 22 && band < 25)) { r *= 0.45; gr *= 0.42; b *= 0.4; }
-            else if (band >= 3 && band < 22) {
-              const zz = Math.abs((x % 40) - 20) / 20 * 11;
-              const dist = Math.abs((band - 12.5) - (zz - 5.5));
-              if (dist < 2.2) { const t = 1 - dist / 2.2; r += (222 - r) * t * 0.9; gr += (172 - gr) * t * 0.9; b += (70 - b) * t * 0.9; }
-              else { r *= 0.86; gr *= 0.84; b *= 0.82; }
+          // Zierfries: in knapp drei von vier Bändern ein 40 px hoher Streifen (Fuge, goldene Kante, Zickzack, Kante, Fuge);
+          // je Band wechselt Phase und Zickzack-Breite, damit es keine Tapete wird.
+          const fr = band - 24;
+          if (fr >= 0 && fr < 40 && hash2(bandNr, 5, seed + 921) > 0.26) {
+            if (fr < 3 || fr >= 37) { r *= 0.42; gr *= 0.4; b *= 0.38; }
+            else if (fr < 5 || fr >= 35) { r += (226 - r) * 0.55; gr += (176 - gr) * 0.55; b += (76 - b) * 0.55; }
+            else {
+              const periode = 36 + 12 * hash2(bandNr, 6, seed + 922);
+              const phase = hash2(bandNr, 7, seed + 923) * periode;
+              const w = Math.abs(((x + phase) % periode) / periode - 0.5) * 2; // 0 bis 1 Dreieckswelle
+              const dist = Math.abs((fr - 20) - (w - 0.5) * 22);
+              if (dist < 2.8) { const t = 1 - dist / 2.8; r += (232 - r) * t * 0.92; gr += (178 - gr) * t * 0.92; b += (72 - b) * t * 0.92; } else { r *= 0.8; gr *= 0.78; b *= 0.74; }
             }
           }
           break;

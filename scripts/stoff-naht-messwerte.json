@@ -19,10 +19,10 @@
     {
       "datei": "stoff-texturen/beton.jpg",
       "name": "beton",
-      "verhaeltnis": 2.231,
-      "waagrecht": 1.797,
-      "senkrecht": 2.231,
-      "sha256": "9e7d2e6fccaee22282d52eec6571672418419b94701a0fe49fc0ecdec541b386"
+      "verhaeltnis": 0.288,
+      "waagrecht": 0.265,
+      "senkrecht": 0.288,
+      "sha256": "106662a121e275864e8fc4ab3e2df027ab6a3162715f7a243521a9595c2e5080"
     },
     {
       "datei": "stoff-texturen/eis.jpg",
