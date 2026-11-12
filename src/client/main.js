@@ -47,6 +47,7 @@ import { orderInventoryBySubcategory, WINDFAKTOR_JE_WAFFE } from '../shared/conf
 import { WAFFEN_STANDARD, getWaffe } from '../shared/config/waffen-fassung.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { verdrahteKartenVorschlag } from './kartenVorschlag.js';
+import { leseKartenWahl, verdrahteKartenWahl } from './kartenWahlMenue.js';
 import { pickBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
 import { SONDER_KULISSEN, sonderKulisseFuer, motivFamilieFuerArt } from './sonderKulissen.js'; import { ZEITEN, WETTER_WAHL, normalisiereWahl } from './stimmung.js';
@@ -842,9 +843,8 @@ class Game {
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
     // Biomwahl (leer = der Seed entscheidet; `klassisch` = Biom folgt der Karte; sonst ein Sonderbiom).
     const biom = document.getElementById('cfg-biom')?.value || null;
-    const mapSize = document.getElementById('cfg-kartengroesse')?.value ?? 'mittel';
-    const mapFormat = document.getElementById('cfg-kartenformat')?.value ?? '16:9';
-    const kartenart = document.getElementById('cfg-kartenart')?.value || null;
+    // Größe (kolossal nur auf 1:1, sonst riesig), Format und Kartenart aus dem Menü (kartenWahlMenue.js).
+    const { mapSize, mapFormat, kartenart } = leseKartenWahl(document);
     // Das gewählte Kartenformat gilt lokal und online; ohne Wahl bleibt es bei 16:9.
     // Tageszeit und Wetter: nur Darstellung, nicht Teil der Match-Konfiguration.
     this.renderer.stimmung = {
@@ -3967,6 +3967,7 @@ if (typeof document !== 'undefined') {
       document.getElementById(id)?.addEventListener('change', () => { game.fillLoadoutOptions(); game.fillFraktionOptions(); });
     }
     verdrahteKartenVorschlag();
+    verdrahteKartenWahl();
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', fuelle, { once: true });

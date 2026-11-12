@@ -9,10 +9,11 @@
  */
 import { bereinigeFraktionen } from '../shared/config/darstellung.js';
 import { randomUUID, randomBytes } from 'node:crypto';
-import { ORIENTATIONS, TEAM_COLORS, normalisiereFormat, normalisiereGroesse, ausrichtungFuerFormat } from '../engine/match.js';
+import { ORIENTATIONS, TEAM_COLORS, normalisiereFormat, ausrichtungFuerFormat } from '../engine/match.js';
 import { getTurnDurationForSize } from '../engine/systems/turnSystem.js';
 import { isKnownSidegrade } from '../shared/config/sidegrades.js';
 import { normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
+import { wirksameGroesse } from '../engine/kartenWahl.js';
 import { CLASS_DEFINITIONS, LEGACY_CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
 
 export const LOBBY_STATUS = Object.freeze({
@@ -266,7 +267,9 @@ export class LobbyManager {
       }
     }
     const kartenformat = normalisiereFormat(formGewaehlt ? mapFormat : null, orientation);
-    const kartenGroesse = normalisiereGroesse(mapSize);
+    // `kolossal` gibt es nur auf 1:1 (5760²); auf jedem anderen Format wird die Lobby als `riesig` geführt (gleiche Maße und Zugzeit
+    // wie in der Engine), damit sie nichts nennt, was es nicht gibt. Unbekanntes wird wie bisher `mittel`.
+    const kartenGroesse = wirksameGroesse(mapSize, kartenformat);
     const ausrichtung = formGewaehlt ? ausrichtungFuerFormat(kartenformat) : orientation;
 
     /*

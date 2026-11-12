@@ -412,6 +412,12 @@
                 <option value="ruinenstadt">Ruinenstadt</option>
                 <option value="pyramide">Pyramide</option>
                 <option value="hochkant">Hochkant (Turm)</option>
+                <!-- Ab Geländefassung 14, für das Format 1:1 gebaut (kartenWahlMenue.js stellt das Format passend). -->
+                <optgroup label="Rund (Geländefassung 14, Format 1:1)">
+                  <option value="rundPlanet">Runder Planet</option>
+                  <option value="rundeHoehle">Runde Höhle</option>
+                  <option value="schwebendeInsel">Schwebende Insel</option>
+                </optgroup>
               </select>
             </label>
             <label>Tageszeit
@@ -448,6 +454,8 @@
                 <option value="weit">Weit · 45 s</option>
                 <option value="gross" selected>Groß · 50 s</option>
                 <option value="riesig">Riesig · 55 s</option>
+                <!-- Nur Format 1:1 (5760 × 5760 = 33,2 Mio. Pixel); auf iOS und bei Grafik „Lite“ gesperrt, bei Ultra mit Warnung (kartenWahlMenue.js). -->
+                <option value="kolossal">Kolossal · 55 s · sehr groß, nur 1:1</option>
               </select>
             </label>
             <label>Kartenformat
@@ -476,6 +484,8 @@
               <small id="cfg-grafik-info" class="field-hint" aria-live="polite"></small>
             </label>
             </div>
+            <!-- Hinweis zu Kolossal und runden Karten; eigener Absatz statt field-hint, damit er auch im schmalen Fenster sichtbar bleibt. -->
+            <p id="cfg-kartenwahl-hinweis" class="kartenwahl-hinweis" role="status" aria-live="polite" hidden></p>
           </details>
           <div class="field-row">
             <label>Online: Server (leer = lokal)

@@ -1392,3 +1392,13 @@ select option { background: #14181d; color: var(--ink); }
 #hud-zuendzeit, #touch-zuendzeit { min-height: 32px; min-width: 88px; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffc21f; background: rgba(20, 24, 32, 0.85); color: #ffe9a8; font: inherit; font-weight: 600; cursor: pointer; }
 #hud-zuendzeit:focus-visible, #touch-zuendzeit:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 #hud-zuendzeit[hidden], #touch-zuendzeit[hidden] { display: none; }
+
+/* Menü: Hinweis zu Kolossal und runden Karten (kartenWahlMenue.js). Auch im schmalen Fenster sichtbar; Sperre rot, Warnung gelb. */
+#menu-overlay .kartenwahl-hinweis { margin: 4px 0 8px; font-size: 13px; line-height: 1.4; color: var(--muted); }
+#menu-overlay .kartenwahl-hinweis[data-stufe='gesperrt'] { color: #ff9a8a; }
+#menu-overlay .kartenwahl-hinweis[data-stufe='warnung'] { color: #ffd479; }
+#menu-overlay .kartenwahl-hinweis[hidden] { display: none; }
+/* Touch: Auswahllisten der Kartenwahl mindestens 44 px hoch (Berührfläche). */
+@media (pointer: coarse) {
+  #menu-overlay #cfg-kartengroesse, #menu-overlay #cfg-kartenformat, #menu-overlay #cfg-kartenart { min-height: 44px; }
+}
