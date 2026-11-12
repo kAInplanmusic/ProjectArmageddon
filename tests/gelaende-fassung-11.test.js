@@ -29,7 +29,7 @@ test('Marke: Fassung 11 ist gültig und der Standard, 10 bleibt gültig, Unbekan
   assert.ok(GELAENDE_STANDARD >= GELAENDE_NAHT, 'seit Fassung 12 ist der Standard höher; Fassung 11 bleibt gültig');
   assert.equal(normalisiereGelaende(10), 10);
   assert.equal(normalisiereGelaende(11), 11);
-  assert.equal(normalisiereGelaende(13), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(15), GELAENDE_STANDARD);
 });
 
 test('Fassung 10 bleibt bitgleich: Goldwerte vom Stand vor Fassung 11 (schnelleres Aufräumen, Zonenkopie), schmale Karten gleich zu 10', () => {

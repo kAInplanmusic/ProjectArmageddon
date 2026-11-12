@@ -67,6 +67,12 @@
  *     Zonen; hohe senkrechte Felswände zu trockenem Land (Fall ≥ 200 px) bekommen eine steile Schutthalde; auf Karten unter 2800 px füllt `fuelleSchaechte` die
  *     Schächte (auch den Vulkan-Schlot). Fassung 12 und alle älteren bleiben Bit für Bit gleich.
  *
+ *   - `GELAENDE_RUND` (14, TODO N-40 „rund“, Entscheidung 2026-11-11): drei runde Kartenarten (`KARTENARTEN_RUND`: Planet, runde Höhle,
+ *     schwebende Insel; `terrainRund.js`) für das Format 1:1, dazu die Kartenstufe `kolossal` (1:1 = 5760 × 5760 = 33,18 Mio. Pixel,
+ *     `engine/karte.js`). Ohne gewählte runde Art (auf allen Formaten außer 1:1, und auf 1:1 mit den elf alten Arten) baut Fassung 14 Bit für
+ *     Bit wie 13; nur auf 1:1 zieht der Seed ohne Wahl aus vierzehn statt elf Arten (derselbe eine Zug, anderer Teiler). Der Startplatz
+ *     (`engine/karteStart`) verteilt die Figuren auf den begehbaren Stand der runden Karte. Fassung 13 und alle älteren bleiben Bit für Bit gleich.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
@@ -99,11 +105,13 @@ export const GELAENDE_NAHT = 11;
 export const GELAENDE_RAMPE = 12;
 /** Fassung 13: kegelige Brückenpfeiler, geschwungene Rampen mit Wasserbecken, Schutthalden an hohen Wänden, Schachtfüllung auch unter 2800 px. */
 export const GELAENDE_FORM = 13;
-export const GELAENDE_STANDARD = GELAENDE_FORM;
+/** Fassung 14: runde Kartenarten (Planet, runde Höhle, schwebende Insel) auf 1:1, Stufe `kolossal`, Startplatz auf dem begehbaren Stand. */
+export const GELAENDE_RUND = 14;
+export const GELAENDE_STANDARD = GELAENDE_RUND;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE || fassung === GELAENDE_FORM ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE || fassung === GELAENDE_FORM || fassung === GELAENDE_RUND ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */
@@ -148,8 +156,15 @@ export function loeseGelaende(gelaende, biom, seed, kartenart = null) {
 /** Die Kartenvorlagen (Kartenarten der Bauteilkarte, ab Fassung 6). `null` = der Seed zieht die Art. */
 export const KARTENARTEN = Object.freeze(['ebenen', 'insel', 'inselgruppe', 'hoehle', 'hoehleInsel', 'schlucht', 'archipel', 'vulkan', 'ruinenstadt', 'pyramide', 'hochkant']);
 
-/** Gültige Vorlage oder `null`; vor Fassung 6 und bei Unbekanntem gilt immer `null` (alte Karten bleiben unverändert). */
+/**
+ * Die drei runden Kartenarten (ab Fassung 14, `terrainRund.js`). Eigene Liste: `KARTENARTEN` bleibt unverändert, weil der Seed-Zug
+ * ohne Wahl über deren Länge teilt (eine längere Liste würde alle Karten der Fassungen 6 bis 13 ändern).
+ */
+export const KARTENARTEN_RUND = Object.freeze(['rundPlanet', 'rundeHoehle', 'schwebendeInsel']);
+
+/** Gültige Vorlage oder `null`; vor Fassung 6 und bei Unbekanntem gilt immer `null` (alte Karten bleiben unverändert). Die runden Arten erst ab 14. */
 export function normalisiereKartenart(art, fassung = GELAENDE_STANDARD) {
+  if (fassung >= GELAENDE_RUND && KARTENARTEN_RUND.includes(art)) return art;
   return fassung >= GELAENDE_KOMPOSITION && KARTENARTEN.includes(art) ? art : null;
 }
 

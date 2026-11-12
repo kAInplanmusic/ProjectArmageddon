@@ -36,6 +36,7 @@
     "check:reichweite": "node scripts/check-waffenreichweite.mjs",
     "check:autonom": "node scripts/check-autonom.mjs",
     "check:erreichbarkeit": "node scripts/check-erreichbarkeit.mjs",
+    "check:rund": "node scripts/check-rund.mjs",
     "kontaktbogen": "node scripts/biom-kontaktbogen.mjs",
     "test": "PA_ZUGPAUSE_SEKUNDEN=0 node --test tests/*.test.js --test-reporter=spec",
     "test:unit": "node tests/prng.test.js && node tests/seed.test.js && node tests/loot.test.js",

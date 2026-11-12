@@ -32,7 +32,7 @@ test('Marke: Fassung 10 ist gültig und der Standard, 9 bleibt gültig, Unbekann
   assert.equal(normalisiereGelaende(GELAENDE_OHNE_SCHACHT), 9);
   assert.equal(normalisiereGelaende(10), 10);
   assert.equal(normalisiereGelaende(10), 10);
-  assert.equal(normalisiereGelaende(14), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(15), GELAENDE_STANDARD);
   assert.equal(ZONEN_AB_BREITE, GELAENDE_WEIT_AB_BREITE);
 });
 

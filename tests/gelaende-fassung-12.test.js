@@ -91,11 +91,11 @@ function rampenStuecke(k, width, height) {
 
 test('Marke: Fassung 12 ist gültig (Standard ist seit Fassung 13 die 13), 10 und 11 bleiben gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_RAMPE, 12);
-  assert.equal(GELAENDE_STANDARD, 13);
+  assert.ok(GELAENDE_STANDARD >= 13);
   assert.equal(normalisiereGelaende(10), 10);
   assert.equal(normalisiereGelaende(11), 11);
   assert.equal(normalisiereGelaende(12), 12);
-  assert.equal(normalisiereGelaende(14), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(15), GELAENDE_STANDARD);
 });
 
 test('Fassung 11 bleibt bitgleich (Goldwerte vom Stand vor Fassung 12); Karten unter 2800 px sind in 11 und 12 gleich', () => {

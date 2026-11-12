@@ -157,6 +157,8 @@ export function getTurnDurationForSize(groesse = 'mittel') {
   const stufe = MATCH_RULES.turnTimers[groesse];
   if (stufe) return stufe.seconds * 1000;
   if (groesse === 'krieg') return MATCH_RULES.turnTimers.gross.seconds * 1000;
+  // `kolossal` (nur 1:1, `engine/karte.js`): wie `riesig`, die größte gewählte Zeit.
+  if (groesse === 'kolossal') return MATCH_RULES.turnTimers.riesig.seconds * 1000;
   return MATCH_RULES.turnTimers.mittel.seconds * 1000;
 }
 

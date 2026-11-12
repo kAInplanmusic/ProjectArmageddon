@@ -96,10 +96,10 @@ const GOLD = [[12, 2, 4704, 1764, "0xf90cf3a1"], [11, 2, 4704, 1764, "0xed276f79
 
 test('Marke: Fassung 13 ist gültig und der Standard, 12 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_FORM, 13);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_FORM);
+  assert.ok(GELAENDE_STANDARD >= GELAENDE_FORM, "seit Fassung 14 ist der Standard höher; Fassung 13 bleibt gültig");
   assert.equal(normalisiereGelaende(12), 12);
   assert.equal(normalisiereGelaende(13), 13);
-  assert.equal(normalisiereGelaende(14), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(15), GELAENDE_STANDARD);
 });
 
 test('Fassungen 9 bis 12 bleiben bitgleich (Goldwerte vom Stand vor Fassung 13)', () => {
@@ -314,14 +314,14 @@ test('Engine (Fassung 13): Figuren laufen mit Bewegungssystem und Schwerkraft ü
   assert.ok(laeufe >= 2, `Läufe: ${laeufe}`);
 });
 
-test('Matchstart (Standard 13): 8 bis 10 Figuren, alle erreichbar mit fester Wurfweite 939 px', () => {
+test('Matchstart (Standardfassung): 8 bis 10 Figuren, alle erreichbar mit fester Wurfweite 939 px', () => {
   for (const [seed, teams, proTeam, format, groesse] of [
     [1, 2, 4, '24:9', 'gross'], [2, 2, 5, '24:9', 'gross'], [3, 4, 2, '24:9', 'gross'], [4, 2, 5, '24:9', 'riesig'],
     [5, 3, 3, '24:9', 'riesig'], [6, 2, 4, '16:9', 'gross'],
   ]) {
     const m = new MatchController({ seed, teams, playersPerTeam: proTeam, kartentyp: 'autonom', maxRounds: 2, format, groesse, zerstoerung: 5 });
     m.start();
-    assert.equal(m.gelaende, GELAENDE_FORM);
+    assert.equal(m.gelaende, GELAENDE_STANDARD);
     const figuren = (m.getState().entities ?? []).filter((e) => e.alive && e.type !== 'crate').map((e) => ({ x: e.x, y: e.y, teamId: e.teamId }));
     assert.ok(figuren.length >= 8, `${seed}: mindestens 8 Figuren (${figuren.length})`);
     assert.equal(m.erreichbarkeit?.ok, true, `${seed} ${format}/${groesse}: Engine-Prüfung (${m.erreichbarkeit?.grund})`);

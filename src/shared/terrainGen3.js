@@ -82,7 +82,8 @@ import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
 import { erzeugeKompositionsKarte, erzeugeZonenKarte, fuelleSchaechteKarte, zonenZahl, ZONEN_AB_BREITE } from './terrainKomposition.js';
 import { pruefeErreichbarkeit, findeFlaechen } from './erreichbarkeit.js';
-import { GELAENDE_FORM, GELAENDE_KOMPOSITION, GELAENDE_WEIT, KARTENARTEN } from './config/gelaende.js';
+import { GELAENDE_FORM, GELAENDE_KOMPOSITION, GELAENDE_RUND, GELAENDE_WEIT, KARTENARTEN, KARTENARTEN_RUND } from './config/gelaende.js';
+import { baueRundeKarte, pruefeRundeKarte } from './terrainRund.js';
 
 /**
  * Die zwölf Achsen des Charakters.
@@ -673,6 +674,7 @@ const WURFWEITE_ZONEN = 939;
 const BAUTEIL_CHARAKTER = {
   hoehle: { hoehlung: 0.21 }, hoehleInsel: { hoehlung: 0.21 }, schlucht: { hoehlung: 0.21 },
   insel: { inseligkeit: 0.5 }, inselgruppe: { inseligkeit: 0.5 }, archipel: { inseligkeit: 0.5 },
+  rundeHoehle: { hoehlung: 0.21 }, schwebendeInsel: { inseligkeit: 0.5 }, rundPlanet: { steilheit: 0.5 },
   vulkan: { steilheit: 0.5 }, pyramide: { steilheit: 0.5 }, hochkant: { steilheit: 0.5 },
 };
 
@@ -689,8 +691,21 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
   let versuch = 1;
   const speicher = {};
   for (; versuch <= 8; versuch += 1) {
-    const art = height > width * 1.2 ? 'hochkant' : (kartenart ?? BAUTEIL_ARTEN[Math.floor(rng.next() * BAUTEIL_ARTEN.length)]);
-    const zonen = fassung >= GELAENDE_WEIT && width >= ZONEN_AB_BREITE && height <= width * 1.2;
+    // Fassung 14: eine gewählte runde Art gilt auf jedem Format; auf 1:1 zieht der Seed ohne Wahl aus elf + drei Arten (derselbe eine Zug).
+    const rundWahl = fassung >= GELAENDE_RUND && KARTENARTEN_RUND.includes(kartenart) ? kartenart : null;
+    const ziehListe = fassung >= GELAENDE_RUND && width === height ? [...BAUTEIL_ARTEN, ...KARTENARTEN_RUND] : BAUTEIL_ARTEN;
+    const art = rundWahl ?? (height > width * 1.2 ? 'hochkant' : (kartenart ?? ziehListe[Math.floor(rng.next() * ziehListe.length)]));
+    const rund = fassung >= GELAENDE_RUND && KARTENARTEN_RUND.includes(art);
+    const zonen = !rund && fassung >= GELAENDE_WEIT && width >= ZONEN_AB_BREITE && height <= width * 1.2;
+    if (rund) {
+      karte = baueRundeKarte({ rng, width, height, art });
+      karte.surface = oberflaechen(karte.bitmap, width, height);
+      kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
+      const urteil = pruefeRundeKarte(karte, width, height);
+      if (urteil.ok) break;
+      ablehnungen.push(`${karte.art}: ${urteil.grund}`);
+      continue;
+    }
     karte = zonen ? erzeugeZonenKarte({ rng, width, height, art: kartenart, fassung, speicher }) : erzeugeKompositionsKarte({ rng, width, height, art, fassung });
     // Fassung 13: auch Karten unter 2800 px bekommen keine Schächte (der Vulkan-Schlot gehört dazu); die Prüfung unten gilt für die gefüllte Karte.
     if (fassung >= GELAENDE_FORM && !zonen && art !== 'hochkant') fuelleSchaechteKarte(karte.bitmap, width, height, karte.wasserY);
@@ -707,6 +722,7 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
   const ok = versuch <= 8;
   charakter.kartenart = karte.art;
   Object.assign(charakter, BAUTEIL_CHARAKTER[karte.art] ?? {});
+  if (karte.rund) charakter.rund = karte.rund;
   const material = typeof rng.fork === 'function' ? baueMaterialfeld(rng.fork(MATERIAL_FORK), width, height, karte.bitmap) : null;
   return {
     bitmap: karte.bitmap, surface: karte.surface, wasserY: karte.wasserY, material, kartenart: karte.art, bauteile: karte.bauteile, zonen: karte.zonen ?? null, naehte: karte.naehte ?? null, bruecken: karte.bruecken ?? null,

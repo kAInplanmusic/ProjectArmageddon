@@ -44,8 +44,12 @@
  *
  * Das Minimum 0,25 (früher 0,35) lässt die breiteste Karte (6272 px, 24:9) auf einem 1568-px-Schirm
  * noch ganz zeigen (Übersichtszoom, Taste O); bei 0,35 wäre sie erst ab 2195 px Schirmbreite ganz sichtbar.
+ *
+ * Das Minimum 0,14 (früher 0,25; N-40, Karte `kolossal` 1:1 = 5760 × 5760 px): die quadratische Karte passt ganz in einen Schirm ab 807 px
+ * Höhe (1080 p: Zoom 0,1875; vorher blieb bei 0,25 ein Ausschnitt von 4320 px und die ganze Karte war nie zu sehen). Wirksam ist die
+ * Grenze nur dort, wo „ganze Karte“ unter 0,25 liegt; für alle bisherigen Karten auf üblichen Schirmen ändert sich nichts.
  */
-export const ZOOM_GRENZEN = Object.freeze({ min: 0.25, max: 4 });
+export const ZOOM_GRENZEN = Object.freeze({ min: 0.14, max: 4 });
 
 /**
  * Wie weit die Kamera einer Bewegung folgt (0 = starr, 1 = sofort).

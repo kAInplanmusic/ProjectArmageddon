@@ -9,7 +9,7 @@
 
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { WET_LEVEL } from '../shared/config/water.js';
-import { GELAENDE_KOMPOSITION, GELAENDE_KLAR, GELAENDE_OHNE_SCHACHT } from '../shared/config/gelaende.js';
+import { GELAENDE_KOMPOSITION, GELAENDE_KLAR, GELAENDE_OHNE_SCHACHT, GELAENDE_RUND } from '../shared/config/gelaende.js';
 import {
   pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner, findeFlaechen,
 } from '../shared/erreichbarkeit.js';
@@ -36,6 +36,13 @@ import { DEFAULT_PROJECTILE_GRAVITY } from './systems/projectileSystem.js';
  * @returns {number} x-Position mit festem, trockenem Boden
  */
 export function trockenerStartX(m, idealX, belegt = []) {
+  /*
+   * Runde Karten (ab Geländefassung 14, `terrainRund.js`): Die Wunschplätze `i·B/(n+1)` lägen großteils im Leeren neben dem Körper oder auf
+   * unbegehbaren Flanken. Der Generator misst den begehbaren Stand (`charakter.rund.stand`); die Wunschplätze werden im selben Verhältnis
+   * auf ihn abgebildet (Reihenfolge und Teamwechsel bleiben, die Abstände sind gleich). Alle anderen Karten: unverändert.
+   */
+  const stand = (m.gelaende ?? 0) >= GELAENDE_RUND ? m.kartencharakter?.rund?.stand : null;
+  if (Array.isArray(stand) && stand.length === 2 && m.width > 0) idealX = Math.round(stand[0] + (idealX / m.width) * (stand[1] - stand[0]));
   const frei = x => belegt.every(b => Math.abs(b - x) >= 2 * PLAYER_HALF_WIDTH + 8); // keine Stapelung
   const trocken = x => {
     if (!frei(x)) return false;

@@ -52,6 +52,16 @@ const FORMATE = Object.freeze({
   '1:1': [[960, 960], [1920, 1920], [2880, 2880], [3840, 3840]],
 });
 
+/**
+ * Stufe `kolossal` (TODO N-40, Entscheidung 2026-11-11: Auflösungsdecke mindestens 33 Mio. Pixel): nur das Format 1:1 wächst darüber
+ * hinaus, 5760 × 5760 = 33 177 600 px (Drahtformat: 5760 ≤ 8191,75). Jedes andere Format behält auf dieser Stufe die Maße von `riesig`
+ * (die breiten Formate kämen mit 33 Mio. Pixeln über 8191,75 px; 16:9 mit 7680 × 4320 bliebe möglich, ist aber nicht verlangt).
+ * Die Stufe steht bewusst NICHT in `MAP_GROESSEN`/`MAP_GROESSEN_ALLE`/`MAP_SIZES`: deren Tests und Menüs rechnen mit gleicher Fläche je Stufe
+ * über alle Formate. Wer sie anbietet (Lobby, Menü), nimmt `MAP_GROESSE_KOLOSSAL`; `mapSizeFor` und `normalisiereGroesse` kennen sie.
+ */
+export const MAP_GROESSE_KOLOSSAL = 'kolossal';
+export const MAP_SIZES_KOLOSSAL = Object.freeze({ '1:1': Object.freeze({ width: 5760, height: 5760 }) });
+
 /** Die sieben Formate als Seitenverhältnis. */
 export const MAP_FORMATS = Object.freeze(Object.keys(FORMATE));
 /** Vorgabe, wenn keine Form gewählt ist: 16:9 wie bisher. */
@@ -153,6 +163,7 @@ export const MAP_HEIGHT = MAP_SIZES['16:9'].mittel.height;
 export function mapSizeFor(orientation, groesse = MAP_GROESSE_VORGABE) {
   const schluessel = MAP_FORMAT_ALIASE[orientation] ?? orientation;
   const seite = MAP_SIZES[schluessel] ?? MAP_SIZES[MAP_FORMAT_VORGABE];
+  if (groesse === MAP_GROESSE_KOLOSSAL) return MAP_SIZES_KOLOSSAL[schluessel] ?? seite.riesig;
   return seite[groesse] ?? seite[MAP_GROESSE_VORGABE];
 }
 
@@ -168,7 +179,7 @@ export function normalisiereFormat(format, orientation = MAP_FORMAT_VORGABE) {
   return MAP_FORMATS.includes(alt) ? alt : MAP_FORMAT_VORGABE;
 }
 
-/** Prüft eine Größenstufe tolerant; Unbekanntes wird zur Vorgabe `mittel`. */
+/** Prüft eine Größenstufe tolerant (auch `kolossal`); Unbekanntes wird zur Vorgabe `mittel`. */
 export function normalisiereGroesse(groesse) {
-  return MAP_GROESSEN_ALLE.includes(groesse) ? groesse : MAP_GROESSE_VORGABE;
+  return MAP_GROESSEN_ALLE.includes(groesse) || groesse === MAP_GROESSE_KOLOSSAL ? groesse : MAP_GROESSE_VORGABE;
 }
