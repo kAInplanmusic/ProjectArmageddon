@@ -741,6 +741,28 @@ export const EREIGNIS_WIRKUNGEN = {
     k.hud?.log(n.grund === 'wasser' ? 'Das Feuerwesen erlischt im Wasser' : 'Das Feuerwesen läuft aus der Karte', 'neutral');
   }),
 
+  /*
+   * Hagel (Hagelfassung 2, HAGEL-1): die Engine meldet Lage, Körner und Treffer; `k.hagel` (`hagelAnzeige.js`) hält die
+   * Anzeige-Liste, der Renderer zeichnet sie (Schatten, fallendes Korn, Aufschlag). Der Schaden selbst kommt als gewöhnliches
+   * `damage`-Ereignis (Lebensbalken, Schadenszahl); `hail_hit` nennt nur die Ursache. Zeit = Anzeigezeit des Renderers.
+   */
+  hail_start: beide((k, n) => {
+    k.hagel?.start(k.renderer?.time ?? 0, n.dauer);
+    k.hud?.log('Hagel zieht auf: auf die Schatten am Boden achten, Deckung hilft', 'notice');
+  }),
+  hail_korn: beide((k, n) => { k.hagel?.korn(k.renderer?.time ?? 0, n); }),
+  hail_aufprall: beide((k, n) => { k.hagel?.aufprall(k.renderer?.time ?? 0, n); }),
+  hail_hit: beide((k, n) => {
+    const name = k.nameOf?.(n.entityId) ?? 'Figur';
+    k.hud?.log(n.damage > 0 ? `${name} wird von einem Hagelkorn getroffen (${Math.round(n.damage)} Schaden)` : `${name} wird von einem Hagelkorn getroffen, bleibt aber auf 1 LP`, 'danger');
+    k.sound?.verarbeite({ type: 'aufprall', staerke: 0.25, ...ortVon(k, n.entityId) });
+    k.renderer?.addFlash(n.x, n.y, 10, { color: '#dff1ff' });
+  }),
+  hail_ende: beide((k) => {
+    k.hagel?.ende(k.renderer?.time ?? 0);
+    k.hud?.log('Der Hagel lässt nach', 'neutral');
+  }),
+
   mine_exploded: beide((k, n) => {
     kameraEffekte.ketteGlied('Mine');
     k.fernzustand?.minen?.()?.delete(n.mineId);

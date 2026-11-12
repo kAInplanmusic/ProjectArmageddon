@@ -465,6 +465,7 @@ export class GameServer {
               bodenobjekte: options.bodenobjekte,
               seil: options.seil,
               wind: options.wind,
+              hagel: options.hagel,
               metrics: this.metrics,
               logger: this.logger,
             });

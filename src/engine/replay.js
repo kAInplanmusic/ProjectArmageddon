@@ -32,6 +32,7 @@ import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassu
 import { BODENOBJEKTE_ALT, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
 import { SEIL_ALT, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, normalisiereWind } from '../shared/config/wind.js';
+import { HAGEL_ALT, normalisiereHagel } from '../shared/config/hagel.js';
 import { ZUGREGELN_ALT, normalisiereZugregeln } from '../shared/config/zugregeln.js';
 import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_ALT, normalisiereSchaden } from '../shared/config/schaden.js';
@@ -81,6 +82,7 @@ export class ReplayRecorder {
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
     guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT,
     wind = WIND_ALT,
+    hagel = HAGEL_ALT,
     erstelltAm = null,
   } = {}) {
     if (!Number.isInteger(seed)) {
@@ -144,6 +146,8 @@ export class ReplayRecorder {
        * bekommt zweimal denselben Altstand. Neue Partien (Server, Client) übergeben ihre
        * Fassung ausdrücklich — der Server schreibt `this.match.windFassung` in den Kopf. */
       wind: normalisiereWind(wind),
+      /* Hagelfassung (`config/hagel.js`, HAGEL-1): Hagellagen und Körner. Eine Datei OHNE das Feld ist `HAGEL_ALT` (kein Hagel). */
+      hagel: normalisiereHagel(hagel),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -356,7 +360,7 @@ export class ReplayRecorder {
       guenther: parsed.config?.guenther ?? GUENTHER_ALT, cookie: parsed.config?.cookie ?? COOKIE_ALT, feuer: parsed.config?.feuer ?? FEUER_ALT,
       bewegung: parsed.config?.bewegung ?? BEWEGUNG_ALT, zugregeln: parsed.config?.zugregeln ?? ZUGREGELN_ALT, klassen: parsed.config?.klassen ?? KLASSEN_ALT,
       bodenobjekte: parsed.config?.bodenobjekte ?? BODENOBJEKTE_ALT, seil: parsed.config?.seil ?? SEIL_ALT,
-      wind: parsed.config?.wind ?? WIND_ALT });
+      wind: parsed.config?.wind ?? WIND_ALT, hagel: parsed.config?.hagel ?? HAGEL_ALT });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -470,6 +474,7 @@ export class ReplayPlayer {
       bodenobjekte: config.bodenobjekte,
       seil: config.seil,
       wind: config.wind,
+      hagel: config.hagel,
       ...(turnDurationMs ? { turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),

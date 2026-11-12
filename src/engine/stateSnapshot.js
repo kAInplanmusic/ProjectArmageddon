@@ -234,6 +234,8 @@ export function baueAnsichtszustand(quelle) {
     ...(quelle.seil ? { seil: quelle.seil } : {}),
     // Feuerwesen (Waffenfassung 20) nur, solange eines läuft: sonst bleibt der Schlüsselsatz gleich.
     ...(quelle.feuerwesen ? { feuerwesen: quelle.feuerwesen } : {}),
+    // Hagel (Hagelfassung 2) nur, solange eine Lage ansteht/läuft oder ein Korn fliegt: sonst bleibt der Schlüsselsatz gleich.
+    ...(quelle.hagel ? { hagel: quelle.hagel } : {}),
     // Die Kulisse geht als Kennung mit, nicht als volles Objekt: der Client
     // baut sie ohnehin selbst aus dem Seed. Die Kennungen dienen der Anzeige
     // und den Tests.
@@ -334,6 +336,8 @@ export function hashState(state) {
       ...(state.feuerwesen
         ? { feuerwesen: state.feuerwesen.map(g => [g.id, g.ownerId, Math.round(g.x), Math.round(g.y), g.richtung, g.luft, g.alter]) }
         : {}),
+      // Hagel (Hagelfassung 2) nur, solange etwas ansteht, läuft oder fliegt: jeder ältere Hash bleibt gleich.
+      ...(state.hagel ? { hagel: [state.hagel.lage, state.hagel.naechstes, state.hagel.koerner] } : {}),
     });
 
     let hash = 2166136261;

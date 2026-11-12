@@ -527,6 +527,7 @@ export class NetworkClient {
             klassen: message.klassen,
             // AERO: Windfassung für die Bahnvorschau (Waffenfaktor); fehlt sie, gilt 1 (alte Partie).
             windFassung: message.windFassung,
+            hagel: message.hagel, // Hagelfassung der Partie (HAGEL-1); fehlt sie: alte Partie, kein Engine-Hagel
             craters: Array.isArray(message.craters) ? message.craters : [],
             inset: Number(message.inset) || 0,
           });

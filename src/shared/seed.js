@@ -57,6 +57,10 @@ export const SEED_OFFSETS = Object.freeze({
    * die Waffe eines Waffen-Perks. Fassung 1–3 ziehen weiter aus `GUENTHER`.
    */
   GUENTHER_PERK: 13_000_000,
+  /** Hagel (Hagelfassung 2, HAGEL-1): Hagellagen. Eigener Zweig; Fassung 1 holt ihn nie. */
+  HAGEL: 14_000_000,
+  /** Hagel: die einzelnen Körner (Ort, Flugzeit, Schaden) — getrennt von den Lagen, damit beide unabhängig bleiben. */
+  HAGEL_KORN: 14_500_000,
 });
 
 /**

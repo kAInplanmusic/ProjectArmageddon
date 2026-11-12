@@ -199,7 +199,7 @@ export function maleHagelkorn(ctx, x, y, rad, alpha = 1) {
 }
 
 /** Hagel in der Luft: schnelle, fast gerade Körner in drei Tiefen mit Schlieren, dazu wenige sehr große Körner. */
-export function zeichneHagelLuft(p, st, dichte = 1) {
+export function zeichneHagelLuft(p, st, dichte = 1, gebunden = false) {
   if (!(st > 0.01)) return;
   const { ctx, m } = p;
   const d = niederschlagDichte(dichte);
@@ -231,7 +231,8 @@ export function zeichneHagelLuft(p, st, dichte = 1) {
     ctx.stroke();
   }
   // Große Körner einzeln: Schlieren, dann Korn.
-  const ng = st > 0.3 ? Math.max(1, Math.round(HAGEL_GROSS.n * st * d)) : 0;
+  // Mit Engine-Hagel (`hagelAnzeige.js`) gibt es keine dekorativen Großkörner: jedes große Korn ist ein Korn der Engine.
+  const ng = st > 0.3 && !gebunden ? Math.max(1, Math.round(HAGEL_GROSS.n * st * d)) : 0;
   for (let i = 0; i < ng; i += 1) {
     const k = hagelKornLuft(i, HAGEL_GROSS, p);
     const l = HAGEL_GROSS.laenge * m;
@@ -248,7 +249,7 @@ export function zeichneHagelLuft(p, st, dichte = 1) {
  * Aufschlag Ring, Splitterfächer und fliegende Eissplitter. Jedes 6. Korn ist groß, jedes 17. riesig (stärkerer Ring, mehr
  * Splitter). Eine Funktion der Zeit je Platznummer — kein gespeicherter Zustand.
  */
-export function zeichneHagelAufprall(ctx, ob, sicht, t, st, dichte = 1, schraeg = 0) {
+export function zeichneHagelAufprall(ctx, ob, sicht, t, st, dichte = 1, schraeg = 0, gebunden = false) {
   const anzahl = Math.round(34 * st * niederschlagDichte(dichte));
   if (anzahl <= 0 || !ob) return;
   ctx.save();
@@ -259,7 +260,7 @@ export function zeichneHagelAufprall(ctx, ob, sicht, t, st, dichte = 1, schraeg 
     const ph = (t / periode + hash2(i, 1, 51)) - takt;
     const o = waehleOberflaeche(ob, hash2(i, takt, 52), hash2(i, takt, 53), sicht, true);
     if (!o) continue;
-    const g = i % 17 === 0 ? 3.4 : (i % 6 === 0 ? 2.0 : 1);
+    const g = gebunden ? 1 : (i % 17 === 0 ? 3.4 : (i % 6 === 0 ? 2.0 : 1)); // gebunden: nur kleine Körner, große gehören der Engine
     const k = Math.pow(g, 0.7);
     const rad = 2.9 * g;
     if (ph < fallAnteil) {

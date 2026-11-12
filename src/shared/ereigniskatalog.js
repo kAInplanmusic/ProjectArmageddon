@@ -124,6 +124,12 @@ export const EREIGNIS_KATALOG = Object.freeze({
   feuerwesen_sprung: { klasse: 'zustand', stumm: 'nur Zustand: der Sprung ist am gezeichneten Gnom zu sehen' },
   feuerwesen_zerbirst: { klasse: 'zustand', anim: ['feuerwesenZerbirst', 'addFlash'] },
   feuerwesen_erloschen: { klasse: 'zustand' },
+  // Hagel (Hagelfassung 2): Lage und Körner der Engine; die Anzeige-Liste liegt im Client (`hagelAnzeige.js`), nicht im binären Snapshot.
+  hail_start: { klasse: 'zustand' },
+  hail_korn: { klasse: 'zustand', stumm: 'nur Zustand: das Korn und sein Schatten stehen in der Anzeige-Liste und werden vom Renderer gezeichnet (hagelAnzeige.js)' },
+  hail_aufprall: { klasse: 'zustand', stumm: 'nur Zustand: Ring und Splitter am Aufschlagpunkt zeichnet der Renderer aus der Anzeige-Liste (hagelAnzeige.js)' },
+  hail_hit: { klasse: 'zustand', klang: ['aufprall'], anim: ['addFlash'] },
+  hail_ende: { klasse: 'zustand' },
   fass_placed: { klasse: 'zustand', stumm: 'liegende Fässer melden sich nicht im Protokoll; die Liste steht im Zustand' },
   fass_abgeworfen: { klasse: 'zustand', stumm: 'Protokollzeile reicht; der Fall wird im Renderer gezeichnet' },
   fass_gelandet: { klasse: 'zustand', anim: ['addFlash'] },

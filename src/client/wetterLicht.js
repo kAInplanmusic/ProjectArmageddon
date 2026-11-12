@@ -17,6 +17,7 @@ import {
   zielAus, neuerZustand, schreiteFort, windRichtung, boe, donnerFuer, blitzHelle, wetterAusSzene, wetterAktiv,
 } from './wetterZustand.js';
 import { baueOberflaeche, pfuetzenAus } from './wetterOberflaeche.js';
+import { bindeHagelZiel, zeichneHagelKoerner } from './hagelAnzeige.js'; // Engine-Hagel (Hagelfassung 2)
 import {
   bildWerte, zeichneNebelHinten, zeichneNebelVorn, zeichneSturmHimmel, zeichneRegen, zeichneSchnee, zeichneHagelLuft,
   zeichneWind, zeichneSpritzer, zeichneHagelAufprall, zeichneSchneeDecke, zeichnePfuetzen,
@@ -155,7 +156,7 @@ function zustand(r) {
   }
   const z = r.wetterStand;
   const zeit = r.time ?? 0;
-  const ziel = zielAus(z.wetter, zeit / 60, z.saat);
+  const ziel = bindeHagelZiel(zielAus(z.wetter, zeit / 60, z.saat), r.hagel, zeit, Boolean(r.backdrop && OHNE_WETTER.test(r.backdrop.biomeId ?? String(r.backdrop.key ?? '').split('/')[0])));
   const { richtung, spielStaerke } = windRichtung(r.sichtWind, z.saat);
   if (!z.stand) { z.stand = neuerZustand(ziel, zeit); z.stand.richtung = richtung; }
   schreiteFort(z.stand, ziel, zeit, Boolean(r.reducedMotion), richtung);
@@ -257,7 +258,7 @@ export function zeichneWetterVorn(r, dichte = 1) {
     zeichneNebelVorn(p, s.nebel);
     zeichneRegen(p, s.regen, dichte);
     zeichneSchnee(p, s.schnee, dichte);
-    zeichneHagelLuft(p, s.hagel, dichte);
+    zeichneHagelLuft(p, s.hagel, dichte, Boolean(r.hagel?.gebunden));
     zeichneWind(p, Math.max(s.wind, 0.8 * s.sturm), z.wetter.windTon ?? 'staub', dichte);
     if (s.sturm > 0.5 && !r.reducedMotion) {
       const bl = blitzZustand(sekunden(r), z.saat);
@@ -306,6 +307,7 @@ function oberflaeche(r, z) {
  */
 export function zeichneWetterWelt(r, dichte = 1) {
   const ctx = r.ctx;
+  if (ctx && r.hagel?.gebunden) zeichneHagelKoerner(ctx, r.hagel, r.time ?? 0, Boolean(r.reducedMotion)); // Körner der Engine, auch ohne Kulisse
   if (!ctx || !(r.backdrop || r.scenery) || r.reducedMotion) return;
   const z = zustand(r);
   const s = z.stand;
@@ -316,7 +318,7 @@ export function zeichneWetterWelt(r, dichte = 1) {
   const schraeg = werte(r, z).schraeg;
   zeichnePfuetzen(ctx, z.pfuetzen, sicht, t, s.regen);
   zeichneSpritzer(ctx, ob, sicht, t, s.regen, dichte, schraeg);
-  zeichneHagelAufprall(ctx, ob, sicht, t, s.hagel, dichte, schraeg);
+  zeichneHagelAufprall(ctx, ob, sicht, t, s.hagel, dichte, schraeg, Boolean(r.hagel?.gebunden));
 }
 
 /** Schneedecke auf dem Gelände (Weltschicht, UNTER Figuren und Geschossen): wächst bei Schneefall, taut danach. */

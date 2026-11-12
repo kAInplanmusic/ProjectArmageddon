@@ -77,7 +77,7 @@ import { BEWEGUNG_STANDARD } from '../shared/config/bewegung.js';
 import { SEIL_STANDARD } from '../shared/config/seil.js';
 import { SeilSteuerung } from './seilSteuerung.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
-import { WIND_STANDARD, WIND_JE_ZUG } from '../shared/config/wind.js';
+import { WIND_STANDARD, WIND_JE_ZUG } from '../shared/config/wind.js'; import { HAGEL_STANDARD } from '../shared/config/hagel.js'; import { HagelAnzeige } from './hagelAnzeige.js'; // Hagel (HAGEL-1)
 import { BODENOBJEKTE_STANDARD } from '../shared/config/bodenobjekte.js';
 import { ZUGREGELN_STANDARD } from '../shared/config/zugregeln.js';
 import { LaufVorhersage } from './laufVorhersage.js';
@@ -1384,7 +1384,7 @@ class Game {
     // nach dem Start. Die explizite Formatwahl bestimmt die Ausrichtung.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, format: mapFormat, groesse: mapSize, sidegrades, loadouts, biom, kartenart,
-      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, wind: WIND_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
+      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, wind: WIND_STANDARD, hagel: HAGEL_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
@@ -1774,7 +1774,7 @@ class Game {
     client.on('terrain_state', stand => { this.#baueKarteNeu(stand); this.renderer.feuerOptik?.uebernimmMeldung(stand.feuer, this.renderer.stoffkarte); });
     client.on('lobby_state', payload => {
       // Minen: Der Beitrittszustand trägt die aktuelle Liste (auch beim Wiedereinstieg); danach folgen Ereignisse.
-      this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }])); this.remoteSeil = null; this.remoteFeuerwesen = null;
+      this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }])); this.remoteSeil = null; this.remoteFeuerwesen = null; this.renderer.hagel = new HagelAnzeige(payload.hagel ?? 1);
       if (payload.seed !== null && payload.seed !== undefined && !this.remoteTerrain) {
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, kartentyp }));
       }
@@ -2532,6 +2532,7 @@ class Game {
   #ereignisKontext() {
     return {
       renderer: this.renderer,
+      hagel: this.renderer?.hagel, // Anzeige-Liste des Engine-Hagels (`hagelAnzeige.js`)
       tierBuehne: this.renderer?.tierBuehne,
       hud: this.hud,
       sound: this.sound,
@@ -3551,7 +3552,7 @@ class Game {
     this.mode = 'replay';
     this.match = this.replayPlayer.match;
     // Alte Aufzeichnungen behalten ihre Waffenfassung — nie ungefragt F15.
-    this.renderer.setzeWaffenFassung(this.match.waffen);
+    this.renderer.setzeWaffenFassung(this.match.waffen); this.renderer.hagel = new HagelAnzeige(this.match.hagel);
     this.replayPlaying = false;
     this.accumulator = 0;
     this.lastFrameTime = 0;
@@ -3644,7 +3645,7 @@ class Game {
       this.match = this.replayPlayer.match;
       // `ReplayPlayer.reset()` baut den MatchController neu; die Fassung kann
       // dieselbe sein, wird aber aus DEMSELBEN Objekt gelesen wie die Anzeige.
-      this.renderer.setzeWaffenFassung(this.match?.waffen);
+      this.renderer.setzeWaffenFassung(this.match?.waffen); this.renderer.hagel = new HagelAnzeige(this.match?.hagel);
     }
   }
 
