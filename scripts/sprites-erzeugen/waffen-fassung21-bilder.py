@@ -3,6 +3,7 @@
 
 Erzeugt NUR Rohbilder (Schluessel aus der Umgebung RUNWARE_API_KEY, wird nie ausgegeben oder gespeichert):
   funkenkugel  1 Bild  Icon der Funkenkugel (pa_079), 1024x1024
+  minenicon    1 Bild  Icon der Wurfmine (pa_127), 1024x1024
   geschosse    1 Bild  Raster 2x2 mit Mine, Luftangriffsbombe, Meteor, Hoellenkugel (Geschosszellen)
 Ausgabe: --ziel (Standard /tmp/pa-f21), Kostenlog kosten.jsonl dort. Harte Obergrenze --max-usd (Standard 0,60).
 Aufruf:  RUNWARE_API_KEY=... python3 scripts/sprites-erzeugen/waffen-fassung21-bilder.py funkenkugel geschosse
@@ -30,6 +31,13 @@ AUFTRAEGE = {
         "prompt": ("A single crackling ball of electricity for a game weapon icon: a glowing white-blue sphere core with "
                    "jagged yellow-white lightning bolts arcing outward in all directions and a few small sparks. "
                    "Centered, filling about 80 percent of the image, no frame, no tile, no text. "
+                   f"{STIL}. Plain solid flat magenta (#FF00FF) background, no gradient, no shadow."),
+        "refs": ["assets/weapons/source/IMG_9033.PNG"], "w": 1024, "h": 1024,
+    },
+    "minenicon": {
+        "prompt": ("A single land mine for a game weapon icon, three-quarter top view: a round dark-grey steel disc with riveted "
+                   "plates, a raised central pressure plate with a glowing red blinking light, a few short spikes around the rim "
+                   "and a small yellow warning stripe. Centered, filling about 80 percent of the image, no frame, no tile, no text. "
                    f"{STIL}. Plain solid flat magenta (#FF00FF) background, no gradient, no shadow."),
         "refs": ["assets/weapons/source/IMG_9033.PNG"], "w": 1024, "h": 1024,
     },

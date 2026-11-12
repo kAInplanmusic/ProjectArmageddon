@@ -60,6 +60,39 @@ def magenta_frei(bild):
     return Image.fromarray(arr, "RGBA")
 
 
+def entsaettige_rand(bild):
+    """Rosa/violetter Stich (min(R,B) ueber G) in grauem Staub und Rauch entfernen, auch bei vollem Alpha: der Rauch des
+    Rohbilds ist selbst rosa getoent. Rot (Warnlicht), Olivgruen und Gelb haben kein positives min(R,B)-G und bleiben."""
+    a = np.asarray(bild).astype(np.float32).copy()
+    ex = np.maximum(np.minimum(a[..., 0], a[..., 2]) - a[..., 1], 0)
+    a[..., 0] -= ex
+    a[..., 2] -= ex
+    return Image.fromarray(a.clip(0, 255).astype(np.uint8), "RGBA")
+
+
+def flugzelle_funken(fk):
+    """Kraeftige Flugzelle: Kugel mit kurzen Blitzstummeln (runder Ausschnitt), dunkle Kontur, mehr Saettigung."""
+    from PIL import ImageFilter
+    w, h = fk.size
+    r = 0.34 * w
+    yy, xx = np.mgrid[0:h, 0:w]
+    kreis = np.clip((r - np.hypot(xx - w / 2, yy - h / 2)) / 18.0, 0, 1)
+    a = np.asarray(fk).astype(np.float32).copy()
+    a[..., 3] *= kreis
+    zelle = in_flaeche(Image.fromarray(a.astype(np.uint8), "RGBA"), 64, rand=3)
+    arr = np.asarray(zelle).astype(np.float32)
+    alpha = arr[..., 3] / 255.0
+    kontur = np.asarray(zelle.split()[3].filter(ImageFilter.MaxFilter(3))).astype(np.float32) / 255.0
+    rgb = arr[..., :3]
+    mittel = rgb.mean(-1, keepdims=True)
+    rgb = (mittel + (rgb - mittel) * 1.35).clip(0, 255)          # Saettigung
+    dunkel = np.array([18, 28, 70], np.float32)
+    aussen = (kontur - alpha).clip(0, 1)[..., None]
+    out = rgb * alpha[..., None] + dunkel * aussen
+    al = np.maximum(alpha, kontur)
+    return Image.fromarray(np.dstack([out / np.maximum(al[..., None], 1e-3), al * 255]).clip(0, 255).astype(np.uint8), "RGBA")
+
+
 def in_flaeche(bild, kante, rand=2):
     """Zuschneiden, proportional auf (kante - 2*rand) skalieren, mittig legen."""
     a = np.asarray(bild)[..., 3]
@@ -68,7 +101,8 @@ def in_flaeche(bild, kante, rand=2):
     s = (kante - 2 * rand) / max(b.size)
     nb = max(1, round(b.width * s))
     nh = max(1, round(b.height * s))
-    klein = b.resize((nb, nh), Image.LANCZOS)
+    # vormultipliziert skalieren: der Magenta-Rest unter dem Alpha-Rand darf nicht in die Kanten laufen
+    klein = b.convert("RGBa").resize((nb, nh), Image.LANCZOS).convert("RGBA")
     z = Image.new("RGBA", (kante, kante), (0, 0, 0, 0))
     z.paste(klein, ((kante - nb) // 2, (kante - nh) // 2))
     return z
@@ -102,18 +136,27 @@ def main():
     h = raster.width // 2
     os.makedirs(GESCHOSSE, exist_ok=True)
     for name, (qx, qy) in QUADRANTEN.items():
-        in_flaeche(raster.crop((qx * h, qy * h, qx * h + h, qy * h + h)), 64).save(os.path.join(GESCHOSSE, f"{name}.png"), optimize=True)
-    in_flaeche(fk, 64).save(os.path.join(GESCHOSSE, "funkenkugel.png"), optimize=True)
+        q = raster.crop((qx * h, qy * h, qx * h + h, qy * h + h))
+        if name in ("mine", "bombe"):
+            q = entsaettige_rand(q)
+        in_flaeche(q, 64).save(os.path.join(GESCHOSSE, f"{name}.png"), optimize=True)
+    flugzelle_funken(fk).save(os.path.join(GESCHOSSE, "funkenkugel.png"), optimize=True)
 
-    # ---- 3. Icon-Quelle und 64-px-Icons der Funkenkugel
-    grund = Image.new("RGBA", fk.size, GRUND + (255,))
-    grund.alpha_composite(fk)
-    grund.convert("RGB").save(os.path.join(QUELLE, "IMG_9134.PNG"), optimize=True)
-    icon64 = in_flaeche(fk, 64, rand=1)
-    icon64.save(os.path.join(CLIENT_ICONS, "IMG_9134_icon.png"), optimize=True)
-    flach = Image.new("RGBA", (64, 64), GRUND + (255,))
-    flach.alpha_composite(icon64)
-    flach.save(os.path.join(ICONS64, "IMG_9134.PNG"), optimize=True)
+    # ---- 3. Icon-Quellen und 64-px-Icons (Funkenkugel pa_079 = IMG_9134, Mine pa_127 = IMG_9372)
+    icons = {}
+    for wid, roh, stamm in (("pa_079", "funkenkugel__v1.png", "IMG_9134"), ("pa_127", "minenicon__v1.png", "IMG_9372")):
+        if not os.path.exists(os.path.join(args.roh, roh)):
+            continue
+        frei = fk if wid == "pa_079" else magenta_frei(Image.open(os.path.join(args.roh, roh)))
+        icons[wid] = frei
+        grund = Image.new("RGBA", frei.size, GRUND + (255,))
+        grund.alpha_composite(frei)
+        grund.convert("RGB").save(os.path.join(QUELLE, f"{stamm}.PNG"), optimize=True)
+        icon64 = in_flaeche(frei, 64, rand=1)
+        icon64.save(os.path.join(CLIENT_ICONS, f"{stamm}_icon.png"), optimize=True)
+        flach = Image.new("RGBA", (64, 64), GRUND + (255,))
+        flach.alpha_composite(icon64)
+        flach.save(os.path.join(ICONS64, f"{stamm}.PNG"), optimize=True)
 
     # ---- 4. Atlanten und Manifest
     m = json.load(open(MANIFEST, encoding="utf-8"))
@@ -132,20 +175,21 @@ def main():
         atlanten[name] = (atlanten[name][0], atlanten[name][1].convert("RGBA"))
     neu_zellen = []
 
-    # Funkenkugel (pa_079): Hand-, Silhouetten- und Icon-Zelle ueber die Standard-Verarbeitung
-    e = ws.verarbeite(lade_waffe("pa_079"), korr, None)
-    alt = m["waffen"]["pa_079"]
-    for rolle, bild in (("held", e["held"]), ("silhouette", e["sil"]), ("icon", auf_palette(e["icon"], icon_palette))):
-        z = alt[rolle]
-        a = atlas(z["atlas"])[1]
-        a.paste(Image.new("RGBA", (z["w"], z["h"]), (0, 0, 0, 0)), (z["x"], z["y"]))
-        a.paste(bild, (z["x"], z["y"]))
-        neu_zellen.append((f"pa_079 {rolle}", bild))
-    for k in ("form", "rotation", "gespiegelt", "streckung", "content", "anchor", "flashColor", "korrektur", "quelle"):
-        alt[k] = e["meta"][k]
-    alt.pop("kachel", None)
-    if "kachel" in e["meta"]:
-        alt["kachel"] = e["meta"]["kachel"]
+    # Funkenkugel (pa_079) und Mine (pa_127): Hand-, Silhouetten- und Icon-Zelle ueber die Standard-Verarbeitung
+    for wid in icons:
+      e = ws.verarbeite(lade_waffe(wid), korr, None)
+      alt = m["waffen"][wid]
+      for rolle, bild in (("held", e["held"]), ("silhouette", e["sil"]), ("icon", auf_palette(e["icon"], icon_palette))):
+          z = alt[rolle]
+          a = atlas(z["atlas"])[1]
+          a.paste(Image.new("RGBA", (z["w"], z["h"]), (0, 0, 0, 0)), (z["x"], z["y"]))
+          a.paste(bild, (z["x"], z["y"]))
+          neu_zellen.append((f"{wid} {rolle}", bild))
+      for k in ("form", "rotation", "gespiegelt", "streckung", "content", "anchor", "flashColor", "korrektur", "quelle"):
+          alt[k] = e["meta"][k]
+      alt.pop("kachel", None)
+      if "kachel" in e["meta"]:
+          alt["kachel"] = e["meta"]["kachel"]
 
     # Geschosszellen (32 px) der fuenf Waffen
     for wid in ("pa_079", "pa_127", "pa_134", "pa_135", "pa_139"):

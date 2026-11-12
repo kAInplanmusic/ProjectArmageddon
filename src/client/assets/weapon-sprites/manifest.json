@@ -6558,7 +6558,7 @@
     "art": "plasma",
     "size": {
      "w": 29,
-     "h": 28
+     "h": 30
     },
     "angle": 0,
     "spin": false,
@@ -9849,21 +9849,21 @@
    },
    "rotation": 0,
    "gespiegelt": false,
-   "streckung": 1.07,
+   "streckung": 1.14,
    "content": {
     "x": 6,
-    "y": 8,
+    "y": 10,
     "w": 115,
-    "h": 112
+    "h": 108
    },
    "anchor": {
     "grip": {
      "x": 63,
-     "y": 68
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 68
+     "y": 64
     },
     "source": "semantik",
     "halt": "koerper",
@@ -9891,7 +9891,7 @@
     "eigenerPfad": true,
     "verwendung": "geschoss"
    },
-   "flashColor": "#4bd2eb",
+   "flashColor": "#eb2f20",
    "korrektur": false,
    "held": {
     "atlas": "tech",
