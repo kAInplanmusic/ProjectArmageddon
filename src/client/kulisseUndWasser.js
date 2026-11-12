@@ -52,7 +52,7 @@ function zeichneKulisse(r) {
       drawAmbient(ctx, r.width, r.height, r.scenery, r.time, false);
       drawLandmarks(ctx, r.width, r.height, r.scenery, horizont);
     };
-    if (typeof document === 'undefined') { direkt(r.ctx); return; }
+    if (typeof document === 'undefined') { direkt(r.ctx); zeichneWetterHinten(r); return; }
     const schicht = (maßstab = 1, anteil = 1) => {
       const canvas = document.createElement('canvas');
       canvas.width = Math.ceil(r.width * maßstab);
@@ -85,6 +85,7 @@ function zeichneKulisse(r) {
     r.ctx.drawImage(c.himmel.canvas, 0, 0, r.width, r.height);
     const oben = Math.ceil(r.height * KULISSE_BEWEGT_ANTEIL);
     r.ctx.drawImage(c.bewegt.canvas, 0, 0, c.bewegt.canvas.width, c.bewegt.canvas.height, 0, 0, r.width, oben);
+    zeichneWetterHinten(r); // Nebelbänke und Blitz auch in der generativen Szene
   }
 
   /** Lädt die Hochkant-Fassung der Kulisse einmalig und nur bei Bedarf. */

@@ -75,7 +75,7 @@ import {
 } from './weaponAnimation.js';
 import { drawAmbient } from './sceneryPainter.js';
 import { FANTASYWALD_BIOM, plaziereFantasyDeko, zeichneFantasyNebel, zeichneFeenlichter } from './fantasywaldDeko.js';
-import { zeichneWetterVorn, zeichneWetterWelt } from './wetterLicht.js';
+import { zeichneWetterVorn, zeichneWetterWelt, zeichneSchneeAuflage } from './wetterLicht.js';
 
 /** Darstellungsgröße des Soldaten gegenüber dem 14 × 20 Pixel großen Körper (nur Anzeige). */
 const FIGUR_SKALA = 1.5;
@@ -2364,6 +2364,7 @@ export class Renderer {
      * unter Wasser soll durch das Wasser scheinen, nicht darauf liegen.
      */
     this.#drawNarben();
+    zeichneSchneeAuflage(this); // Schneedecke auf dem Gelände (Wetter, reine Optik)
 
     zeichneWasser(this, water, wasserNeu);
     // Feenlichter schweben über dem Gelände, aber unter den Figuren (Lesbarkeit der Figuren geht vor).
@@ -2444,6 +2445,7 @@ export class Renderer {
     // Das Vorzeichen liegt über der Welt, aber unter der Anzeige.
     this.#drawOmen();
     zeichneWindPfeil(this.ctx, this.width, state.wind);
+    this.sichtWind = state.wind; // nur gelesen: Richtung der Wetterteilchen (`wetterZustand.windRichtung`)
     // Die Ladeanzeige liegt ÜBER dem Geschehen: Sie gehört zur Eingabe des
     // Spielers, nicht zur Welt — sie darf nicht hinter einer Figur verschwinden.
     this.#drawLadeanzeige(ladeAnteil);

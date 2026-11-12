@@ -150,7 +150,7 @@ export function explosion(ctx, rauschen, {
  *
  * @returns {{ende:number}}
  */
-export function donner(ctx, rauschen, { lautstaerke = 1, zeit = ctx.currentTime, ziel = null } = {}) {
+export function donner(ctx, rauschen, { lautstaerke = 1, zeit = ctx.currentTime, ziel = null, dumpf = 0 } = {}) {
   const zielKnoten = ziel ?? ctx.destination;
   let ende = zeit;
   for (const [versatz, kraft, laenge] of [[0.05, 0.55, 1.6], [0.62, 0.8, 2.3], [2.45, 1, 3.2]]) {
@@ -159,7 +159,7 @@ export function donner(ctx, rauschen, { lautstaerke = 1, zeit = ctx.currentTime,
     quelle.buffer = rauschen;
     const tiefpass = ctx.createBiquadFilter();
     tiefpass.type = 'lowpass';
-    tiefpass.frequency.setValueAtTime(900, t);
+    tiefpass.frequency.setValueAtTime(900 * (1 - dumpf), t);
     tiefpass.frequency.exponentialRampToValueAtTime(70, t + laenge * 0.8);
     const huelle = ctx.createGain();
     huelle.gain.setValueAtTime(0.0001, t);

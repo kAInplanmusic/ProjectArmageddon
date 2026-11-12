@@ -564,12 +564,14 @@ function mitZusatzElementen(scenery) {
  * @param {boolean} imVordergrund - Regen, Schnee und Funken liegen VOR dem Spielfeld
  */
 export function drawAmbient(ctx, breite, hoehe, scenery, zeit, imVordergrund, dichte = 1) {
+  // Regen, Schnee und Blitz zeichnet das Wettersystem (`wetterLicht.js`): überblendet, mit Spritzern und Schneedecke.
   const hinten = new Set(['stars', 'nebula_glow', 'aurora_bands', 'clouds_few', 'clouds_heavy',
     'clouds_storm', 'haze', 'fog_banks', 'birds', 'lightning', 'glimmer', 'fog_sheets', 'light_pillars']);
   ctx.save();
   const elemente = mitZusatzElementen(scenery);
   for (let i = 0; i < elemente.length; i += 1) {
     const element = elemente[i];
+    if (element.kind === 'rain' || element.kind === 'snow' || element.kind === 'lightning') continue;
     const gehoertNachHinten = hinten.has(element.kind);
     if (gehoertNachHinten === imVordergrund) continue;
     // Grafikstufe: bei Dichte < 1 fällt ein fester Teil der Elemente weg (jedes zehnte nach Index).

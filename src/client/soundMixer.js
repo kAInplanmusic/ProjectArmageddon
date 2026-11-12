@@ -400,9 +400,9 @@ export class SoundMixer {
   }
 
   /** Donner zum Vorzeichen von Valhalla (zwei Raben im Blitz). */
-  spieleDonner() {
+  spieleDonner({ lautstaerke = 1, dumpf = 0 } = {}) {
     if (!this.#bereitFuer('donner')) return false;
-    donner(this.#ctx, this.#graph.rauschen, { lautstaerke: 0.9, ziel: this.#graph.busse.umgebung });
+    donner(this.#ctx, this.#graph.rauschen, { lautstaerke: 0.9 * lautstaerke, dumpf, ziel: this.#graph.busse.umgebung });
     this.#gezaehlt.donner += 1;
     return true;
   }

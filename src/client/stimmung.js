@@ -13,6 +13,7 @@
  * @module stimmung
  */
 import { hash2 } from './stil.js';
+import { zeichneSonne } from './wetterZeichnen.js';
 
 /** Wahl der Tageszeit/Stimmung (Schlüssel → Beschriftung im Menü). */
 export const ZEITEN = Object.freeze({
@@ -29,12 +30,14 @@ export const WETTER_WAHL = Object.freeze({
   auto: 'automatisch (wie die Kulisse)',
   klar: 'klar',
   sonne: 'Sonne',
+  wind: 'Wind',
   regen: 'Regen',
   sturm: 'Sturm',
   schnee: 'Schnee',
   hagel: 'Hagel',
   nebel: 'Nebel',
   laub: 'Laubfall',
+  wechselhaft: 'wechselhaft (Wetter wechselt)',
 });
 
 /** Unbekannte Werte fallen auf „automatisch". */
@@ -62,6 +65,8 @@ export function wetterMit(basis, wetter = 'auto', zeit = 'auto') {
     if (w === 'schnee') aus.schnee = 0.8;
     if (w === 'nebel') aus.nebel = 0.8;
     if (w === 'laub') aus.laub = 0.8;
+    if (w === 'wind') aus.wind = 0.85;
+    if (w === 'wechselhaft') aus.wechsel = true; // die Lage wählt `wetterZustand.zielAus` nach Zeit
   } else if (z === 'herbst') {
     aus.laub = 0.55;
   }
@@ -148,32 +153,8 @@ export function zeichneStimmung(r, w, dichte = 1) {
     ctx.restore();
   }
 
-  // Sonne: Schein oben links und breite Lichtbahnen, die langsam atmen.
-  if (w?.sonne > 0) {
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    const sx = b * 0.16;
-    const sy = -h * 0.06;
-    const glanz = ctx.createRadialGradient(sx, sy, 0, sx, sy, b * 0.42);
-    glanz.addColorStop(0, 'rgba(255, 238, 190, 0.34)');
-    glanz.addColorStop(0.4, 'rgba(255, 226, 160, 0.1)');
-    glanz.addColorStop(1, 'rgba(255, 220, 150, 0)');
-    ctx.fillStyle = glanz;
-    ctx.fillRect(0, 0, b, h);
-    for (let i = 0; i < 6; i += 1) {
-      const atem = still ? 1 : 0.7 + 0.3 * Math.sin(t * 0.35 + i * 1.3);
-      const winkel = 0.35 + i * 0.17;
-      const breite = (0.05 + hash2(i, 1, 12) * 0.05) * b;
-      ctx.fillStyle = `rgba(255, 240, 200, ${0.05 * atem})`;
-      ctx.beginPath();
-      ctx.moveTo(sx, sy);
-      ctx.lineTo(sx + Math.cos(winkel) * b * 1.5 - breite, sy + Math.sin(winkel) * b * 1.5);
-      ctx.lineTo(sx + Math.cos(winkel) * b * 1.5 + breite, sy + Math.sin(winkel) * b * 1.5);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.restore();
-  }
+  // Sonne: Schein, Lichtbahnen, Linsenreflexe, Staub im Licht (wetterZeichnen.js); `w.sonne` ist die überblendete Stärke.
+  if (w?.sonne > 0) zeichneSonne({ ctx, b, h, t, m, still }, w.sonne, dichte);
 
   // Laubfall: goldene und rote Blätter, die trudeln.
   if (w?.laub > 0) {

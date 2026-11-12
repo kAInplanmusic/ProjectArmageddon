@@ -13,6 +13,14 @@
  */
 import { hash2 } from './stil.js';
 import { wetterMit, zeichneStimmung } from './stimmung.js';
+import {
+  zielAus, neuerZustand, schreiteFort, windRichtung, boe, donnerFuer, blitzHelle, wetterAusSzene, wetterAktiv,
+} from './wetterZustand.js';
+import { baueOberflaeche, pfuetzenAus } from './wetterOberflaeche.js';
+import {
+  bildWerte, zeichneNebelHinten, zeichneNebelVorn, zeichneSturmHimmel, zeichneRegen, zeichneSchnee, zeichneHagelLuft,
+  zeichneWind, zeichneSpritzer, zeichneHagelAufprall, zeichneSchneeDecke, zeichnePfuetzen,
+} from './wetterZeichnen.js';
 
 /** Kulissen ohne Himmel und Wetter (Höhle, Weltraum, Abstraktes). */
 const OHNE_WETTER = /^(caverns|cosmos|abstract)$/;
@@ -88,13 +96,13 @@ const BLITZ_DAUER = 0.55;
 
 /**
  * Der Blitz zur Zeit `t` (Sekunden): Aufhellung 0 bis 1 (zwei Pulse) und die Zacken (Lage 0 bis 1) während der ersten Pulse.
- * @returns {{hell:number, zacken:{x:number,y:number}[][]|null, id:number}} `id` zählt die Blitze (Zeitfenster)
+ * @returns {{hell:number, zacken:{x:number,y:number}[][]|null, id:number, entfernung:number}} `id` zählt die Blitze (Zeitfenster), `entfernung` 0 (nah) bis 1 (fern)
  */
 export function blitzZustand(t, seed = 0) {
   const fenster = Math.floor(t / BLITZ_FENSTER);
   const start = fenster * BLITZ_FENSTER + 1 + hash2(fenster, 3, seed) * (BLITZ_FENSTER - 2 - BLITZ_DAUER);
   const d = t - start;
-  if (d < 0 || d > BLITZ_DAUER) return { hell: 0, zacken: null, id: fenster };
+  if (d < 0 || d > BLITZ_DAUER) return { hell: 0, zacken: null, id: fenster, entfernung: hash2(fenster, 9, 1) };
   // Zwei Pulse: ein heller, ein schwächerer nach 0,22 s.
   const puls = d < 0.12 ? 1 - d / 0.12 * 0.4 : d < 0.22 ? 0.35 : d < 0.34 ? 0.8 - (d - 0.22) / 0.12 * 0.5 : Math.max(0, 0.3 - (d - 0.34));
   const x0 = 0.12 + hash2(fenster, 5, seed) * 0.76;
@@ -119,21 +127,39 @@ export function blitzZustand(t, seed = 0) {
     }
     zacken.push(ast);
   }
-  return { hell: Math.max(0, Math.min(1, puls)), zacken, id: fenster };
+  return { hell: Math.max(0, Math.min(1, puls)), zacken, id: fenster, entfernung: hash2(fenster, 9, 1) };
 }
 
-/** Der Wetterzustand des Renderers (lazy): Auswahl aus der Kulisse und die aus dem Bild gelesenen Lichter. */
+const sekunden = r => (r.time ?? 0) / 60;
+
+/** Schlüssel einer generativen Szene (die Szene hat keinen `backdropKey`). */
+const szeneKey = s => (s ? `g:${s.seed}:${s.biomeId}:${s.skyId}` : null);
+
+/**
+ * Der Wetterzustand des Renderers (lazy): Auswahl aus Kulisse oder generativer Szene, die aus dem Bild gelesenen Lichter und der
+ * weich überblendete Zustand. Wird je Bild einmal fortgeschrieben (mehrfaches Aufrufen im selben Bild ändert nichts).
+ */
 function zustand(r) {
+  const key = r.backdropKey ?? szeneKey(r.scenery);
   const wahl = `${r.stimmung?.zeit ?? 'auto'}/${r.stimmung?.wetter ?? 'auto'}`;
-  if (!r.wetterStand || r.wetterStand.key !== r.backdropKey || r.wetterStand.wahl !== wahl) {
+  if (!r.wetterStand || r.wetterStand.key !== key || r.wetterStand.wahl !== wahl) {
+    const basis = r.backdrop ? wetterAus(r.backdrop) : wetterAusSzene(r.scenery);
     r.wetterStand = {
-      key: r.backdropKey ?? null,
+      key,
       wahl,
-      wetter: wetterMit(wetterAus(r.backdrop), r.stimmung?.wetter, r.stimmung?.zeit),
+      saat: r.backdropKey?.length ?? (r.scenery?.seed ?? 0),
+      wetter: wetterMit(basis, r.stimmung?.wetter, r.stimmung?.zeit),
       lichter: null,
+      stand: null,
     };
   }
   const z = r.wetterStand;
+  const zeit = r.time ?? 0;
+  const ziel = zielAus(z.wetter, zeit / 60, z.saat);
+  const { richtung, spielStaerke } = windRichtung(r.sichtWind, z.saat);
+  if (!z.stand) { z.stand = neuerZustand(ziel, zeit); z.stand.richtung = richtung; }
+  schreiteFort(z.stand, ziel, zeit, Boolean(r.reducedMotion), richtung);
+  z.spielStaerke = spielStaerke;
   // Die Lichter stammen aus dem fertig zugeschnittenen Kulissenbild (`kulissenCache`), nicht aus der Rohdatei: Zuschnitt und
   // Verschiebung (Pan) der Stimmungsbilder gelten dann für Bild und Licht gleich. Neu gelesen wird bei jedem neuen Zuschnitt.
   const quelle = r.kulissenCache?.canvas ?? null;
@@ -154,37 +180,19 @@ function zustand(r) {
   return z;
 }
 
-const sekunden = r => (r.time ?? 0) / 60;
+const werte = (r, z) => bildWerte(r, z.stand, boe(sekunden(r)), z.stand.richtung, z.spielStaerke);
 
-/** HINTEN: Blitzzacken, Nebelbänder, flackerndes Fensterlicht. Koordinaten wie das Kulissenbild (Bildgröße des Renderers). */
+/** HINTEN: Nebelbänke, flackerndes Fensterlicht, Blitzzacken. Koordinaten wie das Kulissenbild (Bildgröße des Renderers). */
 export function zeichneWetterHinten(r) {
   const ctx = r.ctx;
-  if (!ctx || !r.backdrop) return;
+  if (!ctx || !(r.backdrop || r.scenery)) return;
   const z = zustand(r);
+  const s = z.stand;
   const b = r.width;
   const h = r.height;
   const t = sekunden(r);
   const still = r.reducedMotion;
-
-  if (z.wetter.nebel > 0) {
-    ctx.save();
-    for (let k = 0; k < 3; k += 1) {
-      const drift = still ? 0 : (t * (4 + k * 2.5) + hash2(k, 1, 9) * b) % (b * 1.6);
-      const x = drift - b * 0.3;
-      const y = h * (0.42 + k * 0.1);
-      const g = ctx.createRadialGradient(x, y, 0, x, y, b * 0.34);
-      g.addColorStop(0, `rgba(190, 200, 210, ${0.17 * z.wetter.nebel})`);
-      g.addColorStop(1, 'rgba(190, 200, 210, 0)');
-      ctx.fillStyle = g;
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(1, 0.22);
-      ctx.translate(-x, -y);
-      ctx.fillRect(x - b * 0.34, y - b * 0.34, b * 0.68, b * 0.68);
-      ctx.restore();
-    }
-    ctx.restore();
-  }
+  zeichneNebelHinten(werte(r, z), s.nebel);
 
   if (z.wetter.lichter && z.lichter?.length) {
     ctx.save();
@@ -207,25 +215,29 @@ export function zeichneWetterHinten(r) {
     ctx.restore();
   }
 
-  if (z.wetter.gewitter && !still) {
-    const bl = blitzZustand(t, r.backdropKey?.length ?? 0);
-    // Donner: jeder Blitz meldet sich einmal; der Aufrufer (Main) lässt ihn nach `verzug` Sekunden grollen (Entfernung des Einschlags).
+  if (s.sturm > 0.5 && !still) {
+    const bl = blitzZustand(t, z.saat);
+    // Donner: jeder Blitz meldet sich einmal mit Verzug, Lautstärke und Dumpfheit nach seiner Entfernung (`donnerFuer`);
+    // der Aufrufer (Main) lässt ihn nach `verzug` Sekunden grollen.
     if (bl.zacken && bl.id !== z.donnerId) {
       z.donnerId = bl.id;
-      r.beiBlitz?.(0.4 + hash2(bl.id, 9, 1) * 1.9, bl.zacken[0][0].x);
+      const donner = donnerFuer(bl.entfernung);
+      r.beiBlitz?.(donner.verzug, bl.zacken[0][0].x, donner);
     }
     if (bl.zacken && bl.hell > 0.05) {
+      const hell = bl.hell * blitzHelle(bl.entfernung);
+      const dick = 1.3 - 0.5 * bl.entfernung;
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
       ctx.lineJoin = 'round';
       bl.zacken.forEach((weg, k) => {
         ctx.beginPath();
         weg.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x * b, p.y * h) : ctx.lineTo(p.x * b, p.y * h)));
-        ctx.strokeStyle = `rgba(190, 210, 255, ${0.35 * bl.hell})`;
-        ctx.lineWidth = (k === 0 ? 14 : 8) * (b / 1920);
+        ctx.strokeStyle = `rgba(190, 210, 255, ${0.35 * hell})`;
+        ctx.lineWidth = (k === 0 ? 14 : 8) * dick * (b / 1920);
         ctx.stroke();
-        ctx.strokeStyle = `rgba(255, 255, 255, ${0.95 * bl.hell})`;
-        ctx.lineWidth = (k === 0 ? 3.5 : 2) * (b / 1920);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.95 * hell})`;
+        ctx.lineWidth = (k === 0 ? 3.5 : 2) * dick * (b / 1920);
         ctx.stroke();
       });
       ctx.restore();
@@ -233,189 +245,85 @@ export function zeichneWetterHinten(r) {
   }
 }
 
-/** VORN: Regen, Schnee und die Aufhellung des Blitzes über dem ganzen Bild. */
+/** VORN: Sturmhimmel, Dunst, Sonne und Tönung (`zeichneStimmung`), Regen, Schnee, Hagel, Wind und die Aufhellung des Blitzes. */
 export function zeichneWetterVorn(r, dichte = 1) {
   const ctx = r.ctx;
   if (!ctx) return;
   const z = zustand(r);
-  const w = z.wetter;
-  zeichneVorn(r, w, dichte);
-  zeichneStimmung(r, w, dichte);
+  const s = z.stand;
+  if (wetterAktiv(s)) {
+    const p = werte(r, z);
+    zeichneSturmHimmel(p, s.sturm);
+    zeichneNebelVorn(p, s.nebel);
+    zeichneRegen(p, s.regen, dichte);
+    zeichneSchnee(p, s.schnee, dichte);
+    zeichneHagelLuft(p, s.hagel, dichte);
+    zeichneWind(p, Math.max(s.wind, 0.8 * s.sturm), z.wetter.windTon ?? 'staub', dichte);
+    if (s.sturm > 0.5 && !r.reducedMotion) {
+      const bl = blitzZustand(sekunden(r), z.saat);
+      if (bl.hell > 0.02) {
+        ctx.save();
+        ctx.fillStyle = `rgba(210, 225, 255, ${0.34 * bl.hell * blitzHelle(bl.entfernung)})`;
+        ctx.fillRect(0, 0, r.width, r.height);
+        ctx.restore();
+      }
+    }
+  }
+  zeichneStimmung(r, { ...z.wetter, sonne: s.sonne, laub: s.laub }, dichte);
 }
 
-function zeichneVorn(r, w, dichte) {
-  const ctx = r.ctx;
-  if (!(w.regen > 0 || w.schnee > 0 || w.hagel || w.gewitter)) return;
-  const b = r.width;
-  const h = r.height;
-  const t = sekunden(r);
-  const still = r.reducedMotion;
-  const m = b / 1920;
-
-  if (w.regen > 0 && !still) {
-    const n = Math.round(160 * w.regen * dichte);
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = `rgba(190, 205, 225, ${0.16 + 0.14 * w.regen})`;
-    ctx.lineWidth = 1.4 * m;
-    ctx.beginPath();
-    const neigung = 0.16 + 0.25 * (w.wind ?? 0);
-    for (let i = 0; i < n; i += 1) {
-      const lauf = 0.55 + hash2(i, 1, 3) * 0.45;
-      const y = ((hash2(i, 2, 3) * h) + t * h * (0.9 + 0.6 * w.regen) * lauf) % (h + 60 * m) - 30 * m;
-      const x = (hash2(i, 4, 3) * (b + 200 * m) - 100 * m) - y * neigung;
-      const l = (14 + 16 * w.regen) * m * lauf;
-      ctx.moveTo(x, y);
-      ctx.lineTo(x - l * neigung, y + l);
-    }
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  if (w.hagel) {
-    ctx.save();
-    ctx.fillStyle = 'rgba(221,242,255,0.85)';
-    for (let i = 0; i < 95 * dichte; i += 1) {
-      const y = (hash2(i, 2, 11) * h + (still ? 0 : t * h * 0.75)) % h;
-      const x = (hash2(i, 4, 11) * b + b - y * 0.18) % b;
-      ctx.fillRect(x, y, 3 * m, 4 * m);
-    }
-    ctx.restore();
-  }
-  if (w.schnee > 0) {
-    const n = Math.round(150 * w.schnee * dichte);
-    ctx.save();
-    ctx.fillStyle = 'rgba(245, 249, 255, 0.78)';
-    for (let i = 0; i < n; i += 1) {
-      const tiefe = 0.4 + hash2(i, 1, 7) * 0.6;
-      const fall = still ? 0 : t * h * 0.07 * tiefe;
-      const y = ((hash2(i, 2, 7) * h) + fall) % (h + 20) - 10;
-      const wiegen = still ? 0 : Math.sin(t * (0.6 + hash2(i, 3, 7)) + i) * 18 * m;
-      const x = hash2(i, 4, 7) * b + wiegen;
-      const rad = (1 + tiefe * 2.2) * m;
-      ctx.beginPath();
-      ctx.arc(x, y, rad, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
-  }
-
-  if (w.gewitter && !still) {
-    const bl = blitzZustand(t, r.backdropKey?.length ?? 0);
-    if (bl.hell > 0.02) {
-      ctx.save();
-      ctx.fillStyle = `rgba(210, 225, 255, ${0.34 * bl.hell})`;
-      ctx.fillRect(0, 0, b, h);
-      ctx.restore();
-    }
-  }
-}
-
-/** Oberste feste Zeile einer Spalte ab `ab` (oder -1). */
-function obenBei(src, x, ab = 0) {
-  const c = Math.round(x);
-  if (c < 0 || c >= src.width) return -1;
-  for (let y = Math.max(0, Math.floor(ab)); y < src.height; y += 1) if (src.bitmap[y * src.width + c]) return y;
-  return -1;
-}
-
-/** Flache Stellen für Pfützen: Spalten mit fast gleicher Oberkante (±4 px) über mindestens 48 px (neu bei neuem Gelände oder Krater). */
-function pfuetzen(r) {
-  const src = r.terrainSource;
-  if (!src?.bitmap) return [];
-  const marke = `${r.terrainLayer ? 1 : 0}:${r.letzterKrater?.zeit ?? 0}:${src.width}`;
-  const z = r.wetterStand;
-  if (z.pfuetzenMarke === marke) return z.pfuetzen;
-  const liste = [];
-  const schritt = 8;
-  let lauf = null;
-  const schliesse = () => {
-    if (lauf && lauf.x1 - lauf.x0 >= 48) liste.push({ x: (lauf.x0 + lauf.x1) / 2, y: lauf.y, b: Math.min(110, lauf.x1 - lauf.x0 - 8) });
-    lauf = null;
+/** Sichtbarer Ausschnitt in Kartenpixeln (ohne Kamera: das ganze Bild). */
+function sichtAus(r) {
+  const k = r.kamera?.transformation?.();
+  const skal = k && k.skalierung > 0 ? k.skalierung : 1;
+  return {
+    x0: k ? -k.versatzX / skal : 0,
+    x1: k ? (r.width - k.versatzX) / skal : r.width,
+    y0: k ? -k.versatzY / skal : 0,
+    y1: k ? (r.height - k.versatzY) / skal : r.height,
   };
-  for (let x = 0; x < src.width; x += schritt) {
-    const y = obenBei(src, x);
-    if (y < 0 || y > src.height * 0.93) { schliesse(); continue; }
-    if (lauf && Math.abs(y - lauf.y) <= 4) lauf.x1 = x + schritt;
-    else { schliesse(); lauf = { x0: x, x1: x + schritt, y }; }
+}
+
+/** Oberflächen der Maske, neu erfasst bei neuem Krater (frühestens nach 15 Bildern) und sonst alle 5 s (fallende Inseln). */
+function oberflaeche(r, z) {
+  const src = r.terrainSource;
+  if (!src?.bitmap) return null;
+  const marke = `${r.terrainLayer ? 1 : 0}:${r.letzterKrater?.zeit ?? 0}:${src.width}x${src.height}`;
+  const jetzt = r.time ?? 0;
+  const alt = z.ob ? jetzt - z.obZeit : Infinity;
+  if (!z.ob || (z.obMarke !== marke && (alt >= 15 || jetzt < z.obZeit)) || alt >= 300 || jetzt < z.obZeit) {
+    z.ob = baueOberflaeche(src);
+    z.pfuetzen = pfuetzenAus(z.ob);
+    z.obMarke = marke;
+    z.obZeit = jetzt;
   }
-  schliesse();
-  z.pfuetzen = liste.filter((p, i) => hash2(i, 1, 21) < 0.6).slice(0, 24);
-  z.pfuetzenMarke = marke;
-  return z.pfuetzen;
+  return z.ob;
 }
 
 /**
- * WELT (innerhalb der Kamera): Regenspritzer und Pfützen am Gelände. Nur bei Regen; Pfützen mit Ringen, die sich ausbreiten.
- * Koordinaten sind Kartenpixel, gezeichnet wird nur im sichtbaren Ausschnitt.
+ * WELT (innerhalb der Kamera): Regenspritzer und Pfützen, Hagelaufprall an allen Oberflächen (auch Höhlen). Nicht bei
+ * reduzierter Bewegung.
  */
 export function zeichneWetterWelt(r, dichte = 1) {
   const ctx = r.ctx;
-  if (!ctx || !r.backdrop || r.reducedMotion) return;
+  if (!ctx || !(r.backdrop || r.scenery) || r.reducedMotion) return;
   const z = zustand(r);
-  const regen = z.wetter.regen;
-  const src = r.terrainSource;
-  if (!(regen > 0) || !src?.bitmap) return;
-  const k = r.kamera?.transformation?.();
-  const skal = k && k.skalierung > 0 ? k.skalierung : 1;
-  const x0 = k ? -k.versatzX / skal : 0;
-  const x1 = k ? (r.width - k.versatzX) / skal : r.width;
-  const y0 = k ? -k.versatzY / skal : 0;
-  const y1 = k ? (r.height - k.versatzY) / skal : r.height;
+  const s = z.stand;
+  if (!(s.regen > 0.02 || s.hagel > 0.02) || !r.terrainSource?.bitmap) return;
+  const ob = oberflaeche(r, z);
+  const sicht = sichtAus(r);
   const t = sekunden(r);
+  const schraeg = werte(r, z).schraeg;
+  zeichnePfuetzen(ctx, z.pfuetzen, sicht, t, s.regen);
+  zeichneSpritzer(ctx, ob, sicht, t, s.regen, dichte, schraeg);
+  zeichneHagelAufprall(ctx, ob, sicht, t, s.hagel, dichte, schraeg);
+}
 
-  // Pfützen: dunkle, spiegelnde Ellipse mit Rand und ausbreitenden Ringen.
-  if (regen >= 0.3) {
-    ctx.save();
-    pfuetzen(r).forEach((p, i) => {
-      if (p.x + p.b < x0 || p.x - p.b > x1 || p.y < y0 - 20 || p.y > y1 + 20) return;
-      const tief = Math.min(1, regen * 1.2);
-      ctx.fillStyle = `rgba(52, 70, 98, ${0.5 * tief})`;
-      ctx.beginPath();
-      ctx.ellipse(p.x, p.y + 1.5, p.b / 2, 3.2, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = `rgba(190, 215, 245, ${0.35 * tief})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.ellipse(p.x, p.y + 1.5, p.b / 2, 3.2, 0, Math.PI * 1.05, Math.PI * 1.95);
-      ctx.stroke();
-      for (let n = 0; n < 2; n += 1) {
-        const ph = ((t * (0.8 + 0.3 * n) + hash2(i, n, 31) * 3) % 1);
-        ctx.strokeStyle = `rgba(210, 228, 250, ${0.4 * (1 - ph) * tief})`;
-        ctx.beginPath();
-        ctx.ellipse(p.x + (hash2(i, n + 5, 31) - 0.5) * p.b * 0.5, p.y + 1.5, 2 + ph * p.b * 0.22, 0.6 + ph * 1.5, 0, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    });
-    ctx.restore();
-  }
-
-  // Spritzer: kurze Krönchen aus Tropfen, an wechselnden Stellen im sichtbaren Ausschnitt.
-  const anzahl = Math.round(34 * regen * dichte);
-  if (anzahl > 0) {
-    ctx.save();
-    ctx.fillStyle = 'rgba(205, 222, 245, 0.75)';
-    ctx.strokeStyle = 'rgba(205, 222, 245, 0.5)';
-    ctx.lineWidth = 1;
-    const periode = 0.32;
-    for (let i = 0; i < anzahl; i += 1) {
-      const takt = Math.floor(t / periode + hash2(i, 1, 41));
-      const ph = (t / periode + hash2(i, 1, 41)) - takt; // 0 bis 1 im Takt
-      const x = x0 + hash2(i, takt, 42) * (x1 - x0);
-      const y = obenBei(src, x, y0 - 40);
-      if (y < y0 - 10 || y > y1 || y > src.height * 0.93) continue;
-      const hoehe = 6 + 9 * Math.sin(Math.PI * Math.min(1, ph * 1.4));
-      const a = 1 - ph;
-      ctx.globalAlpha = a;
-      for (let d = -1; d <= 1; d += 1) {
-        ctx.beginPath();
-        ctx.arc(x + d * ph * 9, y - hoehe * (1 - Math.abs(d) * 0.35) + ph * ph * 7, 1.7, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.beginPath();
-      ctx.ellipse(x, y, ph * 9, ph * 2.2, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
+/** Schneedecke auf dem Gelände (Weltschicht, UNTER Figuren und Geschossen): wächst bei Schneefall, taut danach. */
+export function zeichneSchneeAuflage(r) {
+  const ctx = r.ctx;
+  if (!ctx || !(r.backdrop || r.scenery) || !r.terrainSource?.bitmap) return;
+  const z = zustand(r);
+  if (!(z.stand.schneeHoehe > 0.01)) return;
+  zeichneSchneeDecke(ctx, oberflaeche(r, z), sichtAus(r), z.stand.schneeHoehe);
 }
