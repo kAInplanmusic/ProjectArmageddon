@@ -18,7 +18,7 @@ import { gehSchritt } from '../src/engine/systems/bewegungSystem.js';
 import { BEWEGUNG } from '../src/shared/config/bewegung.js';
 import { SCHACHT_MIN_BREITE, NAHT_STEIGUNG_MAX, BRUECKE_DICKE, BRUECKE_STEIGUNG_MAX } from '../src/shared/terrainKomposition.js';
 import {
-  GELAENDE_WEIT, GELAENDE_NAHT, GELAENDE_RAMPE, GELAENDE_STANDARD, GELAENDE_WEIT_AB_BREITE, normalisiereGelaende,
+  GELAENDE_WEIT, GELAENDE_WEIT_AB_BREITE, GELAENDE_NAHT, GELAENDE_RAMPE, GELAENDE_STANDARD, normalisiereGelaende,
 } from '../src/shared/config/gelaende.js';
 
 const hash = (bitmap) => {
@@ -122,8 +122,8 @@ test('Breite Karte in Fassung 12: deterministisch, anders als Fassung 11, Nähte
 });
 
 test('Keine Schächte: kein senkrechter Hohlraum schmaler als SCHACHT_MIN_BREITE und tiefer als dieselbe Länge (gross Seeds 9, 11 und riesig 3, 5: dort hat Fassung 11 Schächte)', () => {
-  const schaechte = (k, w, h) => {
-    // Luftläufe zwischen Fels, kürzer als die Mindestbreite; zählt senkrechte Folgen solcher Zellen gleicher Spalte von mindestens der Mindesttiefe.
+  const schaechte = (k, w) => {
+    // Luftläufe zwischen Fels, kürzer als die Mindestbreite; zählt senkrechte Folgen solcher Zellen gleicher Spalte von mindesten der Mindesttiefe.
     const schmal = new Uint8Array(w * k.wasserY);
     for (let y = 0; y < k.wasserY; y += 1) {
       for (let x = 0; x < w;) {
@@ -147,8 +147,8 @@ test('Keine Schächte: kein senkrechter Hohlraum schmaler als SCHACHT_MIN_BREITE
   let neu = 0;
   for (const [w, h, seeds] of [[4704, 1764, [9, 11]], [6272, 2352, [3, 5]]]) {
     for (const seed of seeds) {
-      neu += schaechte(karte(seed, w, h, GELAENDE_RAMPE), w, h);
-      alt += schaechte(karte(seed, w, h, GELAENDE_NAHT), w, h);
+      neu += schaechte(karte(seed, w, h, GELAENDE_RAMPE), w);
+      alt += schaechte(karte(seed, w, h, GELAENDE_NAHT), w);
     }
   }
   assert.equal(neu, 0, `Fassung 12: ${neu} Schachtspalten`);
