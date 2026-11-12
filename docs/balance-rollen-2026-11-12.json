@@ -1,0 +1,3307 @@
+{
+  "stand": {
+    "commit": "461ad69e44",
+    "ungespeicherteAenderungenInSrc": 9,
+    "waffenfassung": 22,
+    "kit": 4
+  },
+  "parameter": {
+    "stufe": "standard",
+    "module": [
+      "klassen",
+      "alt",
+      "scout",
+      "vorruecken",
+      "biome",
+      "reichweite"
+    ],
+    "seeds": null,
+    "seedBasis": 20261111,
+    "nur": null
+  },
+  "stufeConfig": {
+    "klassen": {
+      "karten": [
+        {
+          "id": "24:9 gross",
+          "format": "24:9",
+          "groesse": "gross"
+        },
+        {
+          "id": "16:9 mittel",
+          "format": "16:9",
+          "groesse": "mittel"
+        },
+        {
+          "id": "4:3 klein",
+          "format": "4:3",
+          "groesse": "klein"
+        }
+      ],
+      "seeds": 6
+    },
+    "alt": {
+      "karten": [
+        {
+          "id": "24:9 gross",
+          "format": "24:9",
+          "groesse": "gross"
+        }
+      ],
+      "seeds": 4
+    },
+    "scout": {
+      "karten": [
+        {
+          "id": "24:9 gross",
+          "format": "24:9",
+          "groesse": "gross"
+        }
+      ],
+      "seeds": 4
+    },
+    "vorruecken": {
+      "karten": [
+        {
+          "id": "24:9 gross",
+          "format": "24:9",
+          "groesse": "gross"
+        }
+      ],
+      "seeds": 6
+    },
+    "biome": {
+      "karten": [
+        {
+          "id": "24:9 gross",
+          "format": "24:9",
+          "groesse": "gross"
+        }
+      ],
+      "seeds": 2,
+      "biome": [
+        "klassisch",
+        "vulkan",
+        "eiswueste",
+        "schrott"
+      ]
+    }
+  },
+  "klassen": {
+    "zusammenfassung": {
+      "partien": 108,
+      "ausgaenge": {
+        "sieg": 108
+      },
+      "karten": {
+        "24:9 gross": 36,
+        "16:9 mittel": 36,
+        "4:3 klein": 36
+      },
+      "biome": {
+        "dimensionsriss": 18,
+        "klassisch": 72,
+        "schrott": 18
+      },
+      "ersterZug": {
+        "partien": 54,
+        "siegrateErsterZug": 0.574,
+        "ci95": [
+          0.442,
+          0.697
+        ]
+      },
+      "medianMinuten": 5.44,
+      "rollen": [
+        {
+          "rolle": "nahkampf",
+          "lp": "130",
+          "partien": 36,
+          "figurenSpiele": 72,
+          "siegrate": 0.5,
+          "ci95": [
+            0.345,
+            0.655
+          ],
+          "siege": 18,
+          "remis": 0,
+          "schadenProZug": 2.16,
+          "schadenProZugStreuung": 3.62,
+          "schadenProZugStdFehler": 0.43,
+          "trefferquote": 0.168,
+          "schuesseProPartie": 13.8,
+          "zuegeProPartie": 13.8,
+          "lebenszeitMin": 6.38,
+          "lebenszeitMedianMin": 5.63,
+          "todesrate": 0.5,
+          "ertrinkenAnteilAnTod": 0.806,
+          "gegner": {
+            "fernkampf": {
+              "n": 18,
+              "siege": 9,
+              "remis": 0
+            },
+            "okkultist": {
+              "n": 18,
+              "siege": 9,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "fernkampf",
+          "lp": "100",
+          "partien": 36,
+          "figurenSpiele": 72,
+          "siegrate": 0.5,
+          "ci95": [
+            0.345,
+            0.655
+          ],
+          "siege": 18,
+          "remis": 0,
+          "schadenProZug": 3.36,
+          "schadenProZugStreuung": 5.16,
+          "schadenProZugStdFehler": 0.61,
+          "trefferquote": 0.169,
+          "schuesseProPartie": 13.1,
+          "zuegeProPartie": 13.1,
+          "lebenszeitMin": 6.05,
+          "lebenszeitMedianMin": 5.52,
+          "todesrate": 0.5,
+          "ertrinkenAnteilAnTod": 0.694,
+          "gegner": {
+            "nahkampf": {
+              "n": 18,
+              "siege": 9,
+              "remis": 0
+            },
+            "okkultist": {
+              "n": 18,
+              "siege": 9,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "okkultist",
+          "lp": "70",
+          "partien": 36,
+          "figurenSpiele": 72,
+          "siegrate": 0.5,
+          "ci95": [
+            0.345,
+            0.655
+          ],
+          "siege": 18,
+          "remis": 0,
+          "schadenProZug": 4.52,
+          "schadenProZugStreuung": 20.47,
+          "schadenProZugStdFehler": 2.5,
+          "trefferquote": 0.192,
+          "schuesseProPartie": 10.5,
+          "zuegeProPartie": 10.5,
+          "lebenszeitMin": 4.94,
+          "lebenszeitMedianMin": 3.37,
+          "todesrate": 0.5,
+          "ertrinkenAnteilAnTod": 0.528,
+          "gegner": {
+            "nahkampf": {
+              "n": 18,
+              "siege": 9,
+              "remis": 0
+            },
+            "fernkampf": {
+              "n": 18,
+              "siege": 9,
+              "remis": 0
+            }
+          }
+        }
+      ],
+      "matrix": {
+        "nahkampf": {
+          "fernkampf": {
+            "n": 18,
+            "siegrate": 0.5
+          },
+          "okkultist": {
+            "n": 18,
+            "siegrate": 0.5
+          }
+        },
+        "fernkampf": {
+          "nahkampf": {
+            "n": 18,
+            "siegrate": 0.5
+          },
+          "okkultist": {
+            "n": 18,
+            "siegrate": 0.5
+          }
+        },
+        "okkultist": {
+          "nahkampf": {
+            "n": 18,
+            "siegrate": 0.5
+          },
+          "fernkampf": {
+            "n": 18,
+            "siegrate": 0.5
+          }
+        }
+      }
+    },
+    "sekunden": 59
+  },
+  "alt": {
+    "zusammenfassung": {
+      "partien": 180,
+      "ausgaenge": {
+        "sieg": 180
+      },
+      "karten": {
+        "24:9 gross": 180
+      },
+      "biome": {
+        "dimensionsriss": 45,
+        "klassisch": 90,
+        "schrott": 45
+      },
+      "ersterZug": {
+        "partien": 36,
+        "siegrateErsterZug": 0.361,
+        "ci95": [
+          0.225,
+          0.524
+        ]
+      },
+      "medianMinuten": 5.58,
+      "rollen": [
+        {
+          "rolle": "scout/brawler",
+          "lp": "114",
+          "partien": 32,
+          "figurenSpiele": 40,
+          "siegrate": 0.656,
+          "ci95": [
+            0.483,
+            0.796
+          ],
+          "siege": 21,
+          "remis": 0,
+          "schadenProZug": 2.76,
+          "schadenProZugStreuung": 4.23,
+          "schadenProZugStdFehler": 0.67,
+          "trefferquote": 0.211,
+          "schuesseProPartie": 13.7,
+          "zuegeProPartie": 13.7,
+          "lebenszeitMin": 6.43,
+          "lebenszeitMedianMin": 6.01,
+          "todesrate": 0.375,
+          "ertrinkenAnteilAnTod": 0.533,
+          "gegner": {
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "scout/artillerist",
+          "lp": "76",
+          "partien": 32,
+          "figurenSpiele": 40,
+          "siegrate": 0.438,
+          "ci95": [
+            0.282,
+            0.607
+          ],
+          "siege": 14,
+          "remis": 0,
+          "schadenProZug": 2.09,
+          "schadenProZugStreuung": 3.45,
+          "schadenProZugStdFehler": 0.56,
+          "trefferquote": 0.201,
+          "schuesseProPartie": 13.4,
+          "zuegeProPartie": 13.4,
+          "lebenszeitMin": 6.39,
+          "lebenszeitMedianMin": 5.54,
+          "todesrate": 0.55,
+          "ertrinkenAnteilAnTod": 0.182,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "scout/occultist",
+          "lp": "66",
+          "partien": 32,
+          "figurenSpiele": 40,
+          "siegrate": 0.313,
+          "ci95": [
+            0.18,
+            0.486
+          ],
+          "siege": 10,
+          "remis": 0,
+          "schadenProZug": 2.19,
+          "schadenProZugStreuung": 3.48,
+          "schadenProZugStdFehler": 0.56,
+          "trefferquote": 0.219,
+          "schuesseProPartie": 13.5,
+          "zuegeProPartie": 13.5,
+          "lebenszeitMin": 6.4,
+          "lebenszeitMedianMin": 5.52,
+          "todesrate": 0.65,
+          "ertrinkenAnteilAnTod": 0.192,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "heavy/brawler",
+          "lp": "156",
+          "partien": 32,
+          "figurenSpiele": 40,
+          "siegrate": 0.719,
+          "ci95": [
+            0.546,
+            0.844
+          ],
+          "siege": 23,
+          "remis": 0,
+          "schadenProZug": 2.4,
+          "schadenProZugStreuung": 3.72,
+          "schadenProZugStdFehler": 0.59,
+          "trefferquote": 0.163,
+          "schuesseProPartie": 20.2,
+          "zuegeProPartie": 20.2,
+          "lebenszeitMin": 9.53,
+          "lebenszeitMedianMin": 8.58,
+          "todesrate": 0.325,
+          "ertrinkenAnteilAnTod": 0.769,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "heavy/artillerist",
+          "lp": "104",
+          "partien": 32,
+          "figurenSpiele": 40,
+          "siegrate": 0.406,
+          "ci95": [
+            0.255,
+            0.577
+          ],
+          "siege": 13,
+          "remis": 0,
+          "schadenProZug": 2.21,
+          "schadenProZugStreuung": 4.13,
+          "schadenProZugStdFehler": 0.65,
+          "trefferquote": 0.197,
+          "schuesseProPartie": 19.4,
+          "zuegeProPartie": 19.4,
+          "lebenszeitMin": 9.21,
+          "lebenszeitMedianMin": 7.44,
+          "todesrate": 0.575,
+          "ertrinkenAnteilAnTod": 0.478,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "heavy/occultist",
+          "lp": "91",
+          "partien": 32,
+          "figurenSpiele": 40,
+          "siegrate": 0.375,
+          "ci95": [
+            0.229,
+            0.547
+          ],
+          "siege": 12,
+          "remis": 0,
+          "schadenProZug": 4.38,
+          "schadenProZugStreuung": 13.57,
+          "schadenProZugStdFehler": 2.17,
+          "trefferquote": 0.27,
+          "schuesseProPartie": 14.7,
+          "zuegeProPartie": 14.7,
+          "lebenszeitMin": 6.91,
+          "lebenszeitMedianMin": 6.82,
+          "todesrate": 0.6,
+          "ertrinkenAnteilAnTod": 0.417,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "artillery/brawler",
+          "lp": "108",
+          "partien": 32,
+          "figurenSpiele": 40,
+          "siegrate": 0.469,
+          "ci95": [
+            0.309,
+            0.636
+          ],
+          "siege": 15,
+          "remis": 0,
+          "schadenProZug": 2.84,
+          "schadenProZugStreuung": 9.71,
+          "schadenProZugStdFehler": 1.53,
+          "trefferquote": 0.161,
+          "schuesseProPartie": 17.2,
+          "zuegeProPartie": 17.2,
+          "lebenszeitMin": 8.2,
+          "lebenszeitMedianMin": 7.43,
+          "todesrate": 0.525,
+          "ertrinkenAnteilAnTod": 0.667,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "artillery/artillerist",
+          "lp": "72",
+          "partien": 32,
+          "figurenSpiele": 40,
+          "siegrate": 0.5,
+          "ci95": [
+            0.336,
+            0.664
+          ],
+          "siege": 16,
+          "remis": 0,
+          "schadenProZug": 11.05,
+          "schadenProZugStreuung": 23.17,
+          "schadenProZugStdFehler": 3.76,
+          "trefferquote": 0.377,
+          "schuesseProPartie": 6.3,
+          "zuegeProPartie": 6.3,
+          "lebenszeitMin": 2.96,
+          "lebenszeitMedianMin": 1.44,
+          "todesrate": 0.5,
+          "ertrinkenAnteilAnTod": 0.4,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "artillery/occultist",
+          "lp": "63",
+          "partien": 32,
+          "figurenSpiele": 40,
+          "siegrate": 0.625,
+          "ci95": [
+            0.453,
+            0.771
+          ],
+          "siege": 20,
+          "remis": 0,
+          "schadenProZug": 7.54,
+          "schadenProZugStreuung": 25.07,
+          "schadenProZugStdFehler": 4.01,
+          "trefferquote": 0.234,
+          "schuesseProPartie": 9.1,
+          "zuegeProPartie": 9.1,
+          "lebenszeitMin": 4.22,
+          "lebenszeitMedianMin": 2.05,
+          "todesrate": 0.4,
+          "ertrinkenAnteilAnTod": 0.125,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        }
+      ],
+      "matrix": {
+        "scout/brawler": {
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          }
+        },
+        "scout/artillerist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          }
+        },
+        "scout/occultist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0
+          }
+        },
+        "heavy/brawler": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          }
+        },
+        "heavy/artillerist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0
+          }
+        },
+        "heavy/occultist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0
+          }
+        },
+        "artillery/brawler": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          }
+        },
+        "artillery/artillerist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.25
+          }
+        },
+        "artillery/occultist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          }
+        }
+      }
+    },
+    "sekunden": 194
+  },
+  "scoutFassung1": {
+    "zusammenfassung": {
+      "partien": 72,
+      "ausgaenge": {
+        "sieg": 72
+      },
+      "karten": {
+        "24:9 gross": 72
+      },
+      "biome": {
+        "dimensionsriss": 18,
+        "klassisch": 36,
+        "schrott": 18
+      },
+      "ersterZug": {
+        "partien": 0,
+        "siegrateErsterZug": null,
+        "ci95": null
+      },
+      "medianMinuten": 3.96,
+      "rollen": [
+        {
+          "rolle": "scout/brawler",
+          "lp": "96",
+          "partien": 24,
+          "figurenSpiele": 24,
+          "siegrate": 0.583,
+          "ci95": [
+            0.388,
+            0.755
+          ],
+          "siege": 14,
+          "remis": 0,
+          "schadenProZug": 2.89,
+          "schadenProZugStreuung": 4.34,
+          "schadenProZugStdFehler": 0.89,
+          "trefferquote": 0.197,
+          "schuesseProPartie": 16.3,
+          "zuegeProPartie": 16.3,
+          "lebenszeitMin": 7.51,
+          "lebenszeitMedianMin": 5.45,
+          "todesrate": 0.417,
+          "ertrinkenAnteilAnTod": 0.2,
+          "gegner": {
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "scout/artillerist",
+          "lp": "64",
+          "partien": 24,
+          "figurenSpiele": 24,
+          "siegrate": 0.417,
+          "ci95": [
+            0.245,
+            0.612
+          ],
+          "siege": 10,
+          "remis": 0,
+          "schadenProZug": 2.21,
+          "schadenProZugStreuung": 4.09,
+          "schadenProZugStdFehler": 0.87,
+          "trefferquote": 0.192,
+          "schuesseProPartie": 11.1,
+          "zuegeProPartie": 11.1,
+          "lebenszeitMin": 5.15,
+          "lebenszeitMedianMin": 3.51,
+          "todesrate": 0.583,
+          "ertrinkenAnteilAnTod": 0,
+          "gegner": {
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "scout/occultist",
+          "lp": "56",
+          "partien": 24,
+          "figurenSpiele": 24,
+          "siegrate": 0.417,
+          "ci95": [
+            0.245,
+            0.612
+          ],
+          "siege": 10,
+          "remis": 0,
+          "schadenProZug": 2.21,
+          "schadenProZugStreuung": 4.07,
+          "schadenProZugStdFehler": 0.87,
+          "trefferquote": 0.172,
+          "schuesseProPartie": 12.6,
+          "zuegeProPartie": 12.6,
+          "lebenszeitMin": 5.96,
+          "lebenszeitMedianMin": 3.57,
+          "todesrate": 0.583,
+          "ertrinkenAnteilAnTod": 0,
+          "gegner": {
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "heavy/brawler",
+          "lp": "156",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.667,
+          "ci95": [
+            0.391,
+            0.862
+          ],
+          "siege": 8,
+          "remis": 0,
+          "schadenProZug": 1.65,
+          "schadenProZugStreuung": 1.04,
+          "schadenProZugStdFehler": 0.3,
+          "trefferquote": 0.128,
+          "schuesseProPartie": 18.3,
+          "zuegeProPartie": 18.3,
+          "lebenszeitMin": 8.27,
+          "lebenszeitMedianMin": 8.91,
+          "todesrate": 0.333,
+          "ertrinkenAnteilAnTod": 1,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "heavy/artillerist",
+          "lp": "104",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.5,
+          "ci95": [
+            0.254,
+            0.746
+          ],
+          "siege": 6,
+          "remis": 0,
+          "schadenProZug": 2.35,
+          "schadenProZugStreuung": 3.38,
+          "schadenProZugStdFehler": 0.98,
+          "trefferquote": 0.192,
+          "schuesseProPartie": 14.3,
+          "zuegeProPartie": 14.3,
+          "lebenszeitMin": 6.58,
+          "lebenszeitMedianMin": 5.96,
+          "todesrate": 0.5,
+          "ertrinkenAnteilAnTod": 0.667,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "heavy/occultist",
+          "lp": "91",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.583,
+          "ci95": [
+            0.32,
+            0.807
+          ],
+          "siege": 7,
+          "remis": 0,
+          "schadenProZug": 6.44,
+          "schadenProZugStreuung": 16.09,
+          "schadenProZugStdFehler": 4.64,
+          "trefferquote": 0.361,
+          "schuesseProPartie": 9.9,
+          "zuegeProPartie": 9.9,
+          "lebenszeitMin": 4.49,
+          "lebenszeitMedianMin": 2.5,
+          "todesrate": 0.417,
+          "ertrinkenAnteilAnTod": 0.4,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "artillery/brawler",
+          "lp": "108",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.083,
+          "ci95": [
+            0.015,
+            0.354
+          ],
+          "siege": 1,
+          "remis": 0,
+          "schadenProZug": 1.55,
+          "schadenProZugStreuung": 3.88,
+          "schadenProZugStdFehler": 1.12,
+          "trefferquote": 0.129,
+          "schuesseProPartie": 21.3,
+          "zuegeProPartie": 21.3,
+          "lebenszeitMin": 9.93,
+          "lebenszeitMedianMin": 8.54,
+          "todesrate": 0.917,
+          "ertrinkenAnteilAnTod": 0.909,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "artillery/artillerist",
+          "lp": "72",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.667,
+          "ci95": [
+            0.391,
+            0.862
+          ],
+          "siege": 8,
+          "remis": 0,
+          "schadenProZug": 7.74,
+          "schadenProZugStreuung": 20.47,
+          "schadenProZugStdFehler": 5.91,
+          "trefferquote": 0.298,
+          "schuesseProPartie": 8.7,
+          "zuegeProPartie": 8.7,
+          "lebenszeitMin": 3.98,
+          "lebenszeitMedianMin": 3.9,
+          "todesrate": 0.333,
+          "ertrinkenAnteilAnTod": 1,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "artillery/occultist",
+          "lp": "63",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.667,
+          "ci95": [
+            0.391,
+            0.862
+          ],
+          "siege": 8,
+          "remis": 0,
+          "schadenProZug": 6.57,
+          "schadenProZugStreuung": 21.94,
+          "schadenProZugStdFehler": 6.33,
+          "trefferquote": 0.321,
+          "schuesseProPartie": 8.8,
+          "zuegeProPartie": 8.8,
+          "lebenszeitMin": 3.99,
+          "lebenszeitMedianMin": 2.05,
+          "todesrate": 0.333,
+          "ertrinkenAnteilAnTod": 0.25,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        }
+      ],
+      "matrix": {
+        "scout/brawler": {
+          "scout/artillerist": null,
+          "scout/occultist": null,
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          }
+        },
+        "scout/artillerist": {
+          "scout/brawler": null,
+          "scout/occultist": null,
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.25
+          }
+        },
+        "scout/occultist": {
+          "scout/brawler": null,
+          "scout/artillerist": null,
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.25
+          }
+        },
+        "heavy/brawler": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/artillerist": null,
+          "heavy/occultist": null,
+          "artillery/brawler": null,
+          "artillery/artillerist": null,
+          "artillery/occultist": null
+        },
+        "heavy/artillerist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/brawler": null,
+          "heavy/occultist": null,
+          "artillery/brawler": null,
+          "artillery/artillerist": null,
+          "artillery/occultist": null
+        },
+        "heavy/occultist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/brawler": null,
+          "heavy/artillerist": null,
+          "artillery/brawler": null,
+          "artillery/artillerist": null,
+          "artillery/occultist": null
+        },
+        "artillery/brawler": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0
+          },
+          "heavy/brawler": null,
+          "heavy/artillerist": null,
+          "heavy/occultist": null,
+          "artillery/artillerist": null,
+          "artillery/occultist": null
+        },
+        "artillery/artillerist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/brawler": null,
+          "heavy/artillerist": null,
+          "heavy/occultist": null,
+          "artillery/brawler": null,
+          "artillery/occultist": null
+        },
+        "artillery/occultist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/brawler": null,
+          "heavy/artillerist": null,
+          "heavy/occultist": null,
+          "artillery/brawler": null,
+          "artillery/artillerist": null
+        }
+      }
+    },
+    "sekunden": 72
+  },
+  "scoutFassung2": {
+    "zusammenfassung": {
+      "partien": 72,
+      "ausgaenge": {
+        "sieg": 72
+      },
+      "karten": {
+        "24:9 gross": 72
+      },
+      "biome": {
+        "dimensionsriss": 18,
+        "klassisch": 36,
+        "schrott": 18
+      },
+      "ersterZug": {
+        "partien": 0,
+        "siegrateErsterZug": null,
+        "ci95": null
+      },
+      "medianMinuten": 6.18,
+      "rollen": [
+        {
+          "rolle": "scout/brawler",
+          "lp": "114",
+          "partien": 24,
+          "figurenSpiele": 24,
+          "siegrate": 0.708,
+          "ci95": [
+            0.508,
+            0.851
+          ],
+          "siege": 17,
+          "remis": 0,
+          "schadenProZug": 2.98,
+          "schadenProZugStreuung": 4.38,
+          "schadenProZugStdFehler": 0.89,
+          "trefferquote": 0.21,
+          "schuesseProPartie": 15.5,
+          "zuegeProPartie": 15.5,
+          "lebenszeitMin": 7.24,
+          "lebenszeitMedianMin": 6.02,
+          "todesrate": 0.292,
+          "ertrinkenAnteilAnTod": 0.286,
+          "gegner": {
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "scout/artillerist",
+          "lp": "76",
+          "partien": 24,
+          "figurenSpiele": 24,
+          "siegrate": 0.417,
+          "ci95": [
+            0.245,
+            0.612
+          ],
+          "siege": 10,
+          "remis": 0,
+          "schadenProZug": 1.56,
+          "schadenProZugStreuung": 1.81,
+          "schadenProZugStdFehler": 0.39,
+          "trefferquote": 0.187,
+          "schuesseProPartie": 16.5,
+          "zuegeProPartie": 16.5,
+          "lebenszeitMin": 7.82,
+          "lebenszeitMedianMin": 6.31,
+          "todesrate": 0.583,
+          "ertrinkenAnteilAnTod": 0.143,
+          "gegner": {
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "scout/occultist",
+          "lp": "66",
+          "partien": 24,
+          "figurenSpiele": 24,
+          "siegrate": 0.25,
+          "ci95": [
+            0.12,
+            0.449
+          ],
+          "siege": 6,
+          "remis": 0,
+          "schadenProZug": 2.43,
+          "schadenProZugStreuung": 4.31,
+          "schadenProZugStdFehler": 0.92,
+          "trefferquote": 0.23,
+          "schuesseProPartie": 15.4,
+          "zuegeProPartie": 15.4,
+          "lebenszeitMin": 7.27,
+          "lebenszeitMedianMin": 5.42,
+          "todesrate": 0.75,
+          "ertrinkenAnteilAnTod": 0.111,
+          "gegner": {
+            "heavy/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "heavy/artillerist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "heavy/occultist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "artillery/artillerist": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "artillery/occultist": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "heavy/brawler",
+          "lp": "156",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.75,
+          "ci95": [
+            0.468,
+            0.911
+          ],
+          "siege": 9,
+          "remis": 0,
+          "schadenProZug": 1.23,
+          "schadenProZugStreuung": 0.92,
+          "schadenProZugStdFehler": 0.27,
+          "trefferquote": 0.125,
+          "schuesseProPartie": 20.7,
+          "zuegeProPartie": 20.7,
+          "lebenszeitMin": 9.57,
+          "lebenszeitMedianMin": 10.51,
+          "todesrate": 0.25,
+          "ertrinkenAnteilAnTod": 1,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "heavy/artillerist",
+          "lp": "104",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.5,
+          "ci95": [
+            0.254,
+            0.746
+          ],
+          "siege": 6,
+          "remis": 0,
+          "schadenProZug": 1.59,
+          "schadenProZugStreuung": 2.96,
+          "schadenProZugStdFehler": 0.86,
+          "trefferquote": 0.132,
+          "schuesseProPartie": 20.2,
+          "zuegeProPartie": 20.2,
+          "lebenszeitMin": 9.5,
+          "lebenszeitMedianMin": 6.41,
+          "todesrate": 0.5,
+          "ertrinkenAnteilAnTod": 0.667,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "heavy/occultist",
+          "lp": "91",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.5,
+          "ci95": [
+            0.254,
+            0.746
+          ],
+          "siege": 6,
+          "remis": 0,
+          "schadenProZug": 4.81,
+          "schadenProZugStreuung": 14.91,
+          "schadenProZugStdFehler": 4.3,
+          "trefferquote": 0.293,
+          "schuesseProPartie": 15.3,
+          "zuegeProPartie": 15.3,
+          "lebenszeitMin": 7.14,
+          "lebenszeitMedianMin": 6.09,
+          "todesrate": 0.5,
+          "ertrinkenAnteilAnTod": 0.667,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "artillery/brawler",
+          "lp": "108",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.333,
+          "ci95": [
+            0.138,
+            0.609
+          ],
+          "siege": 4,
+          "remis": 0,
+          "schadenProZug": 1.55,
+          "schadenProZugStreuung": 3.42,
+          "schadenProZugStdFehler": 0.99,
+          "trefferquote": 0.111,
+          "schuesseProPartie": 20.3,
+          "zuegeProPartie": 20.3,
+          "lebenszeitMin": 9.6,
+          "lebenszeitMedianMin": 8.7,
+          "todesrate": 0.667,
+          "ertrinkenAnteilAnTod": 1,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 0,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "artillery/artillerist",
+          "lp": "72",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.583,
+          "ci95": [
+            0.32,
+            0.807
+          ],
+          "siege": 7,
+          "remis": 0,
+          "schadenProZug": 9.06,
+          "schadenProZugStreuung": 24.87,
+          "schadenProZugStdFehler": 7.18,
+          "trefferquote": 0.343,
+          "schuesseProPartie": 8.5,
+          "zuegeProPartie": 8.5,
+          "lebenszeitMin": 3.99,
+          "lebenszeitMedianMin": 4.33,
+          "todesrate": 0.417,
+          "ertrinkenAnteilAnTod": 1,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "artillery/occultist",
+          "lp": "63",
+          "partien": 12,
+          "figurenSpiele": 12,
+          "siegrate": 0.583,
+          "ci95": [
+            0.32,
+            0.807
+          ],
+          "siege": 7,
+          "remis": 0,
+          "schadenProZug": 5.66,
+          "schadenProZugStreuung": 25.6,
+          "schadenProZugStdFehler": 7.39,
+          "trefferquote": 0.26,
+          "schuesseProPartie": 10.6,
+          "zuegeProPartie": 10.6,
+          "lebenszeitMin": 4.86,
+          "lebenszeitMedianMin": 3.74,
+          "todesrate": 0.417,
+          "ertrinkenAnteilAnTod": 0.2,
+          "gegner": {
+            "scout/brawler": {
+              "n": 4,
+              "siege": 1,
+              "remis": 0
+            },
+            "scout/artillerist": {
+              "n": 4,
+              "siege": 2,
+              "remis": 0
+            },
+            "scout/occultist": {
+              "n": 4,
+              "siege": 4,
+              "remis": 0
+            }
+          }
+        }
+      ],
+      "matrix": {
+        "scout/brawler": {
+          "scout/artillerist": null,
+          "scout/occultist": null,
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          }
+        },
+        "scout/artillerist": {
+          "scout/brawler": null,
+          "scout/occultist": null,
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          }
+        },
+        "scout/occultist": {
+          "scout/brawler": null,
+          "scout/artillerist": null,
+          "heavy/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "heavy/artillerist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "heavy/occultist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "artillery/artillerist": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "artillery/occultist": {
+            "n": 4,
+            "siegrate": 0
+          }
+        },
+        "heavy/brawler": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/artillerist": null,
+          "heavy/occultist": null,
+          "artillery/brawler": null,
+          "artillery/artillerist": null,
+          "artillery/occultist": null
+        },
+        "heavy/artillerist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/brawler": null,
+          "heavy/occultist": null,
+          "artillery/brawler": null,
+          "artillery/artillerist": null,
+          "artillery/occultist": null
+        },
+        "heavy/occultist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/brawler": null,
+          "heavy/artillerist": null,
+          "artillery/brawler": null,
+          "artillery/artillerist": null,
+          "artillery/occultist": null
+        },
+        "artillery/brawler": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "heavy/brawler": null,
+          "heavy/artillerist": null,
+          "heavy/occultist": null,
+          "artillery/artillerist": null,
+          "artillery/occultist": null
+        },
+        "artillery/artillerist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 0.75
+          },
+          "heavy/brawler": null,
+          "heavy/artillerist": null,
+          "heavy/occultist": null,
+          "artillery/brawler": null,
+          "artillery/occultist": null
+        },
+        "artillery/occultist": {
+          "scout/brawler": {
+            "n": 4,
+            "siegrate": 0.25
+          },
+          "scout/artillerist": {
+            "n": 4,
+            "siegrate": 0.5
+          },
+          "scout/occultist": {
+            "n": 4,
+            "siegrate": 1
+          },
+          "heavy/brawler": null,
+          "heavy/artillerist": null,
+          "heavy/occultist": null,
+          "artillery/brawler": null,
+          "artillery/artillerist": null
+        }
+      }
+    },
+    "sekunden": 89
+  },
+  "vorruecken": {
+    "zusammenfassung": {
+      "partien": 36,
+      "ausgaenge": {
+        "sieg": 36
+      },
+      "karten": {
+        "24:9 gross": 36
+      },
+      "biome": {
+        "dimensionsriss": 6,
+        "klassisch": 24,
+        "schrott": 6
+      },
+      "ersterZug": {
+        "partien": 18,
+        "siegrateErsterZug": 0.167,
+        "ci95": [
+          0.058,
+          0.392
+        ]
+      },
+      "medianMinuten": 2.69,
+      "rollen": [
+        {
+          "rolle": "nahkampf",
+          "lp": "130",
+          "partien": 12,
+          "figurenSpiele": 24,
+          "siegrate": 0.583,
+          "ci95": [
+            0.32,
+            0.807
+          ],
+          "siege": 7,
+          "remis": 0,
+          "schadenProZug": 9.42,
+          "schadenProZugStreuung": 9.92,
+          "schadenProZugStdFehler": 2.02,
+          "trefferquote": 0.363,
+          "schuesseProPartie": 7.5,
+          "zuegeProPartie": 7.5,
+          "lebenszeitMin": 6.88,
+          "lebenszeitMedianMin": 7.34,
+          "todesrate": 0.458,
+          "ertrinkenAnteilAnTod": 0.182,
+          "gegner": {
+            "fernkampf": {
+              "n": 6,
+              "siege": 4,
+              "remis": 0
+            },
+            "okkultist": {
+              "n": 6,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "fernkampf",
+          "lp": "100",
+          "partien": 12,
+          "figurenSpiele": 24,
+          "siegrate": 0.417,
+          "ci95": [
+            0.193,
+            0.68
+          ],
+          "siege": 5,
+          "remis": 0,
+          "schadenProZug": 17.11,
+          "schadenProZugStreuung": 23.96,
+          "schadenProZugStdFehler": 4.89,
+          "trefferquote": 0.547,
+          "schuesseProPartie": 3.1,
+          "zuegeProPartie": 3.1,
+          "lebenszeitMin": 2.9,
+          "lebenszeitMedianMin": 1.84,
+          "todesrate": 0.542,
+          "ertrinkenAnteilAnTod": 0,
+          "gegner": {
+            "nahkampf": {
+              "n": 6,
+              "siege": 2,
+              "remis": 0
+            },
+            "okkultist": {
+              "n": 6,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "okkultist",
+          "lp": "70",
+          "partien": 12,
+          "figurenSpiele": 24,
+          "siegrate": 0.5,
+          "ci95": [
+            0.254,
+            0.746
+          ],
+          "siege": 6,
+          "remis": 0,
+          "schadenProZug": 11.57,
+          "schadenProZugStreuung": 26.2,
+          "schadenProZugStdFehler": 5.35,
+          "trefferquote": 0.402,
+          "schuesseProPartie": 4.3,
+          "zuegeProPartie": 4.3,
+          "lebenszeitMin": 3.95,
+          "lebenszeitMedianMin": 0.96,
+          "todesrate": 0.5,
+          "ertrinkenAnteilAnTod": 0,
+          "gegner": {
+            "nahkampf": {
+              "n": 6,
+              "siege": 3,
+              "remis": 0
+            },
+            "fernkampf": {
+              "n": 6,
+              "siege": 3,
+              "remis": 0
+            }
+          }
+        }
+      ],
+      "matrix": {
+        "nahkampf": {
+          "fernkampf": {
+            "n": 6,
+            "siegrate": 0.67
+          },
+          "okkultist": {
+            "n": 6,
+            "siegrate": 0.5
+          }
+        },
+        "fernkampf": {
+          "nahkampf": {
+            "n": 6,
+            "siegrate": 0.33
+          },
+          "okkultist": {
+            "n": 6,
+            "siegrate": 0.5
+          }
+        },
+        "okkultist": {
+          "nahkampf": {
+            "n": 6,
+            "siegrate": 0.5
+          },
+          "fernkampf": {
+            "n": 6,
+            "siegrate": 0.5
+          }
+        }
+      }
+    },
+    "sekunden": 24
+  },
+  "biome": {
+    "zusammenfassung": {
+      "partien": 48,
+      "ausgaenge": {
+        "sieg": 48
+      },
+      "karten": {
+        "24:9 gross": 48
+      },
+      "biome": {
+        "klassisch": 12,
+        "vulkan": 12,
+        "eiswueste": 12,
+        "schrott": 12
+      },
+      "ersterZug": {
+        "partien": 24,
+        "siegrateErsterZug": 0.167,
+        "ci95": [
+          0.067,
+          0.359
+        ]
+      },
+      "medianMinuten": 5.88,
+      "rollen": [
+        {
+          "rolle": "nahkampf",
+          "lp": "130",
+          "partien": 16,
+          "figurenSpiele": 32,
+          "siegrate": 0.5,
+          "ci95": [
+            0.28,
+            0.72
+          ],
+          "siege": 8,
+          "remis": 0,
+          "schadenProZug": 4.52,
+          "schadenProZugStreuung": 4.65,
+          "schadenProZugStdFehler": 0.82,
+          "trefferquote": 0.243,
+          "schuesseProPartie": 10.4,
+          "zuegeProPartie": 10.4,
+          "lebenszeitMin": 4.87,
+          "lebenszeitMedianMin": 4.84,
+          "todesrate": 0.5,
+          "ertrinkenAnteilAnTod": 1,
+          "gegner": {
+            "fernkampf": {
+              "n": 8,
+              "siege": 4,
+              "remis": 0
+            },
+            "okkultist": {
+              "n": 8,
+              "siege": 4,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "fernkampf",
+          "lp": "100",
+          "partien": 16,
+          "figurenSpiele": 32,
+          "siegrate": 0.25,
+          "ci95": [
+            0.102,
+            0.495
+          ],
+          "siege": 4,
+          "remis": 0,
+          "schadenProZug": 3.74,
+          "schadenProZugStreuung": 3.27,
+          "schadenProZugStdFehler": 0.58,
+          "trefferquote": 0.205,
+          "schuesseProPartie": 11.8,
+          "zuegeProPartie": 11.8,
+          "lebenszeitMin": 5.75,
+          "lebenszeitMedianMin": 5.96,
+          "todesrate": 0.625,
+          "ertrinkenAnteilAnTod": 1,
+          "gegner": {
+            "nahkampf": {
+              "n": 8,
+              "siege": 4,
+              "remis": 0
+            },
+            "okkultist": {
+              "n": 8,
+              "siege": 0,
+              "remis": 0
+            }
+          }
+        },
+        {
+          "rolle": "okkultist",
+          "lp": "70",
+          "partien": 16,
+          "figurenSpiele": 32,
+          "siegrate": 0.75,
+          "ci95": [
+            0.505,
+            0.898
+          ],
+          "siege": 12,
+          "remis": 0,
+          "schadenProZug": 5.12,
+          "schadenProZugStreuung": 2.39,
+          "schadenProZugStdFehler": 0.42,
+          "trefferquote": 0.212,
+          "schuesseProPartie": 10.6,
+          "zuegeProPartie": 10.6,
+          "lebenszeitMin": 5.08,
+          "lebenszeitMedianMin": 5.86,
+          "todesrate": 0.375,
+          "ertrinkenAnteilAnTod": 1,
+          "gegner": {
+            "nahkampf": {
+              "n": 8,
+              "siege": 4,
+              "remis": 0
+            },
+            "fernkampf": {
+              "n": 8,
+              "siege": 8,
+              "remis": 0
+            }
+          }
+        }
+      ],
+      "matrix": {
+        "nahkampf": {
+          "fernkampf": {
+            "n": 8,
+            "siegrate": 0.5
+          },
+          "okkultist": {
+            "n": 8,
+            "siegrate": 0.5
+          }
+        },
+        "fernkampf": {
+          "nahkampf": {
+            "n": 8,
+            "siegrate": 0.5
+          },
+          "okkultist": {
+            "n": 8,
+            "siegrate": 0
+          }
+        },
+        "okkultist": {
+          "nahkampf": {
+            "n": 8,
+            "siegrate": 0.5
+          },
+          "fernkampf": {
+            "n": 8,
+            "siegrate": 1
+          }
+        }
+      }
+    },
+    "sekunden": 30
+  },
+  "reichweite": {
+    "projektilwaffen": 100,
+    "weitenfaktor": {
+      "1280": 0.667,
+      "2560": 1.333,
+      "4704": 2.45
+    },
+    "zeilen": [
+      {
+        "profil": "neutral (fernkampf, F3)",
+        "tempoFaktor": 1,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 0.626,
+            "p10": 0.624,
+            "p90": 0.649,
+            "waffenErreichenStartabstand": 18,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 1.167,
+            "p10": 1.165,
+            "p90": 1.218,
+            "waffenErreichenStartabstand": 17,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 2,
+            "p10": 1.968,
+            "p90": 2.127,
+            "waffenErreichenStartabstand": 13,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "nahkampf (F3)",
+        "tempoFaktor": 0.75,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 0.371,
+            "p10": 0.369,
+            "p90": 0.391,
+            "waffenErreichenStartabstand": 0,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 0.697,
+            "p10": 0.694,
+            "p90": 0.721,
+            "waffenErreichenStartabstand": 0,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 1.202,
+            "p10": 1.199,
+            "p90": 1.256,
+            "waffenErreichenStartabstand": 0,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "okkultist (F3)",
+        "tempoFaktor": 1.25,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 0.936,
+            "p10": 0.934,
+            "p90": 0.972,
+            "waffenErreichenStartabstand": 69,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 1.735,
+            "p10": 1.714,
+            "p90": 1.832,
+            "waffenErreichenStartabstand": 66,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 2.943,
+            "p10": 2.855,
+            "p90": 3.196,
+            "waffenErreichenStartabstand": 64,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "scout/brawler (F2)",
+        "tempoFaktor": 0.779,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 0.397,
+            "p10": 0.395,
+            "p90": 0.417,
+            "waffenErreichenStartabstand": 3,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 0.746,
+            "p10": 0.744,
+            "p90": 0.773,
+            "waffenErreichenStartabstand": 0,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 1.286,
+            "p10": 1.282,
+            "p90": 1.346,
+            "waffenErreichenStartabstand": 0,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "scout/artillerist (F2)",
+        "tempoFaktor": 0.992,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 0.617,
+            "p10": 0.614,
+            "p90": 0.64,
+            "waffenErreichenStartabstand": 18,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 1.149,
+            "p10": 1.148,
+            "p90": 1.199,
+            "waffenErreichenStartabstand": 17,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 1.972,
+            "p10": 1.941,
+            "p90": 2.092,
+            "waffenErreichenStartabstand": 13,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "scout/occultist (F2)",
+        "tempoFaktor": 1.133,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 0.785,
+            "p10": 0.782,
+            "p90": 0.813,
+            "waffenErreichenStartabstand": 64,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 1.458,
+            "p10": 1.448,
+            "p90": 1.532,
+            "waffenErreichenStartabstand": 22,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 2.487,
+            "p10": 2.428,
+            "p90": 2.674,
+            "waffenErreichenStartabstand": 20,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "heavy/brawler (F2)",
+        "tempoFaktor": 0.917,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 0.535,
+            "p10": 0.532,
+            "p90": 0.555,
+            "waffenErreichenStartabstand": 13,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 0.999,
+            "p10": 0.997,
+            "p90": 1.039,
+            "waffenErreichenStartabstand": 11,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 1.717,
+            "p10": 1.697,
+            "p90": 1.812,
+            "waffenErreichenStartabstand": 7,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "heavy/artillerist (F2)",
+        "tempoFaktor": 1.167,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 0.827,
+            "p10": 0.825,
+            "p90": 0.856,
+            "waffenErreichenStartabstand": 65,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 1.536,
+            "p10": 1.522,
+            "p90": 1.616,
+            "waffenErreichenStartabstand": 64,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 2.615,
+            "p10": 2.548,
+            "p90": 2.819,
+            "waffenErreichenStartabstand": 21,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "heavy/occultist (F2)",
+        "tempoFaktor": 1.333,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 1.05,
+            "p10": 1.049,
+            "p90": 1.093,
+            "waffenErreichenStartabstand": 72,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 1.944,
+            "p10": 1.914,
+            "p90": 2.061,
+            "waffenErreichenStartabstand": 71,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 3.285,
+            "p10": 3.173,
+            "p90": 3.59,
+            "waffenErreichenStartabstand": 69,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "artillery/brawler (F2)",
+        "tempoFaktor": 1.192,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 0.859,
+            "p10": 0.856,
+            "p90": 0.892,
+            "waffenErreichenStartabstand": 65,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 1.594,
+            "p10": 1.579,
+            "p90": 1.681,
+            "waffenErreichenStartabstand": 64,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 2.712,
+            "p10": 2.639,
+            "p90": 2.928,
+            "waffenErreichenStartabstand": 22,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "artillery/artillerist (F2)",
+        "tempoFaktor": 1.517,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 1.322,
+            "p10": 1.317,
+            "p90": 1.386,
+            "waffenErreichenStartabstand": 76,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 2.433,
+            "p10": 2.377,
+            "p90": 2.612,
+            "waffenErreichenStartabstand": 73,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 4.08,
+            "p10": 3.905,
+            "p90": 4.526,
+            "waffenErreichenStartabstand": 72,
+            "startabstandPx": 1568
+          }
+        }
+      },
+      {
+        "profil": "artillery/occultist (F2)",
+        "tempoFaktor": 1.733,
+        "je": {
+          "1280": {
+            "medianVerhaeltnis": 1.676,
+            "p10": 1.658,
+            "p90": 1.768,
+            "waffenErreichenStartabstand": 79,
+            "startabstandPx": 427
+          },
+          "2560": {
+            "medianVerhaeltnis": 3.06,
+            "p10": 2.963,
+            "p90": 3.33,
+            "waffenErreichenStartabstand": 77,
+            "startabstandPx": 853
+          },
+          "4704": {
+            "medianVerhaeltnis": 5.09,
+            "p10": 4.824,
+            "p90": 5.74,
+            "waffenErreichenStartabstand": 77,
+            "startabstandPx": 1568
+          }
+        }
+      }
+    ],
+    "gegenprobe": {
+      "waffe": "pa_041",
+      "punkteVerglichen": 40,
+      "maxAbweichungPx": 0
+    }
+  },
+  "launchBase": [
+    {
+      "variante": "Ist: 1,2 (kein Archetyp hat diesen Wert)",
+      "basis": 1.2,
+      "geschwindigkeit": 1,
+      "geschwindigkeitProzent": 0,
+      "reichweiteProzent": 0,
+      "tempoJeArchetyp": {
+        "brawler": 0.917,
+        "artillerist": 1.167,
+        "occultist": 1.333
+      }
+    },
+    {
+      "variante": "Mittel der drei Archetypen",
+      "basis": 1.3667,
+      "geschwindigkeit": 0.878,
+      "geschwindigkeitProzent": -12.2,
+      "reichweiteProzent": -22.9,
+      "tempoJeArchetyp": {
+        "brawler": 0.805,
+        "artillerist": 1.024,
+        "occultist": 1.171
+      }
+    },
+    {
+      "variante": "brawler (1,1) = neutral",
+      "basis": 1.1,
+      "geschwindigkeit": 1.0909,
+      "geschwindigkeitProzent": 9.1,
+      "reichweiteProzent": 19,
+      "tempoJeArchetyp": {
+        "brawler": 1,
+        "artillerist": 1.273,
+        "occultist": 1.455
+      }
+    },
+    {
+      "variante": "artillerist (1,4) = neutral",
+      "basis": 1.4,
+      "geschwindigkeit": 0.8571,
+      "geschwindigkeitProzent": -14.3,
+      "reichweiteProzent": -26.5,
+      "tempoJeArchetyp": {
+        "brawler": 0.786,
+        "artillerist": 1,
+        "occultist": 1.143
+      }
+    }
+  ],
+  "profile": [
+    {
+      "rolle": "nahkampf",
+      "fassung": 3,
+      "lp": 130,
+      "leben": 1.3,
+      "wucht": 0.75,
+      "tempo": 0.75,
+      "beweglichkeit": 1.2,
+      "summe": 4,
+      "wurfweiteRelativ": 0.563
+    },
+    {
+      "rolle": "fernkampf",
+      "fassung": 3,
+      "lp": 100,
+      "leben": 1,
+      "wucht": 1,
+      "tempo": 1,
+      "beweglichkeit": 1,
+      "summe": 4,
+      "wurfweiteRelativ": 1
+    },
+    {
+      "rolle": "okkultist",
+      "fassung": 3,
+      "lp": 70,
+      "leben": 0.7,
+      "wucht": 1.25,
+      "tempo": 1.25,
+      "beweglichkeit": 0.8,
+      "summe": 4,
+      "wurfweiteRelativ": 1.563
+    },
+    {
+      "rolle": "scout/brawler",
+      "fassung": 2,
+      "neueKombination": false,
+      "lp": 114,
+      "leben": 1.14,
+      "wucht": 0.85,
+      "tempo": 0.779,
+      "beweglichkeit": 1.2,
+      "summe": 3.969,
+      "wurfweiteRelativ": 0.607
+    },
+    {
+      "rolle": "scout/artillerist",
+      "fassung": 2,
+      "neueKombination": true,
+      "lp": 76,
+      "leben": 0.76,
+      "wucht": 0.85,
+      "tempo": 0.992,
+      "beweglichkeit": 1.2,
+      "summe": 3.802,
+      "wurfweiteRelativ": 0.983
+    },
+    {
+      "rolle": "scout/occultist",
+      "fassung": 2,
+      "neueKombination": true,
+      "lp": 66,
+      "leben": 0.665,
+      "wucht": 0.85,
+      "tempo": 1.133,
+      "beweglichkeit": 1.2,
+      "summe": 3.848,
+      "wurfweiteRelativ": 1.284
+    },
+    {
+      "rolle": "heavy/brawler",
+      "fassung": 2,
+      "neueKombination": true,
+      "lp": 156,
+      "leben": 1.56,
+      "wucht": 1,
+      "tempo": 0.917,
+      "beweglichkeit": 0.8,
+      "summe": 4.277,
+      "wurfweiteRelativ": 0.84
+    },
+    {
+      "rolle": "heavy/artillerist",
+      "fassung": 2,
+      "neueKombination": false,
+      "lp": 104,
+      "leben": 1.04,
+      "wucht": 1,
+      "tempo": 1.167,
+      "beweglichkeit": 0.8,
+      "summe": 4.007,
+      "wurfweiteRelativ": 1.361
+    },
+    {
+      "rolle": "heavy/occultist",
+      "fassung": 2,
+      "neueKombination": true,
+      "lp": 91,
+      "leben": 0.91,
+      "wucht": 1,
+      "tempo": 1.333,
+      "beweglichkeit": 0.8,
+      "summe": 4.043,
+      "wurfweiteRelativ": 1.778
+    },
+    {
+      "rolle": "artillery/brawler",
+      "fassung": 2,
+      "neueKombination": true,
+      "lp": 108,
+      "leben": 1.08,
+      "wucht": 1.3,
+      "tempo": 1.192,
+      "beweglichkeit": 0.7,
+      "summe": 4.272,
+      "wurfweiteRelativ": 1.42
+    },
+    {
+      "rolle": "artillery/artillerist",
+      "fassung": 2,
+      "neueKombination": true,
+      "lp": 72,
+      "leben": 0.72,
+      "wucht": 1.3,
+      "tempo": 1.517,
+      "beweglichkeit": 0.7,
+      "summe": 4.237,
+      "wurfweiteRelativ": 2.3
+    },
+    {
+      "rolle": "artillery/occultist",
+      "fassung": 2,
+      "neueKombination": false,
+      "lp": 63,
+      "leben": 0.63,
+      "wucht": 1.3,
+      "tempo": 1.733,
+      "beweglichkeit": 0.7,
+      "summe": 4.363,
+      "wurfweiteRelativ": 3.004
+    }
+  ],
+  "fraktionen": {
+    "fraktionen": 9,
+    "figuren": 81,
+    "dreiJeKlasseUndFraktion": true,
+    "engineLiestFraktion": false
+  }
+}
