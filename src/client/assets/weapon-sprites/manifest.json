@@ -13,23 +13,22 @@
    "symbol": "Zeichen oder Anwendungsobjekt am eigenen Träger (Elixier, Schriftrolle, Schild-Aura, Sanduhr, Werkzeug); kein gerichtetes Handgerät."
   },
   "zaehlung": {
-   "hand": 109,
+   "hand": 110,
    "ruecken": 3,
-   "aufstell": 12,
+   "aufstell": 11,
    "beschwoerung": 5,
    "symbol": 21
   },
   "wirkpfade": {
-   "projektil": 87,
-   "strahl": 25,
-   "selbst": 38
+   "projektil": 92,
+   "strahl": 22,
+   "selbst": 36
   },
-  "geschossbilder": 96,
-  "projektilpfade": 87,
+  "geschossbilder": 100,
+  "projektilpfade": 92,
   "bilderOhnePfad": [
    "pa_032",
    "pa_076",
-   "pa_079",
    "pa_105",
    "pa_124",
    "pa_141",
@@ -6350,7 +6349,7 @@
    },
    "rolle": "aufstell",
    "wirkpfad": "selbst",
-   "rollenHinweis": "Portalring: wird als Tor in der Welt aufgestellt; der Anwender springt hindurch."
+   "rollenHinweis": "Portal (Fassung 21, mit dem Portalring zusammengeführt): wird als Tor in der Welt aufgestellt; der Anwender springt hindurch."
   },
   "pa_077": {
    "id": "pa_077",
@@ -6530,36 +6529,36 @@
    },
    "rotation": 0,
    "gespiegelt": false,
-   "streckung": 1.03,
+   "streckung": 1.07,
    "content": {
-    "x": 8,
-    "y": 6,
-    "w": 112,
-    "h": 115
+    "x": 6,
+    "y": 8,
+    "w": 115,
+    "h": 111
    },
    "anchor": {
     "grip": {
-     "x": 64,
-     "y": 63
+     "x": 61,
+     "y": 71
     },
     "muzzle": {
-     "x": 119,
-     "y": 63
+     "x": 120,
+     "y": 71
     },
     "source": "semantik",
     "halt": "koerper",
     "heft": [
-     64,
-     64
+     61,
+     61
     ],
     "spiegeln": false,
     "fest": false
    },
    "projectile": {
-    "art": "zauber",
+    "art": "plasma",
     "size": {
      "w": 29,
-     "h": 18
+     "h": 28
     },
     "angle": 0,
     "spin": false,
@@ -6569,10 +6568,10 @@
     "y": 768,
     "w": 32,
     "h": 32,
-    "eigenerPfad": false,
-    "verwendung": "begleitbild"
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
    },
-   "flashColor": "#549feb",
+   "flashColor": "#ebcb58",
    "korrektur": false,
    "held": {
     "atlas": "elemental",
@@ -6595,9 +6594,9 @@
     "w": 128,
     "h": 128
    },
-   "rolle": "aufstell",
-   "wirkpfad": "selbst",
-   "rollenHinweis": "Kosmisches Portal: aufgestelltes Tor, kein Handgerät."
+   "rolle": "hand",
+   "wirkpfad": "projektil",
+   "rollenHinweis": "Funkenkugel (Fassung 21, Platz des früheren Kosmischen Portals): Geschoss mit Blitzschaden, Betäubung und Leitung auf Nachbarn."
   },
   "pa_080": {
    "id": "pa_080",
@@ -9875,7 +9874,23 @@
     "spiegeln": false,
     "fest": false
    },
-   "projectile": null,
+   "projectile": {
+    "art": "stein",
+    "size": {
+     "w": 29,
+     "h": 13
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": true,
+    "atlas": "tech",
+    "x": 96,
+    "y": 768,
+    "w": 32,
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
+   },
    "flashColor": "#4bd2eb",
    "korrektur": false,
    "held": {
@@ -9900,8 +9915,8 @@
     "h": 128
    },
    "rolle": "aufstell",
-   "wirkpfad": "selbst",
-   "rollenHinweis": "Mine: wird abgelegt oder geworfen, bleibt liegen und ist sofort scharf; kein Projektilpfad."
+   "wirkpfad": "projektil",
+   "rollenHinweis": "Mine: wird abgelegt oder (Waffenfassung 22) im Bogen geworfen; sie fliegt als Geschoss, bleibt beim Aufprall liegen und ist sofort scharf."
   },
   "pa_128": {
    "id": "pa_128",
@@ -10357,7 +10372,23 @@
     "spiegeln": false,
     "fest": false
    },
-   "projectile": null,
+   "projectile": {
+    "art": "rakete",
+    "size": {
+     "w": 29,
+     "h": 10
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "tech",
+    "x": 128,
+    "y": 768,
+    "w": 32,
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
+   },
    "flashColor": "#eb9a4c",
    "korrektur": true,
    "kachel": {
@@ -10386,7 +10417,7 @@
     "h": 128
    },
    "rolle": "hand",
-   "wirkpfad": "strahl"
+   "wirkpfad": "projektil"
   },
   "pa_135": {
    "id": "pa_135",
@@ -10427,7 +10458,23 @@
     "spiegeln": false,
     "fest": false
    },
-   "projectile": null,
+   "projectile": {
+    "art": "feuer",
+    "size": {
+     "w": 28,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "tech",
+    "x": 160,
+    "y": 768,
+    "w": 32,
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
+   },
    "flashColor": "#eb8e3a",
    "korrektur": true,
    "kachel": {
@@ -10456,7 +10503,7 @@
     "h": 128
    },
    "rolle": "hand",
-   "wirkpfad": "strahl"
+   "wirkpfad": "projektil"
   },
   "pa_136": {
    "id": "pa_136",
@@ -10695,7 +10742,23 @@
     "spiegeln": true,
     "fest": false
    },
-   "projectile": null,
+   "projectile": {
+    "art": "feuer",
+    "size": {
+     "w": 28,
+     "h": 14
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "tech",
+    "x": 192,
+    "y": 768,
+    "w": 32,
+    "h": 32,
+    "eigenerPfad": true,
+    "verwendung": "geschoss"
+   },
    "flashColor": "#eb6947",
    "korrektur": true,
    "held": {
@@ -10720,7 +10783,7 @@
     "h": 128
    },
    "rolle": "hand",
-   "wirkpfad": "strahl"
+   "wirkpfad": "projektil"
   },
   "pa_140": {
    "id": "pa_140",

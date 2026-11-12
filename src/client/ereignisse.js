@@ -689,6 +689,8 @@ export const EREIGNIS_WIRKUNGEN = {
     if (n.art !== 'liegend') {
       k.hud?.log(n.art === 'abgeworfen' ? 'Mine abgeworfen' : 'Mine abgelegt', 'accent');
       k.renderer?.addFlash(n.x, n.y, 10, { color: '#c9503f' });
+      // Aufsetzen und Scharfschalten fallen zusammen: jede Mine ist beim Liegenbleiben sofort scharf.
+      k.sound?.verarbeite({ type: 'mine_aufgesetzt', x: n.x, y: n.y });
     }
   }),
 

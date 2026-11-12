@@ -470,6 +470,7 @@ export class SoundMixer {
    *   `shot`         → Abschuss nach Waffe (`weaponId`)
    *   `damage`       → Treffer
    *   `landed`/`aufprall`/`tod`/`kiste`/`truemmer`/`insel_gelandet`/`platscher`
+   *   `mine_aufgesetzt` → Wurfmine setzt auf und ist scharf (abgeworfen oder abgelegt, nicht beim Kartenaufbau)
    *   `waffenwechsel`/`bereit`/`ticken` → Oberfläche und Umgebung
    *   `heilung`/`einfrieren`/`schild`/`heranziehen`/`geschuetz` → Wirkung auf Figuren und Geschütze
    *
@@ -528,6 +529,8 @@ export class SoundMixer {
       case 'schockwelle':
         // Tier-NPCs: der Pegel kommt vom Ereignis (bei Cookie die Dringlichkeit).
         return this.#einfach('tier', 'tier', ereignis.type, { x, y, pegel: Number(ereignis.pegel ?? 1), laufzeit: ereignis.type === 'schockwelle' });
+      case 'mine_aufgesetzt':
+        return this.#einfach('mine', 'landung', 'mine_scharf', { x, y });
       case 'ticken':
         return this.#einfach('ticken', 'ticken', 'ticken', { x, y });
       case 'heilung':

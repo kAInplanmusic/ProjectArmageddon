@@ -248,6 +248,8 @@ test('W07: Beschwörung, Aufstellobjekt, Rucksack und Selbstanwendung sind keine
   assert.equal(waffenRolle(bumerang, undefined, { projektilInfo: { art: 'ding' } }), 'geschoss');
   // Keine der 38 Selbstwirkungen wird als gehalten gezeichnet.
   for (const waffe of WEAPONS) {
+    // pa_079 ist ab Fassung 21 die Funkenkugel (Geschoss, Rolle Hand); in der älteren Fassung WAFFEN_TEMPO war sie noch das Kosmische Portal.
+    if (waffe.id === 'pa_079') continue;
     const effekt = buildEffect(getWaffe(waffe.id, WAFFEN_TEMPO));
     if (!effekt || !SELF_TARGET_KINDS.has(effekt.kind)) continue;
     const rolle = waffenRolle(getWaffe(waffe.id, WAFFEN_TEMPO), effekt);

@@ -32,7 +32,7 @@ Rollen (BAL-11): Dieses Skript erzeugt die Geschosszelle aus `delivery`; ob die
 Waffe wirklich ein Geschoss startet, weiss es nicht. Nach jedem Lauf deshalb
 `node scripts/waffen-rollen-eintragen.mjs` ausfuehren. Es schreibt `rolle`,
 `wirkpfad` und `projectile.eigenerPfad` aus `src/shared/config/waffen-rollen.js`
-ins Manifest (96 Geschossbilder, 87 Projektilpfade).
+ins Manifest (Stand Fassung 22: 100 Geschossbilder, 92 Projektilpfade).
 
 Aufruf
   python3 scripts/waffen-sprites.py                      # alles erzeugen
@@ -431,7 +431,7 @@ GESCHOSS_ART = {
     "pa_144": "ding", "pa_145": "stein", "pa_146": "ding", "pa_147": "drache",
     "pa_150": "zauber",
     # Platzierungs-/Selbstwirkungs-Waffen mit Projektil-Lieferung: Fluggeschoss statt Rueckfallkreis
-    "pa_032": "rakete", "pa_076": "zauber", "pa_079": "zauber", "pa_105": "zauber", "pa_124": "plasma",
+    "pa_032": "rakete", "pa_076": "zauber", "pa_079": "plasma", "pa_105": "zauber", "pa_124": "plasma",
     "pa_141": "zauber", "pa_143": "zauber", "pa_148": "zauber", "pa_149": "zauber",
 }
 DREHEND = {"pa_049", "pa_050", "pa_051"}      # Wurfwaffen, die im Flug rotieren (Melee kommt hinzu)
@@ -538,7 +538,15 @@ GESCHOSS_BILDER = os.path.join(WURZEL, "assets", "weapons", "geschosse")
 GESCHOSS_BILD_JE_ART = {"rakete": "rakete", "feuer": "feuer", "eis": "eis", "gift": "gift", "wasser": "wasser",
                         "plasma": "funkeln", "zauber": "funkeln", "kugel": "kugel", "stein": "stein",
                         "granate": "granate", "pfeil": "pfeil", "phoenix": "phoenix", "daemon": "daemon", "drache": "drache"}
-GESCHOSS_BILD_JE_WAFFE = {"pa_148": "orb_blau"}   # Feuerschild: blauer Orb (N-09)
+GESCHOSS_BILD_JE_WAFFE = {
+    "pa_148": "orb_blau",          # Feuerschild: blauer Orb (N-09)
+    # Fassung 21/22 (2026-11-12): Runware gpt-image-2, Magenta-Grund (scripts/sprites-erzeugen/waffen-fassung21-bilder.py)
+    "pa_079": "funkenkugel", "pa_127": "mine", "pa_134": "bombe", "pa_135": "meteor", "pa_139": "hoellenkugel",
+}
+# Fassung 21/22: diese Waffen starten im Motor ein Geschoss, obwohl der Katalog (`weapons.js`) `delivery` hitscan/Selbstwirkung fuehrt.
+# Wert = Geschossart (Schweif im Client: `waffenOptik.schweifArt`), Rotation im Flug nur bei `spin`.
+FASSUNG21_GESCHOSSE = {"pa_079": "plasma", "pa_127": "stein", "pa_134": "rakete", "pa_135": "feuer", "pa_139": "feuer"}
+FASSUNG21_DREHEND = {"pa_127"}   # Wurfmine taumelt wie ein Stein
 EINFAERBEN = {"funkeln"}
 
 
@@ -562,7 +570,9 @@ def geschoss_bild(art, farbe, waffe_id=None):
 def projektil(w, held_zelle, flash, kat, korr):
     """Gibt (Bild 32x32, meta) oder (None, None) zurueck."""
     art = korr.get("geschoss", GESCHOSS_ART.get(w["id"]) if w["delivery"] == "projectile" else None)
-    if w["delivery"] != "projectile" and "geschoss" not in korr:
+    if w["id"] in FASSUNG21_GESCHOSSE:
+        art = FASSUNG21_GESCHOSSE[w["id"]]
+    elif w["delivery"] != "projectile" and "geschoss" not in korr:
         return None, None
     if art in (None, "keins"):
         return None, None
@@ -580,7 +590,7 @@ def projektil(w, held_zelle, flash, kat, korr):
         a = np.asarray(bild)[..., 3] > 100
         ys, xs = np.nonzero(a)
         groesse = {"w": int(xs.max() - xs.min() + 1), "h": int(ys.max() - ys.min() + 1)}
-    dreht = (kat == "melee" and art == "ding") or w["id"] in DREHEND
+    dreht = (kat == "melee" and art == "ding") or w["id"] in DREHEND or w["id"] in FASSUNG21_DREHEND
     return bild, {"art": art, "size": groesse, "angle": 0, "spin": bool(dreht), "generiert": art != "ding"}
 
 

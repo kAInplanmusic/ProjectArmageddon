@@ -181,13 +181,16 @@ test('Projektil-Sprites nur für Waffen mit physischem Geschoss; Hitscan und Sel
   let mit = 0;
   for (const w of WEAPONS) {
     const p = manifest.waffen[w.id].projectile;
-    if (w.delivery === 'hitscan') {
+    // Fassung 21/22: Luftangriff, Meteorregen, Höllenkanone und die Wurfmine starten im Motor ein Geschoss, obwohl der
+    // Rohkatalog noch `hitscan` führt; ihre Geschosszellen sind gewollt (Rollentabelle: Wirkpfad Projektil).
+    const motorGeschoss = ['pa_127', 'pa_134', 'pa_135', 'pa_139'].includes(w.id);
+    if (w.delivery === 'hitscan' && !motorGeschoss) {
       assert.equal(p, null, `${w.id}: Hitscan darf kein Projektil haben`);
       continue;
     }
     if (p === null) continue;
     mit++;
-    assert.equal(w.delivery, 'projectile');
+    if (!motorGeschoss) assert.equal(w.delivery, 'projectile');
     assert.equal(p.w, 32);
     assert.equal(p.h, 32);
     assert.equal(p.angle, 0);

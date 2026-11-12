@@ -39,13 +39,13 @@ const dok = fs.readFileSync(path.join(WURZEL, 'docs', 'waffen-audit-2026-11-08',
 const ROLLEN_IDS = Object.keys(ROLLEN);
 const WIRKPFAAD_IDS = ['projektil', 'strahl', 'selbst'];
 
-/** Die neun Waffen mit Geschossbild, aber ohne eigenen Projektilpfad. */
+/** Die acht Waffen mit Geschossbild, aber ohne eigenen Projektilpfad (Fassung 22; pa_079 ist jetzt die Funkenkugel). */
 const BILDER_OHNE_PFAD = [
-  'pa_032', 'pa_076', 'pa_079', 'pa_105', 'pa_124', 'pa_141', 'pa_143', 'pa_148', 'pa_149',
+  'pa_032', 'pa_076', 'pa_105', 'pa_124', 'pa_141', 'pa_143', 'pa_148', 'pa_149',
 ];
 
-/** Fassung 21: Wirkpfad im Motor weicht von der (noch nicht neu erzeugten) Rollentabelle ab. */
-const FASSUNG21_BILDRUECKSTAND = ['pa_079', 'pa_127', 'pa_134', 'pa_135', 'pa_139'];
+/** Fassung 21/22: Rollentabelle und Manifest sind neu erzeugt (2026-11-12); der Rückstand ist leer. */
+const FASSUNG21_BILDRUECKSTAND = [];
 
 const idsAlle = WEAPONS.map(w => w.id);
 
@@ -66,8 +66,8 @@ test('BAL-11: alle 150 IDs haben genau eine dokumentierte Rolle aus den fünf', 
   const uebersicht = rollenUebersicht();
   assert.deepEqual(uebersicht, {
     gesamt: 150,
-    rollen: { hand: 109, ruecken: 3, aufstell: 12, beschwoerung: 5, symbol: 21 },
-    wirkpfade: { projektil: 87, strahl: 25, selbst: 38 },
+    rollen: { hand: 110, ruecken: 3, aufstell: 11, beschwoerung: 5, symbol: 21 },
+    wirkpfade: { projektil: 92, strahl: 22, selbst: 36 },
   });
 });
 
@@ -94,7 +94,11 @@ test('BAL-11: Wirkpfad stimmt mit Motor und delivery überein, nicht mit dem Bil
   for (const id of idsAlle) {
     const rolle = rolleFuer(id);
     const pfad = wirkpfadFuer(id);
-    if (rolle === 'ruecken' || rolle === 'aufstell' || rolle === 'symbol') {
+    // Einzige Ausnahme: die Wurfmine (Fassung 22) ist ein Aufstellobjekt, das als Geschoss ankommt.
+    if (id === 'pa_127') {
+      assert.equal(pfad, 'projektil', 'pa_127: Wurfmine fliegt als Geschoss');
+      assert.equal(rolle, 'aufstell');
+    } else if (rolle === 'ruecken' || rolle === 'aufstell' || rolle === 'symbol') {
       assert.equal(pfad, 'selbst', `${id}: ${rolle} darf keinen ${pfad}-Pfad haben`);
     }
     if (rolle === 'hand' && pfad === 'selbst') assert.fail(`${id}: Handwaffe ohne Wirkung`);
@@ -115,16 +119,16 @@ test('BAL-11: das Manifest trägt dieselbe Rolle und denselben Wirkpfad wie der 
   assert.match(manifest.rollen.hinweis, /waffen-rollen\.js/, 'Manifest nennt die Datenquelle nicht');
 });
 
-test('BAL-11: 96 Geschossbilder, aber nur 87 echte Projektilpfade', () => {
+test('BAL-11: 100 Geschossbilder, aber nur 92 echte Projektilpfade', () => {
   const mitBild = idsAlle.filter(id => manifest.waffen[id].projectile);
   const mitPfad = idsAlle.filter(id => manifest.waffen[id].projectile?.eigenerPfad === true);
   const ohnePfad = idsAlle.filter(id => manifest.waffen[id].projectile?.eigenerPfad === false);
 
-  assert.equal(mitBild.length, 96, 'Geschossbilder');
-  assert.equal(mitPfad.length, 87, 'echte Projektilpfade');
+  assert.equal(mitBild.length, 100, 'Geschossbilder');
+  assert.equal(mitPfad.length, 92, 'echte Projektilpfade');
   assert.deepEqual(ohnePfad.sort(), [...BILDER_OHNE_PFAD].sort(), 'Bilder ohne Pfad');
-  assert.equal(manifest.rollen.geschossbilder, 96);
-  assert.equal(manifest.rollen.projektilpfade, 87);
+  assert.equal(manifest.rollen.geschossbilder, 100);
+  assert.equal(manifest.rollen.projektilpfade, 92);
   assert.deepEqual(manifest.rollen.bilderOhnePfad, [...BILDER_OHNE_PFAD].sort());
 
   for (const id of mitBild) {
@@ -134,7 +138,7 @@ test('BAL-11: 96 Geschossbilder, aber nur 87 echte Projektilpfade', () => {
     // Ein Bild ohne Pfad darf nie einer Handwaffe gehören.
     if (!p.eigenerPfad) assert.notEqual(rolleFuer(id), 'hand', `${id}: Handwaffe ohne Pfad ist unplausibel`);
   }
-  // 96 = 87 + 9.
+  // 100 = 92 + 8.
   assert.equal(mitPfad.length + ohnePfad.length, mitBild.length);
 });
 
@@ -173,6 +177,7 @@ test('BAL-11: Spezialfälle Rucksack, Gleitschirm, Statue, Boot, Mine, Beschwör
   assert.match(SPEZIALFAELLE.pa_115, /aufgestellt/i);
   assert.match(SPEZIALFAELLE.pa_131, /Wasserfahrzeug/i);
   assert.match(SPEZIALFAELLE.pa_127, /liegen|abgelegt/i);
+  assert.match(SPEZIALFAELLE.pa_127, /Geschoss/);
   assert.match(SPEZIALFAELLE.pa_141, /beschworener|Wächter/i);
   assert.match(SPEZIALFAELLE.pa_143, /Reittier/i);
   assert.match(SPEZIALFAELLE.pa_061, /als Projektil/);
@@ -218,8 +223,8 @@ test('BAL-11: ROLLEN.md dokumentiert alle 150 IDs und die Bildzahl', () => {
   const zeilen = dok.split('\n').filter(z => z.startsWith('| pa_'));
   assert.equal(zeilen.length, 150, 'Dokumenttabelle deckt nicht 150 IDs');
   for (const id of idsAlle) assert.ok(dok.includes(`| ${id} |`), `${id}: fehlt in ROLLEN.md`);
-  assert.match(dok, /96 Geschossbilder/);
-  assert.match(dok, /87 Projektil/);
+  assert.match(dok, /100 Geschossbilder/);
+  assert.match(dok, /92 Projektil/);
   for (const wort of ['Rucksack', 'Gleitschirm', 'Statue', 'Boot', 'Mine', 'Beschwörung']) {
     assert.match(dok, new RegExp(wort), `ROLLEN.md erklärt ${wort} nicht`);
   }

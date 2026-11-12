@@ -47,3 +47,14 @@ Auftrag: geworfene Mine und geworfenes Fass fliegen im Bogen wie ein Stein (Schw
 | Wurffass | Fähigkeit `landetAls: 'fass'` vorhanden (Datenänderung genügt); **keine Waffe**, weil der Katalog genau 150 Plätze hat. **Auftraggeber 2026-11-12: Wurffass entfällt, die 150 Waffen bleiben** (keine Waffe wird gestrichen; die Fähigkeit `landetAls: 'fass'` bleibt ungenutzt im Code) |
 | Fass als Kiste | besteht seit Bodenobjektfassung 4 (fällt wie eine Kiste vom Himmel) |
 | Nicht geprüft | Aussehen des fliegenden Geschosses im Browser (der Animationsstrang kennt den Wirkpfad der Mine noch nicht, Rückfall auf das Standardgeschoss), Klang |
+
+## Nachtrag 2026-11-12: Bilder und Klang der geänderten Waffen (Client/Assets)
+
+| Teil | Stand |
+|---|---|
+| Funkenkugel `pa_079` | neues Icon (Runware `openai:gpt-image@2`, Magenta-Grund) in Quelle, 64-px-Icons, Hand-/Silhouetten-/Icon-Zelle; eigene Geschosszelle (`plasma`, Schweif Funkeln) |
+| Wurfmine `pa_127` | Geschosszelle `mine` (Art `stein`, taumelt); Rolle Aufstellobjekt, Wirkpfad Projektil (einzige Ausnahme in `tests/waffen-rollen.test.js`). Das Handbild/Icon ist noch die Teleportplattform (Mine hat kein eigenes Icon) |
+| `pa_134`/`pa_135`/`pa_139` | Geschosszellen `bombe`, `meteor`, `hoellenkugel`; Wirkpfad Projektil |
+| Rollentabelle/Manifest | neu erzeugt (`npm run waffen:rollen`): 100 Geschossbilder, 92 Projektilpfade; `FASSUNG21_BILDRUECKSTAND` leer |
+| Klang | `pa_079` blitz, `pa_127` wurf (Abwurf), neues Ereignisprofil `mine_scharf` bei `mine_placed` (Aufsetzen und Scharfschalten fallen zusammen: jede Mine ist sofort scharf), Himmelswaffen rakete/schwer fest zugeordnet. **Klangabnahme offen** (nur Messung, kein Gehör) |
+| Werkzeug | `scripts/sprites-erzeugen/waffen-fassung21-bilder.py` (Erzeugung), `scripts/waffen-fassung21-einsetzen.py` (gezieltes Einsetzen, andere Zellen bleiben bitgleich) |

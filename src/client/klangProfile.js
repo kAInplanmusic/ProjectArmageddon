@@ -369,6 +369,17 @@ const EREIGNIS_BASIS = {
     T({ f0: 1318, an: 0.005, ab: 0.15, pegel: 0.4 }),
     T({ f0: 1760, start: 0.07, an: 0.005, ab: 0.22, pegel: 0.25 }),
   ], { ton: 0, filter: 0, pegel: 0 }),
+  /*
+   * Wurfmine (Waffenfassung 22): dumpfes Aufsetzen und, weil jede Mine sofort scharf ist, ein kurzes metallisches
+   * Einrasten mit zwei hellen Pieptönen. Nur aus vorhandenen Bausteinen; Klangabnahme per Gehör steht aus.
+   */
+  mine_scharf: P('umgebung', 0.55, 0.1, [
+    T({ f0: 110, f1: 55, gleit: 0.08, an: 0.002, ab: 0.14, pegel: 0.7 }),
+    R({ farbe: 'braun', filter: 'lowpass', f0: 700, f1: 200, an: 0.002, ab: 0.1, pegel: 0.5 }),
+    R({ f0: 3200, q: 8, start: 0.09, an: 0.001, ab: 0.03, pegel: 0.4 }),
+    T({ welle: 'square', f0: 1760, start: 0.2, an: 0.002, ab: 0.05, pegel: 0.18 }),
+    T({ welle: 'square', f0: 2350, start: 0.3, an: 0.002, ab: 0.07, pegel: 0.18 }),
+  ], { ton: 0.03, filter: 0.08, pegel: 0.06 }),
   ticken: P('umgebung', 0.5, 0, [0, 0.5, 1].flatMap(start => [
     R({ f0: 3000, q: 6, start, an: 0.001, ab: 0.02, pegel: 0.5 }),
     T({ f0: 1800, start, an: 0.001, ab: 0.015, pegel: 0.3 }),
@@ -484,6 +495,10 @@ export const PROFIL_KORREKTUR = Object.freeze({
   pa_132: 'nahkampf', pa_137: 'feuer', pa_138: 'magie',
   // Katapult, Meteor, Erdspalter: schwere Schläge
   pa_064: 'schwer', pa_065: 'schwer', pa_135: 'schwer',
+  // Waffenfassung 21/22 (2026-11-12): bewusst festgelegt, damit die Zuordnung nicht von Special-Listen abhängt.
+  // Funkenkugel: elektrisches Zischen und Knistern; Wurfmine: Abwurf wie ein Wurf (Aufsetzen/Scharfschalten: Profil `mine_scharf`);
+  // Luftangriff, Meteorregen und Höllenkanone: Abwurf als schwerer Schuss bzw. Raketenstart.
+  pa_079: 'blitz', pa_127: 'wurf', pa_134: 'rakete', pa_139: 'rakete',
 });
 
 function nachSchadensart(w, vorgabe, fassung) {

@@ -1,6 +1,6 @@
 # Rollen aller 150 Waffen (BAL-11)
 
-Stand: 09.11.2026, Branch `bg/bal-11`. Grundlage: Audit 2026-11-08, W07
+Stand: 09.11.2026, Branch `bg/bal-11`; Zählung und Tabelle am 12.11.2026 auf Waffenfassung 21/22 nachgezogen (Funkenkugel, Wurfmine, Luftangriff, Meteorregen, Höllenkanone). Grundlage: Audit 2026-11-08, W07
 (UI-, Hand-, Geschoss- und Weltobjektrolle trennen) und W09. Die Daten stehen
 EINMAL in [`src/shared/config/waffen-rollen.js`](../../src/shared/config/waffen-rollen.js)
 und werden von `scripts/waffen-rollen-eintragen.mjs` ins
@@ -27,28 +27,27 @@ Geschossbild gehört zum Turm, nicht zur Hand.
 
 | Rolle | Bedeutung | Anzahl |
 |---|---|---|
-| Hand | Wird in der Hand geführt oder geworfen; das Handbild ist bei Wurfwaffen zugleich das Flugbild. | 109 |
+| Hand | Wird in der Hand geführt oder geworfen; das Handbild ist bei Wurfwaffen zugleich das Flugbild. | 110 |
 | Rücken | Wird am Körper getragen (Rucksack, Düsenantrieb, Gleitschirm), nicht in der Faust. | 3 |
-| Aufstellobjekt | Wird als Objekt in die Welt gesetzt und wirkt dort weiter (Mine, Geschütz, Bunker, Kiste, Statue, Boot, Portal, Baum, Netz). | 12 |
+| Aufstellobjekt | Wird als Objekt in die Welt gesetzt und wirkt dort weiter (Mine, Geschütz, Bunker, Kiste, Statue, Boot, Portal, Baum, Netz). | 11 |
 | Beschwörung | Ruft ein Wesen herbei, das selbst handelt (Astralkrieger, Astralross, Feuerdämon, Feuerwesen, Windkrieger). | 5 |
 | Symbol | Zeichen oder Anwendungsobjekt am eigenen Träger (Elixier, Schriftrolle, Schild-Aura, Sanduhr, Werkzeug); kein gerichtetes Handgerät. | 21 |
 | **Summe** | | **150** |
 
-Wirkpfade: **87 Projektil**, **25 Strahl**,
-**38 Selbst/Welt**.
+Wirkpfade: **92 Projektil**, **22 Strahl**,
+**36 Selbst/Welt**.
 
-## 96 Geschossbilder sind nicht 96 Projektilpfade
+## 100 Geschossbilder sind nicht 100 Projektilpfade
 
 Der Sprite-Generator legt eine Geschosszelle an, sobald `delivery` gleich
-`projectile` ist — das sind **96** Waffen. Wirklich ein
-Geschoss mit Flugbahn starten aber nur **87**. Bei den
-neun übrigen Waffen wirkt die Waffe zuerst auf den Anwender oder stellt etwas
+`projectile` ist — dazu kommen seit Fassung 21/22 die Zellen von Mine, Luftangriff, Meteorregen und Höllenkanone: **100** Waffen. Wirklich ein
+Geschoss mit Flugbahn starten aber **92**. Bei den
+acht übrigen Waffen wirkt die Waffe zuerst auf den Anwender oder stellt etwas
 auf; ihre Zelle ist Begleitmaterial und im Manifest als
 `projectile.eigenerPfad: false`, `verwendung: "begleitbild"` markiert:
 
 - `pa_032` Raketenrucksack — Rücken, Selbst/Welt
-- `pa_076` Portalring — Aufstellobjekt, Selbst/Welt
-- `pa_079` Kosmisches Portal — Aufstellobjekt, Selbst/Welt
+- `pa_076` Portal (früher Portalring) — Aufstellobjekt, Selbst/Welt
 - `pa_105` Frostrolle — Symbol, Selbst/Welt
 - `pa_124` Wachgeschütz — Aufstellobjekt, Selbst/Welt
 - `pa_141` Astralkrieger — Beschwörung, Selbst/Welt
@@ -78,8 +77,9 @@ Anwender. Sie ist kein Handgerät: Rolle Aufstellobjekt, Wirkpfad Selbst.
 versetzt den Anwender. Es wird nicht als Waffe geschwungen: Aufstellobjekt,
 Wirkpfad Selbst.
 
-**Mine (`pa_127`).** Sie wird vor die Füße gelegt oder weiter geworfen, bleibt
-liegen und ist sofort scharf. Kein Projektilpfad, keine Handwaffe; die Wirkung
+**Mine (`pa_127`).** Seit Waffenfassung 22 wird sie im Bogen geworfen: sie fliegt als Geschoss (eigene Geschosszelle,
+Wirkpfad Projektil), bleibt beim Aufprall liegen und ist sofort scharf. Einzige Waffe mit Rolle Aufstellobjekt
+und Wirkpfad Projektil; keine Handwaffe; die Wirkung
 kommt aus dem Bodenobjektsystem. Nicht mit der Impulsbombe `pa_030` verwechseln,
 die sehr wohl ein Geschoss startet.
 
@@ -168,10 +168,10 @@ Handbild.
 | pa_073 | Tentakelgift | elemental | Hand | Projektil |  |
 | pa_074 | Verderbnissiegel | elemental | Hand | Projektil |  |
 | pa_075 | Tornado | elemental | Hand | Projektil |  |
-| pa_076 | Portalring | elemental | Aufstellobjekt | Selbst/Welt | Portalring: wird als Tor in der Welt aufgestellt; der Anwender springt hindurch. |
+| pa_076 | Portalring | elemental | Aufstellobjekt | Selbst/Welt | Portal (Fassung 21, mit dem Portalring zusammengeführt): wird als Tor in der Welt aufgestellt; der Anwender springt hindurch. |
 | pa_077 | Schwarzes Loch | elemental | Hand | Projektil |  |
 | pa_078 | Voodoopuppe | elemental | Hand | Projektil |  |
-| pa_079 | Kosmisches Portal | elemental | Aufstellobjekt | Selbst/Welt | Kosmisches Portal: aufgestelltes Tor, kein Handgerät. |
+| pa_079 | Funkenkugel | elemental | Hand | Projektil | Funkenkugel (Fassung 21, Platz des früheren Kosmischen Portals): Geschoss mit Blitzschaden, Betäubung und Leitung auf Nachbarn. |
 | pa_080 | Psionischer Tentakel | elemental | Hand | Projektil |  |
 | pa_081 | Siegel der Leere | magic | Hand | Strahl |  |
 | pa_082 | Goldener Münzstab | magic | Hand | Projektil |  |
@@ -219,19 +219,19 @@ Handbild.
 | pa_124 | Wachgeschütz | tech | Aufstellobjekt | Selbst/Welt | Wachgeschütz: wird aufgestellt und feuert selbst; das Geschossbild gehört zum Turm, nicht zur Hand. |
 | pa_125 | Nachschubkiste | tech | Aufstellobjekt | Selbst/Welt | Nachschubkiste: Abwurf, wird in der Welt abgesetzt. |
 | pa_126 | Bunker | tech | Aufstellobjekt | Selbst/Welt | Bunker: wird aufgestellt und mindert Schaden. |
-| pa_127 | Mine | tech | Aufstellobjekt | Selbst/Welt | Mine: wird abgelegt oder geworfen, bleibt liegen und ist sofort scharf; kein Projektilpfad. |
+| pa_127 | Mine | tech | Aufstellobjekt | Projektil | Mine: wird abgelegt oder (Waffenfassung 22) im Bogen geworfen; sie fliegt als Geschoss, bleibt beim Aufprall liegen und ist sofort scharf. |
 | pa_128 | Hologrammportal | tech | Aufstellobjekt | Selbst/Welt | Hologrammportal: aufgestelltes Tor; der Anwender springt hindurch. |
 | pa_129 | Tesla-Turm | tech | Hand | Strahl |  |
 | pa_130 | Tarnnetz | tech | Aufstellobjekt | Selbst/Welt | Tarnnetz: wird über die Stellung gelegt und mindert Schaden. |
 | pa_131 | Schlauchboot | tech | Aufstellobjekt | Selbst/Welt | Schlauchboot: wird als Wasserfahrzeug eingesetzt, nicht gehalten. |
 | pa_132 | Alte Dame | tech | Hand | Strahl |  |
 | pa_133 | Fliegendes Superschaf | tech | Hand | Projektil |  |
-| pa_134 | Luftangriff | tech | Hand | Strahl |  |
-| pa_135 | Meteorregen | tech | Hand | Strahl |  |
+| pa_134 | Luftangriff | tech | Hand | Projektil |  |
+| pa_135 | Meteorregen | tech | Hand | Projektil |  |
 | pa_136 | Bohrkopfrakete | tech | Hand | Strahl |  |
 | pa_137 | Flammenklinge | tech | Hand | Strahl |  |
 | pa_138 | Arkanhammer | tech | Hand | Strahl |  |
-| pa_139 | Höllenkanone | tech | Hand | Strahl |  |
+| pa_139 | Höllenkanone | tech | Hand | Projektil |  |
 | pa_140 | Quantenkanone | tech | Hand | Projektil |  |
 | pa_141 | Astralkrieger | ultimate | Beschwörung | Selbst/Welt | Astralkrieger: beschworener Wächter, feuert in den Folgerunden selbst. |
 | pa_142 | Leerenritter | ultimate | Hand | Projektil |  |

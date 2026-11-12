@@ -111,7 +111,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   turn_end: { klasse: 'zustand', stumm: 'Rundenanzeige im HUD, plus Zugwechsel im Spielerfeld' },
   turn_skipped: { klasse: 'zustand' },
   turn_start: { klasse: 'zustand', stumm: 'Rundenanzeige im HUD' },
-  mine_placed: { klasse: 'zustand', anim: ['addFlash'] },
+  mine_placed: { klasse: 'zustand', anim: ['addFlash'], klang: ['mine_aufgesetzt'] },
   mine_exploded: { klasse: 'zustand', anim: ['addFlash'] },
   mine_dud: { klasse: 'zustand', anim: ['addFlash'] },
   // Seil (Seilfassung 2): tragen die Drehpunkte; online führen sie die Seillinie fort (nicht im binären Snapshot).

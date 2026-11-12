@@ -17,11 +17,11 @@
  * sein Bild aber kein Geschoss der Hand. Umgekehrt fliegt der Feuerdämon
  * (`beschwoerung`) wirklich als Projektil.
  *
- * ## Warum das die 96 Geschossbilder richtig stellt
+ * ## Warum das die 100 Geschossbilder richtig stellt
  *
- * Das Manifest trägt für 96 Waffen eine Geschosszelle, weil der Sprite-Generator
+ * Das Manifest trägt für 100 Waffen eine Geschosszelle (Stand Fassung 22), weil der Sprite-Generator
  * `delivery === 'projectile'` als Kriterium benutzt. Echte Projektilpfade sind
- * es aber nur 87: Bei neun Waffen mit Geschossbild wirkt die Waffe zuerst auf
+ * es aber nur 92: Bei acht Waffen mit Geschossbild wirkt die Waffe zuerst auf
  * den Anwender oder stellt etwas auf (`selbst`), das Bild ist Begleitmaterial
  * (Abgas, Portalglanz, Turmschuss, Beschwörungsglühen) und keine Flugbahn.
  * `WIRKPFAAD_JE_WAFFE` trennt beides; das Manifest übernimmt die Trennung in
@@ -178,7 +178,7 @@ const TABELLE = Object.freeze({
   pa_076: ['aufstell', 'selbst'],
   pa_077: ['hand', 'projektil'],
   pa_078: ['hand', 'projektil'],
-  pa_079: ['aufstell', 'selbst'],
+  pa_079: ['hand', 'projektil'],
   pa_080: ['hand', 'projektil'],
 
   // magic — Stäbe und Kugeln in der Hand; Elixiere, Rollen, Auren und Sprünge als Symbol
@@ -232,19 +232,19 @@ const TABELLE = Object.freeze({
   pa_124: ['aufstell', 'selbst'],
   pa_125: ['aufstell', 'selbst'],
   pa_126: ['aufstell', 'selbst'],
-  pa_127: ['aufstell', 'selbst'],
+  pa_127: ['aufstell', 'projektil'],
   pa_128: ['aufstell', 'selbst'],
   pa_129: ['hand', 'strahl'],
   pa_130: ['aufstell', 'selbst'],
   pa_131: ['aufstell', 'selbst'],
   pa_132: ['hand', 'strahl'],
   pa_133: ['hand', 'projektil'],
-  pa_134: ['hand', 'strahl'],
-  pa_135: ['hand', 'strahl'],
+  pa_134: ['hand', 'projektil'],
+  pa_135: ['hand', 'projektil'],
   pa_136: ['hand', 'strahl'],
   pa_137: ['hand', 'strahl'],
   pa_138: ['hand', 'strahl'],
-  pa_139: ['hand', 'strahl'],
+  pa_139: ['hand', 'projektil'],
   pa_140: ['hand', 'projektil'],
 
   // ultimate — Signaturen; Krieger und Ross werden beschworen
@@ -282,15 +282,15 @@ export const SPEZIALFAELLE = Object.freeze({
   pa_114: 'Gleitschirm: liegt über dem Rücken; wird nicht in der Faust geführt.',
   pa_115: 'Wächterstatue: wird aufgestellt und heilt den Anwender; kein Handgerät.',
   pa_131: 'Schlauchboot: wird als Wasserfahrzeug eingesetzt, nicht gehalten.',
-  pa_127: 'Mine: wird abgelegt oder geworfen, bleibt liegen und ist sofort scharf; kein Projektilpfad.',
+  pa_127: 'Mine: wird abgelegt oder (Waffenfassung 22) im Bogen geworfen; sie fliegt als Geschoss, bleibt beim Aufprall liegen und ist sofort scharf.',
   pa_141: 'Astralkrieger: beschworener Wächter, feuert in den Folgerunden selbst.',
   pa_143: 'Astralross: beschworenes Reittier, trägt den Anwender.',
   pa_118: 'Feuerwesen: erscheint als Kämpfer und entzündet das Ziel; kein Handbild.',
   pa_061: 'Feuerdämon: beschworenes Wesen; es fliegt selbst als Projektil (Rolle Beschwörung, Wirkpfad Projektil).',
   pa_086: 'Windkrieger: Krieger im Wirbelwind, zieht Gegner heran; kein Handbild.',
   pa_109: 'Giftbaum: wird als Baum in der Welt aufgestellt (Verstärkung), kein Handbild.',
-  pa_076: 'Portalring: wird als Tor in der Welt aufgestellt; der Anwender springt hindurch.',
-  pa_079: 'Kosmisches Portal: aufgestelltes Tor, kein Handgerät.',
+  pa_076: 'Portal (Fassung 21, mit dem Portalring zusammengeführt): wird als Tor in der Welt aufgestellt; der Anwender springt hindurch.',
+  pa_079: 'Funkenkugel (Fassung 21, Platz des früheren Kosmischen Portals): Geschoss mit Blitzschaden, Betäubung und Leitung auf Nachbarn.',
   pa_148: 'Feuerschild: Aura um den Anwender, kein aufgestelltes Objekt und kein Geschoss.',
   pa_105: 'Frostrolle: Schriftrolle (Symbol) für einen zufälligen Schutzzauberspruch; das Zauberbild ist kein abgefeuertes Geschoss.',
   pa_124: 'Wachgeschütz: wird aufgestellt und feuert selbst; das Geschossbild gehört zum Turm, nicht zur Hand.',
