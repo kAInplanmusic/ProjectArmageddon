@@ -11,6 +11,9 @@
 import { hash2 } from './stil.js';
 import { waehleOberflaeche, schneeLaeufe } from './wetterOberflaeche.js';
 
+// Schnee und Hagel (Luft und Aufprall) leben in `wetterNiederschlag.js`; hier nur durchgereicht, damit die Aufrufer gleich bleiben.
+export { zeichneSchnee, zeichneHagelLuft, zeichneHagelAufprall } from './wetterNiederschlag.js';
+
 const ZWEI_PI = Math.PI * 2;
 
 /** Tragende Werte eines Bildes. `schraeg`: Neigung der Fallbahnen (positiv = nach rechts), `boe`: Böenfaktor. */
@@ -275,66 +278,6 @@ export function zeichneRegen(p, st, dichte = 1) {
   ctx.restore();
 }
 
-/** Schnee in drei Tiefen (klein/fern, mittel, groß/nah), Wiegen und Winddrift. Ein Pfad je Tiefe. */
-export function zeichneSchnee(p, st, dichte = 1) {
-  if (!(st > 0.01)) return;
-  const { ctx, b, h, t, m, still, schraeg } = p;
-  ctx.save();
-  const lagen = [
-    { n: 110, rad: 1.3, tempo: 0.045, alpha: 0.6, salz: 7 },
-    { n: 70, rad: 2.1, tempo: 0.07, alpha: 0.78, salz: 8 },
-    { n: 28, rad: 3.4, tempo: 0.105, alpha: 0.88, salz: 9 },
-  ];
-  for (const lage of lagen) {
-    const n = Math.round(lage.n * st * dichte);
-    if (n <= 0) continue;
-    ctx.fillStyle = `rgba(246, 250, 255, ${lage.alpha})`;
-    ctx.beginPath();
-    for (let i = 0; i < n; i += 1) {
-      const tiefe = 0.75 + hash2(i, 1, lage.salz) * 0.5;
-      const fall = still ? 0 : t * h * lage.tempo * tiefe;
-      const y = ((hash2(i, 2, lage.salz) * h) + fall) % (h + 20) - 10;
-      const wiegen = still ? 0 : Math.sin(t * (0.6 + hash2(i, 3, lage.salz)) + i) * 16 * m;
-      const drift = still ? 0 : t * 60 * m * schraeg * 2.2;
-      const x = (((hash2(i, 4, lage.salz) * b + wiegen + drift) % b) + b) % b;
-      const rad = lage.rad * m * (0.8 + 0.4 * hash2(i, 5, lage.salz));
-      ctx.moveTo(x + rad, y);
-      ctx.arc(x, y, rad, 0, ZWEI_PI);
-    }
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-/** Hagel in der Luft: kurze, helle, steile Striche mit Kern; schneller als Regen. */
-export function zeichneHagelLuft(p, st, dichte = 1) {
-  if (!(st > 0.01)) return;
-  const { ctx, b, h, t, m, still, schraeg } = p;
-  ctx.save();
-  const n = Math.round(70 * st * dichte);
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = 'rgba(214, 236, 255, 0.3)';
-  ctx.lineWidth = 1.6 * m;
-  ctx.beginPath();
-  for (let i = 0; i < n; i += 1) {
-    const y = (hash2(i, 2, 11) * h + (still ? 0 : t * h * 1.7)) % h;
-    const x = ((hash2(i, 4, 11) * b - y * schraeg * 0.7 + b * 2) % b);
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + 7 * m * schraeg * 2, y + 9 * m);
-  }
-  ctx.stroke();
-  ctx.fillStyle = 'rgba(244, 250, 255, 0.9)';
-  ctx.beginPath();
-  for (let i = 0; i < n; i += 1) {
-    const y = (hash2(i, 2, 11) * h + (still ? 0 : t * h * 1.7)) % h;
-    const x = ((hash2(i, 4, 11) * b - y * schraeg * 0.7 + b * 2) % b);
-    ctx.moveTo(x + 2.8 * m, y + 9 * m);
-    ctx.arc(x, y + 9 * m, 2.8 * m, 0, ZWEI_PI);
-  }
-  ctx.fill();
-  ctx.restore();
-}
-
 const WIND_TOENE = Object.freeze({
   staub: ['rgba(214, 204, 186, ', 'rgba(150, 168, 120, '],
   sand: ['rgba(226, 192, 130, ', 'rgba(204, 164, 104, '],
@@ -425,72 +368,6 @@ export function zeichneSpritzer(ctx, ob, sicht, t, st, dichte = 1, schraeg = 0) 
       // Tropfen fällt von der Decke auf die Fläche.
       ctx.fillRect(o.x - 0.6, o.y - 14 + ph * 35, 1.2, 4);
     }
-  }
-  ctx.restore();
-}
-
-/**
- * Hagel schlägt auf: Korn fällt, prallt zweimal ab (kleiner werdend), Aufschlagring und Funken beim ersten Auftreffen.
- * Eine Funktion der Zeit je Platznummer — kein gespeicherter Zustand.
- */
-export function zeichneHagelAufprall(ctx, ob, sicht, t, st, dichte = 1, schraeg = 0) {
-  const anzahl = Math.round(26 * st * dichte);
-  if (anzahl <= 0 || !ob) return;
-  ctx.save();
-  const periode = 1.1;
-  const fallAnteil = 0.4;
-  for (let i = 0; i < anzahl; i += 1) {
-    const takt = Math.floor(t / periode + hash2(i, 1, 51));
-    const ph = (t / periode + hash2(i, 1, 51)) - takt;
-    const o = waehleOberflaeche(ob, hash2(i, takt, 52), hash2(i, takt, 53), sicht, true);
-    if (!o) continue;
-    if (ph < fallAnteil) {
-      const f = 1 - ph / fallAnteil; // 1 oben, 0 am Boden
-      const hoeheF = 260 * f;
-      const x = o.x - schraeg * hoeheF * 0.5;
-      const y = o.y - hoeheF;
-      ctx.strokeStyle = 'rgba(214, 236, 255, 0.5)';
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.moveTo(x - schraeg * 8, y - 8);
-      ctx.lineTo(x, y);
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(246, 251, 255, 0.95)';
-      ctx.beginPath();
-      ctx.arc(x, y, 2.4, 0, ZWEI_PI);
-      ctx.fill();
-      continue;
-    }
-    const u = (ph - fallAnteil) / (1 - fallAnteil); // 0 bis 1 nach dem Aufschlag
-    const richt = hash2(i, takt, 54) < 0.5 ? -1 : 1;
-    // Zwei Abpraller: Höhe 16 und 6 px.
-    const u1 = Math.min(1, u / 0.55);
-    const u2 = Math.max(0, (u - 0.55) / 0.35);
-    const hoch = u < 0.55 ? 16 * 4 * u1 * (1 - u1) : (u < 0.9 ? 6 * 4 * u2 * (1 - u2) : 0);
-    const x = o.x + richt * u * 14;
-    const y = o.y - hoch - 1.5;
-    ctx.globalAlpha = u > 0.8 ? 1 - (u - 0.8) / 0.2 : 1;
-    ctx.fillStyle = 'rgba(246, 251, 255, 0.95)';
-    ctx.beginPath();
-    ctx.arc(x, y, 2.2, 0, ZWEI_PI);
-    ctx.fill();
-    if (u < 0.22) {
-      const a = u / 0.22;
-      ctx.globalAlpha = 1 - a;
-      ctx.strokeStyle = 'rgba(230, 244, 255, 0.9)';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.ellipse(o.x, o.y, 3 + a * 9, 1 + a * 2.4, 0, 0, ZWEI_PI);
-      ctx.stroke();
-      ctx.beginPath();
-      for (let s = 0; s < 4; s += 1) {
-        const w = -0.4 - s * 0.7 + (richt > 0 ? 0 : 0.0);
-        ctx.moveTo(o.x + Math.cos(w) * a * 4, o.y + Math.sin(w) * a * 4);
-        ctx.lineTo(o.x + Math.cos(w) * (a * 11 + 2), o.y + Math.sin(w) * (a * 11 + 2));
-      }
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
   }
   ctx.restore();
 }

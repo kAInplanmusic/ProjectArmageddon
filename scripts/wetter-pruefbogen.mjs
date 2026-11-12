@@ -21,8 +21,12 @@ const OUT = path.resolve(arg('out', '/tmp/wetter'));
 const PORT = Number(arg('port', process.env.PA_PORT ?? 5190));
 mkdirSync(OUT, { recursive: true });
 
-const server = await createServer({ server: { port: PORT, host: '127.0.0.1', strictPort: true }, logLevel: 'error' });
-await server.listen();
+// Läuft auf dem Port schon ein Vite (geteilter Entwicklungsserver), wird dieser benutzt und nicht beendet.
+let server = await createServer({ server: { port: PORT, host: '127.0.0.1', strictPort: true }, logLevel: 'error' });
+try { await server.listen(); } catch (e) {
+  if (!/already in use/.test(String(e))) throw e;
+  server = { close: async () => {} };
+}
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
 try {
   const seite = await browser.newPage({ viewport: { width: 1280, height: 720 } });

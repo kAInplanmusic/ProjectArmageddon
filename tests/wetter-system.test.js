@@ -10,6 +10,7 @@ import {
 } from '../src/client/wetterZustand.js';
 import { baueOberflaeche, waehleOberflaeche, schneeLaeufe, pfuetzenAus } from '../src/client/wetterOberflaeche.js';
 import { baueTexturWerte, zeichneRegen, zeichneSchnee, zeichneHagelLuft, zeichneWind, zeichneNebelVorn, zeichneSonne, zeichneSturmHimmel, zeichneSpritzer, zeichneHagelAufprall, zeichneSchneeDecke } from '../src/client/wetterZeichnen.js';
+import { niederschlagDichte, hagelKornLuft, maleHagelkorn } from '../src/client/wetterNiederschlag.js';
 import { zeichneWetterVorn, zeichneWetterHinten, zeichneWetterWelt, zeichneSchneeAuflage } from '../src/client/wetterLicht.js';
 import { wetterMit, WETTER_WAHL } from '../src/client/stimmung.js';
 import { drawAmbient } from '../src/client/sceneryPainter.js';
@@ -320,9 +321,28 @@ test('Übergang im Zeichnen: Wetterwechsel zwischen zwei Bildern gibt keinen Spr
 });
 
 test('Neue Wettermodule benutzen weder Math.random noch Uhr noch Engine', () => {
-  for (const datei of ['wetterZustand', 'wetterOberflaeche', 'wetterZeichnen', 'wetterLicht']) {
+  for (const datei of ['wetterZustand', 'wetterOberflaeche', 'wetterZeichnen', 'wetterLicht', 'wetterNiederschlag']) {
     const text = fs.readFileSync(new URL(`../src/client/${datei}.js`, import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
     assert.ok(!/Math\.random|Date\.now|performance\.now/.test(text), `${datei}: Zufall oder Uhr`);
     assert.ok(!/engine\/|shared\/(?!config)/.test(text.replace(/shared\/config/g, '')), `${datei}: Engine-Import`);
   }
+});
+
+test('Schnee/Hagel: dichter und größer als zuvor, Lite bleibt dicht, große Körner, Korn nur von Position abhängig', () => {
+  const p = (still = false) => ({ ctx: fakeCtx(), b: 1920, h: 1080, t: 12.3, m: 1, still, richtung: 1, boe: 0.8, schraeg: 0.3 });
+  const kreise = (f, st, d) => { const q = p(); f(q, st, d); return (q.ctx.aufrufe.arc ?? 0); };
+  assert.ok(kreise(zeichneSchnee, 1, 1) >= 500, 'Schnee voll: mindestens 500 Flocken');
+  assert.ok(kreise(zeichneSchnee, 1, 0.5) >= 300, 'Schnee Lite noch dicht');
+  assert.ok(kreise(zeichneSchnee, 1, 0.5) < kreise(zeichneSchnee, 1, 1));
+  assert.ok(niederschlagDichte(0.5) > 0.5 && niederschlagDichte(1) === 1);
+  assert.ok(kreise(zeichneHagelLuft, 1, 0.5) >= 60, 'Hagel Lite deutlich');
+  // Reduzierte Bewegung: Schnee steht, Hagel steht an festen Plätzen (kein Fall).
+  const a = p(true); const b2 = { ...p(true), t: 99 };
+  const lage = { n: 1, rad: 3.7, tempo: 2.9, salz: 12 };
+  assert.deepEqual(hagelKornLuft(3, lage, a), hagelKornLuft(3, lage, b2));
+  // Fall ist schnell und fast gerade; Korn hängt nur an der Position.
+  const k1 = hagelKornLuft(3, lage, { ...p(), t: 1 }); const k2 = hagelKornLuft(3, lage, { ...p(), t: 1.01 });
+  assert.ok(Math.abs(k2.dx) < 0.1);
+  assert.doesNotThrow(() => maleHagelkorn(fakeCtx(), 10, 10, 12));
+  assert.ok(k1.rad > 3);
 });
