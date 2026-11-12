@@ -934,12 +934,12 @@ export class LobbySession {
         angle: command.input.angle,
         power: command.input.power,
         weaponId: waffe,
+        zuendzeit,
       });
     }
     return { ok: result.ok, errors: result.errors ?? [], interpolatedFrom: history?.tick ?? null };
   }
 
-        zuendzeit,
   handleWeaponSelect(token, weaponId) {
     // Die Waffe wird für die AKTIVE eigene Figur gewählt — siehe #platzFuer.
     const seat = this.#platzFuer(token);
@@ -1316,11 +1316,6 @@ export class LobbySession {
     return true;
   }
 
-  broadcastSnapshot() {
-    // Bestände zuerst prüfen: ändert sich etwas, geht die Nachricht raus, bevor
-    // die Positionen folgen — so zeigt die Anzeige den passenden Munitionsstand.
-    this.syncLoadouts();
-
   /**
    * Allsehendes Auge: schickt den Inhalt aller Kisten nur an die Sitze des Teams, dessen Figur die Wirkung hat. Pro Team
    * wird die Liste der Figuren mit laufender Wirkung vereinigt; gesendet wird nur bei Änderung (auch die leere Liste, die
@@ -1349,11 +1344,16 @@ export class LobbySession {
     }
   }
 
+  broadcastSnapshot() {
+    // Bestände zuerst prüfen: ändert sich etwas, geht die Nachricht raus, bevor
+    // die Positionen folgen — so zeigt die Anzeige den passenden Munitionsstand.
+    this.syncLoadouts();
+    this.#syncKistenSicht();
+
     this.snapshotCounter += 1;
     const rohZustand = this.match.getState();
     // Zustände liegen getrennt nach Spieler-ID vor; das Drahtformat führt sie
     // je Spieler. Deshalb hier zusammenführen — sonst müsste der Client zwei
-    this.#syncKistenSicht();
     // getrennte Strukturen synchron halten.
     const statuses = rohZustand.statuses ?? {};
     const state = {
