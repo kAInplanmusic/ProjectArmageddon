@@ -121,7 +121,9 @@ export function muendungsStil(waffe, par) {
   const form = par?.blitzForm ?? 'kegel';
   const groesse = par?.blitzGroesse ?? KEGEL_BEZUG;
   const eigen = MUENDUNG_WAFFE[waffe.id];
-  if (eigen === 'keiner' || form === 'keiner' || groesse <= 0) return null;
+  // Nahkampf: kein Mündungsfeuer an der Figur; Schnittbogen, Stichspur und Aufprallstern zeichnet das Waffen-Sprite
+  // selbst (`figuren.js`, Pose-Blitz, N-10) — sonst stünde der Bogen doppelt (Sprite und Figur) und zu früh im Bild.
+  if (eigen === 'keiner' || form === 'keiner' || groesse <= 0 || waffe.category === 'melee') return null;
   const familie = familieVonWaffe(waffe);
   if (form !== 'kegel') {
     return { quelle: 'form', form, groesse, farbe: rgba(FAMILIEN_FARBEN[familie].mitte) };

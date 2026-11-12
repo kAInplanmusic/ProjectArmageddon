@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Abnahme der 26 Waffen-Zusatzanimationsblätter (BAL-10).
 
+STAND 2026-11-11 (N-12): Die 26 Blätter sind aus dem Repo gelöscht (Protokoll im Manifest
+`weapon-sprites/anim/manifest.json`, Feld `bestand`). Das Skript braucht die WebP-Dateien; zum Nachmessen
+sie aus dem Git-Verlauf holen (`git show 7d4f537:src/client/assets/weapon-sprites/anim/pa_038.webp`) oder
+für neue Blätter dieselbe Ablage wieder anlegen.
+
 Liest das Manifest, zerlegt jedes WebP in seine 8 Rasterzellen (4x2, 256 px) und
 misst je Frame und je Blatt:
 

@@ -13,6 +13,7 @@ import { hash2 } from './stil.js';
 import { FAMILIEN_FARBEN, rgba, muendungsStil } from './waffenOptik.js';
 import { zeichneSchweif, zeichneMuendungsblitz } from './effektStil.js';
 import { parameterFuerWaffe } from './waffenAnimation.js';
+import { strahlBreite } from './waffenZustandsOptik.js';
 import { holeWaffenSprite } from './waffenSprites.js';
 
 /** Farben einer Strahlart (`heilig` gold, `laser` Energie, `leuchtspur` explosiv). */
@@ -228,9 +229,11 @@ export function zeichneStrahl(ctx, effect, reduziert = false) {
       // Laser: breites Glühen, Farbkern, heller Kern (bisherige Linie, in der Blitzfarbe der Waffe).
       gerade();
       const farbe = effect.color ?? rgba(f.mitte);
-      strich(farbe, 11, a * 0.3);
-      strich(farbe, 3, a);
-      strich('#ffffff', 1.2, a * 0.9);
+      // Entladung (N-15): Der Strahl zieht sich beim Abklingen zusammen, statt nur auszublenden.
+      const b = strahlBreite(effect.life, reduziert);
+      strich(farbe, 11 * b, a * 0.3);
+      strich(farbe, 3 * b, a);
+      strich('#ffffff', 1.2 * b, a * 0.9);
     }
   }
   // Einschlagpunkt markieren.

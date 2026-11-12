@@ -17,8 +17,7 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { ohneKommentare } from './helfer/ohne-kommentare.js';
 import {
@@ -56,10 +55,6 @@ function produktdateien() {
     if (existsSync(p)) dateien.push(p);
   }
   return dateien;
-}
-
-function sha256(datei) {
-  return createHash('sha256').update(readFileSync(datei)).digest('hex');
 }
 
 test('kein Produktpfad verweist auf die Zusatzanimationen', () => {
@@ -163,30 +158,32 @@ test('der Lader ruft ohne Freigabe nicht einmal das Manifest', async () => {
   assert.equal(waffenAnimZustand().freigegeben.length, 0);
 });
 
-test('Blätter sind vorhanden, lesbare WebP-Behälter und passen zum Raster', () => {
+test('N-12: die 26 Blätter sind ausgemustert, keine Datei liegt mehr im Repo, das Protokoll erklärt jede Entscheidung', () => {
+  // Entscheidung 2026-11-11 (Kontaktbogen selbst gesichtet): alle 26 gelöscht, keines neu erzeugt.
+  assert.equal(manifest.bestand.stand, 'ausgemustert');
+  assert.deepEqual(
+    [manifest.bestand.behalten, manifest.bestand.neu_erzeugt, manifest.bestand.geloescht],
+    [0, 0, 26],
+  );
+  const uebrig = readdirSync(ANIM).filter(n => n !== 'manifest.json');
+  assert.deepEqual(uebrig, [], `Blätter im Repo trotz Ausmusterung: ${uebrig.join(', ')}`);
   for (const id of Object.keys(manifest.waffen)) {
-    const datei = join(ANIM, manifest.waffen[id].datei);
-    assert.ok(existsSync(datei), `${id}: Datei fehlt`);
-    const kopf = readFileSync(datei).subarray(0, 12);
-    assert.equal(kopf.subarray(0, 4).toString('ascii'), 'RIFF', `${id}: kein RIFF-Behälter`);
-    assert.equal(kopf.subarray(8, 12).toString('ascii'), 'WEBP', `${id}: kein WebP`);
-    assert.ok(statSync(datei).size > 1024, `${id}: Datei zu klein für 8 Frames`);
+    const e = manifest.waffen[id];
+    assert.equal(e.entscheidung, 'gelöscht', `${id}: Entscheidung fehlt`);
+    assert.match(e.ausgemustert, /^\d{4}-\d{2}-\d{2}$/, `${id}: Datum fehlt`);
+    assert.ok(e.entscheidungsgrund.length > 20, `${id}: Grund fehlt`);
+    assert.match(e.sha256, /^[0-9a-f]{64}$/, `${id}: Prüfsumme der gelöschten Datei fehlt`);
+    assert.ok(e.bytes > 1024, `${id}: Größe der gelöschten Datei fehlt`);
+    assert.equal(e.freigabe, false);
   }
 });
 
-test('W06: pa_112 und pa_114 sind bytegleich und als Dublette markiert', () => {
-  const a = sha256(join(ANIM, 'pa_112.webp'));
-  const b = sha256(join(ANIM, 'pa_114.webp'));
+test('W06: pa_112 und pa_114 waren bytegleich (Prüfsumme im Protokoll) und sind als Dublette markiert', () => {
   const e114 = manifest.waffen.pa_114;
   const e112 = manifest.waffen.pa_112;
-  if (a === b) {
-    assert.equal(e114.dubletteVon, 'pa_112', 'bytegleiche Datei ohne Dublettenmarkierung');
-    assert.equal(e112.dubletteVon, undefined, 'Original darf nicht als Dublette gelten');
-  } else {
-    // Getrennte Vorlagen: die Markierung muss verschwinden, sonst zeigt sie ins Leere.
-    assert.equal(e114.dubletteVon, undefined, 'getrennte Datei trägt noch Dublettenmarkierung');
-  }
-  // Unabhängig vom Hash bleibt die Zuordnung gesperrt: ein Schirmblatt ist noch nicht entstanden.
+  assert.equal(e112.sha256, e114.sha256, 'die gelöschten Dateien waren bytegleich');
+  assert.equal(e114.dubletteVon, 'pa_112', 'bytegleiche Datei ohne Dublettenmarkierung');
+  assert.equal(e112.dubletteVon, undefined, 'Original darf nicht als Dublette gelten');
   assert.equal(e114.freigabe, false);
   assert.equal(e112.freigabe, false);
 });

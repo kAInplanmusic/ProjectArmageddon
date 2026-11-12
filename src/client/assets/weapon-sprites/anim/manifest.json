@@ -1,7 +1,7 @@
 {
  "version": 3,
  "status": "gesperrt",
- "hinweis": "Zusatz-Sheets als Material, NICHT im Produktpfad. Abnahme je Blatt nach docs/waffen-audit-2026-11-08/ANIM-ABNAHME.md; Messung in anim-abnahme-messung.json. Kein Blatt ist produktfreigegeben.",
+ "hinweis": "Protokoll der ausgemusterten Zusatz-Sheets (N-12, 2026-11-11): keine Datei mehr im Repo, kein Blatt im Produktpfad. Zusatz-Sheets als Material, NICHT im Produktpfad. Abnahme je Blatt nach docs/waffen-audit-2026-11-08/ANIM-ABNAHME.md; Messung in anim-abnahme-messung.json. Kein Blatt ist produktfreigegeben.",
  "freigabe": {
   "produktpfad": false,
   "regel": "Ein Blatt darf nur geladen werden, wenn alle acht Prüfkriterien ok sind, abnahme 'abgenommen', freigabe true, die ID in ANIM_FREIGABE steht und ein Lader im Renderer verdrahtet ist.",
@@ -179,7 +179,12 @@
     "bewegung",
     "rolle",
     "browser"
-   ]
+   ],
+   "sha256": "fadac26b0eb5d2236823583c29f76bba00422b7cc81198ae3a5821b43334e5a0",
+   "bytes": 91552,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremdes Tier statt grünem Rucksack (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_038": {
    "id": "pa_038",
@@ -275,7 +280,12 @@
     "bewegung",
     "effekt",
     "browser"
-   ]
+   ],
+   "sha256": "081512d9a499dee4cc1775b18c08d51dedaa8989009b4e67ad350318b2ceaaa0",
+   "bytes": 79222,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Frames zu ähnlich, kaum Bewegung; Triebwerksflamme eingebrannt (W17), sonst motivnah (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_044": {
    "id": "pa_044",
@@ -369,7 +379,12 @@
     "bewegung",
     "effekt",
     "browser"
-   ]
+   ],
+   "sha256": "421bd311bf9924a61751e07e944c2eb52337d6a7e0a2df5882c1d380628a041f",
+   "bytes": 106514,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Standbild oder weniger als sechs unterscheidbare Frames; Motiv passend, Frames nahezu identisch, Feuer eingebrannt (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_048": {
    "id": "pa_048",
@@ -461,7 +476,12 @@
    "sperrgruende": [
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "6f1c291f7f5c1ba61efdd258bfdad8e8f4b51ede764239b956306fc47d706e3d",
+   "bytes": 69922,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Frames zu ähnlich, kaum Bewegung; motivnah, statisch, keine Rotation/Splitter (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_049": {
    "id": "pa_049",
@@ -564,7 +584,12 @@
     "bewegung",
     "rolle",
     "browser"
-   ]
+   ],
+   "sha256": "46f45d95c6db20f12e750f9f9780275f343d237fbafaadc39cf25724428994bc",
+   "bytes": 58218,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremdes Flugobjekt, kein Bumerang (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_053": {
    "id": "pa_053",
@@ -668,7 +693,12 @@
     "identitaet",
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "760fcc053908eb69fc6e3cf7520464b2a4b516795cc82da8846ae021af1fb7da",
+   "bytes": 94872,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremdes Motiv, keine Roboterbombe (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_061": {
    "id": "pa_061",
@@ -772,7 +802,12 @@
     "bewegung",
     "effekt",
     "browser"
-   ]
+   ],
+   "sha256": "2e16896bf4b834f2791766c7e8ae99404619a74086fb24eb5a7d918b091cd7ce",
+   "bytes": 96002,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Standbild oder weniger als sechs unterscheidbare Frames; Motiv passend, Flammen eingebrannt, statisch (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_065": {
    "id": "pa_065",
@@ -871,7 +906,12 @@
    "sperrgruende": [
     "effekt",
     "browser"
-   ]
+   ],
+   "sha256": "2a2acdb138afabf4ff10abbe4d5ef2711cabba27d616b715b644fd9727f462bf",
+   "bytes": 70244,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Einziges datenabgenommenes Blatt, aber Schweif fest eingebrannt (W17) und kein Gewinn gegenüber der gemalten Geschosszelle mit Eigendrehung und Familien-Schweif (N-09); im Kontaktbogen gesichtet"
   },
   "pa_073": {
    "id": "pa_073",
@@ -969,7 +1009,12 @@
     "bewegung",
     "rolle",
     "browser"
-   ]
+   ],
+   "sha256": "4ba0b57fb93d2dbc702549d760b47d523e5ca1001780218b343106677ee0e00d",
+   "bytes": 61002,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremdes Tier, kein Tentakelgift (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_112": {
    "id": "pa_112",
@@ -1077,7 +1122,12 @@
     "bewegung",
     "rolle",
     "browser"
-   ]
+   ],
+   "sha256": "51215e68c3147220838c664c3fd53127956f295214c5532c152fe2e29081316c",
+   "bytes": 67530,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremdes Tier; bytegleich mit pa_114 (W06) (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_114": {
    "id": "pa_114",
@@ -1186,7 +1236,12 @@
     "bewegung",
     "rolle",
     "browser"
-   ]
+   ],
+   "sha256": "51215e68c3147220838c664c3fd53127956f295214c5532c152fe2e29081316c",
+   "bytes": 67530,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); kein Schirm; bytegleich mit pa_112 (W06) (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10); bytegleich mit pa_112"
   },
   "pa_115": {
    "id": "pa_115",
@@ -1278,7 +1333,12 @@
    "sperrgruende": [
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "691012ab700e8cd40b7f0fbf76f8de96e1d7843abc6c7cea0b2fa98ede61c591",
+   "bytes": 54006,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Standbild oder weniger als sechs unterscheidbare Frames; motivnah, keine Bewegung (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_118": {
    "id": "pa_118",
@@ -1385,7 +1445,12 @@
     "bewegung",
     "effekt",
     "browser"
-   ]
+   ],
+   "sha256": "2fe744b338db5c7db8750c6f67fda0e6698a0bcb123ae946b9f3af4b1c5822c2",
+   "bytes": 86420,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Motiv wechselt zwischen den Frames; Körper/Material weicht ab, Flamme eingebrannt (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_121": {
    "id": "pa_121",
@@ -1480,7 +1545,12 @@
     "bewegung",
     "effekt",
     "browser"
-   ]
+   ],
+   "sha256": "e88e213f3c48b4610f2f0db4ddc828546cf5dcca8f85da0011fdddbab7efcfb5",
+   "bytes": 80672,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Standbild oder weniger als sechs unterscheidbare Frames; motivnah, Frames fast identisch, Achse prüfen (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_122": {
    "id": "pa_122",
@@ -1588,7 +1658,12 @@
     "bewegung",
     "rolle",
     "browser"
-   ]
+   ],
+   "sha256": "0556c7ba4ba571a5a6948112c6797a0a7d48e92ef618a4b0cc98c1e0a51d9458",
+   "bytes": 69244,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremdes Tier, harter Motivsprung (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_132": {
    "id": "pa_132",
@@ -1697,7 +1772,12 @@
     "richtung",
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "1622fc8aebd85d6999dcd85903ad4e1e1fb0e2da471caa4c5587e4c3bdad6eed",
+   "bytes": 59590,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Motiv wechselt zwischen den Frames; Identitätsbruch ab Frame 3 (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_133": {
    "id": "pa_133",
@@ -1792,7 +1872,12 @@
    "sperrgruende": [
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "9b239a6f0a1492d2710783289db0a0b2c2a2d6217c910910c37518378461f001",
+   "bytes": 90826,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Frames zu ähnlich, kaum Bewegung; motivnah, Flügelkontinuität prüfen (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_134": {
    "id": "pa_134",
@@ -1894,7 +1979,12 @@
     "bewegung",
     "effekt",
     "browser"
-   ]
+   ],
+   "sha256": "96796b1be50933d2501cc06f9598b9d9630d68da4595e2219b67df2ceaab5e8f",
+   "bytes": 48308,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Motiv wechselt zwischen den Frames; generisch, Flamme eingebrannt, keine Luftangriffsszene (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_135": {
    "id": "pa_135",
@@ -2002,7 +2092,12 @@
     "bewegung",
     "effekt",
     "browser"
-   ]
+   ],
+   "sha256": "00030cda5ef2462d0da4d75fb62617f7e3a290ac0a868598720230dc19717a98",
+   "bytes": 65566,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Standbild oder weniger als sechs unterscheidbare Frames; Schweif eingebrannt, Gestalt wechselt (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_136": {
    "id": "pa_136",
@@ -2098,7 +2193,12 @@
     "bewegung",
     "effekt",
     "browser"
-   ]
+   ],
+   "sha256": "fc1038b8ce31cbaa812deb58fe235ffc7b8bb9d7ff21861d06e9743cf74e8706",
+   "bytes": 62972,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Standbild oder weniger als sechs unterscheidbare Frames; Schweif eingebrannt, Frames springen (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_141": {
    "id": "pa_141",
@@ -2202,7 +2302,12 @@
     "identitaet",
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "43bcea8f3ba8e6f0d5de5c04143edd680732b5fda2c34382dc83c273da481b76",
+   "bytes": 51728,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremder Humanoid statt Krieger (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_142": {
    "id": "pa_142",
@@ -2310,7 +2415,12 @@
     "identitaet",
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "d3100300fe70909a3f404ed53d3c712a46039d09fd14a06a65b2c41f2889a1fd",
+   "bytes": 78230,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremder Humanoid statt Leerenritter (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_143": {
    "id": "pa_143",
@@ -2415,7 +2525,12 @@
     "identitaet",
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "879f4937964980a09cff57062bcdd3763366346e14ac5ad258335405e3e6f4ce",
+   "bytes": 75498,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Motiv wechselt zwischen den Frames; Kontrastverlust, statisch, weiße Reste (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_144": {
    "id": "pa_144",
@@ -2525,7 +2640,12 @@
     "richtung",
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "415b71beec837c313f5f50831a4b49f2ffccac587bf8a5f01fe22b4a4f1cb579",
+   "bytes": 69280,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremdes Tier, keine Wassermelone (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_147": {
    "id": "pa_147",
@@ -2636,7 +2756,12 @@
     "richtung",
     "bewegung",
     "browser"
-   ]
+   ],
+   "sha256": "6b2a5c739b773f15e64de64d2199b4da57f50584a9633760b77c14db059a73a7",
+   "bytes": 59266,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremdes Tier statt Weltendrache (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   },
   "pa_148": {
    "id": "pa_148",
@@ -2741,7 +2866,12 @@
     "bewegung",
     "rolle",
     "browser"
-   ]
+   ],
+   "sha256": "b8919bcb7442371efac6b08bffdcf5ce8080bacd24119ba9eb047bb7cc28ea0e",
+   "bytes": 74016,
+   "entscheidung": "gelöscht",
+   "ausgemustert": "2026-11-11",
+   "entscheidungsgrund": "Falsches Motiv (Wesen, Käfer, Humanoide statt der Waffe); fremdes Tier, kein Schild (Kontaktbogen 2026-11-11 gesichtet, bestätigt Abnahme BAL-10)"
   }
  },
  "abnahme": {
@@ -2754,5 +2884,13 @@
    "datenabgenommen": 1,
    "abgelehnt": 25
   }
+ },
+ "bestand": {
+  "stand": "ausgemustert",
+  "datum": "2026-11-11",
+  "regel": "Die Blätter sind aus dem Repo entfernt (Git-Verlauf bis Commit 7d4f537 enthält sie). Dieses Manifest bleibt als Protokoll; die Felder datei/sha256/bytes beschreiben die gelöschten Dateien. Neue Blätter nur nach der Abnahme in ANIM-ABNAHME.md.",
+  "neu_erzeugt": 0,
+  "behalten": 0,
+  "geloescht": 26
  }
 }

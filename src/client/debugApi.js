@@ -151,6 +151,11 @@ export function exposeDebugApi(game) {
         stat: { ...game.renderer.waffenStat },
         reduziert: game.renderer.reducedMotion,
         posen: Object.fromEntries(game.renderer.waffenDiagnose),
+        /** Zustandsanzeigen (N-15): Schildblasen je Figur (Wert, Zeitstempel) und Zahl der verfolgten Minen. */
+        zustand: {
+          schild: Object.fromEntries([...game.renderer.schildAnzeige.stand].map(([id, z]) => [id, { wert: z.wert, platzt: z.platzt, treffer: z.treffer }])),
+          minen: game.renderer.minenAlter.gesehen.size,
+        },
         geschosse: [...game.renderer.geschosse.lagen].map(([id, g]) => ({
           id, waffeId: g.waffeId, sprite: Boolean(g.sp), winkel: g.winkel, flug: g.flug, schweif: g.ring.anzahl,
         })),

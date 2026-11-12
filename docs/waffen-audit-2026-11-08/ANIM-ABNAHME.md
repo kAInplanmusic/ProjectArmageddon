@@ -371,3 +371,13 @@ node tests/waffen-anim-gating.test.js    # bestehende Sperre
 ```
 
 Der Test prüft nicht die Sichturteile nach, sondern ihre Spur: jedes Manifestfeld muss zur Messung passen, jeder Ablehnungsgrund muss ein fehlgeschlagenes Kriterium sein, und der Lader darf auch mit einer manipulierten Freigabeliste kein abgelehntes Blatt laden. Ein synthetischer Vollbeleg zeigt als Gegenprobe, dass der Lader bei erfüllten Kriterien tatsächlich öffnet.
+
+## Entscheidung N-12 (2026-11-11): Blätter ausgemustert
+
+Alle 26 Blätter wurden gelöscht (`git rm`, der Verlauf bis Commit `7d4f537` enthält sie), keines behalten, keines neu erzeugt. Grundlage: die Messung oben und eine eigene Sichtung der Kontaktbögen am 2026-11-11 (acht Frames je Blatt, 4 x 2). Die Sichtung bestätigt das Ergebnis: Auf den Bögen erscheinen Käfer, Echsen, ein Drache, Humanoide und Fabelwesen statt der Waffe, mehrere Blätter zeigen vier gleiche Frames, einzelne springen in Größe oder Helligkeit. Nach der Messung verfehlen 18 von 26 Blättern die Identität, 25 die Bewegung (weniger als sechs unterscheidbare Frames oder offene Schleife), 7 die Rolle, 4 die Richtung, und 9 tragen einen eingebrannten Effekt. pa_112 und pa_114 waren bytegleich.
+
+- **pa_065** (Meteorbrocken, einziges datenabgenommenes Blatt): nicht behalten. Der Schweif ist fest eingebrannt (W17); die gemalte Geschosszelle mit Eigendrehung und Familien-Schweif (N-09) liefert dasselbe ohne doppelten Schweif. Ein Gewinn gegenüber dem Ist-Stand ist nicht belegt.
+- **pa_038 / pa_135** (laut Auftrag B5 zu prüfen): pa_038 ist als Rakete lesbar, hat aber nur drei unterscheidbare Frames und eine eingebrannte Flamme; pa_135 wechselt die Größe von Frame zu Frame. Beide gelöscht.
+- **Neu erzeugen:** nicht versucht. Aufwand und Risiko sind hoch (TODO N-12: Prio 7, Aufwand L, Risiko hoch), und ein Nutzen gegenüber der prozeduralen Bewegung ist nicht belegt; die prozedurale Bewegung (`waffenAnimation.js`, N-10) ist geprüft und trägt die Darstellung. Wer es neu versucht, bleibt an die acht Kriterien dieser Abnahme gebunden.
+
+Das Manifest `weapon-sprites/anim/manifest.json` bleibt als Protokoll (Felder `entscheidung`, `entscheidungsgrund`, `sha256`, `bytes`, `bestand`); `tests/waffen-anim-gating.test.js` prüft, dass kein Blatt zurückkehrt, ohne dass diese Entscheidung bewusst geändert wird.

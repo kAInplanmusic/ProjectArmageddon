@@ -29,6 +29,7 @@
 
 import { TYP_JE_CHARAKTER, PARAMETER as TYP_PARAMETER } from './figurTypen.js';
 import { glatt01 } from './mathe.js';
+import { bereitPuls } from './waffenZustandsOptik.js';
 import { buildEffect, SELF_TARGET_KINDS } from '../engine/specials.js';
 import { charakterDerWaffe } from '../shared/config/zerstoerung.js';
 
@@ -50,10 +51,10 @@ export const ZELLE = 128;
  *   handHoch     Handposition über (negativ: unter) der Standardhöhe
  *   idleDreh     Pendeln der Waffe im Stand (Amplitude), idleAtem Heben/Senken in px, idleTempo in Hz
  *   ziehenDauer  Einschwingen von unten beim Ziehen/Wechseln; ziehenTief Startversatz, ziehenDreh Startdrehung
- *   art          Schussbewegung: kurz | schwer | hieb | zauber | tech | selbst
+ *   art          Schussbewegung: kurz | schwer | hieb | zauber | tech | selbst; Nahkampf: stoss | schnitt | schlag | saege | zug (N-10)
  *   schussDauer  Gesamtdauer der Bewegung; kick Rückstoßweg; rueck Rückdrehung; wippen/wippHz Nachwippen
  *   heben        Heben der Spitze (Zauber, Selbstwirkung); aufladen Dauer des Aufladens vor dem Schuss
- *   blitzForm    kegel | stern | ring | funke | keiner; blitzGroesse in px, blitzDauer in s
+ *   blitzForm    kegel | stern | ring | funke | bogen | stoss | keiner; blitzGroesse in px, blitzDauer in s; treffAb Verzögerung des Blitzes in s
  *   koerper      Faktor auf den Rückstoß des Oberkörpers (`figurAnimation.js`), ausfall 0..1 Ausfallschritt
  *                (Figur geht beim Schuss in die Knie und verbreitert den Stand: schwere Waffen)
  *   start        Startglanz des Geschosses an der Mündung in px (Geschoss-Zeichnung)
@@ -79,6 +80,7 @@ const BASIS = Object.freeze({
   blitzForm: 'kegel',
   blitzGroesse: 11,
   blitzDauer: 0.11,
+  treffAb: 0,
   lage: 'vor',
   orb: false,
   koerper: 1,
@@ -206,6 +208,58 @@ const WURF = Object.freeze({
   art: 'hieb', schussDauer: 0.45, kick: 4, blitzForm: 'keiner', blitzGroesse: 0, blitzDauer: 0,
 });
 
+/*
+ * N-10: eigene Schussbewegung je Nahkampf-Familie. Die 21 Nahkampfwaffen werden GEWORFEN (Geschoss `ding`,
+ * dreht sich, fliegt 110-250 px), das Geschoss startet also mit dem ersten Bild der Pose (`seitSchuss` = 0).
+ * Deshalb gibt es kein langes Ausholen: Die Geste beginnt im Abwurf (Ausholen höchstens 40-50 ms) und besteht
+ * aus Durchziehen, Halten und Zurückkommen; sonst würde die Hand ausholen, nachdem die Klinge schon fliegt.
+ *   stoss   Stich: kurzes Zurückzucken, Vorstoß in Zielrichtung, Spitze bleibt gerade (Rapier, Messer, Tonfa, Faust)
+ *   schnitt Schnitt: schneller Bogen von oben nach unten durch die Zielachse, Schnittbogen als Blitz (Katana, Säbel, Sense)
+ *   schlag  Schlag: Spitze hoch, harter Abschlag mit Halten und Nachzittern, Aufprallstern (Hammer, Axt, Morgenstern)
+ *   saege   Säge: Dauerzittern der Waffe, Funke am Anfang (Kettensäge)
+ *   zug     Zug: Wurf nach vorn, dann Rückzug über die Ruhelage hinaus (Haken)
+ * `treffAb` verschiebt den Blitz auf den Augenblick des Durchziehens.
+ */
+export const NAHKAMPF_ARTEN = Object.freeze({
+  stoss: Object.freeze({ art: 'stoss', schussDauer: 0.42, kick: 8, treffAb: 0.07, blitzForm: 'stoss', blitzGroesse: 15, blitzDauer: 0.12, koerper: 1.2, ausfall: 0.6 }),
+  schnitt: Object.freeze({ art: 'schnitt', schussDauer: 0.5, kick: 3, treffAb: 0.05, blitzForm: 'bogen', blitzGroesse: 20, blitzDauer: 0.16, koerper: 1.4, ausfall: 0.3 }),
+  schlag: Object.freeze({ art: 'schlag', schussDauer: 0.75, kick: 6, treffAb: 0.13, blitzForm: 'stern', blitzGroesse: 13, blitzDauer: 0.14, koerper: 1.9, ausfall: 0.5 }),
+  saege: Object.freeze({ art: 'saege', schussDauer: 0.6, kick: 5, treffAb: 0, blitzForm: 'funke', blitzGroesse: 12, blitzDauer: 0.1, koerper: 1.3, ausfall: 0.2 }),
+  zug: Object.freeze({ art: 'zug', schussDauer: 0.55, kick: 7, treffAb: 0.12, blitzForm: 'keiner', blitzGroesse: 0, blitzDauer: 0, koerper: 1.3, ausfall: 0.4 }),
+});
+
+/** Familie je Nahkampfwaffe (Katalog `melee`, 21 Waffen). Nicht aufgeführte Nahkampfwaffen behalten `hieb`. */
+export const NAHKAMPF_JE_WAFFE = Object.freeze({
+  pa_001: 'schlag', pa_002: 'stoss', pa_003: 'zug', pa_004: 'zug', pa_005: 'schlag', pa_006: 'schlag', pa_007: 'stoss',
+  pa_008: 'schlag', pa_009: 'schlag', pa_010: 'saege', pa_011: 'schnitt', pa_012: 'schnitt', pa_013: 'stoss', pa_014: 'stoss',
+  pa_015: 'schnitt', pa_016: 'stoss', pa_017: 'stoss', pa_018: 'schnitt', pa_019: 'schlag', pa_020: 'schnitt', pa_021: 'schnitt',
+});
+
+/**
+ * GP-8: Je Waffe eine eigene, aus dem Katalog abgeleitete Feinabstimmung statt eines Satzes je Kategorie
+ * (vorher teilten sich 122 der 150 Waffen ihren Parametersatz mit mindestens einer anderen).
+ *   - Rückstoß `kick` wächst mit dem Katalogwert `knockback` (bis +35 %; ohne Rückstoßwert unverändert),
+ *   - Blitzgröße wächst mit dem Sprengradius `blastRadius` (bis +30 %, nur wo es einen Blitz gibt),
+ *   - Takt des Pendelns im Stand und Dauer des Ziehens weichen je Waffe um höchstens ±8 % bzw. ±6 % ab
+ *     (fester Hash der Waffen-ID, KEIN Zufall: gleiche ID, gleiche Zahl), damit zwei Waffen derselben
+ *     Familie im Stand nicht im Gleichschritt atmen.
+ * Ausdrückliche Einträge in `KORREKTUREN` gelten danach unverändert.
+ */
+export function waffenFeinabstimmung(waffeId, werte, par) {
+  const knock = Number(werte?.knockback) || 0;
+  const blast = Number(werte?.blastRadius) || 0;
+  let h = 2166136261;
+  for (let i = 0; i < waffeId.length; i += 1) h = Math.imul(h ^ waffeId.charCodeAt(i), 16777619);
+  const u = (h >>> 0) / 4294967296;
+  const v = ((Math.imul(h, 2654435761) >>> 0) / 4294967296);
+  return {
+    kick: par.kick * (1 + Math.min(0.35, Math.max(0, knock) / 250)),
+    blitzGroesse: par.blitzGroesse * (1 + Math.min(0.3, Math.max(0, blast) / 300)),
+    idleTempo: par.idleTempo * (1 + (u - 0.5) * 0.16),
+    ziehenDauer: par.ziehenDauer * (1 + (v - 0.5) * 0.12),
+  };
+}
+
 const parameterCache = new Map();
 
 /**
@@ -218,18 +272,21 @@ const parameterCache = new Map();
  * @param {string} [form] - Form des Sprites laut Manifest (`kachel`, `objekt`, `kompakt`)
  * @param {boolean} [wurf] - die Waffe wird geworfen (Geschoss `ding` oder mit Zünder/Abprallern)
  * @param {string} [kachelModus] - `motiv` oder `orb` bei Kachel-Waffen
+ * @param {{knockback?:number, blastRadius?:number}|null} [werte] - Katalogwerte für die Feinabstimmung (GP-8)
  */
-export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wurf = false, kachelModus = '') {
-  const schluessel = `${kat}|${waffeId}|${selbst ? 1 : 0}|${form}|${wurf ? 1 : 0}|${kachelModus}`;
+export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wurf = false, kachelModus = '', werte = null) {
+  const schluessel = `${kat}|${waffeId}|${selbst ? 1 : 0}|${form}|${wurf ? 1 : 0}|${kachelModus}|${werte ? `${werte.knockback ?? 0}/${werte.blastRadius ?? 0}` : ''}`;
   let p = parameterCache.get(schluessel);
   if (!p) {
     const basis = PARAMETER[kat] ?? PARAMETER.ranged;
     const korr = KORREKTUREN[waffeId] ?? null;
-    p = {
+    const gebaut = {
       ...basis, ...(wurf && !selbst ? WURF : null), ...(selbst ? SELBST : null),
+      ...(!selbst ? NAHKAMPF_ARTEN[NAHKAMPF_JE_WAFFE[waffeId]] : null),
       ...(form === 'kompakt' ? KOMPAKT(basis) : null),
-      ...(form === 'kachel' ? (kachelModus === 'motiv' ? KACHEL_MOTIV(basis) : KACHEL_ORB(basis)) : null), ...korr,
+      ...(form === 'kachel' ? (kachelModus === 'motiv' ? KACHEL_MOTIV(basis) : KACHEL_ORB(basis)) : null),
     };
+    p = { ...gebaut, ...(waffeId ? waffenFeinabstimmung(waffeId, werte, gebaut) : null), ...korr };
     /*
      * Kein Kategorien-Versatz mehr: Die Hand sitzt auf dem Griffanker des Sprites.
      * Früher rückte `griffObjekt` den Griff je Kategorie um 8–16 Zellpixel nach
@@ -271,6 +328,7 @@ export function parameterFuerWaffe(waffe, sp) {
   return waffenParameter(
     waffe.category, waffe.id, istSelbstwirkung(waffe), sp?.form ?? '',
     sp?.projektilInfo?.art === 'ding' || (waffe.fuseTime ?? 0) > 0, sp?.kachel ?? '',
+    { knockback: waffe.knockback ?? 0, blastRadius: waffe.blastRadius ?? 0 },
   );
 }
 
@@ -284,7 +342,7 @@ export function neuePose() {
 
 /** Die Zeiten, aus denen eine Pose entsteht (vom Aufrufer wiederverwendet). */
 export function neueZeiten() {
-  return { idle: 0, seitZiehen: Infinity, seitSchuss: Infinity, bereit: 1, treffer: 0 };
+  return { idle: 0, seitZiehen: Infinity, seitSchuss: Infinity, bereit: 1, treffer: 0, bereitSeit: Infinity };
 }
 
 const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -403,6 +461,87 @@ function schussBewegung(par, t, aus) {
       }
       break;
     }
+    case 'stoss': {
+      // Kurzes Zurückzucken (40 ms), Vorstoß (60 ms), Halten, Zurückkommen. Spitze bleibt in der Zielachse.
+      if (t < 0.04) {
+        aus.vor -= 1.5 * glatt01(t / 0.04);
+      } else if (t < 0.1) {
+        aus.vor += -1.5 + (1.5 + par.kick) * glatt01((t - 0.04) / 0.06);
+      } else if (t < 0.2) {
+        aus.vor += par.kick * (1 - 0.12 * ((t - 0.1) / 0.1));
+      } else {
+        const g = 1 - glatt01((t - 0.2) / (par.schussDauer - 0.2));
+        aus.vor += par.kick * 0.88 * g * g;
+      }
+      aus.skala += 0.06 * Math.sin(Math.PI * clamp01(u));
+      break;
+    }
+    case 'schnitt': {
+      // Bogen von oben nach unten durch die Zielachse, dann zurück in die Ruhe.
+      if (t < 0.04) {
+        const w = glatt01(t / 0.04);
+        aus.drehung += 0.5 * w;
+        aus.hoch += 0.8 * w;
+      } else if (t < 0.2) {
+        const v = (t - 0.04) / 0.16;
+        aus.drehung += 0.5 - 1.9 * glatt01(v);
+        aus.hoch += 0.8 * (1 - glatt01(v));
+        aus.vor += par.kick * Math.sin(Math.PI * v);
+      } else {
+        aus.drehung += -1.4 * (1 - glatt01((t - 0.2) / (par.schussDauer - 0.2)));
+      }
+      break;
+    }
+    case 'schlag': {
+      // Spitze hoch, harter Abschlag in 90 ms, Halten mit Nachzittern, langsames Zurückkommen.
+      if (t < 0.05) {
+        const w = glatt01(t / 0.05);
+        aus.drehung += 0.7 * w;
+        aus.hoch += 1.8 * w;
+      } else if (t < 0.14) {
+        const g = glatt01((t - 0.05) / 0.09);
+        aus.drehung += 0.7 - 2.0 * g;
+        aus.hoch += 1.8 - 3.0 * g;
+        aus.vor += par.kick * g;
+      } else if (t < 0.3) {
+        const rest = 1 - (t - 0.14) / 0.16;
+        aus.drehung += -1.3 + Math.sin((t - 0.14) * 80) * 0.07 * rest;
+        aus.hoch += -1.2;
+        aus.vor += par.kick;
+      } else {
+        const g = 1 - glatt01((t - 0.3) / (par.schussDauer - 0.3));
+        aus.drehung += -1.3 * g;
+        aus.hoch += -1.2 * g;
+        aus.vor += par.kick * g;
+      }
+      break;
+    }
+    case 'saege': {
+      // Dauerzittern: Hüllkurve geht an und aus, die Waffe schüttelt sich quer und längs.
+      const e = Math.pow(Math.sin(Math.PI * clamp01(u)), 0.6);
+      aus.vor += par.kick * 0.5 * e + Math.sin(t * 120) * 0.9 * e;
+      aus.hoch += Math.sin(t * 97 + 1) * 0.8 * e;
+      aus.drehung += Math.sin(t * 83) * 0.05 * e;
+      break;
+    }
+    case 'zug': {
+      // Wurf nach vorn, dann Rückzug über die Ruhelage hinaus (der Haken zieht).
+      if (t < 0.05) {
+        const w = glatt01(t / 0.05);
+        aus.vor -= 1.2 * w;
+        aus.drehung += 0.3 * w;
+      } else if (t < 0.14) {
+        const g = glatt01((t - 0.05) / 0.09);
+        aus.vor += -1.2 + (1.2 + par.kick) * g;
+        aus.drehung += 0.3 - 0.8 * g;
+      } else {
+        const v = (t - 0.14) / (par.schussDauer - 0.14);
+        const g = 1 - glatt01(v);
+        aus.vor += par.kick * g - 2 * Math.sin(Math.PI * v);
+        aus.drehung += -0.5 * g;
+      }
+      break;
+    }
     case 'zauber': {
       // Heben und Aufladen, dann Freigabe mit Stoß nach vorn.
       if (t < par.aufladen) {
@@ -463,7 +602,7 @@ function glanzVerlauf(par, t) {
  * Bewegungen bleibt nur das Pendeln im Stand (bei reduzierter Bewegung gar nichts).
  *
  * @param {object} par - aus `waffenParameter`
- * @param {{idle:number, seitZiehen:number, seitSchuss:number, bereit:number, treffer:number}} zeit
+ * @param {{idle:number, seitZiehen:number, seitSchuss:number, bereit:number, treffer:number, bereitSeit?:number}} zeit
  * @param {boolean} reduziert - `prefers-reduced-motion`
  * @param {ReturnType<typeof neuePose>} aus - wird überschrieben und zurückgegeben
  */
@@ -475,7 +614,8 @@ export function waffenPose(par, zeit, reduziert, aus) {
   const bereit = clamp01(zeit.bereit);
   aus.ladung = bereit;
   aus.dunkel = bereit < 1 ? 0.3 + 0.25 * (1 - bereit) : 0;
-  aus.weiss = clamp01(zeit.treffer);
+  // Weiß: Treffer; kurzer Puls, sobald die Waffe nach dem Nachladen wieder bereit ist (N-15, `bereitSeit`).
+  aus.weiss = Math.max(clamp01(zeit.treffer), 0.55 * bereitPuls(zeit.bereitSeit));
 
   const ziehen = zeit.seitZiehen;
   const gezogen = ziehen >= 0 && ziehen < par.ziehenDauer;
@@ -505,7 +645,7 @@ export function waffenPose(par, zeit, reduziert, aus) {
   if (schiesst) {
     aus.glanz = glanzVerlauf(par, schuss);
     if (par.blitzForm !== 'keiner') {
-      const tb = schuss - par.aufladen;
+      const tb = schuss - par.aufladen - (par.treffAb ?? 0);
       if (tb >= 0 && tb < par.blitzDauer) {
         aus.blitz = fenster(tb / par.blitzDauer);
         aus.blitzForm = par.blitzForm;
@@ -663,6 +803,9 @@ export function geschossWinkel(flug, dar, alter, reduziert) {
 /** Länge des Schweifs aus den letzten Positionen. */
 export const SCHWEIF_LAENGE = 8;
 
+/** Mindestabstand (Weltpixel) zweier Schweifpunkte: macht den Schweif langsamer Geschosse sichtbar lang (N-15). */
+export const SCHWEIF_MIN_ABSTAND = 3;
+
 /**
  * Ringpuffer der letzten Positionen eines Geschosses (feste Größe, keine
  * Allokation nach dem Anlegen). `punkt(i)` zählt von der ältesten Position.
@@ -676,14 +819,21 @@ export class SchweifRing {
     this.anzahl = 0;
   }
 
-  /** Hängt eine Position an; Sprünge (anderes Geschoss, Teleport) leeren den Schweif. */
-  schiebe(x, y, sprungMax = 120) {
+  /**
+   * Hängt eine Position an; Sprünge (anderes Geschoss, Teleport) leeren den Schweif.
+   * `minAbstand` (N-15): Ein Punkt kommt erst dazu, wenn das Geschoss sich seit dem letzten um so viele
+   * Pixel bewegt hat. Schnelle Geschosse (mehr als `minAbstand` je Bild) merken sich weiter jedes Bild;
+   * langsame (Mörsergranate am Scheitelpunkt, Wurfwaffe) bekommen dadurch einen Schweif von mindestens
+   * `minAbstand` x Kapazität Pixeln statt eines Stummels aus acht fast gleichen Punkten.
+   */
+  schiebe(x, y, sprungMax = 120, minAbstand = 0) {
     if (this.anzahl > 0) {
       const l = (this.kopf + this.n - 1) % this.n;
       const dx = x - this.x[l];
       const dy = y - this.y[l];
-      if (dx * dx + dy * dy > sprungMax * sprungMax) this.anzahl = 0;
-      else if (dx === 0 && dy === 0) return;
+      const d2 = dx * dx + dy * dy;
+      if (d2 > sprungMax * sprungMax) this.anzahl = 0;
+      else if (d2 === 0 || d2 < minAbstand * minAbstand) return;
     }
     this.x[this.kopf] = x;
     this.y[this.kopf] = y;
@@ -741,7 +891,7 @@ export class GeschossLagen {
         s.x = p.x; s.y = p.y;
         s.gesehen = this.bild;
       }
-      s.ring.schiebe(p.x, p.y);
+      s.ring.schiebe(p.x, p.y, 120, SCHWEIF_MIN_ABSTAND);
     }
     if (this.lagen.size > projektile.length) {
       for (const [id, s] of this.lagen) if (s.gesehen !== this.bild) this.lagen.delete(id);

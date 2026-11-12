@@ -16,8 +16,8 @@
  * damit die Logik ohne Browser prüfbar ist (`erzeugeWaffenSprites`).
  *
  * Zusatzanimationen (`weapon-sprites/anim/`) werden hier absichtlich nicht
- * geladen. Diese 26 Blätter sind bis zur Rollen- und Identitätsabnahme gesperrt
- * (W05/W11); Rollen, Sperre und Abnahmekriterien stehen in `waffenAnim.js`,
+ * geladen. Die 26 Blätter sind seit 2026-11-11 gelöscht (N-12, nur das Protokoll `manifest.json` bleibt);
+ * neue Blätter blieben bis zur Rollen- und Identitätsabnahme gesperrt (W05/W11); Rollen, Sperre und Abnahmekriterien stehen in `waffenAnim.js`,
  * der Stand in `docs/waffen-audit-2026-11-08/ANIM-GATING.md`.
  *
  * @module waffenSprites

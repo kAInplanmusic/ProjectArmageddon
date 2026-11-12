@@ -37,6 +37,7 @@ import { Inselfall } from './inselfall.js';
 import { FeuerOptik, faerbeZellen, ZELLFARBE } from './feuerOptik.js';
 import { SheetEffekte, LEUCHT_FARBE } from './effektSheets.js';
 import { strahlArt, schweifArt } from './waffenOptik.js';
+import { MinenAlter, minenZustand, zeichneMinenFuss, minenLampe, SchildAnzeige, zeichneFigurSchild, BereitPuls } from './waffenZustandsOptik.js';
 import { zeichneStrahl, zeichneFamilienSchweif, zeichneMuendungsfeuer } from './waffenOptikZeichnen.js';
 import { planetenBilder } from './planetenKulisse.js';
 import { STOFF } from '../shared/config/stoffe.js';
@@ -60,6 +61,7 @@ import {
   GeschossLagen, geschossDarstellung, geschossWinkel, zeichneGruppenmarke,
 } from './waffenAnimation.js';
 import { getWaffe, normalisiereWaffen, WAFFEN_STANDARD } from '../shared/config/waffen-fassung.js';
+import { zeichneKistenInhalt } from './kistenSichtAnzeige.js';
 import { waffenRolle } from './waffenSicht.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
 import { baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js'; import { anzahlStoffTexturen } from './stoffTexturen.js';
@@ -237,6 +239,8 @@ export class Renderer {
     this.waffenStat = { sprite: 0, ikone: 0, geschossSprites: 0, geschosseGesamt: 0, feuerwesen: 0 };
     /** Letzte Pose je Figur (Diagnose, Tests): `entityId` → Kopie der Felder. */
     this.waffenDiagnose = new Map();
+    /** Zustandsanzeigen (N-15, `waffenZustandsOptik.js`): Alter der Minen, Schildblasen, Zeichenbild-Zähler. */
+    this.minenAlter = new MinenAlter(); this.schildAnzeige = new SchildAnzeige(); this.zeichenBild = 0;
     /** Der laufende Kamera-Ruck (oder `null`). */
     this.ruck = null;
     /**
@@ -933,6 +937,7 @@ export class Renderer {
     this.spuren = new Map();
     this.waffenZustand.clear();
     this.waffenDiagnose.clear();
+    this.minenAlter.leere(); this.schildAnzeige.leere();
     this.geschosse.leere();
     this.ruck = null;
     this.letzterKrater = null;
@@ -1008,16 +1013,17 @@ export class Renderer {
    * grau und blinkt nicht. Reine Darstellung, kein Spielzustand.
    */
   #drawMinen(minen) {
+    const jetzt = performance.now() / 1000;
+    const ids = new Set();
     for (const mine of minen) {
       if (mine.typ === 'fass') { this.#drawFass(mine); continue; }
+      ids.add(mine.id);
+      const mz = minenZustand(this.minenAlter.alter(mine.id, jetzt), this.reducedMotion); // Absetzen/Scharfschalten (N-15)
       const blind = Boolean(mine.blindgaenger);
       const farbe = mine.teamId === null || mine.teamId === undefined ? '#7d8590' : TEAM_COLORS[mine.teamId % TEAM_COLORS.length];
       this.ctx.save();
       this.ctx.translate(mine.x, mine.y);
-      this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      this.ctx.beginPath();
-      this.ctx.ellipse(1, 3, 9, 3, 0, 0, Math.PI * 2);
-      this.ctx.fill();
+      zeichneMinenFuss(this.ctx, mz);
       this.ctx.fillStyle = blind ? '#4a4f57' : '#2b3038';
       this.ctx.strokeStyle = farbe;
       this.ctx.lineWidth = 1.5;
@@ -1027,13 +1033,14 @@ export class Renderer {
       this.ctx.fill();
       this.ctx.stroke();
       // Lämpchen: blinkt (zwei Hertz) und steht bei „reduzierte Bewegung" still; ein Blindgänger leuchtet nicht.
-      const an = !blind && (this.reducedMotion || Math.floor(this.time / 30) % 2 === 0);
+      const an = !blind && minenLampe(mz, jetzt, this.reducedMotion, this.time);
       this.ctx.fillStyle = an ? '#ff4d3d' : '#5a2a28';
       this.ctx.beginPath();
       this.ctx.arc(0, -4.5, 1.6, 0, Math.PI * 2);
       this.ctx.fill();
       this.ctx.restore();
     }
+    this.minenAlter.abschluss(ids);
   }
 
   /** Ein Sprengstofffass: rotbrauner Zylinder mit Reifen und gelb-schwarzem Warnstreifen. Reine Darstellung. */
@@ -1162,6 +1169,7 @@ export class Renderer {
           break;
       }
       this.ctx.restore();
+      if (crate.inhalt) zeichneKistenInhalt(this.ctx, crate, this.waffenFassung); // Allsehendes Auge
     }
   }
 
@@ -1172,8 +1180,9 @@ export class Renderer {
     return f || (this.fraktionJeTeam?.[entity.teamId] ?? null);
   }
 
-  #drawEntities(entities, activePlayerId, aim, klassen) {
+  #drawEntities(entities, activePlayerId, aim, klassen, statuses = null) {
     const jetzt = performance.now() / 1000;
+    this.zeichenBild += 1;
     // Sprites werden je Zoom so groß gezeichnet, dass sie auf dem Bildschirm lesbar bleiben (nur Anzeige).
     this.figurSkala = figurSkalaFuer((this.kamera?.zoom ?? 1) * this.cssFaktor);
     const S = this.figurSkala;
@@ -1384,6 +1393,7 @@ export class Renderer {
         });
       }
 
+      zeichneFigurSchild(this.ctx, this.schildAnzeige, { id: entity.entityId, x: entity.x + zuck.dx, y: entity.y + zuck.dy + FUSS_ABSTAND, hoehe: fig ? SPRITE_HOEHE * S : 22, schild: statuses?.[entity.entityId]?.shield ?? 0 }, jetzt, this.reducedMotion);
       this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId, fig ? S : 0, fig ? charakter.faction : null);
     }
   }
@@ -1414,6 +1424,7 @@ export class Renderer {
     zt.seitZiehen = jetzt - ws.zieh;
     zt.seitSchuss = jetzt - ws.schuss;
     zt.bereit = ladungAnteil(entity.cooldowns?.[waffe.id] ?? 0, waffe.cooldown);
+    zt.bereitSeit = BereitPuls.pruefe(ws.bereitZ ??= BereitPuls.neu(), waffe.id, zt.bereit, this.zeichenBild, jetzt);
     zt.treffer = treffer;
     const pose = waffenPose(par, zt, this.reducedMotion, this.waffenPoseTmp);
     const hand = figurHand(charakter?.id);
@@ -2385,7 +2396,7 @@ export class Renderer {
      */
     this.#drawSpuren();
     zeichneSeil(this.ctx, state.seil, state.entities ?? []); // Seil unter der Figur (`seilZeichnen.js`)
-    this.#drawEntities(state.entities ?? [], state.activePlayerId, aim, state.klassen);
+    this.#drawEntities(state.entities ?? [], state.activePlayerId, aim, state.klassen, state.statuses ?? null);
     this.#drawFaelle();
     this.#drawFigurEffekte();
     this.#drawGuenther(state.guenther);

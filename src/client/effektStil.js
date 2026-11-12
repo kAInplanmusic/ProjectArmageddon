@@ -416,6 +416,42 @@ export function zeichneMuendungsblitz(ctx, form, g, a, farbe) {
       ctx.fill();
       break;
     }
+    case 'bogen': {
+      // Schnittbogen: leuchtende Sichel, die mit dem Abklingen weiter nach vorn wandert.
+      ctx.lineCap = 'round';
+      const r = g * 0.9;
+      const vor = (1 - a) * g * 0.25;
+      ctx.globalAlpha = 0.85 * a;
+      ctx.lineWidth = 1 + 3 * a;
+      ctx.beginPath();
+      ctx.arc(-r * 0.7 + vor, 0, r, -0.85, 0.85);
+      ctx.stroke();
+      ctx.globalAlpha = 0.9 * a;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 0.6 + 1.2 * a;
+      ctx.beginPath();
+      ctx.arc(-r * 0.7 + vor, 0, r, -0.6, 0.6);
+      ctx.stroke();
+      break;
+    }
+    case 'stoss': {
+      // Stichspur: drei Linien hinter der Spitze, die Spitze selbst als heller Punkt.
+      ctx.lineCap = 'round';
+      ctx.globalAlpha = 0.8 * a;
+      ctx.lineWidth = 0.8 + 1.4 * a;
+      ctx.beginPath();
+      for (let i = -1; i <= 1; i += 1) {
+        ctx.moveTo(l * (0.2 - 0.1 * Math.abs(i)), i * g * 0.2);
+        ctx.lineTo(-l * (0.7 - 0.15 * Math.abs(i)), i * g * 0.2);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 0.95 * a;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(0, 0, g * 0.14 * (0.6 + a * 0.4) + 0.5, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
     default: {
       // funke: kurzer Fächer aus drei Strahlen und ein Kern.
       ctx.globalAlpha = 0.9 * a;
