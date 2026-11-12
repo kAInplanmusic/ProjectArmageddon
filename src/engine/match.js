@@ -1403,8 +1403,8 @@ export class MatchController {
    *
    * @returns {{ok:boolean, errors?:string[], projectileId?:number, hit?:object|null}}
    */
-  fire(playerId, angle, power, weaponId = null) {
-    return fire(this.#schussQuelle(), playerId, angle, power, weaponId);
+  fire(playerId, angle, power, weaponId = null, zuendzeit = null) {
+    return fire(this.#schussQuelle(), playerId, angle, power, weaponId, zuendzeit);
   }
 
   /**

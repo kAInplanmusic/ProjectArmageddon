@@ -83,10 +83,10 @@ function schiessen(match, schuetze, weaponId, winkel = 0, kraft = 100) {
   return { schuss, ereignisse };
 }
 
-test('Waffenfassung 20 ist Standard; 19 bis 15 bleiben gültig und bitgleich', () => {
+test('Waffenfassung 21 ist Standard; 20 bis 19 bis 15 bleiben gültig und bitgleich', () => {
   assert.equal(WAFFEN_TREFFER, 16);
   assert.equal(WAFFEN_KLASSE, 17);
-  assert.equal(WAFFEN_STANDARD, 20);
+  assert.equal(WAFFEN_STANDARD, 21); // Fassung 21 (Entscheidungen 2026-11-11)
   assert.equal(WAFFEN_TEMPO, 15);
 });
 
@@ -95,6 +95,8 @@ test('Die 33 betroffenen IDs spawnen mit Radius 0 und getrenntem Trefferfenster'
   const abweichungen = [];
 
   for (const id of BETROFFENE_IDS) {
+    // Handgranate: seit Fassung 21 mit echtem Radius (Entscheidung 13); ihr Altverhalten belegt der Fassung-20-Test.
+    if (id === 'pa_047') continue;
     // Vorbedingung: Der Katalog weist für diese Waffe keinen Flächenradius aus.
     const waffe = getWaffe(id, WAFFEN_STANDARD);
     if (waffe.blastRadius !== 0) abweichungen.push(`${id}: Katalogradius ${waffe.blastRadius}`);

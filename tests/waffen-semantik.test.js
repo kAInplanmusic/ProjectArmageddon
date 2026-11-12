@@ -298,11 +298,11 @@ test('W15: Reichweitenprüfung trennt Flug, Hitscan und Selbstwirkung über den 
     else if (waffe.delivery === 'laeufer') zaehlung.laeufer += 1; // Waffenfassung 20: Feuerwesen läuft, zerbirst bei Berührung
     else if (waffe.delivery === 'projectile') zaehlung.flug += 1;
   }
-  assert.deepEqual(zaehlung, { flug: 87, hitscan: 24, laeufer: 1, selbst: 38 },
+  assert.deepEqual(zaehlung, { flug: 91, hitscan: 21, laeufer: 1, selbst: 37 },
     'Aufteilung Flug/Hitscan/Selbstwirkung weicht vom gemessenen Erstaktionspfad ab');
 
-  // Genau diese sieben galten im alten Werkzeug fälschlich als 0-Reichweite.
-  for (const id of ['pa_076', 'pa_079', 'pa_093', 'pa_141', 'pa_143', 'pa_148', 'pa_149']) {
+  // Genau diese sechs (seit Fassung 21 ohne die Funkenkugel pa_079) galten im alten Werkzeug fälschlich als 0-Reichweite.
+  for (const id of ['pa_076', 'pa_093', 'pa_141', 'pa_143', 'pa_148', 'pa_149']) {
     const effekt = buildEffect(getWaffe(id));
     assert.ok(effekt && SELF_TARGET_KINDS.has(effekt.kind), `${id}: müsste Selbstwirkung sein, ist ${effekt?.kind}`);
     assert.ok(selbst.includes(id));

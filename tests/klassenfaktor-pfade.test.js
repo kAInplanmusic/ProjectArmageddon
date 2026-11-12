@@ -264,7 +264,7 @@ test('BAL-02: Fassung 16 und 15 bleiben bitgleich — dreimal 46, gleicher Zusta
 test('BAL-02: Fassung 17 folgt auf 16, der Standard enthält sie, und sie ändert nur den Strahlschaden', () => {
   assert.equal(WAFFEN_KLASSE, WAFFEN_TREFFER + 1);
   // Seit Fassung 18 (BAL-05), 19 (BAL-16) und 20 (Feuerwesen) ist 17 nicht mehr die jüngste; keine ändert den Strahl.
-  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB + 2);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB + 3);
   assert.equal(WAFFEN_NACHSCHUB, WAFFEN_KLASSE + 1);
   assert.equal(schuss(STRAHL, 'nahkampf').schaden, 34.5,
     'erst ab Fassung 17 gilt der Klassenfaktor im Strahl — der Test oben belegt Fassung 16 davor');

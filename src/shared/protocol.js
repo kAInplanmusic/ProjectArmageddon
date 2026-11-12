@@ -175,6 +175,11 @@ export const CONTROL = Object.freeze({
    */
   LOADOUTS: 'loadouts',
   /**
+   * Kisteninhalte (Allsehendes Auge, Waffenfassung 21): `{kisten:[{entityId, art, weaponId, ammo}]}`. Geht NUR an die Sitze
+   * des Teams, dessen Figur die Wirkung hat (nie an Gegner), und nur bei Änderung; eine leere Liste beendet die Anzeige.
+   */
+  KISTEN_SICHT: 'kisten_sicht',
+  /**
    * Terrain-Hash (Server -> Client), gesendet mit jedem Vollsnapshot (alle ~2 s):
    * `{hash, craters, inset, faellt}` — FNV-1a über die Kollisionsmaske (`CollisionMask.hash`),
    * Zahl der Logeinträge (Krater und gelandete Inseln), Mahlstrom-Einschnitt und Zahl der

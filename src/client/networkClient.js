@@ -555,6 +555,11 @@ export class NetworkClient {
         this.#emit('loadouts', message.loadouts ?? {});
         break;
 
+      case CONTROL.KISTEN_SICHT:
+        // Allsehendes Auge: Inhalt der Kisten, nur für das eigene Team (der Server filtert).
+        this.#emit('kisten_sicht', message.kisten ?? []);
+        break;
+
       case CONTROL.TERRAIN_HASH:
         this.#emit('terrain_hash', message);
         break;
@@ -647,13 +652,15 @@ export class NetworkClient {
     });
   }
 
-  sendInput(angle, power, weaponId = null) {
+  sendInput(angle, power, weaponId = null, zuendzeit = null) {
     if (!this.isConnected || !this.#socket) return false;
     const snapshot = this.latestSnapshot;
     this.#socket.send(controlMessage(CONTROL.INPUT, {
       angle,
       power,
       weaponId,
+      // Zündzeit (Waffenfassung 21): nur gesendet, wenn gewählt; der Server prüft gegen 1, 3, 5.
+      ...(zuendzeit === null ? {} : { zuendzeit }),
       // Nicht der rohe Snapshot-Tick, sondern der fortgeschriebene: siehe
       // `referenzTick` oben. Ein zu alter Tick lässt der Server als
       // „ausserhalb des Lag-Kompensationsfensters" fallen, und dann verpufft ein

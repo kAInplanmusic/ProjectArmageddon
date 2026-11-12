@@ -42,8 +42,8 @@ function schiesse({ match, schuetze }, waffeId) {
   return match.fire(schuetze, 0, 100, waffeId);
 }
 
-test('Standard ist Waffenfassung 20 (Feuerwesen), Fassung 14 bleibt der AERO-Windfaktor', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_KLASSE + 3);
+test('Standard ist Waffenfassung 21 (Entscheidungen), Fassung 14 bleibt der AERO-Windfaktor', () => {
+  assert.equal(WAFFEN_STANDARD, WAFFEN_KLASSE + 4);
   assert.equal(WAFFEN_KLASSE, WAFFEN_TREFFER + 1);
   assert.equal(WAFFEN_TREFFER, WAFFEN_TEMPO + 1);
   assert.equal(WAFFEN_TEMPO, WAFFEN_WIND + 1);

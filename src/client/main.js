@@ -17,6 +17,9 @@ import { MALI_LEITUNGSMARKE, maskeZuMali } from '../shared/config/schaden.js';
 import { isTextEntry } from './dom.js';
 import { haerteAusTreffer } from './gefuehl.js';
 import { MatchController, TEAM_COLORS } from '../engine/match.js';
+import { ZuendzeitSteuerung } from './zuendzeitSteuerung.js';
+import { kistenInhalt } from '../engine/kistenSicht.js';
+import { kistenMitInhalt } from './kistenSichtAnzeige.js';
 import { getTurnDurationForSize } from '../engine/systems/turnSystem.js';
 import { Renderer } from './renderer.js';
 import { Camera, ZOOM_GRENZEN } from './camera.js';
@@ -121,7 +124,7 @@ import {
 } from '../shared/achievements.js';
 import { beschreibeWert } from './wertBeschreibung.js';
 import { fraktionsEmblem, starteLadebild, zeigeSiegerFraktion } from './fraktionsAnzeige.js';
-import { wirkungLabel } from '../shared/config/wirkungstexte.js';
+import { sonderwirkungText } from './sonderwirkungText.js';
 
 /** Schlüssel des Profils im lokalen Speicher des Browsers. */
 /*
@@ -245,8 +248,8 @@ class Game {
       speicher: tonSpeicher(),
     });
     // Donner nach dem Blitz der Bildkulisse (`wetterLicht.js`): verzögert nach der Entfernung des Einschlags, nur bei sichtbarem Tab.
-    this.renderer.beiBlitz = (verzug) => {
-      globalThis.setTimeout?.(() => { if (globalThis.document?.visibilityState !== 'hidden') this.sound?.spieleDonner(); }, Math.round(verzug * 1000));
+    this.renderer.beiBlitz = (verzug, _x, donner) => { // `donner`: Lautstärke und Dumpfheit nach Entfernung (wetterZustand.donnerFuer)
+      globalThis.setTimeout?.(() => { if (globalThis.document?.visibilityState !== 'hidden') this.sound?.spieleDonner(donner); }, Math.round(verzug * 1000));
     };
     // Hörerposition für Stereolage und Abstandsdämpfung: Mitte und halbe Breite der Kamera.
     this.sound.setzeHoerer(() => {
@@ -362,6 +365,9 @@ class Game {
     this.eigenerSpielerId = null;
     this.eigeneSpielerIds = [];
     this.profil = this.#ladeProfil();
+    /** Zündzeit 1/3/5 s der Zünderwaffen (Waffenfassung 21, `zuendzeitSteuerung.js`; bindet HUD- und Touch-Knopf selbst). */
+    this.zuendzeit = new ZuendzeitSteuerung({ log: text => this.hud.log(text, 'accent'),
+      lage: () => ({ state: this.currentState(), fassung: this.match?.waffen ?? this.renderer?.waffenFassung ?? WAFFEN_STANDARD }) });
     /** Anzeige-Vorhersage für das Gehen im Netzspiel (`laufVorhersage.js`). */
     this.laufVorhersage = new LaufVorhersage();
 
@@ -424,6 +430,7 @@ class Game {
       onWeaponSelect: index => this.selectWeapon(index),
       // Aktive Waffe abwerfen (Q).
       onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()),
+      onZuendzeit: () => this.zuendzeit.schalte(),
       // Waffenmenü ein-/ausblenden (E).
       onWeaponMenu: () => this.waffenMenue.toggle(),
       // Springen (SHIFT), mit A/D als Richtung. NICHT die Leertaste — die lädt
@@ -1872,6 +1879,8 @@ class Game {
     // gelesen. Ein zusätzlicher Anstoß ist nicht nötig.
     this.remoteLoadouts = {};
     client.on('loadouts', table => { this.remoteLoadouts = table; });
+    this.remoteKistenSicht = [];
+    client.on('kisten_sicht', kisten => { this.remoteKistenSicht = Array.isArray(kisten) ? kisten : []; }); // Allsehendes Auge, nur eigenes Team
 
     await client.connect();
     // Laufende Latenzmessung, damit die HUD-Anzeige den echten Wert zeigt.
@@ -2372,7 +2381,7 @@ class Game {
         this.hud.log('Nicht am Zug', 'danger');
         return { ok: false, errors: ['Nicht am Zug'] };
       }
-      this.network.sendInput(this.aim.angle, power);
+      this.network.sendInput(this.aim.angle, power, null, this.zuendzeit.fuerAktiven());
       // Vorhersage SOFORT anlegen: Die Bahn wird gezeichnet, bevor die
       // Serverantwort eintrifft. Sie ist rein anzeigend (siehe
       // `shotPrediction.js`) — der Server entscheidet weiterhin über Gültigkeit
@@ -2398,7 +2407,7 @@ class Game {
     const playerId = this.match.activePlayerId;
     if (playerId === null) return { ok: false, errors: ['Kein aktiver Spieler'] };
 
-    const result = this.match.fire(playerId, this.aim.angle, power);
+    const result = this.match.fire(playerId, this.aim.angle, power, null, this.zuendzeit.fuerAktiven());
     if (!result.ok) {
       this.hud.log(`Schuss verweigert: ${result.errors[0] ?? 'unbekannt'}`, 'danger');
     } else {
@@ -2775,42 +2784,8 @@ class Game {
 
   /** Meldet eine Wirkung auf den Schützen im Protokoll. */
   #logSpecialEffect(payload) {
-    const name = this.#nameOf(payload.playerId);
-    switch (payload.kind) {
-      case 'heal':
-        this.hud.log(payload.healed > 0
-          ? `${name} heilt ${Math.round(payload.healed)} Lebenspunkte`
-          : `${name} ist bereits vollständig geheilt`, payload.healed > 0 ? 'good' : 'neutral');
-        break;
-      case 'shield':
-        this.hud.log(`${name} erhält ${Math.round(payload.shield)} Schild`, 'accent');
-        break;
-      case 'damage_boost':
-        this.hud.log(`${name} macht ×${payload.multiplier} Schaden`, 'accent');
-        break;
-      case 'armor':
-        this.hud.log(`${name} nimmt ${Math.round(payload.reduction * 100)} % weniger Schaden`, 'accent');
-        break;
-      case 'ammo':
-        this.hud.log(payload.restored > 0
-          ? `${name} füllt ${payload.restored} Ladungen nach`
-          : `${name} hat nichts nachzufüllen`, payload.restored > 0 ? 'good' : 'neutral');
-        break;
-      case 'move':
-        this.hud.log(`${name} versetzt sich um ${Math.round(Math.hypot(payload.moved?.dx ?? 0, payload.moved?.dy ?? 0))} px`, 'accent');
-        break;
-      case 'mine':
-        // Das Ereignis `mine_placed` meldet die Mine selbst (Protokoll und Blitz); hier keine zweite Zeile.
-        break;
-      case 'reveal':
-        this.hud.log(`${name} ist für ${payload.revealedTurns} Züge aufgedeckt`, 'accent');
-        break;
-      case 'random':
-        this.hud.log(`${name}: Zufallswirkung ${wirkungLabel(payload.randomKind)}`, 'accent');
-        break;
-      default:
-        this.hud.log(`${name} setzt ${wirkungLabel(payload.kind)} ein`);
-    }
+    const zeile = sonderwirkungText(payload, this.#nameOf(payload.playerId));
+    if (zeile) this.hud.log(zeile.text, zeile.art);
   }
 
   /**
@@ -3431,6 +3406,7 @@ class Game {
     // Flächenwirkung der gewählten Waffe für die Radius-Vorschau.
     const activeEntity = state.entities.find(entity => entity.entityId === playerId);
     const activeWeapon = activeEntity?.activeWeaponId ? getWaffe(activeEntity.activeWeaponId, this.match?.waffen ?? WAFFEN_STANDARD) : null;
+    this.zuendzeit.aktualisiere(activeWeapon, this.match?.waffen ?? WAFFEN_STANDARD, [document.getElementById('hud-zuendzeit'), document.getElementById('touch-zuendzeit')]);
 
     /*
      * Kamera auf den aktiven Spieler richten — und in dieser Ansicht auch
@@ -3478,7 +3454,10 @@ class Game {
       this.kameraSteuerung.aktualisiereKnopf(state, this.renderer.terrainLayer, this.renderer.reducedMotion); // Übersichtskarte (Taste M)
     }
 
-    this.renderer.render(state, {
+    // Allsehendes Auge: Kisteninhalt für den Nutzer (lokal: aktive Figur; online: nur was der Server dem Team schickt).
+    const kistenSicht = this.mode === 'online' ? this.remoteKistenSicht
+      : (this.mode === 'local' && this.match ? kistenInhalt(this.match.world, this.match.statuses, this.match.activePlayerId) : null);
+    this.renderer.render(kistenSicht?.length ? { ...state, crates: kistenMitInhalt(state.crates, kistenSicht) } : state, {
       aimPreview,
       prediction,
       // Während des Ladens zeigt die Anzeige die aufgeladene Zahl — dieselbe,

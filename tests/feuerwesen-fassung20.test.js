@@ -92,9 +92,9 @@ function lauf(f, { winkel = 0.3, kraft = 50, waffe = FEUERWESEN, vorher = null }
   return { r, ereignisse, typ, lagen, hashes, takte, m };
 }
 
-test('Fassung 20 ist der Standard und folgt direkt auf Fassung 19; nur sie kennt den Läufer', () => {
+test('Fassung 20 folgt direkt auf Fassung 19 (Standard ist seit Fassung 21 die Entscheidung); der Läufer bleibt', () => {
   assert.equal(WAFFEN_FEUERWESEN, WAFFEN_STREU + 1);
-  assert.equal(WAFFEN_STANDARD, WAFFEN_FEUERWESEN);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_FEUERWESEN + 1, 'Fassung 21 ist der Standard');
   assert.equal(normalisiereWaffen(20), WAFFEN_FEUERWESEN);
   assert.equal(normalisiereWaffen(19), WAFFEN_STREU, 'Fassung 19 bleibt eine gültige Marke (alte Replays)');
   const neu = getWaffe(FEUERWESEN, WAFFEN_FEUERWESEN);

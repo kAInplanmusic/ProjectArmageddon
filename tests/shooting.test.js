@@ -77,12 +77,12 @@ test('fire() ist ein reiner Delegator', () => {
    * einen Aufruf enthalten.
    */
   const code = ohneKommentare(quelle('src/engine/match.js'));
-  const rumpf = /fire\(playerId, angle, power, weaponId = null\)\s*\{([\s\S]*?)\n {2}}/.exec(code);
+  const rumpf = /fire\(playerId, angle, power, weaponId = null, zuendzeit = null\)\s*\{([\s\S]*?)\n {2}}/.exec(code);
 
   assert.ok(rumpf, 'die Methode fire(playerId, …) wurde nicht gefunden');
   const inhalt = rumpf[1].trim();
 
-  assert.equal(inhalt, 'return fire(this.#schussQuelle(), playerId, angle, power, weaponId);',
+  assert.equal(inhalt, 'return fire(this.#schussQuelle(), playerId, angle, power, weaponId, zuendzeit);',
     `fire() ist kein reiner Delegator mehr. Rumpf:\n${inhalt}`);
 
   // Und die Quelle trägt die Schieß-Primitive, die im Match bleiben.

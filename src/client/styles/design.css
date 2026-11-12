@@ -1387,3 +1387,8 @@ select option { background: #14181d; color: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   #kamera-kette { animation: none; }
 }
+
+/* Zündzeit einer Zünderwaffe (Waffenfassung 21): Knopf im HUD, auch für Touch und Bildschirmleser. */
+#hud-zuendzeit, #touch-zuendzeit { min-height: 32px; min-width: 88px; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffc21f; background: rgba(20, 24, 32, 0.85); color: #ffe9a8; font: inherit; font-weight: 600; cursor: pointer; }
+#hud-zuendzeit:focus-visible, #touch-zuendzeit:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+#hud-zuendzeit[hidden], #touch-zuendzeit[hidden] { display: none; }

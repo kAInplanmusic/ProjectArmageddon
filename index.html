@@ -61,6 +61,7 @@
         <button type="button" data-aktion="sprung-links" aria-label="Nach links springen">⤴ Links</button>
         <button type="button" data-aktion="sprung-rechts" aria-label="Nach rechts springen">Rechts ⤴</button>
         <button type="button" data-aktion="abwurf" aria-label="Aktive Waffe abwerfen">Abwurf</button>
+        <button type="button" data-aktion="zuendzeit" id="touch-zuendzeit" hidden aria-label="Zündzeit wechseln"></button>
         <!-- Seil (Seilfassung 2): wählen; FEUER schießt und löst, Gehen-Knöpfe schwingen, ▲/▼ gehalten = einholen/ausfahren. -->
         <button type="button" data-aktion="seil" aria-label="Seil wählen (Feuer schießt das Seil, am Seil löst es)">Seil</button>
         <button type="button" data-seil="hoch" aria-label="Seil einholen (gedrückt halten)">Seil ▲</button>
@@ -246,6 +247,8 @@
           <span>Kraft <span class="value" id="hud-power">55</span></span>
           <span>Radius <span class="value" id="hud-blast">—</span></span>
           <span id="hud-active">—</span>
+          <!-- Zündzeit einer Zünderwaffe (Waffenfassung 21): Taste Z oder dieser Knopf wechselt 1 / 3 / 5 s. -->
+          <button type="button" id="hud-zuendzeit" hidden title="Zündzeit wechseln (Z)"></button>
           <!-- Kamera folgt/frei (Taste C); Mausrad zoomt, Ziehen mit mittlerer/rechter Taste verschiebt (src/client/kameraSteuerung.js). -->
           <button type="button" id="hud-kamera" aria-pressed="true" title="Kamera folgt / frei (C)">
             <span data-kamera-text>Kamera folgt</span> <kbd aria-hidden="true">C</kbd>
@@ -311,6 +314,7 @@
             <span><b>P</b> Zug überspringen (höchstens zweimal hintereinander)</span>
             <span><b>1–9</b> Waffe wählen</span>
             <span><b>Q</b> Waffe abwerfen</span>
+            <span><b>Z</b> Zündzeit der Zünderwaffe: 1, 3 oder 5 Sekunden (auch Knopf „Zünder“ in der Zielanzeige)</span>
             <span><b>E</b> Waffenmenü (Besitz als Auswahl)</span>
             <span><b>M</b> Musik stumm/laut · <b>T</b> Effekte stumm/laut</span>
             <span><b>C</b> Kamera folgt/frei · <b>Mausrad</b> Zoom · <b>Mitteltaste/Rechtsziehen</b> verschieben</span>

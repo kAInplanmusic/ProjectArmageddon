@@ -49,12 +49,13 @@
  */
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STREU, WAFFEN_FEUERWESEN } from '../shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STREU, WAFFEN_FEUERWESEN, WAFFEN_ENTSCHEIDUNG } from '../shared/config/waffen-fassung.js';
 import { WIND_JE_ZUG, WIND_FAKTOR_MAX } from '../shared/config/wind.js';
 import { combatProfile, klassenKennung } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { bodenNaheHoehe } from './boden.js';
-import { raycastSegment, simulateFlight } from '../shared/ballistics.js';
+import { istZuendzeit } from '../shared/config/waffen-f21.js';
+import { raycastSegment, simulateFlight, PROJECTILE_GRAVITY, PROJECTILE_DRAG } from '../shared/ballistics.js';
 import { weitenFaktor } from '../shared/reichweite.js';
 import { damageTypeId } from './damageTypes.js';
 import { wendeElementAn } from './elementSpur.js';
@@ -86,16 +87,16 @@ const RANDOM_MOVE_DISTANCE = 60;
  * @param {string|null} weaponId
  * @returns {{ok:boolean, errors?:string[], projectileId?:number|null, hit?:object|null, special?:object}}
  */
-export function fire(quelle, playerId, angle, power, weaponId = null) {
+export function fire(quelle, playerId, angle, power, weaponId = null, zuendzeit = null) {
   // Vom Seil (Seilfassung 2, `engine/seil.js`): alles außer Nahkampf; ein Schuss löst das Seil (der Schwung bleibt).
   const vomSeil = quelle.seil?.vorWaffe(playerId, weaponId ?? quelle.inventory.getActiveWeaponId(playerId)) ?? null;
   if (vomSeil && !vomSeil.ok) return vomSeil;
-  const ergebnis = feuere(quelle, playerId, angle, power, weaponId);
+  const ergebnis = feuere(quelle, playerId, angle, power, weaponId, zuendzeit);
   if (vomSeil && ergebnis.ok) quelle.seil.loesen(playerId, 'waffe');
   return ergebnis;
 }
 
-function feuere(quelle, playerId, angle, power, weaponId) {
+function feuere(quelle, playerId, angle, power, weaponId, zuendzeit = null) {
   const errors = [];
   if (quelle.status !== 'playing') errors.push('Match läuft nicht');
   if ((quelle.turnPauseMs ?? 0) > 0) errors.push('Zugpause: der Zug beginnt gleich');
@@ -116,8 +117,20 @@ function feuere(quelle, playerId, angle, power, weaponId) {
   }
 
   const resolvedWeaponId = weaponId ?? quelle.inventory.getActiveWeaponId(playerId);
-  const weapon = resolvedWeaponId ? getWaffe(resolvedWeaponId, quelle.waffenFassung) : null;
+  let weapon = resolvedWeaponId ? getWaffe(resolvedWeaponId, quelle.waffenFassung) : null;
   if (!weapon) return { ok: false, errors: ['Keine Waffe ausgewählt'] };
+  /*
+   * Fassung 21 (Entscheidung 10): Der Schütze stellt die Zündzeit einer Zünderwaffe auf 1, 3 oder 5 s (wie Worms).
+   * Ohne Angabe bleibt der Katalogwert der Waffe. Die Eingabe wird hier gegen die erlaubten Werte geprüft (der Server
+   * vertraut dem Client nicht); bis Fassung 20 und bei Waffen ohne Zünder bleibt sie ohne Wirkung und wird abgelehnt
+   * nur, wenn sie ungültig ist. Die Zeit steckt in einer Kopie der Waffe: Lebensdauer und Zünder lesen sie von dort.
+   */
+  if (zuendzeit !== null && zuendzeit !== undefined) {
+    if (!istZuendzeit(zuendzeit)) return { ok: false, errors: ['Zündzeit muss 1, 3 oder 5 Sekunden sein'] };
+    if (quelle.waffenFassung >= WAFFEN_ENTSCHEIDUNG && (weapon.fuseTime ?? 0) > 0 && weapon.fuseTime !== zuendzeit) {
+      weapon = Object.freeze({ ...weapon, fuseTime: zuendzeit });
+    }
+  }
 
   // Nachladezeit prüfen, BEVOR Munition verbraucht wird — sonst kostet ein
   // abgelehnter Schuss eine Ladung.
@@ -597,8 +610,25 @@ function resolveStrike(quelle, weapon, x, y, angle, power) {
   const richtung = Math.cos(angle) >= 0 ? -1 : 1;
   const weite = 420;
   const tempo = 12;
+  const spawnY = Math.max(0, zielY - 60);
+  /*
+   * Fassung 21: Ein Flankenschlag ist ein Projektil (Höllenkanone). Mit dem festen Abwärtstempo 2 sinkt es auf 420 px
+   * Flug um rund 200 px und verfehlt das Ziel (Beleg: `tools/waffenbalance-kollisionsmatrix.mjs`, 35 Versuche ohne
+   * Treffer). Die Steigung wird deshalb so gewählt, dass die Bahn (Schwerkraft, Luftwiderstand wie `integrateStep`)
+   * den Zielpunkt in der Höhe erreicht. Bis Fassung 20 bleibt es beim festen Wert.
+   */
+  if (quelle.waffenFassung >= WAFFEN_ENTSCHEIDUNG && weapon.delivery === 'projectile') {
+    const g = PROJECTILE_GRAVITY * (weapon.gravityScale || 1);
+    let vx = tempo; let vy = 0; let x = 0; let y = 0; let steigung = 0; let faktor = 1;
+    for (let k = 0; k < 400 && x < weite; k += 1) {
+      vy += g; vx *= PROJECTILE_DRAG; vy *= PROJECTILE_DRAG;
+      x += vx; y += vy;
+      faktor *= PROJECTILE_DRAG; steigung += faktor;
+    }
+    return { spawn: { x: zielX + richtung * weite, y: spawnY }, vx: -richtung * tempo, vy: (zielY - spawnY - y) / steigung };
+  }
   return {
-    spawn: { x: zielX + richtung * weite, y: Math.max(0, zielY - 60) },
+    spawn: { x: zielX + richtung * weite, y: spawnY },
     vx: -richtung * tempo,
     vy: 2,
   };
@@ -646,9 +676,19 @@ export function projectileLifetime(quelle, playerId, angle, power, weapon = null
    * hier mit dem WEITENfaktor der Karte.
    */
   const reichweite = waffe.maxRange * weitenFaktor(quelle.width);
-  return Math.max(30, Math.round(
+  const deckel = Math.max(30, Math.round(
     reichweite / Math.max(1, Math.hypot(vx, vy)),
   ) * 1.5, fuseTicksFor(waffe) + 30);
+  if (!(quelle.waffenFassung >= WAFFEN_ENTSCHEIDUNG)) return deckel;
+  /*
+   * Fassung 21 (Entscheidung 25, BAL-1): Der Deckel `maxRange × 1,5` lag bei 465 von 1425 Kombinationen unter der
+   * tatsächlichen Wurfweite (Waffe × Klasse × Kartengröße) — das Geschoss verfiel (detonierte) mitten im Flug. Jetzt
+   * ist der Deckel mindestens die Flugzeit über ebenem Grund (`2·v_auf / g`, mit 25 % Reserve für Luftwiderstand
+   * und tiefer liegendes Ziel). Der alte Deckel bleibt die Untergrenze; kein Schuss wird kürzer als vorher.
+   */
+  const g = PROJECTILE_GRAVITY * (waffe.gravityScale || 1);
+  const aufwaerts = Math.max(0, -vy);
+  return Math.max(deckel, Math.ceil((2 * aufwaerts / g) * 1.25));
 }
 
 /**

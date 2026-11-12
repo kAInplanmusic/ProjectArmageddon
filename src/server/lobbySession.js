@@ -21,6 +21,7 @@
  * @module lobbySession
  */
 import { MatchController } from '../engine/match.js';
+import { kistenInhalt } from '../engine/kistenSicht.js';
 import { LOBBY_STATUS } from './lobby.js';
 import { SnapshotHistory } from './lagCompensation.js';
 import {
@@ -372,7 +373,7 @@ export class LobbySession {
       this.match.inventory.selectWeapon(entry.playerId, entry.weaponId);
       return;
     }
-    this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId ?? null);
+    this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId ?? null, entry.zuendzeit ?? null);
   }
 
   /**
@@ -921,7 +922,8 @@ export class LobbySession {
      */
     const waffe = command.input.weaponId
       ?? this.match.inventory.getActiveWeaponId(seat.entityId);
-    const result = this.match.fire(seat.entityId, command.input.angle, command.input.power, waffe);
+    const zuendzeit = command.input.zuendzeit ?? null; // Waffenfassung 21; vom Motor gegen 1/3/5 geprüft
+    const result = this.match.fire(seat.entityId, command.input.angle, command.input.power, waffe, zuendzeit);
     if (result.ok) {
       this.recorder.recordInput({
         tick: currentTick,
@@ -934,6 +936,7 @@ export class LobbySession {
     return { ok: result.ok, errors: result.errors ?? [], interpolatedFrom: history?.tick ?? null };
   }
 
+        zuendzeit,
   handleWeaponSelect(token, weaponId) {
     // Die Waffe wird für die AKTIVE eigene Figur gewählt — siehe #platzFuer.
     const seat = this.#platzFuer(token);
@@ -1315,10 +1318,39 @@ export class LobbySession {
     // die Positionen folgen — so zeigt die Anzeige den passenden Munitionsstand.
     this.syncLoadouts();
 
+  /**
+   * Allsehendes Auge: schickt den Inhalt aller Kisten nur an die Sitze des Teams, dessen Figur die Wirkung hat. Pro Team
+   * wird die Liste der Figuren mit laufender Wirkung vereinigt; gesendet wird nur bei Änderung (auch die leere Liste, die
+   * die Anzeige beendet). Der Inhalt steht nicht im öffentlichen Zustand — ein Gegner erfährt ihn nie.
+   */
+  #syncKistenSicht() {
+    const jeTeam = new Map();
+    for (const seat of this.lobby.seats) {
+      if (seat.entityId === null || seat.entityId === undefined) continue;
+      const liste = kistenInhalt(this.match.world, this.match.statuses, seat.entityId);
+      if (!jeTeam.has(seat.teamId)) jeTeam.set(seat.teamId, []);
+      if (liste.length) jeTeam.get(seat.teamId).push(...liste);
+    }
+    this.kistenSichtStand ??= new Map();
+    for (const [team, roh] of jeTeam) {
+      const kisten = [...new Map(roh.map(k => [k.entityId, k])).values()];
+      const signatur = JSON.stringify(kisten);
+      if (signatur === (this.kistenSichtStand.get(team) ?? '[]') ) continue;
+      this.kistenSichtStand.set(team, signatur);
+      const nachricht = controlMessage(CONTROL.KISTEN_SICHT, { kisten });
+      for (const seat of this.lobby.seats) {
+        if (seat.teamId !== team || seat.token === null) continue;
+        const socket = this.clients.get(seat.token);
+        if (socket && socket.readyState === 1) socket.send(nachricht);
+      }
+    }
+  }
+
     this.snapshotCounter += 1;
     const rohZustand = this.match.getState();
     // Zustände liegen getrennt nach Spieler-ID vor; das Drahtformat führt sie
     // je Spieler. Deshalb hier zusammenführen — sonst müsste der Client zwei
+    this.#syncKistenSicht();
     // getrennte Strukturen synchron halten.
     const statuses = rohZustand.statuses ?? {};
     const state = {

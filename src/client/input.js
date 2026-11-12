@@ -227,6 +227,11 @@ export class InputController {
       this.#handlers.onWeaponDrop?.();
       return;
     }
+    // Z wechselt die Zündzeit einer Zünderwaffe (1 / 3 / 5 s, Waffenfassung 21).
+    if (key === 'z') {
+      this.#handlers.onZuendzeit?.();
+      return;
+    }
     // E öffnet/schließt das Waffenmenü (Dropdown des Besitzes).
     if (key === 'e') {
       this.#handlers.onWeaponMenu?.();

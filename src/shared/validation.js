@@ -8,6 +8,7 @@
  * @module validation
  */
 import { WEAPONS_BY_ID } from './config/weapons.js';
+import { istZuendzeit } from './config/waffen-f21.js';
 
 export const INPUT_LIMITS = Object.freeze({
   angleMin: 0,
@@ -84,6 +85,8 @@ export function normalizeInput(raw = {}) {
   const angle = typeof raw.angle === 'number' ? raw.angle : Number.NaN;
   const power = typeof raw.power === 'number' ? raw.power : Number.NaN;
   const result = { angle, power, type: raw.type ?? 'fire', weaponId: raw.weaponId ?? null };
+  // Zündzeit (Waffenfassung 21): fehlt = Katalogwert der Waffe; sonst genau 1, 3 oder 5 (Zahl, keine Zeichenkette).
+  if (raw.zuendzeit !== undefined && raw.zuendzeit !== null) result.zuendzeit = raw.zuendzeit;
 
   const errors = [];
   /*
@@ -102,6 +105,9 @@ export function normalizeInput(raw = {}) {
   }
   if (!isValidPower(power)) {
     errors.push(`power muss zwischen ${INPUT_LIMITS.powerMin} und ${INPUT_LIMITS.powerMax} liegen`);
+  }
+  if (result.zuendzeit !== undefined && !istZuendzeit(result.zuendzeit)) {
+    errors.push('zuendzeit muss 1, 3 oder 5 sein');
   }
   if (raw.type !== undefined && typeof raw.type !== 'string') {
     errors.push('type muss eine Zeichenkette sein');

@@ -239,7 +239,7 @@ export class ReplayRecorder {
    *   (`seil` = Seilaktion der Seilfassung 2: `aktion` schuss|loesen|steuer mit `winkel` bzw. `sx`/`sy`)
    *   (`select` = Waffenwahl; sie ist Zustand und entscheidet über spätere Schüsse)
    */
-  recordInput({ tick, playerId, angle, power, weaponId = null, seitlich = 0, richtung = 0, salto = false, aktion = null, winkel = null, sx = 0, sy = 0, kind = 'shot' }) {
+  recordInput({ tick, playerId, angle, power, weaponId = null, seitlich = 0, richtung = 0, salto = false, aktion = null, winkel = null, sx = 0, sy = 0, kind = 'shot', zuendzeit = null }) {
     if (!Number.isInteger(tick) || tick < 0) {
       throw new TypeError('tick muss eine nichtnegative Ganzzahl sein');
     }
@@ -288,6 +288,8 @@ export class ReplayRecorder {
       eintrag.angle = angle;
       eintrag.power = power;
       eintrag.weaponId = weaponId ?? null;
+      // Zündzeit (Waffenfassung 21): nur wenn gewählt; ältere Einträge bleiben unverändert.
+      if (zuendzeit !== null && zuendzeit !== undefined) eintrag.zuendzeit = zuendzeit;
     }
     this.#entries.push(eintrag);
     return this;
@@ -591,7 +593,7 @@ export class ReplayPlayer {
       const ok = this.match.inventory.selectWeapon(entry.playerId, entry.weaponId);
       return ok ? { ok } : { ok, errors: ['Waffe nicht verfügbar'] };
     }
-    return this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId);
+    return this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId, entry.zuendzeit ?? null);
   }
 
   /**

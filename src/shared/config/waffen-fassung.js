@@ -85,6 +85,7 @@ import { WAFFEN_F12_WERTE } from './waffen-f12.js';
 import { WAFFEN_F15_WERTE } from './waffen-f15.js';
 import { WAFFEN_F19_WERTE } from './waffen-f19.js';
 import { WAFFEN_F20_WERTE } from './waffen-f20.js';
+import { WAFFEN_F21_WERTE } from './waffen-f21.js';
 
 export const WAFFEN_ALT = 1;
 export const WAFFEN_BALANCE = 2;
@@ -150,7 +151,14 @@ export const WAFFEN_STREU = 19;
  * bitgleich (`tests/feuerwesen-fassung20.test.js`).
  */
 export const WAFFEN_FEUERWESEN = 20;
-export const WAFFEN_STANDARD = WAFFEN_FEUERWESEN;
+/**
+ * Fassung 21 (Entscheidungen des Auftraggebers vom 2026-11-11, GP-1/GP-2): Kaktusbombe Gift, Handgranate mit Radius,
+ * Luftangriff/Meteorregen/Höllenkanone als Projektil, Abklingzeit Astralkugel/Gedankensturm 2, Gift-Deckel, Zünder +15 %,
+ * Kategorien nach Wirkung, dazu Regeln im Motor (Zündzeit 1/3/5 s, Lebensdauerdeckel, Doppeltreffer). Werte in
+ * `config/waffen-f21.js`. Fassungen 1 bis 20 bleiben bitgleich (`tests/waffen-fassung21.test.js`).
+ */
+export const WAFFEN_ENTSCHEIDUNG = 21;
+export const WAFFEN_STANDARD = WAFFEN_ENTSCHEIDUNG;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -163,7 +171,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT || fassung === WAFFEN_WIND || fassung === WAFFEN_TEMPO || fassung === WAFFEN_TREFFER || fassung === WAFFEN_KLASSE || fassung === WAFFEN_NACHSCHUB || fassung === WAFFEN_STREU || fassung === WAFFEN_FEUERWESEN ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT || fassung === WAFFEN_WIND || fassung === WAFFEN_TEMPO || fassung === WAFFEN_TREFFER || fassung === WAFFEN_KLASSE || fassung === WAFFEN_NACHSCHUB || fassung === WAFFEN_STREU || fassung === WAFFEN_FEUERWESEN || fassung === WAFFEN_ENTSCHEIDUNG ? fassung : WAFFEN_STANDARD;
 }
 
 /**
@@ -455,13 +463,14 @@ function waffeDerFassung(id, fassung) {
     const f15 = fassung >= WAFFEN_TEMPO ? WAFFEN_F15_WERTE[id] : null;
     const f19 = fassung >= WAFFEN_STREU ? WAFFEN_F19_WERTE[id] : null;
     const f20 = fassung >= WAFFEN_FEUERWESEN ? WAFFEN_F20_WERTE[id] : null;
-    if (!f5 && !f7 && !f8 && !f10 && !f11 && !f12 && !f15 && !f19 && !f20) return waffe;
+    const f21 = fassung >= WAFFEN_ENTSCHEIDUNG ? WAFFEN_F21_WERTE[id] : null;
+    if (!f5 && !f7 && !f8 && !f10 && !f11 && !f12 && !f15 && !f19 && !f20 && !f21) return waffe;
     const schluessel5 = `${fassung}:${id}`;
     let kopie5 = zwischenspeicher.get(schluessel5);
     if (!kopie5) {
       // `wirkung` der Fassung 11 ergänzt die der Fassung 10 (Weite, Menge, Pause bleiben), ersetzt sie nicht.
       const wirkung = f10?.wirkung && f11?.wirkung ? { wirkung: Object.freeze({ ...f10.wirkung, ...f11.wirkung }) } : {};
-      kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10, ...f11, ...f12, ...wirkung, ...f15, ...f19, ...f20 });
+      kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10, ...f11, ...f12, ...wirkung, ...f15, ...f19, ...f20, ...f21 });
       zwischenspeicher.set(schluessel5, kopie5);
     }
     return kopie5;

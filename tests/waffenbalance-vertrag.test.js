@@ -75,7 +75,10 @@ test('Frische Munition: 9 unbegrenzt, 73x3, 48x2, 20x1 — aus dem Inventar', as
 
   // Jeder Einzelwert stimmt mit der Munitionsklasse des aktuellen Katalogs überein.
   for (const zeile of v.waffen) {
-    const klasse = munitionsKlasse(getWaffe(zeile.id, WAFFEN_STANDARD));
+    /* Das Inventar liest die Munitionsklasse aus dem Grundkatalog. Der Nutzwert aus Fassung 21 (Entscheidung 9)
+     * hebt pa_088 und pa_114 im Rang, verschiebt die Frischmunition aber bewusst nicht (offen, siehe
+     * docs/waffen-entscheidungen-2026-11-11.md); deshalb gilt hier die Katalogklasse. */
+    const klasse = munitionsKlasse(WEAPONS.find(w => w.id === zeile.id));
     assert.equal(zeile.frischmunition, Number.isFinite(klasse) ? klasse : 'unbegrenzt',
       `${zeile.id}: Frischmunition ${zeile.frischmunition} statt ${klasse}`);
   }

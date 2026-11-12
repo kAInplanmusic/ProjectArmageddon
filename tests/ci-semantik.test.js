@@ -78,7 +78,8 @@ function schuss(weaponId) {
 // ------------------------------------------------- Trefferfenster und Radius
 
 test('W18 Radius: ein deklarierter Radius bleibt, das 24er-Fenster füllt nur Lücken', () => {
-  const mitFlaeche = WEAPONS.find(w => w.delivery === 'projectile' && w.blastRadius >= 40);
+  // Vergleich gegen den Stand der Standardfassung (Fassung 21 ändert Radien einzelner Waffen).
+  const mitFlaeche = WEAPONS.map(w => getWaffe(w.id)).find(w => w.delivery === 'projectile' && w.blastRadius >= 40);
   assert.ok(mitFlaeche, 'keine Projektilwaffe mit deklariertem Radius im Katalog');
 
   const deklariert = schuss(mitFlaeche.id).radius;
@@ -87,7 +88,7 @@ test('W18 Radius: ein deklarierter Radius bleibt, das 24er-Fenster füllt nur L�
     + 'der 24er-Fallback darf einen deklarierten Radius nicht ersetzen');
 
   // Gegenfall: ohne Deklaration bekommt ein Geschoss das Trefferfenster, aber keinen Schadensradius.
-  const ohneFlaeche = WEAPONS.find(w => w.category === 'ranged' && w.blastRadius === 0 && w.damage > 0);
+  const ohneFlaeche = WEAPONS.map(w => getWaffe(w.id)).find(w => w.category === 'ranged' && w.blastRadius === 0 && w.damage > 0);
   assert.ok(ohneFlaeche, 'keine Geschosswaffe ohne Flächenwirkung im Katalog');
   const geschoss = schuss(ohneFlaeche.id);
   assert.equal(geschoss.radius, 0,
@@ -142,8 +143,8 @@ test('W18 Radius: 0 trifft nur das Ziel, ein echter Radius trifft das zweite Zie
 // --------------------------------------------------------- Waffenversion
 
 test('W18 Waffenversion: Standard ist die aktuelle Fassung, Altfassungen sehen spätere Schichten nicht', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_FEUERWESEN,
-    'WAFFEN_STANDARD muss die jüngste Fassung sein — sonst zeigt das Spiel alte Werte');
+  assert.equal(WAFFEN_STANDARD, WAFFEN_FEUERWESEN + 1,
+    'WAFFEN_STANDARD muss die jüngste Fassung sein (21, Entscheidungen 2026-11-11) — sonst zeigt das Spiel alte Werte');
   assert.equal(WAFFEN_FEUERWESEN, WAFFEN_STREU + 1,
     'die neue Fassung ist genau eine Stufe nach der Streuung (20 nach 19, Feuerwesen)');
   assert.equal(WAFFEN_STREU, WAFFEN_NACHSCHUB + 1,

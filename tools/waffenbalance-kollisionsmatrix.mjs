@@ -214,13 +214,13 @@ ergebnis.szenarien = szenarien();
 fs.mkdirSync(ZIEL, { recursive: true });
 fs.writeFileSync(path.join(ZIEL, 'kollisionsmatrix.json'), JSON.stringify(ergebnis, null, 2) + '\n');
 
-/* Vertrag: 150 Waffen, 112 Angriff, 38 Selbst — und jeder Nachweis vollständig. */
+/* Vertrag: 150 Waffen, 113 Angriff, 37 Selbst — und jeder Nachweis vollständig. */
 if (!NUR) {
   assert.equal(ergebnis.summary.waffen, 150);
-  assert.equal(ergebnis.summary.angriff, 112);
-  assert.equal(ergebnis.summary.selbst, 38);
-  assert.equal(ergebnis.summary.angriffMitKollision, 112, 'nicht jede Angriffswaffe hat eine Kollision');
-  assert.equal(ergebnis.summary.selbstMitNutzen, 38, 'nicht jede Selbstwirkung hat einen Nutzwert');
+  assert.equal(ergebnis.summary.angriff, 113);
+  assert.equal(ergebnis.summary.selbst, 37);
+  assert.equal(ergebnis.summary.angriffMitKollision, 113, 'nicht jede Angriffswaffe hat eine Kollision');
+  assert.equal(ergebnis.summary.selbstMitNutzen, 37, 'nicht jede Selbstwirkung hat einen Nutzwert');
   for (const w of angriff) {
     assert.ok(w.probe?.kollision, `${w.id}: Kollision fehlt`);
     assert.equal(w.probe.kontrollierteExplosion, false, `${w.id}: Explosionsaufruf statt Kollision`);
@@ -229,12 +229,12 @@ if (!NUR) {
   assert.equal(ergebnis.kontrollfall.kollisionsEreignisse, 0,
     'Der kontrollierte Explosionsaufruf darf kein Kollisionsereignis erzeugen');
 }
-console.log(`\nFertig: ${ergebnis.summary.waffen} Waffen, ${ergebnis.summary.angriffMitKollision}/112 Kollisionen, `
-  + `${ergebnis.summary.angriffMitSchaden}/112 mit Schaden, ${ergebnis.summary.selbstMitNutzen}/38 Selbstwirkungen mit Nutzen.`);
+console.log(`\nFertig: ${ergebnis.summary.waffen} Waffen, ${ergebnis.summary.angriffMitKollision}/113 Kollisionen, `
+  + `${ergebnis.summary.angriffMitSchaden}/113 mit Schaden, ${ergebnis.summary.selbstMitNutzen}/37 Selbstwirkungen mit Nutzen.`);
 console.log(`Kontrollfall: wendeExplosionAn richtet ${ergebnis.kontrollfall.schaden} Schaden an, `
   + `meldet aber ${ergebnis.kontrollfall.kollisionsEreignisse} Kollisionsereignisse.`);
 if (!NUR) {
-  console.log(`Rollenentfernung erreicht: ${ergebnis.summary.rollenDistanzErreicht}/112`
+  console.log(`Rollenentfernung erreicht: ${ergebnis.summary.rollenDistanzErreicht}/113`
     + (ergebnis.summary.angriffNurKollision.length ? `; nur Kollision: ${ergebnis.summary.angriffNurKollision.map(w => w.id).join(', ')}` : ''));
 }
 
