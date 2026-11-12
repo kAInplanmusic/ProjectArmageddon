@@ -22,8 +22,11 @@ unverändert weiter.
 ## §3 Prüfen vor dem Übergeben
 
 - `npm test` (Unit, setzt `PA_ZUGPAUSE_SEKUNDEN=0`) muss grün sein.
-- `npm run check:docs` muss grün sein; Zahlen in `README.md` und `MASTERDOTO.md`
-  bleiben konsistent mit dem Code.
+- `npm run check:docs` muss grün sein. Testzahlen stehen **nicht von Hand** in
+  `README.md`/`MASTERDOTO.md`, sondern in erzeugten Blöcken aus `docs/testlauf.json`
+  (`npm run testlauf:erfassen` nach einem nachweisbaren Lauf, dann
+  `npm run check:docs -- --schreiben`). Zahl und Datum nennt nur ein echter Lauf; den
+  Verlauf führt Git. Bei einem Konflikt im Block: Seite wählen, `--schreiben` ausführen.
 - E2E: `npx playwright test` (Config setzt die Zugpause auf 0). Betroffene Specs
   immer laufen lassen.
 - `src/engine/match.js` bleibt ≤ 2790 Zeilen (Zeilenbudget-Test; nach dem Auszug der Kartenmaße 2718, nur verschärfen).
@@ -34,6 +37,12 @@ unverändert weiter.
 Arbeit auf einem eigenen Branch, kleine Commits, Ergebnis nach `main` mergen und
 pushen. Nur eigene Dateien stagen (Working Tree kann mit anderen Agenten geteilt
 sein). Keine fremde Historie umschreiben. Keine Geheimnisse einchecken.
+
+**Pakete einzeln mergen (OPT-6):** Jedes Paket wird nach `main` gebracht, sobald es
+fertig und geprüft ist, nicht gemeinsam mit anderen Paketen. Vor dem Merge:
+`git pull --rebase`, dann `npm run paket:stand` (Exit 1, wenn `main` dem Paket
+vorausgelaufen ist), Tests und `check:docs` auf dem rebasierten Stand, erst dann
+mergen und pushen. Danach beginnt das nächste Paket auf dem neuen `main`.
 
 ## §5 Miete / Betrieb (Kosten)
 

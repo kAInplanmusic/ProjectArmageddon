@@ -1,0 +1,17 @@
+{
+  "unit": {
+    "tests": 2961,
+    "bestanden": 2958,
+    "rot": 2,
+    "uebersprungen": 1,
+    "dateien": 319,
+    "datum": "2026-11-12",
+    "commit": "f85e81c"
+  },
+  "e2e": {
+    "tests": 397,
+    "spezifikationen": 78,
+    "datum": "2026-11-12",
+    "commit": "f85e81c"
+  }
+}

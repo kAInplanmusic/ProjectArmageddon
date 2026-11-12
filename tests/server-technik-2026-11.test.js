@@ -298,16 +298,19 @@ test('REPLAY-1: Recorder-Vorgabe für maxRounds folgt dem Motor, Altdateien ohne
 // ------------------------------------------------------------------ WERKZEUG-1
 
 test('WERKZEUG-1: audit_bericht überschreibt keine getrackte Datei ohne ausdrückliche Freigabe', () => {
-  const ziel = path.join(ROOT, 'docs', 'betrieb.md');
-  assert.equal(istGetrackt(ziel), true, 'Testaufbau: docs/betrieb.md ist getrackt');
+  // Zeuge ist `package.json`: sie ist getrackt und wird von keinem Aufräumen oder
+  // Umbenennen von Doku-Dateien berührt (frühere Zeugen unter docs/ verschwanden).
+  const ziel = path.join(ROOT, 'package.json');
+  assert.equal(istGetrackt(ziel), true, 'Testaufbau: package.json ist getrackt');
   const vorher = fs.readFileSync(ziel, 'utf8');
-  assert.throws(() => schreibeBericht('docs/betrieb.md', {}), /getrackte Datei/);
+  assert.throws(() => schreibeBericht('package.json', {}), /getrackte Datei/);
   assert.equal(fs.readFileSync(ziel, 'utf8'), vorher, 'die Datei ist unverändert');
 
   assert.equal(BERICHT_STANDARDPFAD.startsWith('artifacts/'), true, 'Vorgabe liegt unter artifacts/ (gitignored)');
   assert.equal(istGetrackt(path.join(ROOT, BERICHT_STANDARDPFAD)), false);
   const paket = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  assert.doesNotMatch(paket.scripts['audit:bericht'], /docs\/TODO\.md/);
+  // Der Standardaufruf darf auf keine getrackte Datei zeigen (allgemein statt einer einzelnen Doku-Datei).
+  assert.doesNotMatch(paket.scripts['audit:bericht'], /(^|\s)(docs|src|tests|scripts)\//);
 });
 
 // ------------------------------------------------------------------ HTTP-1

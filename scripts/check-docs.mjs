@@ -16,25 +16,31 @@
  * ## Was geprüft wird — und was nicht
  *
  * Geprüft werden Zahlen, die OHNE einen Testlauf herleitbar sind: Waffen,
- * Kategorien, Terrain-Arten, Gates, Testdateien, Node-Version, Kartenmaße, die
- * Zahlen der Wirkungs-Übersicht. Zusätzlich müssen README und MASTERDOTO bei der
- * Testzahl DIESELBE Zahl nennen — welche, kann nur ein Lauf sagen, aber
- * auseinanderlaufen dürfen sie nicht.
+ * Kategorien, Terrain-Arten, Gates, Node-Version, Kartenmaße, die Zahlen der
+ * Wirkungs-Übersicht. Die Testzahlen (die nur ein Lauf kennt) stehen in einem
+ * erzeugten Block aus `docs/testlauf.json`, siehe `scripts/lib/testzahlen.mjs`
+ * und den Abschnitt „Testbestand“ unten (OPT-5). `--schreiben` erzeugt die Blöcke.
  *
  * NICHT geprüft wird Prosa: Ein Werkzeug, das Formulierungen bewertet, wird
  * ignoriert. `npm run check:docs` endet mit Exit 1 bei einer Abweichung.
  */
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WEAPONS } from '../src/shared/config/weapons.js';
 import { TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
+import {
+  leseBlock, pruefeTestlauf, renderBlock, setzeBlock, zaehleDateien,
+} from './lib/testzahlen.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const lies = pfad => readFileSync(join(root, pfad), 'utf8');
 
+const SCHREIBEN = process.argv.includes('--schreiben');
 const README = lies('README.md');
 const MASTER = lies('MASTERDOTO.md');
+let TESTLAUF = null;
+try { TESTLAUF = JSON.parse(lies('docs/testlauf.json')); } catch { /* unten gemeldet */ }
 const MATRIX = lies('docs/matrix-terrain-waffen-wirkung.md');
 const CHECKS = lies('scripts/checks.mjs');
 const PKG = JSON.parse(lies('package.json'));
@@ -45,8 +51,8 @@ const WIRKLICH = {
   kategorien: new Set(WEAPONS.map(w => w.category)).size,
   terrainArten: Object.keys(TERRAIN_PRESETS).length,
   gates: (CHECKS.match(/skript: '/g) ?? []).length,
-  unitDateien: readdirSync(join(root, 'tests')).filter(f => f.endsWith('.test.js')).length,
-  e2eSpecs: readdirSync(join(root, 'tests', 'e2e')).filter(f => f.endsWith('.spec.mjs')).length,
+  unitDateien: zaehleDateien(root, 'tests', '.test.js'),
+  e2eSpecs: zaehleDateien(root, 'tests/e2e', '.spec.mjs'),
   zuender: WEAPONS.filter(w => w.fuseTime > 0).length,
   node: PKG.engines?.node ?? null,
 };
@@ -81,25 +87,63 @@ zahl('MASTERDOTO', MASTER, /`docs\/matrix-terrain-waffen-wirkung\.md`: (\d+) Waf
 zahl('MASTERDOTO', MASTER, /(\d+) Terrain-Arten mit gemessenem Festanteil/, WIRKLICH.terrainArten, 'Terrain-Arten');
 zahl('Matrix', MATRIX, /\*\*Katalog:\*\* (\d+) Waffen/, WIRKLICH.waffen, 'Waffen');
 
-console.log('\nTestbestand:');
-zahl('README', README, /\*\*\d+ Tests in (\d+) Dateien\*\*/, WIRKLICH.unitDateien, 'Testdateien');
-zahl('README', README, /\*\*\d+ Tests in (\d+) Spezifikationen\*\*/, WIRKLICH.e2eSpecs, 'E2E-Spezifikationen');
-
+console.log('\nTestbestand (erzeugter Block aus docs/testlauf.json):');
 /*
- * Die UNIT-TESTZAHL kann nur ein Lauf sagen. Prüfbar ist aber, dass README und
- * MASTERDOTO DIESELBE Zahl nennen — auseinanderlaufen ist immer falsch.
+ * OPT-5: Testzahlen stehen NICHT von Hand in der Doku. Quelle ist
+ * `docs/testlauf.json` (erfasst von `npm run testlauf:erfassen`, nur mit
+ * nachweisbarem Lauf), README und MASTERDOTO tragen je einen erzeugten Block.
+ * Scharf bleibt: Block == Erzeugnis aus der JSON (also README == MASTERDOTO),
+ * Zahlen in sich stimmig, und es gibt nicht weniger Testdateien oder
+ * Spezifikationen als beim erfassten Lauf (Tests löschen fällt auf); rote Tests im Lauf
+ * stehen im Block und als Warnung, das Tor dafür bleibt `npm test`.
+ * Neue, noch nicht erfasste Testdateien paralleler Arbeit lassen die Prüfung nicht
+ * kippen; sie werden nur als Hinweis gemeldet, denn eine Zahl ohne Lauf wäre geraten.
  */
-const readmeZahl = README.match(/\*\*(\d+) Tests in \d+ Dateien\*\*/);
-const masterZahl = MASTER.match(/\*\*(\d+)\/(\d+)\*\* grün/);
-if (!readmeZahl) {
-  fehler('README: nennt die Testzahl nicht als „**N Tests in M Dateien**"');
-} else if (!masterZahl) {
-  fehler('MASTERDOTO: nennt die Testzahl nicht als „**N/N** grün"');
-} else if (readmeZahl[1] !== masterZahl[1] || masterZahl[1] !== masterZahl[2]) {
-  fehler(`Testzahl läuft auseinander: README ${readmeZahl[1]}, MASTERDOTO `
-    + `${masterZahl[1]}/${masterZahl[2]}`);
+if (!TESTLAUF) {
+  fehler('docs/testlauf.json fehlt oder ist kein JSON (Erfassen: npm run testlauf:erfassen)');
 } else {
-  ok(`Testzahl einheitlich: ${readmeZahl[1]} (README wie MASTERDOTO, bestanden = gesamt)`);
+  const formfehler = pruefeTestlauf(TESTLAUF);
+  for (const f of formfehler) fehler(`docs/testlauf.json: ${f}`);
+  if (formfehler.length === 0) {
+    const soll = renderBlock(TESTLAUF);
+    for (const [name, text, pfad] of [['README', README, 'README.md'], ['MASTERDOTO', MASTER, 'MASTERDOTO.md']]) {
+      const ist = leseBlock(text);
+      if (ist === null) {
+        fehler(`${name}: erzeugter Testzahlen-Block fehlt (Markierungen testzahlen:start/ende)`);
+      } else if (ist !== soll) {
+        if (SCHREIBEN) {
+          writeFileSync(join(root, pfad), setzeBlock(text, soll));
+          console.log(`  neu   ${name}: Block aus docs/testlauf.json geschrieben`);
+        } else {
+          fehler(`${name}: Testzahlen-Block weicht von docs/testlauf.json ab (npm run check:docs -- --schreiben)`);
+        }
+      } else {
+        ok(`${name}: Testzahlen-Block == docs/testlauf.json`);
+      }
+    }
+    const u = TESTLAUF.unit;
+    const e = TESTLAUF.e2e;
+    /*
+     * Rote Tests im erfassten Lauf sind KEIN Dokufehler: Das Tor dafür ist `npm test`
+     * (AGENTS.md §3), `check:docs` prüft, dass die Doku die Messung richtig wiedergibt.
+     * Verschwiegen wird nichts: der Block nennt die roten Tests fett, hier steht eine Warnung.
+     */
+    if (u.rot > 0) console.log(`  WARNUNG ${u.rot} rote(r) Test(s) im erfassten Lauf (${u.commit}) — AGENTS.md §3 verlangt grün`);
+    if (WIRKLICH.unitDateien < u.dateien) {
+      fehler(`Testdateien: ${WIRKLICH.unitDateien} vorhanden, beim erfassten Lauf waren es ${u.dateien} — Tests entfernt?`);
+    } else if (WIRKLICH.unitDateien > u.dateien) {
+      console.log(`  Hinweis: ${WIRKLICH.unitDateien - u.dateien} Testdatei(en) seit dem erfassten Lauf neu (${WIRKLICH.unitDateien} statt ${u.dateien}); Lauf bei Gelegenheit neu erfassen`);
+    } else {
+      ok(`Testdateien: ${WIRKLICH.unitDateien} wie beim erfassten Lauf`);
+    }
+    if (WIRKLICH.e2eSpecs < e.spezifikationen) {
+      fehler(`E2E-Spezifikationen: ${WIRKLICH.e2eSpecs} vorhanden, beim erfassten Stand waren es ${e.spezifikationen} — Specs entfernt?`);
+    } else if (WIRKLICH.e2eSpecs > e.spezifikationen) {
+      console.log(`  Hinweis: ${WIRKLICH.e2eSpecs - e.spezifikationen} E2E-Spezifikation(en) seit der erfassten Zählung neu; npm run testlauf:erfassen -- --e2e`);
+    } else {
+      ok(`E2E-Spezifikationen: ${WIRKLICH.e2eSpecs} wie bei der erfassten Zählung`);
+    }
+  }
 }
 
 console.log('\nWerkzeuge und Umgebung:');

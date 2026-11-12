@@ -6,7 +6,11 @@ Diese Datei ist **keine Arbeitsliste** mehr. Die einzige offene Liste steht in
 
 Nur die von `check:docs` geprüften Kennzahlen bleiben als Kompatibilitätsvermerk:
 
-- **2892/2892** grün (Gesamtlauf 2026-11-11 nach Web-Konten und Titellied: 2898 Tests, davon 2892 grün, 1 übersprungen und 5 rot in Dateien anderer laufender Arbeiten: Renderer-Zeilenbudget, Geländefassung/Rissmuster, Sheet-Größe), Dateizahl **318**
+<!-- testzahlen:start (erzeugt von scripts/check-docs.mjs --schreiben, nicht von Hand ändern) -->
+- Unit/Integration (`npm test`): **2961 Tests**, 2958 grün, 1 übersprungen, **2 rot**; 319 Testdateien beim Lauf (2026-11-12, Stand `f85e81c`).
+- Browser-E2E (`npx playwright test --list`): **397 Tests in 78 Spezifikationen** (Zählung 2026-11-12, Stand `f85e81c`; das ist eine Zählung, kein Lauf).
+- Aktuelle Dateizahlen: `npm run check:docs` (zählt die getrackten Dateien). Erfassen: `npm run testlauf:erfassen`. Verlauf: `git log -p -- docs/testlauf.json`.
+<!-- testzahlen:ende -->
 - **22 Gates in 105.2 s | fehlgeschlagen: 0**
 - Node `>=22` festgeschrieben
 - `docs/matrix-terrain-waffen-wirkung.md`: 150 Waffen
