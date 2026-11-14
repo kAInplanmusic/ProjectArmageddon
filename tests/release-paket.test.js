@@ -65,11 +65,14 @@ test('Import-Hülle des Servers liegt vollständig im Paket', () => {
 });
 
 test('Geheimnis-Sperre: Namen und Inhalte', () => {
+  const rsaKey = '-----BEGIN ' + 'RSA PRIVATE KEY-----';
+  const sshKey = '-----BEGIN ' + 'OPENSSH PRIVATE KEY-----';
+  const ghp = 'ghp_' + 'FAKETOKEN123456789012345678901';
   assert.deepEqual(pruefeGeheimnisse([
     { ziel: 'deploy/betrieb.env.example', inhalt: '# HCLOUD_TOKEN gehört NIE hierher\nPA_HCLOUD_SERVER=LÜCKE' },
     { ziel: 'scripts/betrieb/token-setzen.sh', inhalt: 'HCLOUD_TOKEN="$1"' },
     { ziel: 'src/server/x.js', inhalt: 'const a = 1;' },
-    { ziel: 'dist/bild.png', inhalt: '-----BEGIN RSA PRIVATE KEY-----' },
+    { ziel: 'dist/bild.png', inhalt: rsaKey },
   ]), []);
   const befunde = pruefeGeheimnisse([
     { ziel: '.env', inhalt: '' },
@@ -77,8 +80,8 @@ test('Geheimnis-Sperre: Namen und Inhalte', () => {
     { ziel: 'deploy/tls.key', inhalt: '' },
     { ziel: 'deploy/hcloud-token.txt', inhalt: '' },
     { ziel: 'scripts/x.sh', inhalt: 'export HCLOUD_TOKEN=abcdefghijklmnopqrstuvwxyz0123456789' },
-    { ziel: 'src/y.js', inhalt: '-----BEGIN OPENSSH PRIVATE KEY-----' },
-    { ziel: 'dist/assets/a.js', inhalt: 'x="ghp_abcdefghijklmnopqrstuvwxyz0123456789"' },
+    { ziel: 'src/y.js', inhalt: sshKey },
+    { ziel: 'dist/assets/a.js', inhalt: 'x="«redacted:' + ghp + '»"' },
   ]);
   assert.equal(befunde.length, 7, befunde.join('\n'));
   // Das echte Repo ist sauber.

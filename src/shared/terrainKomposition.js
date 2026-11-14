@@ -688,21 +688,6 @@ function hoehleTreppe(maske, rng, B, H, stat, y0, mitInsel) {
   stat.platten += 1;
 }
 
-/** Setzt die zusammenhängende Fläche ab `start` (Wert `von`) auf `nach`. */
-function fuelle(bm, B, H, start, von, nach) {
-  const stapel = [start];
-  bm[start] = nach;
-  while (stapel.length) {
-    const i = stapel.pop();
-    const x = i % B;
-    const y = (i - x) / B;
-    if (x > 0 && bm[i - 1] === von) { bm[i - 1] = nach; stapel.push(i - 1); }
-    if (x < B - 1 && bm[i + 1] === von) { bm[i + 1] = nach; stapel.push(i + 1); }
-    if (y > 0 && bm[i - B] === von) { bm[i - B] = nach; stapel.push(i - B); }
-    if (y < H - 1 && bm[i + B] === von) { bm[i + B] = nach; stapel.push(i + B); }
-  }
-}
-
 function dichteHoehle(maske, rng, B, H, stat, mitInsel = false) {
   // Klare Bauweise statt Wurmgängen: massiver Fels mit zwei Stockwerken aus Kammern (ebener Boden), gerade Gänge dazwischen,
   // senkrechte Schächte nach oben und unten. Das Dichtefeld liefert nur die Oberfläche und leicht welligen Fels.

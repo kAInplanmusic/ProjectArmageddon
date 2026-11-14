@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const WURZEL = new URL('..', import.meta.url).pathname;
+const WURZEL = fileURLToPath(new URL('..', import.meta.url));
 const TABELLE = `${WURZEL}tools/waffen-freistellung.json`;
 const BERICHT = `${WURZEL}docs/waffenbalance-2026-11-09/freistellung/bericht.json`;
 const MODI = new Set(['rahmen', 'platte', 'heldmaske', 'aus128', 'keine']);
