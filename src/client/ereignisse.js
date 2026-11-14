@@ -508,6 +508,7 @@ export const EREIGNIS_WIRKUNGEN = {
    * Online: Vorhersage auflösen — und der Klang. Gezeichnet wird die echte
    * Bahn (sie kommt als `projectile_spawn` und aus dem Snapshot), aber GEHÖRT
    * wird der Schuss sofort; online kommt der Server bestätigt, nicht später.
+   * Hier wird der Schaden gezählt für die Zeitlupe (C3).
    */
   shot: {
     lokal: (k, n) => {
@@ -530,6 +531,8 @@ export const EREIGNIS_WIRKUNGEN = {
       schussKlang(k, n);
       // Kettenzähler (KAMERA C5): Ein neuer Schuss beginnt eine neue Zählung.
       kameraEffekte.schuss();
+      // Zeitlupe Zähler: Schaden dieses Schusses sammeln
+      kameraEffekte.zeitlupeSchaden(n.amount ?? 0);
     },
     /*
      * Bestätigung eines Schusses — der Server schickt `playerId` und `angle`
@@ -542,6 +545,8 @@ export const EREIGNIS_WIRKUNGEN = {
       k.renderer?.addMuzzleFlash(n?.playerId, n?.angle ?? 0); k.renderer?.merkeSchuss?.(n?.playerId, n?.weaponId, n?.angle);
       schussKlang(k, n);
       kameraEffekte.schuss();
+      // Zeitlupe Zähler: Schaden dieses Schusses sammeln
+      kameraEffekte.zeitlupeSchaden(n.amount ?? 0);
     },
   },
 
@@ -1246,10 +1251,14 @@ export const EREIGNIS_WIRKUNGEN = {
    * Spielerliste, online nüchtern mit „Eine Einheit". (Der Name steht online
    * in der Spielerliste, die aus dem Snapshot kommt; die Meldung nennt ihn
    * dort nicht, und daran ändert die Tabelle nichts.)
+   * 
+   * Zeitlupe (C3): Jede Figur, die ausgeschaltet wird, zählt als „tot".
    */
   death: {
     lokal: (k, n) => {
       kameraEffekte.ketteGlied('Figur');
+      // Zeitlupe Zähler: Tote dieses Schusses zählen
+      kameraEffekte.zeitlupeTot(1);
       const victim = k.match?.players?.find(player => player.entityId === n.entityId);
       k.hud?.log(`${victim?.label ?? `Entity ${n.entityId}`} ausgeschaltet`, 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n.entityId) });
@@ -1257,6 +1266,8 @@ export const EREIGNIS_WIRKUNGEN = {
     },
     online: (k, n) => {
       kameraEffekte.ketteGlied('Figur');
+      // Zeitlupe Zähler: Tote dieses Schusses zählen
+      kameraEffekte.zeitlupeTot(1);
       k.hud?.log('Eine Einheit wurde ausgeschaltet', 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n?.entityId) });
       todEpilog(k, n?.entityId);

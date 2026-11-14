@@ -40,6 +40,7 @@ const SCHALTER = Object.freeze([
   { art: 'knapp', text: 'Knapp vorbei', titel: 'Knapp-vorbei-Zoom: kurzer Zoom, wenn ein Geschoss eine Figur fast trifft' },
   { art: 'wasser', text: 'Wasser-Sturz', titel: 'Wasser-Sturz: kurzer Blick auf eine Figur, die unter Wasser geht' },
   { art: 'ketten', text: 'Kettenzähler', titel: 'Kettenzähler: zeigt, wie viele Ziele ein Schuss nacheinander erwischt' },
+  { art: 'zeitlupe', text: 'Zeitlupe', titel: 'Zeitlupe: verlangsamt die Darstellung bei extremen Schüssen (≥250 Schaden oder ≥3 Tote)' },
 ]);
 
 /** Speicher mit try/catch — ohne `localStorage` läuft alles mit den Vorgaben. */

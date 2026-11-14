@@ -54,10 +54,11 @@ export const KAMERA_EFFEKTE_STANDARD = Object.freeze({
   knapp: true,
   wasser: true,
   ketten: true,
+  zeitlupe: true,
 });
 
 /** Die schaltbaren Arten (Reihenfolge = Menü). */
-export const KAMERA_EFFEKT_ARTEN = Object.freeze(['knapp', 'wasser', 'ketten']);
+export const KAMERA_EFFEKT_ARTEN = Object.freeze(['knapp', 'wasser', 'ketten', 'zeitlupe']);
 
 /**
  * Macht aus beliebigem Rohmaterial (JSON aus dem Speicher, Testdaten) einen
@@ -69,7 +70,7 @@ export const KAMERA_EFFEKT_ARTEN = Object.freeze(['knapp', 'wasser', 'ketten']);
  * wird hier ausdrücklich nur `true`/`false` übernommen).
  *
  * @param {unknown} roh
- * @returns {{beben:string, knapp:boolean, wasser:boolean, ketten:boolean}}
+ * @returns {{beben:string, knapp:boolean, wasser:boolean, ketten:boolean, zeitlupe:boolean}}
  */
 export function normalisiereKameraEffekte(roh) {
   const quelle = roh && typeof roh === 'object' ? roh : {};
@@ -80,6 +81,7 @@ export function normalisiereKameraEffekte(roh) {
     knapp: flag(quelle.knapp, KAMERA_EFFEKTE_STANDARD.knapp),
     wasser: flag(quelle.wasser, KAMERA_EFFEKTE_STANDARD.wasser),
     ketten: flag(quelle.ketten, KAMERA_EFFEKTE_STANDARD.ketten),
+    zeitlupe: flag(quelle.zeitlupe, KAMERA_EFFEKTE_STANDARD.zeitlupe),
   };
 }
 
@@ -244,6 +246,43 @@ function jetztMs() {
 }
 
 /**
+ * Er kommt ins Spiel: Der Schaden und die Tote je Schuss sammeln, um die
+ * Zeitlupe auszulösen (C3 Zeitlupe). Die Zählerstand-Daten werden an den
+ * Render-Hook in `main.js` übergeben.
+ */
+class ZeitlupeZaehler {
+  #schaden = 0;
+
+  #tote = 0;
+
+  schuss() {
+    this.#schaden = 0;
+    this.#tote = 0;
+  }
+
+  schaden(wert) {
+    if (typeof wert === 'number' && wert > 0) {
+      this.#schaden += wert;
+    }
+  }
+
+  tot(anzahl = 1) {
+    if (typeof anzahl === 'number' && anzahl > 0) {
+      this.#tote += anzahl;
+    }
+  }
+
+  zuruecksetzen() {
+    this.#schaden = 0;
+    this.#tote = 0;
+  }
+
+  get stand() {
+    return { schaden: this.#schaden, tote: this.#tote };
+  }
+}
+
+/**
  * Der gemeinsame Stand für Kamera, Ereigniszweig und Bedienung.
  *
  * `abonniere` meldet JEDE Änderung (Einstellung, Kettenglied). Die Bedienung
@@ -262,6 +301,8 @@ class KameraEffekte {
 
   #auftraege = new KameraAuftraege();
 
+  #zeitlupeZaehler = new ZeitlupeZaehler();
+
   get beben() { return this.#stand.beben; }
 
   get knapp() { return this.#stand.knapp; }
@@ -269,6 +310,8 @@ class KameraEffekte {
   get wasser() { return this.#stand.wasser; }
 
   get ketten() { return this.#stand.ketten; }
+
+  get zeitlupe() { return this.#stand.zeitlupe; }
 
   /** Verstärkung des Bildbebens (0 = aus, 1 = normal). */
   get bebenFaktor() { return BEBEN_FAKTOR[this.#stand.beben] ?? 1; }
@@ -278,6 +321,23 @@ class KameraEffekte {
   get kette() { return this.#kette.stand; }
 
   get auftraege() { return this.#auftraege; }
+
+  /** Schaden und Tote des laufenden Schusses für Zeitlupe-Prüfung. */
+  get zeitlupeDaten() { return this.#zeitlupeZaehler.stand; }
+
+  /** Schaden für Zeitlupe-Zähler melden (wird per Ereignis aufgerufen). */
+  zeitlupeSchaden(wert) {
+    if (typeof wert === 'number' && wert > 0) {
+      this.#zeitlupeZaehler.schaden(wert);
+    }
+  }
+
+  /** Tote für Zeitlupe-Zähler melden (wird per Ereignis aufgerufen). */
+  zeitlupeTot(anzahl = 1) {
+    if (typeof anzahl === 'number' && anzahl > 0) {
+      this.#zeitlupeZaehler.tot(anzahl);
+    }
+  }
 
   /**
    * Eine Einstellung setzen. Ungültige Arten/Werte werden verworfen, ohne den
@@ -299,27 +359,30 @@ class KameraEffekte {
     return true;
   }
 
-  /** Ganzes Bündel setzen (Speicher laden, Profilwechsel). */
-  setzeAlles(roh) {
-    this.#stand = normalisiereKameraEffekte(roh);
-    this.#melde();
-    return this.stand;
-  }
-
-  /** Nächste Bebenstufe (Menüknopf); gibt den neuen Wert zurück. */
-  schalteBeben() {
-    this.setze('beben', naechsteBebenStufe(this.#stand.beben));
-    return this.#stand.beben;
-  }
-
-  /**
-   * Ein Schuss beginnt: Kettenzähler öffnen.
-   * @returns {object} der neue Kettenstand
-   */
+  /** Ein Schuss beginnt: Kettenzähler öffnen, Zeitlupe-Zähler zurücksetzen. */
   schuss() {
     const stand = this.#kette.schuss();
+    this.#zeitlupeZaehler.schuss();
     this.#melde();
     return stand;
+  }
+
+  schalteBeben() {
+    const naechste = naechsteBebenStufe(this.#stand.beben);
+    this.setze('beben', naechste);
+  }
+
+  setzeAlles(werte) {
+    if (!werte || typeof werte !== 'object') return false;
+    const vorher = { ...this.#stand };
+    if (werte.beben) this.#stand.beben = werte.beben;
+    for (const art of KAMERA_EFFEKT_ARTEN) {
+      if (art in werte && typeof werte[art] === 'boolean') {
+        this.#stand[art] = werte[art];
+      }
+    }
+    if (vorher !== this.#stand) this.#melde();
+    return true;
   }
 
   /** Ein zerstörtes Glied im laufenden Schuss (Figur, Mine, Fass). */
@@ -366,6 +429,7 @@ class KameraEffekte {
     this.#kette.zuruecksetzen();
     this.#wasser.zuruecksetzen();
     this.#auftraege.leeren();
+    this.#zeitlupeZaehler.zuruecksetzen();
     this.#melde();
   }
 

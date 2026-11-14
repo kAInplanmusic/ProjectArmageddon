@@ -84,6 +84,7 @@ import { LaufVorhersage } from './laufVorhersage.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
 import { klassifiziereEinschlag, wasserAusLinie } from '../shared/einschlag.js';
+import { zeitlupe as zeitlupeModul } from './zeitlupe.js';
 import { baueProfilAnzeige, baueErfolgsAnzeige } from './profilanzeige.js';
 import { sichereProfilDatei } from './profilDatei.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
@@ -3459,8 +3460,12 @@ class Game {
       // HUD-Ränder messen, Schilder und Schub setzen (nur Darstellung).
       this.hudAusweichen.aktualisiere(state, this.kamera);
       const jetzt = performance.now();
-      const dtSek = this.kameraZeit ? (jetzt - this.kameraZeit) / 1000 : 0;
+      let dtSek = this.kameraZeit ? (jetzt - this.kameraZeit) / 1000 : 0;
       this.kameraZeit = jetzt;
+      // C3 Zeitlupe: Faktor für extremen Schuss berechnen (35% Geschwindigkeit für 0,9s).
+      const zeitlupeEin = this.kameraEffekte?.zeitlupe ?? true;
+      const zeitlupeFaktor = zeitlupeModul.faktor(jetzt / 1000, this.kameraEffekte?.zeitlupeDaten ?? { schaden: 0, tote: 0 }, zeitlupeEin);
+      if (zeitlupeFaktor < 1) dtSek *= zeitlupeFaktor;
       this.kameraRegie.setzeReduziert(this.renderer.reducedMotion);
       const kameraAus = this.kameraRegie.schritt(dtSek, this.#kameraEingabe(state, wiederholung, activeWeapon, myTurn));
       // Beben der Tiere (Cookie tobt, Schockwelle, wildes Bellen) kommt als Versatz obendrauf; 0 bei Bewegungsreduktion.

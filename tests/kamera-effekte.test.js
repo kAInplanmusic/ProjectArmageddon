@@ -42,13 +42,13 @@ function frisch() {
 test('Einstellungen: Vorgaben, Normalisierung und kaputte Werte', () => {
   assert.deepEqual(normalisiereKameraEffekte(null), { ...KAMERA_EFFEKTE_STANDARD });
   assert.deepEqual(normalisiereKameraEffekte('quatsch'), { ...KAMERA_EFFEKTE_STANDARD });
-  // Ein falscher Typ darf nicht als „an" durchgehen (`Boolean('false')` wäre true).
+  // Ein falscher Typ darf nicht als "an" durchgehen (`Boolean('false')` wäre true).
   const roh = { beben: 'grell', knapp: 'false', wasser: 0, ketten: true };
-  assert.deepEqual(normalisiereKameraEffekte(roh), { beben: 'normal', knapp: true, wasser: true, ketten: true });
+  assert.deepEqual(normalisiereKameraEffekte(roh), { beben: 'normal', knapp: true, wasser: true, ketten: true, zeitlupe: true });
   assert.deepEqual(normalisiereKameraEffekte({ beben: 'stark', knapp: false, wasser: false, ketten: false }),
-    { beben: 'stark', knapp: false, wasser: false, ketten: false });
+    { beben: 'stark', knapp: false, wasser: false, ketten: false, zeitlupe: true });
   // Unbekannte Felder werden nicht durchgereicht.
-  assert.deepEqual(Object.keys(normalisiereKameraEffekte({ extra: 1 })), ['beben', 'knapp', 'wasser', 'ketten']);
+  assert.deepEqual(Object.keys(normalisiereKameraEffekte({ extra: 1 })), ['beben', 'knapp', 'wasser', 'ketten', 'zeitlupe']);
   assert.equal(KAMERA_EFFEKTE_SCHLUESSEL, 'pa.kameraeffekte');
 });
 
