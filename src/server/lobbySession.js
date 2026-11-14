@@ -193,7 +193,25 @@ export class LobbySession {
      *
      * Sie sind die Grundlage der Rangliste (`#finish` → `onMatchEnd`).
      */
-    this.stats = new MatchStats({ teams: this.#teamkarte() });
+    // Karte: figureIndex (Platz im Motor) -> entityId
+    const figureIndexZuEntityId = new Map();
+    for (const seat of this.lobby.seats) {
+      if (seat.figureIndex !== null && seat.figureIndex !== undefined && seat.entityId !== null) {
+        figureIndexZuEntityId.set(seat.figureIndex, seat.entityId);
+      }
+    }
+    // Fraktionen je Platz (figureIndex) -> entityId
+    const fraktionenMap = new Map();
+    if (Array.isArray(this.lobby.fraktionen)) {
+      for (let i = 0; i < this.lobby.fraktionen.length; i++) {
+        const fraktion = this.lobby.fraktionen[i];
+        const entityId = figureIndexZuEntityId.get(i);
+        if (fraktion && entityId !== undefined) {
+          fraktionenMap.set(entityId, fraktion);
+        }
+      }
+    }
+    this.stats = new MatchStats({ teams: this.#teamkarte(), fraktionen: fraktionenMap });
 
     /** Aufzeichnung für Persistenz und Replay. */
     this.recorder = new ReplayRecorder({
@@ -1245,13 +1263,17 @@ export class LobbySession {
        * Bestandsnachricht geht ohnehin nur bei Änderung raus.
        */
       const spieler = this.match.players.find(entry => entry.entityId === seat.entityId);
+      // Fraktion je Platz (figureIndex) für die Anzeige.
+      const fraktionId = (Array.isArray(this.lobby.fraktionen) && seat.figureIndex !== null && seat.figureIndex !== undefined)
+        ? this.lobby.fraktionen[seat.figureIndex] ?? null
+        : null;
       table[seat.entityId] = {
         inventory: [...entry.weapons],
         ammo,
         cooldowns,
         activeWeaponId: entry.activeWeaponId ?? null,
-        // Darstellung: Fraktion des Teams (reine Anzeige, `null` = Anzeige leitet automatisch ab).
-        fraktionId: this.lobby.fraktionen?.[seat.teamId ?? 0] ?? null,
+        // Darstellung: Fraktion des Platzes (reine Anzeige, `null` = Anzeige leitet automatisch ab).
+        fraktionId,
         classId: spieler?.classId ?? null,
         archetypeId: spieler?.archetypeId ?? null,
         /*

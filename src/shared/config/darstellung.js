@@ -107,10 +107,23 @@ export function loeseFraktionen(liste, teams, schluessel) {
  * @param {unknown} liste
  * @param {number} teams
  * @returns {(string|null)[]|null} `null`, wenn nichts gewählt wurde
+ * @deprecated Nutze `bereinigeFraktionenJePlatz` für je-Platz-Auswahl.
  */
 export function bereinigeFraktionen(liste, teams) {
   if (!Array.isArray(liste)) return null;
   const sauber = liste.slice(0, Math.max(0, teams)).map(id => (istFraktion(id) || id === KLASSISCH ? id : null));
+  return sauber.some(id => id !== null) ? sauber : null;
+}
+
+/**
+ * Prüft eine Liste „Fraktion je Platz" tolerant: Unbekanntes wird `null`.
+ * @param {unknown} liste
+ * @param {number} plaetze - Anzahl Spielerplätze (teams × playersPerTeam)
+ * @returns {(string|null)[]|null} `null`, wenn nichts gewählt wurde
+ */
+export function bereinigeFraktionenJePlatz(liste, plaetze) {
+  if (!Array.isArray(liste)) return null;
+  const sauber = liste.slice(0, Math.max(0, plaetze)).map(id => (istFraktion(id) || id === KLASSISCH ? id : null));
   return sauber.some(id => id !== null) ? sauber : null;
 }
 

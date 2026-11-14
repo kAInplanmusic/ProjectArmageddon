@@ -93,7 +93,7 @@ import {
   sicherungAusText,
 } from '../shared/identity.js';
 import { FACTIONS } from '../shared/config/factions.js';
-import { bereinigeFraktionen, loeseFraktionen, KLASSISCH } from '../shared/config/darstellung.js';
+import { bereinigeFraktionenJePlatz, loeseFraktionen, KLASSISCH } from '../shared/config/darstellung.js';
 import { FigurenKarte } from './figurenKarte.js';
 import { HudAusweichen } from './hudAusweichen.js';
 import {
@@ -864,9 +864,10 @@ class Game {
     const seed = rawSeed === '' || rawSeed === undefined ? undefined : Number(rawSeed);
     const serverUrl = document.getElementById('cfg-server')?.value?.trim() ?? '';
     const lobbyId = document.getElementById('cfg-lobby')?.value?.trim() ?? '';
-    const sidegrades = this.#sidegradesAusMenue(teams * playersPerTeam);
-    const loadouts = this.#loadoutsAusMenue(teams * playersPerTeam);
-    const fraktionen = this.#fraktionenAusMenue(teams);
+    const plaetze = teams * playersPerTeam;
+    const sidegrades = this.#sidegradesAusMenue(plaetze);
+    const loadouts = this.#loadoutsAusMenue(plaetze);
+    const fraktionen = this.#fraktionenAusMenue(plaetze);
 
     if (serverUrl) {
       return this.startOnline({
@@ -937,24 +938,28 @@ class Game {
    * bekommt genau das Spiel von vorher.
    */
   /**
-   * Fraktionswahl je Team (reine Darstellung). Bleibt eine Wahl beim Neuaufbau
-   * erhalten, soweit das Team noch existiert.
+   * Fraktionswahl je Platz (reine Darstellung). Bleibt eine Wahl beim Neuaufbau
+   * erhalten, soweit der Platz noch existiert.
    */
   fillFraktionOptions() {
     const behaelter = document.getElementById('fraktion-felder');
     if (!behaelter) return;
     const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
+    const proTeam = Number(document.getElementById('cfg-players')?.value ?? 2);
+    const plaetze = teams * proTeam;
     const alt = [];
-    for (let t = 0; t < 8; t += 1) alt.push(document.getElementById(`cfg-fraktion-${t}`)?.value ?? '');
+    for (let i = 0; i < 40; i += 1) alt.push(document.getElementById(`cfg-fraktion-${i}`)?.value ?? '');
     behaelter.replaceChildren();
-    for (let t = 0; t < teams; t += 1) {
+    for (let i = 0; i < plaetze; i += 1) {
       const zeile = document.createElement('div');
       zeile.className = 'field-row';
       const label = document.createElement('label');
-      label.setAttribute('for', `cfg-fraktion-${t}`);
-      label.textContent = `Team ${t + 1}`;
+      label.setAttribute('for', `cfg-fraktion-${i}`);
+      const teamId = i % teams;
+      const platzImTeam = Math.floor(i / teams);
+      label.textContent = `Platz ${i + 1} (Team ${teamId + 1}, Figur ${platzImTeam + 1})`;
       const auswahl = document.createElement('select');
-      auswahl.id = `cfg-fraktion-${t}`;
+      auswahl.id = `cfg-fraktion-${i}`;
       const keine = document.createElement('option');
       keine.value = '';
       keine.textContent = 'Zufällig / Automatisch';
@@ -969,16 +974,16 @@ class Game {
         o.textContent = f.name;
         auswahl.append(o);
       }
-      auswahl.value = alt[t] ?? '';
+      auswahl.value = alt[i] ?? '';
       zeile.append(label, auswahl, fraktionsEmblem(auswahl)); // Emblem neben der Auswahl (A11)
       behaelter.append(zeile);
     }
   }
 
-  #fraktionenAusMenue(teams) {
+  #fraktionenAusMenue(plaetze) {
     const liste = [];
-    for (let t = 0; t < teams; t += 1) liste.push(document.getElementById(`cfg-fraktion-${t}`)?.value || null);
-    return bereinigeFraktionen(liste, teams);
+    for (let i = 0; i < plaetze; i += 1) liste.push(document.getElementById(`cfg-fraktion-${i}`)?.value || null);
+    return bereinigeFraktionenJePlatz(liste, plaetze);
   }
 
   fillLoadoutOptions() {
@@ -1344,8 +1349,10 @@ class Game {
       if (o) { kulisse.value = o.value; teile.push(`Kulisse ${o.parentElement.label} / ${o.textContent}`); }
     }
     const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
-    for (let t = 0; t < teams; t += 1) {
-      const f = document.getElementById(`cfg-fraktion-${t}`);
+    const proTeam = Number(document.getElementById('cfg-players')?.value ?? 2);
+    const plaetze = teams * proTeam;
+    for (let i = 0; i < plaetze; i += 1) {
+      const f = document.getElementById(`cfg-fraktion-${i}`);
       if (f) f.value = wahl(FACTIONS).id;
     }
     teile.push('Fraktionen gemischt');
@@ -1404,7 +1411,10 @@ class Game {
     // W02/W19: Dieselbe Waffenfassung für Renderer, HUD und Menü.
     this.renderer.setzeWaffenFassung(this.match.waffen);
     // Darstellung: Fraktion je Team (nur Anzeige, wirkt nicht auf den Motor).
-    this.renderer.fraktionJeTeam = loeseFraktionen(fraktionen, teams, this.match.seedManager.baseSeed);
+    // fraktionen ist jetzt je Platz (plaetze = teams * playersPerTeam).
+    // Für die Anzeige je Team nehmen wir die erste Figur jedes Teams.
+    const fraktionenJeTeam = fraktionen ? fraktionen.filter((_, i) => i % teams === 0).slice(0, teams) : null;
+    this.renderer.fraktionJeTeam = loeseFraktionen(fraktionenJeTeam, teams, this.match.seedManager.baseSeed);
     starteLadebild(document, this.renderer.fraktionJeTeam, ladeBereit); // Ladebild (A11)
 
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit

@@ -7,7 +7,7 @@
  *
  * @module LobbyManager
  */
-import { bereinigeFraktionen } from '../shared/config/darstellung.js';
+import { bereinigeFraktionenJePlatz } from '../shared/config/darstellung.js';
 import { randomUUID, randomBytes } from 'node:crypto';
 import { ORIENTATIONS, TEAM_COLORS, normalisiereFormat, ausrichtungFuerFormat } from '../engine/match.js';
 import { getTurnDurationForSize } from '../engine/systems/turnSystem.js';
@@ -355,8 +355,8 @@ export class LobbyManager {
       sidegrades: geprüfteSidegrades,
       // Klassenwahl je Spielerplatz — ebenfalls Konfiguration, kein Zufall.
       loadouts: geprüfteLoadouts,
-      // Darstellung: Fraktion je Team (nur Anzeige, nicht im Replay-Kopf).
-      fraktionen: bereinigeFraktionen(fraktionen, teams),
+      // Darstellung: Fraktion je Platz (nur Anzeige, nicht im Replay-Kopf).
+      fraktionen: bereinigeFraktionenJePlatz(fraktionen, capacity),
       seed,
       status: LOBBY_STATUS.OPEN,
       createdAt: Date.now(),
