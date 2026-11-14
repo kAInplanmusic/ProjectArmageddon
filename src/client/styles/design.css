@@ -1402,3 +1402,97 @@ select option { background: #14181d; color: var(--ink); }
 @media (pointer: coarse) {
   #menu-overlay #cfg-kartengroesse, #menu-overlay #cfg-kartenformat, #menu-overlay #cfg-kartenart { min-height: 44px; }
 }
+
+/* ================================================================ A6: Home-Bildschirm
+ * Die Startseite vor dem Menü. Vollbild-Overlay mit Marke und zwei Aktionen.
+ * Wird beim ersten Laden eingeblendet und beim ersten Klick auf "Match starten"
+ * oder "Überrasch mich" ausgeblendet (home.js).
+ */
+#home-screen {
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(124, 252, 0, 0.08), transparent 55%),
+    radial-gradient(ellipse at 80% 90%, rgba(255, 77, 0, 0.09), transparent 55%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.01) 0 2px, transparent 2px 10px),
+    rgba(10, 12, 15, 0.95);
+  backdrop-filter: blur(6px);
+}
+#home-screen .home-card {
+  width: min(520px, 92%);
+  max-width: 520px;
+  display: grid;
+  gap: 22px;
+  justify-items: center;
+  padding: 36px 32px 30px;
+  background:
+    radial-gradient(ellipse at 50% -15%, rgba(124, 252, 0, 0.14), transparent 65%),
+    linear-gradient(180deg, #1e241d, #12161a 70%);
+  border: 1px solid var(--lime-dim);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(124, 252, 0, 0.18), 0 0 50px rgba(124, 252, 0, 0.12), 0 16px 50px rgba(0, 0, 0, 0.7);
+}
+#home-screen .home-card::before,
+#home-screen .home-card::after {
+  content: ''; position: absolute; width: 28px; height: 28px; border: 3px solid var(--lime); pointer-events: none;
+}
+#home-screen .home-card::before { top: 10px; left: 10px; border-right: 0; border-bottom: 0; border-top-left-radius: 8px; }
+#home-screen .home-card::after { bottom: 10px; right: 10px; border-left: 0; border-top: 0; border-bottom-right-radius: 8px; }
+
+.home-marke { display: grid; gap: 12px; justify-items: center; text-align: center; }
+.home-marke .menu-logo { width: min(100%, 200px); aspect-ratio: 660 / 860; }
+.home-marke h1 { margin: 0; font-size: 36px; letter-spacing: 0.12em; text-shadow: 0 0 18px rgba(124, 252, 0, 0.35); }
+.home-marke h1 .accent { color: var(--lime); }
+.home-marke .subtitle { margin: 0; font-size: var(--fs-s); color: var(--muted); line-height: 1.6; max-width: 380px; }
+
+.home-aktionen { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%; }
+.home-aktionen .pa-btn { font-size: 26px; letter-spacing: 0.06em; padding: 14px 28px; min-width: 180px; }
+.home-aktiones .secondary { font-size: 20px; padding: 10px 20px; }
+
+.home-hinweis { margin: 6px 0 0; font-size: var(--fs-xs); color: var(--muted); text-align: center; }
+
+/* Reduzierte Animation: Kein Pulsieren der Marke. */
+@media (prefers-reduced-motion: reduce) {
+  #home-screen .home-card { animation: none; }
+}
+
+/* ================================================================ A6: Intro-Splash
+ * Der allererste Bildschirm beim Laden der Seite. Zeigt Logo und Ladebalken,
+ * blendet nach kurzer Zeit zum Home-Bildschirm über (introSplash.js).
+ */
+#intro-splash {
+  position: fixed; inset: 0; z-index: 100;
+  display: grid; place-content: center; gap: 20px;
+  background: var(--bg);
+}
+#intro-splash[hidden] { display: none; }
+.intro-splash__logo {
+  width: min(80vw, 320px); aspect-ratio: 660 / 860;
+  background: url('/logo.webp') center / contain no-repeat;
+  filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.7));
+  animation: intro-logo-rein 0.9s ease-out both;
+}
+.intro-splash__balken {
+  width: min(60vw, 300px); height: 4px;
+  background: var(--panel-2); border-radius: var(--radius-rund); overflow: hidden;
+}
+.intro-splash__balken i {
+  display: block; width: 0; height: 100%;
+  background: var(--verlauf-primaer);
+  box-shadow: 0 0 12px rgba(124, 252, 0, 0.5);
+  animation: intro-balken 1.4s ease-in-out forwards;
+}
+.intro-splash__text { font-size: var(--fs-xs); color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+@keyframes intro-logo-rein {
+  from { opacity: 0; transform: scale(0.88) translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes intro-balken {
+  0% { width: 0; }
+  60% { width: 100%; }
+  100% { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-splash__logo { animation: none; opacity: 1; }
+  .intro-splash__balken i { animation: none; width: 100%; }
+}

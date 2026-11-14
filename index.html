@@ -288,6 +288,35 @@
         </div>
       </section>
 
+      <!-- Intro-Splash (A6 UI-Rest): Der allererste Bildschirm beim Laden. Zeigt Logo
+           und Ladebalken, blendet nach kurzer Zeit zum Home-Bildschirm über. -->
+      <section id="intro-splash" aria-hidden="true" hidden>
+        <div class="intro-splash__logo" role="img" aria-label="Project Armageddon"></div>
+        <div class="intro-splash__balken"><i></i></div>
+        <p class="intro-splash__text">Lädt …</p>
+      </section>
+
+      <!-- Home-Bildschirm (A6 UI-Rest): Startseite vor dem Menü. Wird beim ersten Laden
+           eingeblendet und beim ersten Klick auf "Match starten" oder "Überrasch mich"
+           ausgeblendet. -->
+      <section id="home-screen" class="overlay" role="region" aria-label="Startbildschirm">
+        <div class="overlay-card panel home-card">
+          <div class="home-marke">
+            <div class="menu-logo" role="img" aria-label="Project Armageddon — Turn. Aim. Destroy."></div>
+            <h1>Project <span class="accent">Armageddon</span></h1>
+            <p class="subtitle">
+              Rundenbasierte 2D-Artillerie-Taktik. Zerstöre das Terrain, lies den Wind und
+              schalte die gegnerischen Teams aus, bevor der Mahlstrom alles verschlingt.
+            </p>
+          </div>
+          <div class="home-aktionen">
+            <button id="home-start" type="button" class="pa-btn pa-btn--primaer pa-btn--fadenkreuz">Match starten</button>
+            <button id="home-ueberrasch" type="button" class="secondary" title="Würfelt Biom, Kulisse und Fraktionen und startet sofort">Überrasch mich</button>
+          </div>
+          <p class="home-hinweis">Drücke eine Taste oder klicke irgendwo, um fortzufahren.</p>
+        </div>
+      </section>
+
       <!-- Kurzmeldungen (src/client/toasts.js): bewusst KEINE Live-Region, das Protokoll sagt an. -->
       <div id="toasts" role="region" aria-label="Kurzmeldungen"></div>
 

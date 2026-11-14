@@ -32,6 +32,9 @@ import { leseSitzung, websocketUrlFuer } from './konto.js';
 import { kontoEinrichten } from './kontoMenue.js';
 import { bindeReplayBedienung } from './replayBedienung.js';
 import { bindeProfilSicherung } from './profilSicherung.js';
+import { starteUIRest } from './uiRest.js';
+import { starteHome } from './home.js';
+import { starteIntroSplash } from './introSplash.js';
 import {
   aktualisiereSitzungsKnopf,
   behandleResumeFehler,
@@ -195,6 +198,14 @@ const PLANETEN_KULISSE_URLEN = Object.fromEntries(
 
 class Game {
   constructor() {
+    /*
+     * A6 UI-Rest: Intro-Splash und Home-Bildschirm.
+     * Der Splash läuft sofort, der Home-Bildschirm folgt nach dem Splash.
+     * Beide arbeiten nur auf dem DOM, ohne Engine-Eingriff.
+     */
+    starteIntroSplash();
+    starteHome();
+
     planetenBilder.setzeUrls(PLANETEN_KULISSE_URLEN);
     this.canvas = document.getElementById('game-canvas');
     this.renderer = new Renderer(this.canvas);
@@ -620,6 +631,13 @@ class Game {
      * Export und Import stehen in `profilSicherung.js`.
      */
     bindeProfilSicherung(this, { melde: (text, art) => this.hud.log(text, art) });
+
+    /*
+     * UI-Rest (A6): Endrangliste und Porträt-Eckleisten. Beide Module arbeiten
+     * ausschließlich auf dem vorhandenen DOM und den vorhandenen Werten, sie
+     * greifen nicht in den Startpfad ein.
+     */
+    starteUIRest();
 
     this.#zeigeProfil();
     this.#zeigeErfolge();
