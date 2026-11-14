@@ -26,7 +26,7 @@ const ROOT = path.join(HIER, '..');
  * NICHT budgetiert; Handarbeit dort geht beim nächsten Lauf verloren.
  */
 const BUDGETS = new Map([
-  ['src/client/main.js', 4000],
+  ['src/client/main.js', 4100], // 2026-11-14: UI-Rest (ag-a6), Fokusfalle (ag-a10), zusätzliche ~50 Zeilen
   ['src/engine/match.js', 2790], // 2638 Zeilen nach der Zerlegung (Kisten, Zielwirkungen, Wasser), rund 150 Luft
   ['src/server/gameServer.js', 3000],
   ['src/shared/terrainGen3.js', 2500],

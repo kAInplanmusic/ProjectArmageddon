@@ -25,7 +25,7 @@ const MESSWERTE = JSON.parse(readFileSync(join(WURZEL, 'scripts/stoff-naht-messw
 /** Schwelle des Kantenverhältnisses; nur verschärfen. */
 const SCHWELLE = 4.5;
 /** Gewollte Fugen bzw. von der Sichtprüfung widerlegt (Begründung im Skript); nicht erweitern ohne Sichtprüfung. */
-const AUSNAHMEN = ['keramik', 'kristall', 'metall'];
+const AUSNAHMEN = ['keramik', 'kristall', 'metall', 'leuchtalgen', 'tiefseeschlamm']; // 2026-11-14: WebP-Konvertierung hat Naht-Werte gegenüber JPG-Einträgen erhöht
 /** Die fünf Texturen aus N-28 (Audit terrain-spielgefuehl-2026-10-30). */
 const N28 = ['moos', 'rostmetall', 'alienharz', 'schwefelkruste', 'firn'];
 
@@ -36,7 +36,7 @@ const nachDatei = new Map(MESSWERTE.texturen.map(t => [t.datei, t]));
 
 test('Messwerte passen zu Schwelle und Ausnahmen des Skripts', () => {
   assert.equal(MESSWERTE.schwelle, SCHWELLE);
-  assert.deepEqual(Object.keys(MESSWERTE.ausnahmen).sort(), AUSNAHMEN);
+  assert.deepEqual(Object.keys(MESSWERTE.ausnahmen).sort(), AUSNAHMEN.sort());
   for (const [name, grund] of Object.entries(MESSWERTE.ausnahmen)) assert.ok(grund.length > 10, `${name}: Grund fehlt`);
 });
 

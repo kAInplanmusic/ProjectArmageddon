@@ -159,7 +159,7 @@ test('Die Lobby-Grenzen und die Figurenzahl widersprechen sich nicht', () => {
    * Die Obergrenze kommt aus den Teamfarben (`TEAM_COLORS`).
    */
   const teamFarben = /export const TEAM_COLORS = Object\.freeze\(\[([\s\S]*?)\]\)/
-    .exec(fs.readFileSync(path.join(ROOT, 'src', 'engine', 'match.js'), 'utf8'));
+    .exec(fs.readFileSync(path.join(ROOT, 'src', 'shared', 'config', 'match-konstanten.js'), 'utf8'));
   assert.ok(teamFarben, 'TEAM_COLORS nicht gefunden');
   const farben = (teamFarben[1].match(/#[0-9a-f]{6}/gi) ?? []).length;
   assert.ok(farben >= KRIEG_TEAMS,

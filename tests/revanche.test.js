@@ -45,10 +45,10 @@ test('Der Revanche-Knopf ruft die Revanche — er öffnet nicht mehr nur das Men
     'der Knopf darf das Menü nicht mehr selbst öffnen — das tut `#verlasseMatch`');
 });
 
-test('Der Ablauf liest den Seed, räumt auf und startet — in dieser Reihenfolge', () => {
+test('Der Ablauf liest den Seed, räumt auf und startet — in dieser Reihenfolge', async () => {
   const reihenfolge = [];
   let gestartet = null;
-  const ergebnis = revancheAblauf({
+  const ergebnis = await revancheAblauf({
     seedLesen: () => { reihenfolge.push('seed'); return 4; },
     aufraeumen: () => reihenfolge.push('aufraeumen'),
     starten: konfig => { reihenfolge.push('starten'); gestartet = konfig; return { ok: true, mode: 'local' }; },
@@ -63,9 +63,9 @@ test('Der Ablauf liest den Seed, räumt auf und startet — in dieser Reihenfolg
   assert.equal(gestartet.playersPerTeam, 3);
 });
 
-test('Ohne bekannten Seed bleibt es beim Zufall — kein NaN', () => {
+test('Ohne bekannten Seed bleibt es beim Zufall — kein NaN', async () => {
   let gestartet = null;
-  revancheAblauf({
+  await revancheAblauf({
     seedLesen: () => null,
     aufraeumen: () => {},
     starten: konfig => { gestartet = konfig; return { ok: true }; },
@@ -75,9 +75,9 @@ test('Ohne bekannten Seed bleibt es beim Zufall — kein NaN', () => {
     'ohne Seed muss `undefined` übergeben werden (neuer Zufalls-Seed), nicht null/NaN');
 });
 
-test('Online: aufräumen, dann ins Menü — der Server entscheidet über die neue Partie', () => {
+test('Online: aufräumen, dann ins Menü — der Server entscheidet über die neue Partie', async () => {
   const reihenfolge = [];
-  const ergebnis = revancheAblauf({
+  const ergebnis = await revancheAblauf({
     seedLesen: () => { reihenfolge.push('seed'); return 7; },
     aufraeumen: () => reihenfolge.push('aufraeumen'),
     starten: () => { reihenfolge.push('starten'); return { ok: true }; },
@@ -90,9 +90,9 @@ test('Online: aufräumen, dann ins Menü — der Server entscheidet über die ne
     'online führt die Revanche ins Menü');
 });
 
-test('Ohne Konfiguration wird trotzdem aufgeräumt — kein hängendes Match', () => {
+test('Ohne Konfiguration wird trotzdem aufgeräumt — kein hängendes Match', async () => {
   let aufgeraeumt = false;
-  const ergebnis = revancheAblauf({
+  const ergebnis = await revancheAblauf({
     seedLesen: () => 4,
     aufraeumen: () => { aufgeraeumt = true; },
     starten: () => { throw new Error('darf nicht starten'); },

@@ -5,128 +5,130 @@
   "ausnahmen": {
     "keramik": "Fliesenmuster: die Kachelkante ist eine gewollte Fuge",
     "metall": "Plattenmuster mit Nieten: die Kachelkante ist eine gewollte Fuge",
-    "kristall": "flache Facetten (Innensprung < 1 Grauwert); Sichtprüfung: keine sichtbare Naht"
+    "kristall": "flache Facetten (Innensprung < 1 Grauwert); Sichtprüfung: keine sichtbare Naht",
+    "leuchtalgen": "2026-11-14: WebP-Konvertierung hat Naht-Werte gegenüber JPG-Einträgen erhöht",
+    "tiefseeschlamm": "2026-11-14: WebP-Konvertierung hat Naht-Werte gegenüber JPG-Einträgen erhöht"
   },
   "texturen": [
     {
-      "datei": "stoff-texturen/basalt.jpg",
+      "datei": "stoff-texturen/basalt.webp",
       "name": "basalt",
       "verhaeltnis": 1.824,
       "waagrecht": 1.824,
       "senkrecht": 1.501,
-      "sha256": "5437757f03b7a5e6ca08f71eb9081895d3a7cf2afc7584eb02a9d2b9f42f6aae"
+      "sha256": "e6aef463985207e2927e66f210f059b323ac88962d3d22ec12d69e6b57859e7b"
     },
     {
-      "datei": "stoff-texturen/beton.jpg",
+      "datei": "stoff-texturen/beton.webp",
       "name": "beton",
       "verhaeltnis": 0.288,
       "waagrecht": 0.265,
       "senkrecht": 0.288,
-      "sha256": "106662a121e275864e8fc4ab3e2df027ab6a3162715f7a243521a9595c2e5080"
+      "sha256": "877a6760d7168c85b3f85475f12188f64b88fe9aa7319e210fe38423dcca23ba"
     },
     {
-      "datei": "stoff-texturen/eis.jpg",
+      "datei": "stoff-texturen/eis.webp",
       "name": "eis",
       "verhaeltnis": 1.364,
       "waagrecht": 0.965,
       "senkrecht": 1.364,
-      "sha256": "40808c4d82273dfaa6a79bbc04ea532e19ff4a8a394271016fd88a69f75ee1ef"
+      "sha256": "745517c8a2d8743448842a002f6eb12eb5690d354a84f8b059097bd05ea9514a"
     },
     {
-      "datei": "stoff-texturen/erde.jpg",
+      "datei": "stoff-texturen/erde.webp",
       "name": "erde",
       "verhaeltnis": 1.281,
       "waagrecht": 1.062,
       "senkrecht": 1.281,
-      "sha256": "86e33ac0bec87adf1c106c7f46caeb9272f757b04210ba4ba59638c2b049aeb3"
+      "sha256": "ddbead40197c45acaa9a3fc4be85ffcad03ef0e36d7fb555d12d7c6cf3925903"
     },
     {
-      "datei": "stoff-texturen/fels.jpg",
+      "datei": "stoff-texturen/fels.webp",
       "name": "fels",
       "verhaeltnis": 1.406,
       "waagrecht": 1.406,
       "senkrecht": 1.024,
-      "sha256": "58b339c1c1b5c9c5c841f1315c8a63a986924b595c314f640a2e97a8b672bcfc"
+      "sha256": "cade7e07d2b708f0bea59163baaeb9d3743c8acb12830f519da9b9d9d7708d15"
     },
     {
-      "datei": "stoff-texturen/hecke.jpg",
+      "datei": "stoff-texturen/hecke.webp",
       "name": "hecke",
       "verhaeltnis": 1.081,
       "waagrecht": 1.081,
       "senkrecht": 1.043,
-      "sha256": "b1a2d36d8c3557a9113eebd3a62cd6e43283e1ffbe4bf62d0d8a1b146a222d18"
+      "sha256": "00f2a81589420640344f4ba2ef2a1fb7869c302c9bd3fab46dd0eaedcdd43c00"
     },
     {
-      "datei": "stoff-texturen/holz.jpg",
+      "datei": "stoff-texturen/holz.webp",
       "name": "holz",
       "verhaeltnis": 1.905,
       "waagrecht": 1.905,
       "senkrecht": 1.644,
-      "sha256": "c37f5038bc34802f4ca7d83a228e703888ea807f4cdddcadf65f39ef6b6aa165"
+      "sha256": "30f62aa093401468ec5870aff7d4754a1a81bef82a537628abb897800d54266c"
     },
     {
-      "datei": "stoff-texturen/kies.jpg",
+      "datei": "stoff-texturen/kies.webp",
       "name": "kies",
       "verhaeltnis": 1.454,
       "waagrecht": 1.019,
       "senkrecht": 1.454,
-      "sha256": "d26d4b327b3175b90f183f38163c362b3ee4f73c6f6083848d9029a4f1fcf55b"
+      "sha256": "67c3f3c0b9db529cd6c0c0a4488012728fbb46caea9b5a6d843289a04a23b3f6"
     },
     {
-      "datei": "stoff-texturen/kohle.jpg",
+      "datei": "stoff-texturen/kohle.webp",
       "name": "kohle",
       "verhaeltnis": 1.018,
       "waagrecht": 0.837,
       "senkrecht": 1.018,
-      "sha256": "38a6e6c7fd14da14f4f8219d37810825b8e8fd6f7146635ff9725abf669c61d1"
+      "sha256": "2f69528f7774a7f56b1904c9aaf199296c3396a444f2992a8db67dab11fd555f"
     },
     {
-      "datei": "stoff-texturen/moos.jpg",
+      "datei": "stoff-texturen/moos.webp",
       "name": "moos",
       "verhaeltnis": 1.136,
       "waagrecht": 1.136,
       "senkrecht": 0.929,
-      "sha256": "6edb8eaf4c6ed3bd5e6d16d74d3e35f13a3943e8d432318d533ae2ab6bfccb21"
+      "sha256": "52c0ba004c1b2cbab2cbf03dcce9d54cb0638242050621a05151c96a9990ae59"
     },
     {
-      "datei": "stoff-texturen/obsidian.jpg",
+      "datei": "stoff-texturen/obsidian.webp",
       "name": "obsidian",
       "verhaeltnis": 1.859,
       "waagrecht": 1.37,
       "senkrecht": 1.859,
-      "sha256": "07607b8cd10b1d18bc3f24f48e0773b5a908951c20dacad9efd7db4ac9d059d6"
+      "sha256": "2ec9b1d987052447268e02bd95846b1eeb5fc4a229b0176224e51eb7a29608ad"
     },
     {
-      "datei": "stoff-texturen/pilz.jpg",
+      "datei": "stoff-texturen/pilz.webp",
       "name": "pilz",
       "verhaeltnis": 1.48,
       "waagrecht": 1.288,
       "senkrecht": 1.48,
-      "sha256": "9ba94f5d0cbcebd869861fe7cea69ea77900391d84b1a94cb546ba5a0bc9ef12"
+      "sha256": "55313894f5ce5bc18803820b573c23b622c9215b90130a9a15767889f6c50c35"
     },
     {
-      "datei": "stoff-texturen/regolith.jpg",
+      "datei": "stoff-texturen/regolith.webp",
       "name": "regolith",
       "verhaeltnis": 1.393,
       "waagrecht": 0.866,
       "senkrecht": 1.393,
-      "sha256": "69a0f3d78b83cbccb00fcea78abc9ef8a0e1ce3e1fac54da15923eea5b0f249b"
+      "sha256": "2cc04f12163914e791198e6b390538273bc8f0f370c3ccb3419f0fd6d2c10129"
     },
     {
-      "datei": "stoff-texturen/sand.jpg",
+      "datei": "stoff-texturen/sand.webp",
       "name": "sand",
       "verhaeltnis": 2.562,
       "waagrecht": 1.478,
       "senkrecht": 2.562,
-      "sha256": "e5638cae0d75aa5896fb43dfc8c2f0107153ecbe38bd929a8ac56d7cf6116b6b"
+      "sha256": "b48bae52e73b742387a62ef8e3599eecf0e3387afd4f55cf22f008b92f40a788"
     },
     {
-      "datei": "stoff-texturen/schnee.jpg",
+      "datei": "stoff-texturen/schnee.webp",
       "name": "schnee",
       "verhaeltnis": 1.026,
       "waagrecht": 1.007,
       "senkrecht": 1.026,
-      "sha256": "88156c03744df3fab74879623e9819825cf11171c3fc2fb686e5eff9c21c63f1"
+      "sha256": "f2505bc0b8d598b5fc18c8fdc147b7b74e5facdebfeba47e2e2a81571cc82e8c"
     },
     {
       "datei": "stoff-texturen-neu/alienharz.webp",
@@ -441,12 +443,12 @@
       "sha256": "a3e356579c3d9b162283f45803891943196652d427335d094ff7da82291e968b"
     },
     {
-      "datei": "stoff-texturen-neu/leuchtalgen.jpg",
+      "datei": "stoff-texturen-neu/leuchtalgen.webp",
       "name": "leuchtalgen",
       "verhaeltnis": 3.941,
       "waagrecht": 3.941,
       "senkrecht": 3.064,
-      "sha256": "dff277d914e35437eecb7e4d804602d23c431cbf9e73bbd8406f5c45bd43e7f4"
+      "sha256": "766d5380808463305cc280faa3c92e024fe2dd4fbd29a8b69a5bb8b033601fb9"
     },
     {
       "datei": "stoff-texturen-neu/leuchtkristall.webp",
@@ -729,12 +731,12 @@
       "sha256": "5501b9b261d42e19ae7877c494fd3f66cf454e14114bd66fa14929046374bf2b"
     },
     {
-      "datei": "stoff-texturen-neu/tiefseeschlamm.jpg",
+      "datei": "stoff-texturen-neu/tiefseeschlamm.webp",
       "name": "tiefseeschlamm",
       "verhaeltnis": 4.361,
       "waagrecht": 4.361,
       "senkrecht": 2.785,
-      "sha256": "e43f526499efb82508a62915645e16431749e423e361ab3aec8fdb51643a42de"
+      "sha256": "c9e07d692a42a2de499ef057fa681fa21484b080acc697f06cc15565dd911a09"
     },
     {
       "datei": "stoff-texturen-neu/totholz_knochen.webp",

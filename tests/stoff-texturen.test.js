@@ -19,8 +19,8 @@ test('Jeder zugeordnete Stoff existiert, jede Textur hat ihre kleine Datei', () 
   const keys = new Set(STOFFE.map(s => s.key));
   for (const k of Object.keys(STOFF_TEXTUR)) assert.ok(keys.has(k), `Stoff ${k} unbekannt`);
   for (const n of TEXTUR_NAMEN) {
-    // Basisstoffe: `stoff-texturen/<name>.jpg`; Biom-Materialien: `stoff-texturen-neu/<name>.jpg` oder `.webp`.
-    const pfad = [join(ORDNER, `${n}.jpg`), join(ORDNER_NEU, `${n}.jpg`), join(ORDNER_NEU, `${n}.webp`)].find((p) => existsSync(p));
+    // Basisstoffe: `stoff-texturen/<name>.webp` (nach WebP-Konvertierung); Biom-Materialien: `stoff-texturen-neu/<name>.webp`.
+    const pfad = [join(ORDNER, `${n}.webp`), join(ORDNER_NEU, `${n}.jpg`), join(ORDNER_NEU, `${n}.webp`)].find((p) => existsSync(p));
     assert.ok(pfad, `${n}: weder .jpg noch .webp vorhanden`);
     assert.ok(statSync(pfad).size < 200_000, `${pfad} zu groß (Ladezeit)`);
   }
