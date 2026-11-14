@@ -59,11 +59,11 @@ Wert ohne Beleg (Abschnitt 3) gilt als nicht eingetragen.
 
 | Angabe | Wert |
 |---|---|
-| Preis pro Stunde | **LÜCKE** (muss zu PFLICHT-04 passen) |
-| Höchstdauer des Laufs | **LÜCKE** — geplante Dauer (PFLICHT-06) |
-| Worst Case (Kosten) | **LÜCKE** = Preis/h × Höchstdauer. Ohne diese Rechnung wird nicht gestartet. |
-| Bildkosten je Monat | **LÜCKE** = Abbildgröße in GB × PFLICHT-15; nur wenn Abbilder aufbewahrt werden |
-| Zweite, unabhängige Frist | **LÜCKE** — PFLICHT-13 (Alarm außerhalb des Knotens) |
+| Preis pro Stunde | **0,037128 €/h brutto** (Hetzner-API `/server_types`, 2026-11-10; passt zu PFLICHT-04) |
+| Höchstdauer des Laufs | **9 h** (= `PA_MAX_MACHINE_MINUTES` 540, PFLICHT-06) |
+| Worst Case (Kosten) | **0,33 €** = 9 h × 0,037128 €/h. Ohne diese Rechnung wird nicht gestartet. |
+| Bildkosten je Monat | **0,036 €/Monat** = 2,11 GB × 0,017017 €/GB/Monat (PFLICHT-15; Abbildgröße aus dem verifizierten Lauf, Abschnitt 10, Abbild 454628717). Abbilder werden aufbewahrt (PFLICHT-11) |
+| Zweite, unabhängige Frist | **12 h = 0,45 €** — PFLICHT-13 (Alarm außerhalb des Knotens, GitHub-Zeitplan) |
 
 ### Abschaltung — wie sie funktioniert
 
@@ -356,6 +356,14 @@ einzigen Knoten samt lokalem Archiv. Deshalb bleibt der Ablauf ein
 protokolliert ihn. AGENTS.md §5: Ein Agent mietet, erstellt, startet oder
 löscht **nie** selbst Server.
 
+> **Seit der Freigabe vom 2026-11-10 (Abschnitt 10) ist dieser Ablauf zusätzlich
+> automatisiert** — Idle-Bremse 15 min → verifiziertes Abbild → Selbstlöschung
+> (`PA_ACTION=abbild-loeschen`), Start über die Netlify-Seite
+> (`docs/zugang-www.md`). Abschnitt 6 bleibt der prüfbare **Betreiber-Ablauf**
+> für die manuelle Wiederholung und den Fail-Safe (ohne geprüftes Abbild wird
+> nie gelöscht); Abschnitt 10 hält den echten Lauf und die Belege fest.
+> Hetzner rechnet einen ausgeschalteten Server bis zur Löschung weiter ab.
+
 Ablauf, in dieser Reihenfolge. Jeder Schritt ist eine Abbruchstelle: fehlt der
 Beleg, wird nicht gelöscht.
 
@@ -462,8 +470,10 @@ Worst Case          = (Preis/h × Höchstdauer) + Bildkosten für die Aufbewahru
 
 Die Abbildgröße steht nach Schritt 3 in Abschnitt 6 in der Konsole (bzw.
 `hcloud image list -o columns=disk_size`). Sie hängt von der Platte ab, nicht
-von diesem Repo. Beispiel für die Rechnung (Zahlen sind Platzhalter, **nicht**
-gültig): `40 GB × LÜCKE €/GB/Monat = LÜCKE €/Monat`.
+von diesem Repo. Rechenbeispiel mit dem eingetragenen Wert (PFLICHT-15):
+`40 GB × 0,017017 €/GB/Monat = 0,68 €/Monat`. Die tatsächliche Abbildgröße aus
+dem verifizierten Lauf (Abschnitt 10) ist 2,11 GB: `2,11 GB × 0,017017 €/GB/Monat
+= 0,036 €/Monat` (steht in Abschnitt 1 „Kosten").
 
 Wird kein Abbild aufbewahrt (`PA_SNAPSHOT_CLOUD=no` und Weg A nicht genutzt),
 entfällt die Position — dann muss das ausdrücklich so entschieden und in
