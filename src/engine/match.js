@@ -35,6 +35,7 @@ import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaRound, valhallaTickForRound, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
 import { getTurnDurationForSize } from './systems/turnSystem.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout, klassenKennung } from '../shared/config/classes.js';
+import { WATER_SCALE } from '../shared/config/match-konstanten.js';
 import { WAFFEN_STANDARD, WAFFEN_FEUERWESEN, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_KLASSE, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
 import { wendeStossAn } from './stoss.js';
@@ -104,43 +105,16 @@ export {
   normalisiereGroesse,
 } from './karte.js';
 
-export const WATER_SCALE = 4;
-
 // Die Namenslisten stammen aus der Klassen-Konfiguration und werden hier nur
 // weitergegeben — sonst gäbe es neben der Verrechnung auch noch zwei Quellen
 // für die Reihenfolge der Klassen.
 export { CLASS_IDS, ARCHETYPE_IDS };
-/*
- * Teamfarben.
- *
- * FUND (belegt, Skalierungsplanung): Hier standen **vier** Farben — so viele
- * wie Teams (`lobby.js`: `teams` 2 bis 4). Die Matcharten nennen aber bis zu
- * **8 Spieler**; je nach Aufteilung sind das mehr Teams, als Farben da sind.
- * Ein Team ohne eigene Farbe wäre auf der Karte nicht von einem anderen zu
- * unterscheiden — und die Zuordnung `TEAM_COLORS[teamId]` liefe ins Leere.
- *
- * Acht Farben, paarweise deutlich unterscheidbar (hell/dunkel gemischt, damit
- * sie auch bei Farbfehlsichtigkeit auseinanderfallen):
- *
- *   1 türkis   5 magenta
- *   2 orange   6 grün
- *   3 rot      7 blau
- *   4 violett  8 sand
- *
- * Die Zuordnung bleibt `TEAM_COLORS[teamId]` — wer mehr Teams als Farben
- * erlaubt, bricht die Anzeige. Die Lobby prüft die Grenze (`teams` 2 bis 4);
- * sie wird mit den Matcharten angehoben.
- */
-export const TEAM_COLORS = Object.freeze([
-  '#4cc9f0', // 1 türkis
-  '#f4a261', // 2 orange
-  '#e63946', // 3 rot
-  '#9d4edd', // 4 violett
-  '#f72585', // 5 magenta
-  '#90be6d', // 6 grün
-  '#4d7cfe', // 7 blau
-  '#e9c46a', // 8 sand
-]);
+
+/** Skalierung Wasser-Textur (1 Wasser-Pixel = 4 Karten-Pixel). Re-Export aus `shared/config/match-konstanten.js`. */
+export { WATER_SCALE } from '../shared/config/match-konstanten.js';
+
+/** Teamfarben — Re-Export aus `shared/config/match-konstanten.js`. */
+export { TEAM_COLORS } from '../shared/config/match-konstanten.js';
 
 /*
  * Grundgesundheit vor dem Klassenfaktor.

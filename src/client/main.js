@@ -16,7 +16,7 @@ import { FOTOS, panorama, fotoFuerBiom, fotoFuerKarte, findeKulisse } from './pa
 import { MALI_LEITUNGSMARKE, maskeZuMali } from '../shared/config/schaden.js';
 import { isTextEntry } from './dom.js';
 import { haerteAusTreffer } from './gefuehl.js';
-import { MatchController, TEAM_COLORS } from '../engine/match.js';
+import { TEAM_COLORS } from '../shared/config/match-konstanten.js';
 import { ZuendzeitSteuerung } from './zuendzeitSteuerung.js';
 import { kistenInhalt } from '../engine/kistenSicht.js';
 import { kistenMitInhalt } from './kistenSichtAnzeige.js';
@@ -45,7 +45,7 @@ import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, applyRemoveToTerrain, applyAddToTerrain, applySlumpToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
 import { orderInventoryBySubcategory, WINDFAKTOR_JE_WAFFE } from '../shared/config/weapons.js';
 import { WAFFEN_STANDARD, getWaffe } from '../shared/config/waffen-fassung.js';
-import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
+import { CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/match-konstanten.js';
 import { verdrahteKartenVorschlag } from './kartenVorschlag.js';
 import { leseKartenWahl, verdrahteKartenWahl } from './kartenWahlMenue.js';
 import { pickBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
@@ -115,7 +115,16 @@ function zugpauseSekunden() {
   try { url = nutzbar(new URLSearchParams(globalThis.location?.search ?? '').get('zugpause')); } catch { /* kein Browser */ }
   return url ?? nutzbar(import.meta.env?.VITE_ZUGPAUSE_SEKUNDEN) ?? MATCH_RULES.turnPauseSeconds;
 }
-import { ReplayPlayer } from '../engine/replay.js';
+// Code-Splitting (A9/BUILD-1): ReplayPlayer wird dynamisch geladen, nur wenn eine
+// Aufzeichnung wiedergegeben wird. Vermeidet, dass MatchController im Startpfad liegt.
+let ReplayPlayer = null;
+async function getReplayPlayer() {
+  if (!ReplayPlayer) {
+    const mod = await import('../engine/replay.js');
+    ReplayPlayer = mod.ReplayPlayer;
+  }
+  return ReplayPlayer;
+}
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
 import { MatchStats, PlayerProfile } from '../shared/stats.js';
 import {
@@ -165,7 +174,7 @@ const STOFF_TEXTUR_URLEN = {
   // Biom-Materialien, dann die Basisstoffe; bei gleichem Namen gewinnt die alte Datei nur für Basisstoffe (das Foto `moos.jpg` verdeckte sonst das gemalte `moos.webp`, Stilbruch).
   ...STOFF_TEXTUR_NEU,
   ...Object.fromEntries(
-    Object.entries(import.meta.glob('./assets/stoff-texturen/*.jpg', { query: '?url', import: 'default', eager: true }))
+    Object.entries(import.meta.glob('./assets/stoff-texturen/*.webp', { query: '?url', import: 'default', eager: true }))
       .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.jpg$/, ''), url])
       .filter(([name]) => BASIS_TEXTUREN.includes(name) || !(name in STOFF_TEXTUR_NEU)),
   ),
@@ -808,7 +817,7 @@ class Game {
   }
 
   /** Liest die Menükonfiguration und startet das passende Match. */
-  startFromMenu() {
+  async startFromMenu() {
     const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
     /*
      * „Einheiten je Spieler" — die Zahl der Matcharten (3/4/5).
@@ -865,7 +874,7 @@ class Game {
         backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart, mapSize, mapFormat,
       });
     }
-    return this.startMatch({
+    return await this.startMatch({
       teams, playersPerTeam, preset, kartentyp, seed, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart, mapSize, mapFormat,
     });
   }
@@ -1360,7 +1369,7 @@ class Game {
     return Promise.resolve().then(() => stoffTexturenBereit());
   }
 
-  startMatch({
+  async startMatch({
     teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null,
     seed = undefined, backdropKey = '',
     sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, mapSize = 'mittel', mapFormat = '16:9',
@@ -1382,7 +1391,10 @@ class Game {
     // Sidegrades gehören in die Match-Konfiguration — sie verändern das
     // Kampfprofil und müssen deshalb schon beim Aufbau bekannt sein, nicht erst
     // nach dem Start. Die explizite Formatwahl bestimmt die Ausrichtung.
-    this.match = new MatchController({
+    // Code-Splitting (A9/BUILD-1): MatchController wird dynamisch geladen,
+    // damit der Startpfad (Menü) ohne Engine-Code auskommt.
+    const { MatchController: MatchControllerDyn } = await import('../engine/match.js');
+    this.match = new MatchControllerDyn({
       seed, teams, playersPerTeam, preset, kartentyp, format: mapFormat, groesse: mapSize, sidegrades, loadouts, biom, kartenart,
       guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, wind: WIND_STANDARD, hagel: HAGEL_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
@@ -3529,9 +3541,10 @@ class Game {
    * @param {object} dokument - Aufzeichnung (Format aus `npm run replay -- record`)
    * @returns {boolean} true, wenn geladen
    */
-  loadReplayDocument(dokument) {
+  async loadReplayDocument(dokument) {
     try {
-      this.replayPlayer = new ReplayPlayer(dokument);
+      const ReplayPlayerClass = await getReplayPlayer();
+      this.replayPlayer = new ReplayPlayerClass(dokument);
     } catch (error) {
       this.replayPlayer = null;
       this.#setReplayStatus(`Ungültige Aufzeichnung: ${error.message}`);

@@ -13,7 +13,7 @@
  *
  * @module kulisseUndWasser
  */
-import { WATER_SCALE } from '../engine/match.js';
+import { WATER_SCALE } from '../shared/config/match-konstanten.js';
 import { kulissenUrl } from './kulissenUrls.js';
 import { coverZuschnitt, glutStaerke } from './kulissenZuschnitt.js';
 import { lichtFuerKulisse, saettigungsFaktorAusMessung, aufhellFaktorAusMessung } from './kulissenLicht.js';

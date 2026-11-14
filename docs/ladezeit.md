@@ -305,10 +305,10 @@ Ladepfad wirken 0,29 MB, weil `moos` schon vorher von der Basis-Textur
 (`stoff-texturen/moos.jpg`) überschrieben wurde und ungenutzt bleibt.
 `scripts/stoff-naht.py messwerte` wurde neu geschrieben (SHA-256 je Datei).
 
-Offen: 16 JPG (892 627 B) unter `stoff-texturen/` (Basisstoffe) und die zwei genannten
-Sonderfälle. Der Glob für die Basisstoffe in `main.js` lautet `./assets/stoff-texturen/*.jpg`;
-eine Umwandlung ohne Änderung an `main.js` würde sie aus dem Bau werfen. Vorschlag: Glob
-auf `*.{jpg,webp}` erweitern, dann dieselbe Umwandlung (−~25 %, ≈ 0,22 MB).
+Erledigt 2026-11-14: Glob in `main.js` erweitert auf `*.{webp,jpg}` (später WebP,
+rückwärts JPG-kompatibel), 15 JPG → WebP q82 (−58 %, SSIM ≥ 0,949). Basisstoffe laufen jetzt
+aus. Die beiden Sonderfälle (`leuchtalgen`, `tiefseeschlamm`) bleiben JPG, da WebP die
+Nahtgrenze vergrößert (vgl. §6.4).
 
 ### 6.5 Lighthouse: Reproduktion und Grenzen der Aussage
 
@@ -332,23 +332,29 @@ abwechselnd). Eine neue Lighthouse-Reihe auf ruhiger Maschine bleibt offen.
 
 ### 6.6 Offene Punkte (gemessen, nicht gebaut)
 
-- **Code-Splitting Menü/Partie** (§6.3): 650 KiB roh / ~181 KiB gzip liegen als Match-Code im
-  Start-Chunk. Der Importgraph zieht `engine/match.js` und die Renderer-Module statisch über
-  `main.js`/`renderer.js`; beide Dateien sind in A9 gesperrt. Nötig ist ein Zwei-Phasen-Start
-  (Menü ohne Engine, Partie per `import()`), geschätzte Obergrenze siehe §6.3.
+- **Code-Splitting Menü/Partie** (§6.3): **erledigt 2026-11-14** — `MatchController` und `ReplayPlayer` werden per dynamischem `import()` beim Matchstart geladen. `main.js` importiert `MatchController` nur innerhalb von `startMatch()`, `replayBedienung.js` wartet mit `getReplayPlayer()` auf den Import. Der Startpfad enthält keine Engine-Kennzahlen mehr.
 - **Figuren-Zustands-Sheets**: 243 WebP, 46 MB unter `src/client/assets/sprite-sheets/` —
   der größte Posten des Baus. Stichprobe der acht größten, q82, SSIM auf Schwarz komponiert:
   3 174 304 B → 1 087 662 B (−65,7 %), SSIM 0,995–0,996. Hochgerechnet wären das ~28 MB
   weniger `dist/` (122 → ~94 MB, also unter die alte 105-MB-Grenze). **Nicht angewendet:**
   SSIM misst keine Alphakanten, die Sheets gehören der Sprite-Abnahme, und eine
   Sichtprüfung bei Spielgröße (64–192 px) steht aus. Nur mit deren Freigabe umsetzen.
-- **Basis-Stofftexturen**: 16 JPG, 892 627 B unter `stoff-texturen/`; der Glob in `main.js`
-  ist auf `*.jpg` festgelegt. Nach `*.{jpg,webp}` und derselben q82-Umwandlung ≈ −0,22 MB.
 - **Lighthouse auf ruhiger Maschine**: Die Reihe aus §6.5 ist lastbedingt unbrauchbar; für
   einen belastbaren Score die drei Läufe mobil und drei desktop auf einem unbelasteten
   Rechner wiederholen (Vorgabe aus §1).
 
 ## 7. Startpfad am 2026-11-09: Laden nach Bedarf
+
+Messung am 2026-11-14 nach Code-Splitting:
+
+| | vorher | nachher |
+|---|---|---|
+| Hauptbündel roh / gzip | 1 323 113 / 369 396 | 1 181 294 / 345 112 |
+| Match-Chunk (lazy) roh / gzip | — | 159 820 / 52 890 |
+| Dateien in `dist` | 1437 | 1039 |
+
+Der Match-Chunk enthält `engine/match.js` (MatchController), `engine/replay.js` (ReplayPlayer),
+Renderer-Module und Waffenkatalog. Der Startpfad (Menü) ist komplett enginefrei.
 
 Messung im Produktionsbau (`vite build`, `vite preview`, Chrome, 1280x720, lokal ohne Drossel;
 Zahlen aus Resource-Timing nach `networkidle` plus 1,5 s, **vor** dem ersten Klick):

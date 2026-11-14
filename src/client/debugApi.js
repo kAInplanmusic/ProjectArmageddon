@@ -13,7 +13,8 @@
  *
  * Die Klasse bleibt die Fassade: `#exposeDebugApi() { exposeDebugApi(this); }`.
  */
-import { MAP_WIDTH, MAP_HEIGHT, WATER_SCALE } from '../engine/match.js';
+import { MAP_WIDTH, MAP_HEIGHT } from '../engine/karte.js';
+import { WATER_SCALE } from '../shared/config/match-konstanten.js';
 import { ruckVersatz } from './gefuehl.js';
 import { kameraEffekte } from './kameraEffekte.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';

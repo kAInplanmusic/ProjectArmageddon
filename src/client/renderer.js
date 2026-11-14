@@ -9,7 +9,7 @@ import { zeichneBiomobjekt } from './biomobjektBild.js';
  *
  * @module renderer
  */
-import { WATER_SCALE, TEAM_COLORS } from '../engine/match.js';
+import { WATER_SCALE, TEAM_COLORS } from '../shared/config/match-konstanten.js';
 import { teamMarke } from './teamFarben.js';
 import { DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';

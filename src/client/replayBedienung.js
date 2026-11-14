@@ -44,7 +44,7 @@ export function bindeReplayBedienung(spiel, {
     if (!gewaehlt) return;
     try {
       const text = await gewaehlt.text();
-      if (spiel.loadReplayDocument(JSON.parse(text))) {
+      if (await spiel.loadReplayDocument(JSON.parse(text))) {
         setzeStatus(`Geladen: ${gewaehlt.name}`);
       }
     } catch (error) {

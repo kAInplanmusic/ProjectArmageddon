@@ -33,7 +33,7 @@
  * @param {(text: string, art?: string) => void} [optionen.log]
  * @returns {{ok: boolean, mode?: string, errors?: string[]}}
  */
-export function revancheAblauf({
+export async function revancheAblauf({
   seedLesen, aufraeumen, starten, konfiguration = null, nurMenue = false, log = () => {},
 } = {}) {
   const seed = seedLesen?.() ?? null;
@@ -48,8 +48,8 @@ export function revancheAblauf({
     return { ok: false, errors: ['Keine Match-Konfiguration'] };
   }
   // Frischer Lauf: neuer `MatchController`, neuer Zugzustand, dieselbe Karte.
-  return starten?.({ ...konfiguration, seed: seed ?? undefined })
-    ?? { ok: false, errors: ['Kein Start'] };
+  return await (starten?.({ ...konfiguration, seed: seed ?? undefined })
+    ?? Promise.resolve({ ok: false, errors: ['Kein Start'] }));
 }
 
 export default revancheAblauf;

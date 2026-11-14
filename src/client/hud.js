@@ -8,7 +8,7 @@
  * @module hud
  */
 import { maliMarken } from '../shared/config/schaden.js';
-import { TEAM_COLORS } from '../engine/match.js';
+import { TEAM_COLORS } from '../shared/config/match-konstanten.js';
 import {
   iconUrlFor,
   orderInventoryBySubcategory,

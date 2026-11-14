@@ -9,7 +9,7 @@
  *
  * @module wertBeschreibung
  */
-import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
+import { CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/match-konstanten.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { combatProfile } from '../shared/config/classes.js';
 

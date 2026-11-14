@@ -13,7 +13,7 @@ import { CollisionMask, eachCraterCell, eachInsetCell } from '../engine/terrain/
 import { generateTerrain } from '../shared/terrainGen.js';
 import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
 import { MatchSeedManager } from '../shared/seed.js';
-import { MAP_SIZES, mapSizeFor } from '../engine/match.js';
+import { MAP_SIZES, mapSizeFor } from '../engine/karte.js';
 import { GELAENDE_ALT, GELAENDE_BIOME, loeseGelaende } from '../shared/config/gelaende.js';
 import { ZERSTOERUNG_STOFF } from '../shared/config/zerstoerung.js';
 import { geschuetztAm, stoffHash } from '../shared/stoffkarte.js';

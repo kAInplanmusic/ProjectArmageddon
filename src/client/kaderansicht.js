@@ -10,7 +10,7 @@
  *
  * @module kaderansicht
  */
-import { CLASS_IDS } from '../engine/match.js';
+import { CLASS_IDS } from '../shared/config/match-konstanten.js';
 import { RARITY_IDS, STUFEN } from '../engine/systems/lootSystem.js';
 import { NEUE_BIOME } from '../shared/config/biome-neu.js';
 import { PLANET_BIOM_IDS } from '../shared/config/biome-planet.js';

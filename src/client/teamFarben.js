@@ -22,7 +22,7 @@
  *
  * @module teamFarben
  */
-import { TEAM_COLORS } from '../engine/match.js';
+import { TEAM_COLORS } from '../shared/config/match-konstanten.js';
 import { FACTIONS } from '../shared/config/factions.js';
 import { FRAKTIONS_FARBEN } from '../shared/config/fraktions-farben.js';
 
