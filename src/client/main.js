@@ -555,6 +555,33 @@ class Game {
     };
     new MutationObserver(menuHinweis).observe(this.menuOverlay, { attributes: true, attributeFilter: ['hidden'] });
     menuHinweis();
+
+    // Zyklische Fokusfalle im Hauptmenü: Tab/Shift+Tab wandern nur innerhalb des Menüs,
+    // nie hinüber zum Spiel (geschützt durch `inert` oben). Nach dem letzten Element
+    // wrap-around zum ersten und umgekehrt.
+    const focuselemente = [
+      ...this.menuOverlay.querySelectorAll('button, [role="button"], [role="tab"], a[href], select, input, details summary'),
+    ].filter(el => {
+      try { return el.offsetParent !== null; } catch { return false; }
+    });
+
+    let fokusIndex = 0;
+    const warteAufMenueOffen = () => !this.menuOverlay.hidden;
+
+    const tabHandler = async (e) => {
+      // Nur auf Tab reagieren (Shift+Tab erkennt man an e.shiftKey).
+      if (e.key !== 'Tab') return;
+      if (!warteAufMenueOffen()) return;
+      //Nur eingreifen, wenn der Fokus bereits im Menü ist
+      if (!this.menuOverlay.contains(document.activeElement)) return;
+      e.stopPropagation();
+      e.preventDefault();
+      fokusIndex = (fokusIndex + (e.shiftKey ? -1 : 1) + focuselemente.length) % focuselemente.length;
+      const ziel = focuselemente[fokusIndex];
+      if (ziel) ziel.focus({ preventScroll: true });
+    };
+
+    document.addEventListener('keydown', tabHandler, { passive: false });
     this.endOverlay = document.getElementById('end-overlay');
     /*
      * Der Abbruchknopf im HUD — sichtbar nur während eines Matches.
