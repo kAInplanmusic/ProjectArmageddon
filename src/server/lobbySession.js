@@ -809,6 +809,10 @@ export class LobbySession {
    * sehen, dass ein Team getrennt ist (B-9). Ohne diesen Broadcast würden sie
    * die Änderung erst beim nächsten regulären Tick bemerken — oder gar nicht,
    * wenn die Lobby im Wartezustand bleibt.
+   *
+   * B-9a: Die Nachricht trägt jetzt ein `seats`-Array mit Verbindungsstatus
+   * je Platz (seatIndex, teamId, connected, name), damit der Client anzeigen
+   * kann, welcher konkrete Gegner getrennt ist.
    */
   broadcastLobbyState() {
     if (this.clients.size === 0) return;
@@ -827,6 +831,13 @@ export class LobbySession {
       ).size,
       unitsPerPlayer: this.lobby.playersPerTeam,
       snapshot: this.match?.getState() ?? null,
+      seats: this.lobby.seats.map(seat => ({
+        seatIndex: seat.seatIndex,
+        teamId: seat.teamId ?? seat.seatIndex % this.lobby.teams,
+        name: seat.name,
+        connected: seat.connected,
+        entityId: seat.entityId,
+      })),
     };
     for (const socket of this.clients.values()) {
       if (socket.readyState === 1) {

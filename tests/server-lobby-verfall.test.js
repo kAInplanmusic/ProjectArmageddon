@@ -145,7 +145,8 @@ test('Ein verfallener BEITRITT wird einmal gemeldet, nicht je Einheit', async ()
   const { server, url, wsUrl } = await starteServer({ lobbyManager });
   try {
     // Drei Einheiten je Mensch: ein Team, drei Plätze.
-    const erstellt = await erstelleLobby(url, { teams: 2, playersPerTeam: 3, seed: 4711 });
+    // 3 Teams, 2 Spieler → 2 von 3 Teams besetzt → Lobby bleibt OPEN
+    const erstellt = await erstelleLobby(url, { teams: 3, playersPerTeam: 3, seed: 4711 });
     const host = await trittBei(wsUrl, erstellt.lobby.id, { name: 'Host', token: erstellt.player.token });
     const zweiter = await trittBei(wsUrl, erstellt.lobby.id, { name: 'Zweiter' });
     assert.equal(lobbyManager.get(erstellt.lobby.id).seats.length, 6, 'Zwei Menschen × drei Einheiten');

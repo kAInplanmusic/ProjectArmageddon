@@ -704,16 +704,13 @@ export class LobbyManager {
    * „verbunden" und der Mensch wäre halb da.
    *
    * Für seine Züge springt NIEMAND ein: Es gibt keine Bot-KI. Bis er
-   * wiederkommt, läuft sein Zug über die Zugzeit ab. Nach dem Reconnect-Fenster
-   * verfällt sein Team (`pruneDisconnected`).
+   * wiederkommt, läuft sein Zug über die Zugzeit ab.
    *
-   * Ob ein NEUER Mensch den freien Platz danach übernehmen kann, hängt am
-   * Lobby-Status — und ist NICHT in jedem Fall wahr (RT-2, gemessen in
-   * `tests/server-kontrollfluss-a4.test.js`): Nur eine Lobby in `open`
-   * (Wartephase) nimmt wieder einen auf. Ein Match, das per `START_MATCH` oder
-   * durch den letzten Beitritt gestartet wurde, steht auf `running`;
-   * `join` lehnt dann jeden ohne passenden Token ab. Der Platz ist frei, die
-   * Tür bleibt zu — die Entscheidung darüber liegt beim Auftraggeber (RT-2).
+   * RT-2: In einer laufenden Lobby (Status RUNNING) werden Plätze nach Ablauf
+   * des Reconnect-Fensters NICHT entfernt (`pruneDisconnected` überspringt
+   * RUNNING-Lobbys). Der Platz bleibt reserviert, damit der ursprüngliche
+   * Mensch auch später noch wiederkommen kann. Nur Lobbys im Status OPEN
+   * (Wartephase) geben Plätze frei für Nachrücker.
    */
   disconnect(lobbyId, token) {
     const lobby = this.get(lobbyId);
@@ -731,6 +728,14 @@ export class LobbyManager {
   pruneDisconnected(now = Date.now()) {
     const removed = [];
     for (const lobby of this.#lobbies.values()) {
+      /*
+       * RT-2: In einer laufenden Lobby (Status RUNNING) werden Plätze NICHT
+       * entfernt — sie bleiben reserviert, damit der ursprüngliche Mensch
+       * auch nach Ablauf des Reconnect-Fensters noch wiederkommen kann.
+       * Nur Lobbys im Status OPEN (Wartephase) geben Plätze frei.
+       */
+      if (lobby.status === LOBBY_STATUS.RUNNING) continue;
+
       /*
        * Ein ganzes TEAM verfällt zusammen.
        *

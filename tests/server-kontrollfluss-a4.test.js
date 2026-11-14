@@ -189,15 +189,17 @@ test('A4 Trennung im laufenden Match: Gegner bekommt lobby_state, Platz bleibt r
     assert.equal(stand.laeuft, true, 'Das Match läuft mit dem verbliebenen Menschen weiter');
     assert.equal(stand.besetzteTeams, 1);
 
-    /*
-     * B-9a (OFFEN): Der Zustand trägt nur eine ZAHL, kein Merkmal je Platz.
-     * Wer getrennt ist, steht nicht auf der Leitung — genau dafür bräuchte es
-     * eine Protokoll-/Client-Änderung (siehe docs/TODO.md, B-9a).
-     */
-    assert.equal(stand.seats, undefined,
-      'B-9a: lobby_state nennt keine Plätze/kein connected-Merkmal');
-    assert.equal(stand.connected, undefined,
-      'B-9a: auch kein zusammengefasstes Verbindungsmerkmal');
+    // B-9a (ERLEDIGT): lobby_state trägt jetzt ein `seats`-Array mit
+    // Verbindungsstatus je Platz (seatIndex, teamId, name, connected, entityId).
+    // Hinweis: A tritt mit dem Host-Token bei, daher heißt der Platz 'Host', nicht 'A'.
+    assert.ok(Array.isArray(stand.seats), 'B-9a: lobby_state nennt seats-Array');
+    assert.equal(stand.seats.length, 2, 'B-9a: seats enthält beide Plätze');
+    const sitzGetrennt = stand.seats.find(s => s.connected === false);
+    const sitzVerbunden = stand.seats.find(s => s.connected === true);
+    assert.ok(sitzGetrennt, 'B-9a: Ein Platz ist disconnected');
+    assert.ok(sitzVerbunden, 'B-9a: Ein Platz ist connected');
+    assert.equal(sitzGetrennt.name, 'Host', 'B-9a: Der getrennte Platz ist der Host-Platz');
+    assert.equal(sitzVerbunden.name, 'B', 'B-9a: Der verbundene Platz ist B');
     assert.equal(stand.besetzteTeams, 1);
 
     const lobby = server.lobbyManager.get(lobbyId);
@@ -296,18 +298,15 @@ test('A4 Altweg JOIN_LOBBY + token im laufenden Match: derselbe Platz, kein zwei
   }
 });
 
-test('ZUSTANDS-PIN RT-2: nach Ablauf des Fensters ist der Platz frei, die LAUFENDE Lobby nimmt niemanden auf', async () => {
+test('ZUSTANDS-PIN RT-2: nach Ablauf des Fensters bleibt der Platz in RUNNING-Lobby reserviert, Original-Spieler kann wiederkommen', async () => {
   /*
-   * Der Kommentar an `LobbyManager#disconnect` verspricht: „Nach dem
-   * Reconnect-Fenster verfällt sein Team und die Lobby nimmt wieder einen
-   * Menschen auf." Für eine Lobby, deren Match bereits läuft, gilt der zweite
-   * Teil NICHT: `#starteMatchFallsVoll` setzt bei beiden Startwegen „running",
-   * und `LobbyManager#join` lehnt alles außer „open" ab.
+   * RT-2 REPARATUR: In einer laufenden Lobby (Status RUNNING) werden Plätze
+   * nach Ablauf des Reconnect-Fensters NICHT entfernt (pruneDisconnected
+   * überspringt RUNNING-Lobbys). Der Platz bleibt reserviert, damit der
+   * ursprüngliche Mensch auch später noch wiederkommen kann.
    *
-   * Gemessen wird beides: Der Platz ist wirklich frei (prune), aber sowohl der
-   * alte Token als auch ein fremder Client werden abgewiesen. Das ist der
-   * offene Punkt RT-2 — die Reparatur ist eine Produktentscheidung (Status
-   * „open" während des Matches oder Reservierung), keine Protokollfrage.
+   * Ein fremder Client (ohne passenden Token) wird aber weiterhin abgewiesen,
+   * weil die Lobby RUNNING ist und join() nur OPEN-Lobbys akzeptiert.
    */
   const lobbyManager = new LobbyManager({ reconnectWindowMs: 150 });
   const { server, url, wsUrl } = await starteServer({ lobbyManager, pruneIntervalMs: 30 });
@@ -325,31 +324,48 @@ test('ZUSTANDS-PIN RT-2: nach Ablauf des Fensters ist der Platz frei, die LAUFEN
     assert.ok(takt, 'Testaufbau: Match läuft');
 
     const resumeToken = a.welcome.resumeToken;
+    const platzToken = erstellt.player.token;
     a.client.close();
-    // Fenster 150 ms, Verwaltungsrunde 30 ms: nach 500 ms ist der Platz weg.
+    // Fenster 150 ms, Verwaltungsrunde 30 ms: nach 500 ms wäre der Platz in
+    // OPEN-Lobby verfallen, aber in RUNNING-Lobby bleibt er reserviert.
     await warte(500);
 
     const lobby = server.lobbyManager.get(lobbyId);
-    assert.equal(lobby.seats.length, 1, 'Das verfallene Team ist aus den Plätzen entfernt');
+    // RT-2 Fix: Platz bleibt in RUNNING-Lobby reserviert (connected: false, aber nicht entfernt)
+    assert.equal(lobby.seats.length, 2, 'RT-2: Platz bleibt in RUNNING-Lobby reserviert');
+    const platzA = lobby.seats.find(seat => seat.token === platzToken);
+    assert.ok(platzA, 'RT-2: Platz A existiert noch');
+    assert.equal(platzA.connected, false, 'RT-2: Platz A ist disconnected');
     assert.equal(lobby.status, 'running');
     assert.equal(server.getSession(lobbyId).laeuft, true,
       'Der verbliebene Mensch hält das Match am Laufen');
 
-    // 1) Der alte Fortsetzungs-Token ist mit dem Platz verfallen.
+    // 1) Der alte Fortsetzungs-Token funktioniert NOCH (Platz wurde nicht entfernt)
     await alt.open();
     alt.send(CONTROL.RESUME, { token: resumeToken, lobbyId });
-    const abgelehnt = await alt.warte(CONTROL.RESUME_FAILED);
-    assert.ok(abgelehnt, 'RESUME nach dem Fenster muss scheitern');
-    assert.equal(abgelehnt.grund, 'unbekannt');
+    const willkommen = await alt.warte(CONTROL.WELCOME);
+    assert.ok(willkommen, 'RT-2: RESUME nach dem Fenster funktioniert noch');
+    assert.equal(willkommen.resumed, true);
+    assert.equal(willkommen.token, platzToken, 'Derselbe Platz-Token');
+    alt.close();
 
-    // 2) Der alte Platz-Token hilft nicht mehr: der Platz existiert nicht, und
-    //    die Lobby ist nicht mehr „open".
+    // 2) Der alte Platz-Token funktioniert auch über JOIN_LOBBY (Wiederverbindung)
     await fremd.open();
-    fremd.send(CONTROL.JOIN_LOBBY, { lobbyId, name: 'A', token: erstellt.player.token });
-    const fehler = await fremd.warte(CONTROL.ERROR);
-    assert.ok(fehler, 'Der Nachrücker muss abgewiesen werden');
+    fremd.send(CONTROL.JOIN_LOBBY, { lobbyId, name: 'A', token: platzToken });
+    const willkommen2 = await fremd.warte(CONTROL.WELCOME);
+    assert.ok(willkommen2, 'RT-2: JOIN_LOBBY mit Token nach dem Fenster funktioniert noch');
+    assert.equal(willkommen2.resumed, true);
+    assert.equal(willkommen2.token, platzToken, 'Derselbe Platz-Token');
+
+    // 3) Ein NEUER Client OHNE Token wird abgewiesen (Lobby ist RUNNING)
+    const neu = new TestClient(wsUrl);
+    await neu.open();
+    neu.send(CONTROL.JOIN_LOBBY, { lobbyId, name: 'C' });
+    const fehler = await neu.warte(CONTROL.ERROR);
+    assert.ok(fehler, 'RT-2: Neuer Client ohne Token wird in RUNNING-Lobby abgewiesen');
     assert.match(fehler.error, /nimmt keine Spieler mehr auf/,
-      'RT-2: Das Versprechen „die Lobby nimmt wieder einen auf" gilt im laufenden Match nicht');
+      'RT-2: Fremde Clients kommen in laufendem Match nicht hinein');
+    neu.close();
   } finally {
     a.client?.close();
     b.client?.close();
@@ -422,7 +438,7 @@ test('ZUSTANDS-PIN (offen): Wiederverbindung nach Match-Ende bindet den weiter v
 
 // --------------------------------------------------------------------- NET-1
 
-test('ZUSTANDS-PIN NET-1: match_over wird NUR auf PING wiederholt, nicht von selbst', async () => {
+test('ZUSTANDS-PIN NET-1: match_over wird periodisch wiederholt (alle 2 s, max 3×), nicht nur auf PING', async () => {
   const { server, url, wsUrl } = await starteServer();
   let a = null;
   try {
@@ -434,19 +450,28 @@ test('ZUSTANDS-PIN NET-1: match_over wird NUR auf PING wiederholt, nicht von sel
     matchZuEndeSpielen(session);
 
     const erste = await a.warte('match_over');
-    assert.ok(erste, 'Die einmalige Meldung muss ankommen');
+    assert.ok(erste, 'Die erste Meldung muss ankommen');
     const zaehle = () => a.control.filter(m => m.t === 'match_over').length;
     assert.equal(zaehle(), 0, 'Die Meldung wurde oben konsumiert');
 
-    // Ohne PING passiert nichts — auch nach mehr als einem Client-Ping-Intervall.
+    // NET-1 Fix: Server wiederholt match_over automatisch alle 2 s (max 3×).
+    // Nach 2200 ms sollte mindestens eine Wiederholung angekommen sein.
     await warte(2200);
-    assert.equal(zaehle(), 0, 'NET-1: keine serverseitige Wiederholung von selbst');
+    assert.ok(zaehle() >= 1, 'NET-1: match_over wird von selbst wiederholt (ohne PING)');
 
+    // Die Wiederholung hat denselben Inhalt
+    const wiederholungen = a.control.filter(m => m.t === 'match_over');
+    for (const w of wiederholungen) {
+      assert.equal(w.winnerTeamId, erste.winnerTeamId);
+      assert.equal(w.rounds, erste.rounds);
+    }
+
+    // Ein PING liefert dieselbe Antwort (idempotent)
     a.send(CONTROL.PING);
-    const wieder = await a.warte('match_over', 3000);
-    assert.ok(wieder, 'NET-1: erst der PING holt die Wiederholung');
-    assert.equal(wieder.winnerTeamId, erste.winnerTeamId);
-    assert.equal(wieder.rounds, erste.rounds);
+    const pingAntwort = await a.warte('match_over', 3000);
+    assert.ok(pingAntwort, 'NET-1: PING liefert auch match_over');
+    assert.equal(pingAntwort.winnerTeamId, erste.winnerTeamId);
+    assert.equal(pingAntwort.rounds, erste.rounds);
 
     b.client.close();
   } finally {

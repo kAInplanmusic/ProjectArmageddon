@@ -587,6 +587,9 @@ export class GameServer {
       session?.stop();
       this.#sessions.delete(lobby.id);
       this.#beendeteMatches.delete(lobby.id);
+      // NET-1: Match-Over-Wiederholung stoppen
+      const timerEintrag = this.#matchOverTimer.get(lobby.id);
+      if (timerEintrag) { clearInterval(timerEintrag.timer); this.#matchOverTimer.delete(lobby.id); }
       this.#lobbies.close(lobby.id);
       this.#leerBeobachtet.delete(lobby.id);
       this.logger.info('lobby_verwaist_entfernt', 'Lobby ohne Verbindung entfernt', { lobbyId: lobby.id });
@@ -766,6 +769,11 @@ export class GameServer {
     const session = this.#sessions.get(id);
     if (session?.match?.status === 'gameover') {
       this.#beendeteMatches.set(id, { winnerTeamId: session.match.winnerTeamId, rounds: session.match.round });
+      // NET-1: Starte periodische Wiederholung von match_over (alle 2 s, max 3×),
+      // damit Clients die Meldung auch ohne PING zuverlässig erhalten.
+      // WICHTIG: Die Clients der Session holen wir uns JETZT, bevor die Session gelöscht wird.
+      const clientsZumSenden = new Map(session.clients);
+      this.#starteMatchOverWiederholung(id, clientsZumSenden);
     }
     this.#sessions.delete(id);
     /*
@@ -783,9 +791,56 @@ export class GameServer {
     this.#lobbies.entwerteResumeToken(id);
   }
 
+  /**
+   * Startet die periodische Wiederholung von `match_over` für eine Lobby (NET-1).
+   * Sendet die Meldung alle 2 s an alle verbundenen Clients, maximal 3-mal.
+   * @param {string} lobbyId
+   * @param {Map<string, WebSocket>} clientsZumSenden - Clients, die die Meldung erhalten sollen
+   */
+  #starteMatchOverWiederholung(lobbyId, clientsZumSenden) {
+    const ergebnis = this.#beendeteMatches.get(lobbyId);
+    if (!ergebnis) return;
+    const session = this.#sessions.get(lobbyId);
+    // Wenn schon eine neue Sitzung läuft (Revanche), keine Wiederholung für das alte Match.
+    if (session?.laeuft) return;
+
+    let count = 0;
+    const maxCount = 3;
+    const timer = setInterval(() => {
+      count += 1;
+      const lobby = this.#lobbies.get(lobbyId);
+      const ergebnisAktuell = this.#beendeteMatches.get(lobbyId);
+      const sessionAktuell = this.#sessions.get(lobbyId);
+      // Abbruch: keine Lobby mehr, neues Match läuft, oder Ergebnis gelöscht
+      if (!lobby || !ergebnisAktuell || (sessionAktuell && sessionAktuell.laeuft)) {
+        clearInterval(timer);
+        this.#matchOverTimer.delete(lobbyId);
+        return;
+      }
+      // Sende an alle verbundenen Clients, die zum Match-Ende da waren
+      for (const [_token, socket] of clientsZumSenden) {
+        if (socket.readyState === 1) {
+          socket.send(controlMessage('match_over', {
+            winnerTeamId: ergebnisAktuell.winnerTeamId,
+            rounds: ergebnisAktuell.rounds,
+          }));
+        }
+      }
+
+      if (count >= maxCount) {
+        clearInterval(timer);
+        this.#matchOverTimer.delete(lobbyId);
+      }
+    }, 2000);
+    this.#matchOverTimer.set(lobbyId, { timer, count: 0, maxCount });
+  }
+
   /** Neue Sitzung für diese Lobby: ein früheres Ergebnis gilt nicht mehr. */
   #sitzungRegistrieren(id, session) {
     this.#beendeteMatches.delete(id);
+    // NET-1: Laufende match_over-Wiederholung für die alte Partie stoppen
+    const timerEintrag = this.#matchOverTimer.get(id);
+    if (timerEintrag) { clearInterval(timerEintrag.timer); this.#matchOverTimer.delete(id); }
     this.#sessions.set(id, session);
   }
 
@@ -824,6 +879,14 @@ export class GameServer {
    * Aufgeräumt wird zusammen mit der Lobby (`pruneLobbies`).
    */
   #beendeteMatches = new Map();
+
+  /**
+   * Timer für die periodische Wiederholung von `match_over` (NET-1).
+   * Schlüssel: lobbyId, Wert: { timer, count, maxCount }.
+   * Die Wiederholung läuft alle 2 s, maximal 3-mal (gesamt ~6 s), damit ein
+   * Client, der die erste Meldung verpasst hat, sie zuverlässig erhält.
+   */
+  #matchOverTimer = new Map();
 
   /**
    * WebSocket-Handshake (Ersatz für `path` und `verifyClient`): anderer Pfad als `/ws` → 400, fremder Origin
@@ -1904,6 +1967,9 @@ export class GameServer {
     // nicht weiter aufräumen. (Beide sind `unref`t, aber ein offener Zeitgeber
     // nach `close()` wäre ein Leck in Tests.)
     this.stopPruning();
+    // NET-1: Alle laufenden match_over-Wiederholungen stoppen
+    for (const eintrag of this.#matchOverTimer.values()) clearInterval(eintrag.timer);
+    this.#matchOverTimer.clear();
     this.saveState();
     for (const session of this.#sessions.values()) session.stop();
     this.#sessions.clear();
