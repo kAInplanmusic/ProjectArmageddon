@@ -1,0 +1,86 @@
+[
+  {
+    "datei": "src/shared/terrainKomposition.js",
+    "zeile": 471,
+    "marker": "TODO UI-8/`check:biome`",
+    "handling": "Veraltet - gelöscht, mit Begründung versehen",
+    "grund": "UI-8-Feature (Schutthalden ab Fassung 8) bereits implementiert 2026-11-12, `check:biome` Skript existiert"
+  },
+  {
+    "datei": "src/engine/kartenWahl.js",
+    "zeile": 2,
+    "marker": "TODO N-40",
+    "handling": "Marker mit Datum und Status versehen",
+    "grund": "N-40 (Geländefassung 14) ist teilweise erledigt (Menü/Lobby umgesetzt), Sichtabnahme und 33-Mio.-px-Darstellung im Browser offen; status in docs/TODO.md Zeile 50 bereits dokumentiert"
+  },
+  {
+    "datei": "src/client/kartenWahlMenue.js",
+    "zeile": 2,
+    "marker": "TODO N-40",
+    "handling": "Marker mit Datum und Status versehen",
+    "grund": "N-40 Menü-Auswahl umgesetzt 2026-11-12, Sichtabnahme auf echtem Gerät offen; status in docs/TODO.md Zeile 50 bereits dokumentiert"
+  },
+  {
+    "datei": "src/client/todEpilog.js",
+    "zeile": 9,
+    "marker": "docs/TODO.md FIGUREN-B Referenz",
+    "handling": "Marker mit Datum und Status versehen",
+    "grund": "FIGUREN-B (teilweise erledigt 2026-11-03): dauerhalter Grabstein und Kopf-/Oberkörperrotation bedürfen Renderer-Ebene; status in docs/TODO.md Zeile 39 bereits dokumentiert"
+  },
+  {
+    "datei": "src/shared/terrainRund.js",
+    "zeile": 2,
+    "marker": "TODO N-40",
+    "handling": "Marker mit Datum und Status versehen",
+    "grund": "N-40 runde Kartenarten (Planet, runde Höhle, schwebende Insel) Engine umgesetzt ab 2026-11-12, Sichtabnahme offen; status in docs/TODO.md Zeile 50 bereits dokumentiert"
+  },
+  {
+    "datei": "src/shared/config/gelaende.js",
+    "zeile": 35,
+    "marker": "TODO N-29/UI-8",
+    "handling": "Veraltet - gelöscht, mit Begründung versehen",
+    "grund": "N-29/UI-8 (Geländefassung 8 mit Leitstoff/Kontrastader, begehbare Ruinen) erledigt 2026-11-12, Tests und Rezepte existieren"
+  },
+  {
+    "datei": "src/shared/config/gelaende.js",
+    "zeile": 70,
+    "marker": "TODO N-40",
+    "handling": "Marker mit Datum und Status versehen",
+    "grund": "N-40 GELAENDE_RUND Engine umgesetzt 2026-11-12, Sichtabnahme offen; status in docs/TODO.md Zeile 50 bereits dokumentiert"
+  },
+  {
+    "datei": "src/shared/config/stoff-rezepte-klar.js",
+    "zeile": 2,
+    "marker": "TODO N-29",
+    "handling": "Veraltet - gelöscht, mit Begründung versehen",
+    "grund": "N-29 Stoffrezepte Klar-Fassung 8 erledigt 2026-11-12, Rezepte für alle Biome implementiert"
+  },
+  {
+    "datei": "src/shared/config/waffen-f21.js",
+    "zeile": 2,
+    "marker": "docs/TODO.md Pfad (kein TODO-Fehler)",
+    "handling": "Korrigiert - falscher TODO-Match durch Pfad referenz behoben",
+    "grund": "Der Ausdruck `docs/TODO.md` wurde fälschlicherweise als TODO-Markierung erkannt; es handelt sich um eine Dateireferenz. Korrigiert zu: 'siehe `docs/TODO.md` Zeile ENTSCHEIDUNGEN-2026-11-11'"
+  },
+  {
+    "datei": "src/shared/config/waffen-f21.js",
+    "zeile": 113,
+    "marker": "TODO GP-1 (9)",
+    "handling": "Marker mit Datum und Status versehen",
+    "grund": "GP-1 (9) ist offen seit 2026-11-11, Entscheidung des Auftraggebers aussteht; status in docs/TODO.md Zeile 110 bereits dokumentiert"
+  },
+  {
+    "datei": "src/engine/karteStart.js",
+    "zeile": 96,
+    "marker": "TODO UI-8",
+    "handling": "Veraltet - gelöscht, mit Begründung versehen",
+    "grund": "UI-8 (hauptflaeche/Figur-Bewegung auf großen Landmassen ab Fassung 8) erledigt 2026-11-12, check-erreichbarkeit bestätigt"
+  },
+  {
+    "datei": "src/engine/karte.js",
+    "zeile": 56,
+    "marker": "TODO N-40",
+    "handling": "Marker mit Datum und Status versehen",
+    "grund": "N-40 kolossale Stufe Engine umgesetzt 2026-11-14, Auflösungsdecke 33 Mio. Pixel erreicht, Darstellung im Browser und Sichtabnahme offen; status in docs/TODO.md Zeile 50 bereits dokumentiert"
+  }
+]

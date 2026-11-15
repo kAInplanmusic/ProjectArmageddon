@@ -117,11 +117,6 @@ export function ausruestungFuer(charakterId) {
   return KOERPER_AUSRUESTUNG[charakterId] ?? GETRENNT;
 }
 
-/** Trägt der Körper diese Ausrüstung (angeboren oder montiert)? */
-export function ausruestungAmKoerper(charakterId) {
-  return ausruestungFuer(charakterId).art !== AUSRUESTUNG_ART.GETRENNT;
-}
-
 /**
  * Darf für diese Figur **kein** zusätzliches Waffen-Sprite gezeichnet werden?
  * Nur bei montierten Körperwaffen, sonst bliebe die Figur ohne sichtbare Waffe.

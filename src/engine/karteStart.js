@@ -93,7 +93,7 @@ export function trockenerStartX(m, idealX, belegt = []) {
   // Nur auf autonomen Karten ab Geländefassung 6 (Bauteilkarten): alles Ältere setzt die Figuren wie bisher.
   const mitBegehbar = m.kartentyp === 'autonom' && (m.gelaende ?? 0) >= GELAENDE_KOMPOSITION;
   /*
-   * Auf einer großen Landmasse (ab Geländefassung 8, TODO UI-8).
+   * Auf einer großen Landmasse (ab Geländefassung 8, UI-8 erledigt 2026-11-12).
    *
    * FUND (belegt, 2026-11-03, `check-erreichbarkeit`): `karte_unerreichbar` bei Seed 4 eiswueste 2×1, 69 kosmos 2×2/4×2,
    * 107 klassisch 4×2, 240 klassisch 2×1 (Fassung 7). Ursache im Kartengenerator: Die Bauteilkarten haben lose Brocken

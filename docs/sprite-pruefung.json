@@ -1,7 +1,7 @@
 {
   "werkzeug": "check-sprites",
-  "zeit": "2026-11-11T17:17:23.764Z",
-  "dauerSekunden": 26.1,
+  "zeit": "2026-11-15T13:53:08.089Z",
+  "dauerSekunden": 36.8,
   "figuren": {
     "figuren": 81,
     "fraktionen": 9,
@@ -22,7 +22,7 @@
     "deckungZuKlein": 0,
     "gepruefteBilder": 450,
     "atlanten": 9,
-    "deckungMittel": 41.37
+    "deckungMittel": 41.2
   },
   "haustiere": {
     "guenther": 14,

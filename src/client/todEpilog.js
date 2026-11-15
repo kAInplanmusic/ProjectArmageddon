@@ -6,7 +6,7 @@
  *
  * Der Grabstein ist ausdrücklich kein Regelobjekt (B5 gestrichen): kein Eintrag in Engine, Karte oder Hash, nur ein
  * Bild über dem Spielfeld für die Dauer des Epilogs. Ein dauerhafter Grabstein in der Welt bräuchte eine Ebene im
- * Renderer; `renderer.js` ist am Zeilenbudget und bleibt dafür unberührt (siehe docs/TODO.md FIGUREN-B).
+ * Renderer; `renderer.js` ist am Zeilenbudget und bleibt dafür unberührt (siehe docs/TODO.md FIGUREN-B, Stand 2026-11-14: teilweise erledigt, dauerhafter Grabstein und Kopf-/Oberkörperrotation offen).
  *
  * @module todEpilog
  */

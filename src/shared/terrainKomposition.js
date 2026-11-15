@@ -468,7 +468,7 @@ function kroneUeber(maske, x, von, bis) {
 }
 
 /**
- * Schutthalden an beiden Seiten einer Ruine (ab Geländefassung 8, TODO UI-8/`check:biome`): ein flacher Schuttkegel vom Fuß bis zur
+ * Schutthalden an beiden Seiten einer Ruine (ab Geländefassung 8, UI-8/`check:biome` erledigt 2026-11-12): ein flacher Schuttkegel vom Fuß bis zur
  * Mauerkrone, leicht wellig. Ohne ihn war eine Ruinenstadt zu Fuß zerschnitten (Seed 1224883: 29 % der Kistenplätze erreichbar),
  * weil jeder Turm eine senkrechte Wand von 200 bis 440 px war. Kein Zufall: die Ziehung bleibt wie in Fassung 7.
  */

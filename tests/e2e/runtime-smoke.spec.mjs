@@ -27,6 +27,11 @@ async function bootMatch(page, { seed = 20260910, teams = 2, players = 2, preset
 }
 
 test('Startseite lädt Canvas, HUD und Menü', async ({ page }) => {
+  // Simuliere, dass der Benutzer den Home-Bildschirm bereits gesehen hat
+  // (sonst wird das Menü mit hidden="" versehen und ist nicht sichtbar)
+  await page.addInitScript(() => {
+    sessionStorage.setItem('pa.home.v1', '1');
+  });
   const errors = [];
   page.on('pageerror', error => errors.push(String(error)));
 

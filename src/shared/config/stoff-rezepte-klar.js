@@ -1,5 +1,5 @@
 /**
- * Stoffrezepte der Gelände-Fassung 8 („Klar“, TODO N-29): Jedes Biom bekommt EINEN Leitstoff (Deck und Kern aus derselben
+ * Stoffrezepte der Gelände-Fassung 8 („Klar“, N-29 erledigt 2026-11-12): Jedes Biom bekommt EINEN Leitstoff (Deck und Kern aus derselben
  * Farbfamilie, die dominante Deckfarbe) und EINE Kontrastader. Kristall-Violett und Grau-Fels stehen nur noch dort, wo sie
  * das Leitmaterial sind (Kristallhöhle, Burg mit Magiekristall, Kristallwald, Alpen, Höhlen, Steinplanet).
  *

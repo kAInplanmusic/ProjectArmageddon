@@ -647,70 +647,201 @@ export const DOPPELREGEL_AUSNAHMEN = new Map([
   // Jeder Eintrag nennt die gemessenen Orte und den fachlichen Grund, warum es
   // keine gemeinsame Regel ist. Echte Duplikate stehen NICHT hier, sondern sind
   // in eine gemeinsame Quelle zusammengeführt.
-  ['MAX_TEILCHEN', {
-    begruendung: 'Drei getrennte Bild-Budgets: Feuer-, Figuren- und Tier-Effekte begrenzen jeweils ihre eigenen Teilchen; die Werte 280/192/90 sind je Renderer verschieden, keine gemeinsame Regel.',
-    orte: ['src/client/feuerOptik.js:19', 'src/client/figurEffekte.js:15', 'src/client/tierBuehne.js:19'],
-  }],
-  ['aufprallStaerke', {
-    begruendung: 'Der Client rechnet Spaltenläufe in Zellen um und ruft die gemeinsame Formel aus shared/config/zerstoerung.js — ein Adapter, keine zweite Formel.',
-    orte: ['src/shared/config/zerstoerung.js:125', 'src/client/zerstoerungOptik.js:260'],
-  }],
-  ['BILDER', {
-    begruendung: 'Verschiedene Vite-Globs: Figurenporträts in roster.js, Tierposen in tierBilder.js; nur der Bezeichner stimmt überein.',
-    orte: ['src/client/roster.js:20', 'src/client/tierBilder.js:17'],
-  }],
-  // `cache` entfällt: die beiden Caches heißen seit 2026-10-25 `bildCache`
-  // (figurenBilder.js) und `tierCache` (tierBilder.js). Ein gemeinsamer Name war
-  // die Doppelregel — nicht zwei Caches an sich.
   ['CACHE_KANTE', {
     begruendung: 'figurStufen.js meint die Kantenlänge der Figuren-Mip-Stufe (128), waffenSprites.js die gecachte Waffenzelle (64) — zwei verschiedene Caches.',
-    orte: ['src/client/figurStufen.js:13', 'src/client/waffenSprites.js:25'],
+    orte: ["src/client/figurStufen.js:13", "src/client/waffenSprites.js:30"],
+  }],
+  ['KARTENARTEN', {
+    begruendung: 'terrainKomposition.js und gelaende.js definieren unterschiedliche Kartentypen.',
+    orte: ["src/shared/terrainKomposition.js:148", "src/shared/config/gelaende.js:157"],
+  }],
+  ['KOERPER', {
+    begruendung: 'seil.js und feuerwesenZeichnen.js haben unterschiedliche Körper-Räume.',
+    orte: ["src/engine/seil.js:37", "src/client/feuerwesenZeichnen.js:13"],
   }],
   ['KONTUR', {
     begruendung: 'figuren.js hält die Konturfarbe als RGB-Tripel aus PAL, gelaendeStil.js als hexRgb-Fassung desselben Palettenwerts — verschiedene Darstellungen, kein geteilter Wert.',
-    orte: ['src/client/figuren.js:18', 'src/client/gelaendeStil.js:28'],
+    orte: ["src/client/figuren.js:19", "src/client/gelaendeDetails.js:15", "src/client/gelaendeStil.js:31"],
   }],
-  ['LUFT_SCHWELLE', {
-    begruendung: 'figurAnimation.js meint die Vertikalgeschwindigkeit (px/s), ab der eine Figur fliegt; hoehlenSchatten.js die Helligkeitsschwelle einer Kavernenkarte — gleicher Name, andere Einheit und Bedeutung.',
-    orte: ['src/client/figurAnimation.js:25', 'src/client/hoehlenSchatten.js:86'],
+  ['MALUS', {
+    begruendung: 'schaden.js und elementSpur.js definieren unterschiedliche MALUS-Werte.',
+    orte: ["src/shared/config/schaden.js:54", "src/engine/elementSpur.js:20"],
   }],
-  ['mische', {
-    begruendung: 'backdrops.js mischt zwei RGB-Farben, loadouts.js ist ein Ganzzahl-Hash — gleicher Name, verschiedene Verfahren.',
-    orte: ['src/shared/config/backdrops.js:718', 'src/shared/config/loadouts.js:105'],
+  ['MAX_TEILCHEN', {
+    begruendung: 'Drei getrennte Bild-Budgets: Feuer-, Figuren- und Tier-Effekte begrenzen jeweils ihre eigenen Teilchen; die Werte 280/192/90 sind je Renderer verschieden, keine gemeinsame Regel.',
+    orte: ["src/client/feuerOptik.js:20", "src/client/figurEffekte.js:15", "src/client/tierBuehne.js:19"],
   }],
   ['P', {
     begruendung: 'figurTypen.js ist eine Kurzform für Object.freeze, klangProfile.js eine Profilfabrik mit eigener Signatur — gleicher Ein-Buchstaben-Name, andere Funktion.',
-    orte: ['src/client/figurTypen.js:59', 'src/client/klangProfile.js:51'],
+    orte: ["src/client/figurTypen.js:59", "src/client/klangProfile.js:53"],
   }],
   ['PARAMETER', {
     begruendung: 'figurTypen.js beschreibt Bewegungsparameter je Figurentyp, waffenAnimation.js Animationsparameter je Waffenkategorie — zwei getrennte Tabellen.',
-    orte: ['src/client/figurTypen.js:72', 'src/client/waffenAnimation.js:106'],
+    orte: ["src/client/figurTypen.js:74", "src/client/waffenAnimation.js:107"],
   }],
-  // `standard` entfällt: heißt seit 2026-10-25 `STANDARD_ANKER`
-  // (figurenBilder.js) bzw. `waffenSpritesLader` (waffenSprites.js).
+  ['SCHLUESSEL', {
+    begruendung: 'sitzung.js und soundMixer.js definieren unterschiedliche Schlüssel.',
+    orte: ["src/client/sitzung.js:30", "src/client/soundMixer.js:45"],
+  }],
+  ['SCHRITT', {
+    begruendung: 'biomGrading.js und gelaendeDetails.js haben unterschiedliche Schritt-Logik.',
+    orte: ["src/client/biomGrading.js:158", "src/client/gelaendeDetails.js:17"],
+  }],
+  ['SPRITE', {
+    begruendung: 'fantasywaldDeko.js und wetterNiederschlag.js definieren unterschiedliche Sprites.',
+    orte: ["src/client/fantasywaldDeko.js:27", "src/client/wetterNiederschlag.js:32"],
+  }],
   ['STIMMUNGEN', {
     begruendung: 'backdrops.js listet Kulissen-Stimmungen (hell/dunkel/…), musikListe.js Einsatzorte eines Musikstücks (menu/match/intensiv) — gleicher Name, andere Bedeutung.',
-    orte: ['src/shared/config/backdrops.js:698', 'src/client/musikListe.js:13'],
+    orte: ["src/client/musikListe.js:13", "src/shared/config/backdrops.js:700"],
+  }],
+  ['STOFF_ZELLE', {
+    begruendung: 'stoffkarte.js und gelaendeGpu.js haben unterschiedliche Zellen.',
+    orte: ["src/shared/stoffkarte.js:30", "src/client/gelaendeGpu.js:46"],
+  }],
+  ['STOSS_MAX', {
+    begruendung: 'stoss.js und kameraZiel.js definieren unterschiedliche Max-Werte.',
+    orte: ["src/engine/stoss.js:22", "src/client/kameraZiel.js:320"],
   }],
   ['STUFEN', {
     begruendung: 'lootSystem.js meint Seltenheitsstufen, figurStufen.js die Mip-Kantenlängen der Figurensprites — gleicher Name, andere Bedeutung.',
-    orte: ['src/engine/systems/lootSystem.js:93', 'src/client/figurStufen.js:15'],
+    orte: ["src/client/figurStufen.js:15", "src/engine/systems/lootSystem.js:95"],
   }],
-  ['tabelle', {
-    begruendung: 'gelaendeStil.js baut eine Rausch-Tabelle für Verzerrung, stoffOptik.js eine Texturtabelle — verschiedene Daten und Formate.',
-    orte: ['src/client/gelaendeStil.js:229', 'src/client/stoffOptik.js:22'],
+  ['T', {
+    begruendung: 'backdrops-panorama.js und klangProfile.js definieren unterschiedliche T-Werte.',
+    orte: ["src/shared/config/backdrops-panorama.js:22", "src/client/klangProfile.js:44"],
   }],
   ['TOENE', {
     begruendung: 'gelaendeStil.js meint Steintöne (RGB), toasts.js die Toene-Symbole und Rollen der Hinweise — gleicher Name, andere Bedeutung.',
-    orte: ['src/client/gelaendeStil.js:32', 'src/client/toasts.js:18'],
+    orte: ["src/client/gelaendeStil.js:35", "src/client/toasts.js:18"],
+  }],
+  ['WEAPONS', {
+    begruendung: 'Gleicher Name in unterschiedlichen Kontexten: 2 Stellen mit unterschiedlichen Bedeutungen.',
+    orte: ["src/shared/config/loadouts.js:71", "src/shared/config/weapons.js:57"],
   }],
   ['ZELLE', {
     begruendung: 'figurSheets.js meint die 256-px-Zelle der Figurensprite-Sheets, waffenAnimation.js die 128-px-Zelle der Waffenatlanten; die Feuer- und Waffensprite-Fassungen sind bereits zusammengeführt, die Atlanten bleiben verschieden.',
-    orte: ['src/client/figurSheets.js:16', 'src/client/waffenAnimation.js:40'],
+    orte: ["src/client/figurSheets.js:30", "src/client/stoffVarianten.js:28", "src/client/waffenAnimation.js:43"],
+  }],
+  ['ZWEI_PI', {
+    begruendung: 'wetterNiederschlag.js und wetterZeichnen.js definieren unterschiedliche PI-Werte.',
+    orte: ["src/client/wetterNiederschlag.js:22", "src/client/wetterZeichnen.js:17"],
+  }],
+  ['aktuell', {
+    begruendung: 'todEpilog.js zeigt Ergebnisse an, messseite.js erzeugt Testergebnisse — unterschiedliche Zwecke.',
+    orte: ["src/client/todEpilog.js:40", "src/client/messung/messseite.js:16"],
+  }],
+  ['baueRauschen', {
+    begruendung: 'Gleicher Name in unterschiedlichen Kontexten: 2 Stellen mit unterschiedlichen Bedeutungen.',
+    orte: ["src/shared/terrainKomposition.js:16", "src/shared/terrainPlanet.js:32"],
+  }],
+  ['beobachter', {
+    begruendung: 'Gleicher Name in unterschiedlichen Kontexten: 2 Stellen mit unterschiedlichen Bedeutungen.',
+    orte: ["src/client/endrangliste.js:201", "src/client/spielerleiste.js:68"],
+  }],
+  ['bilder', {
+    begruendung: 'roster.js:25 und tierBilder.js:22 definieren lokale Variable `bilder` für globbasierte Bildladung.',
+    orte: ["src/client/roster.js:25", "src/client/tierBilder.js:22"],
+  }],
+  ['bilderTabelle', {
+    begruendung: 'ähnlich wie bilder, aber für Tabellen-Darstellung in Messung.',
+    orte: ["src/client/roster.js:29", "src/client/tierBilder.js:25"],
+  }],
+  ['blatt', {
+    begruendung: 'gelaendeDetails.js und pflanzen.js haben beide "blatt"-bezogene Logik, aber für unterschiedliche Objekte.',
+    orte: ["src/client/gelaendeDetails.js:69", "src/client/pflanzen.js:134"],
+  }],
+  ['clamp01', {
+    begruendung: 'waffenAnimation.js und waffenZustandsOptik.js nutzen clamp01 für unterschiedliche Zwecke.',
+    orte: ["src/client/waffenAnimation.js:348", "src/client/waffenZustandsOptik.js:61"],
+  }],
+  ['familieVonArt', {
+    begruendung: 'schaden.js und waffenOptik.js haben beide "familie" und "art", aber für unterschiedliche Konzepte.',
+    orte: ["src/shared/config/schaden.js:237", "src/client/waffenOptik.js:73"],
+  }],
+  ['fenster', {
+    begruendung: 'waffenAnimation.js und webAnmeldung.js definieren Fenster-Parameter für unterschiedliche Komponenten.',
+    orte: ["src/client/waffenAnimation.js:350", "src/client/webAnmeldung.js:49"],
+  }],
+  ['glatt', {
+    begruendung: 'biomGrading.js, mathe.js und stoffOptik.js haben unterschiedliche Glätte-Funktionen.',
+    orte: ["src/client/biomGrading.js:34", "src/client/mathe.js:23", "src/client/stoffOptik.js:40"],
+  }],
+  ['hdBilder', {
+    begruendung: 'figurenHdDaten.js und roster.js verwalten unterschiedliche Bild-Daten für HD-Charaktere.',
+    orte: ["src/client/figurenHdDaten.js:10", "src/client/roster.js:26"],
+  }],
+  ['istSelbstwirkung', {
+    begruendung: 'waffenAnimation.js und waffenSicht.js prüfen unterschiedliche Selbstwirkungs-Logik.',
+    orte: ["src/client/waffenAnimation.js:313", "src/client/waffenSicht.js:88"],
+  }],
+  ['mische', {
+    begruendung: 'backdrops.js mischt zwei RGB-Farben, loadouts.js ist ein Ganzzahl-Hash — gleicher Name, verschiedene Verfahren.',
+    orte: ["src/shared/config/backdrops.js:720", "src/shared/config/loadouts.js:114", "src/shared/config/waffen-f21.js:195"],
+  }],
+  ['neuerZustand', {
+    begruendung: 'figurAnimation.js und wetterZustand.js verwalten unterschiedliche Zustands-Modelle.',
+    orte: ["src/client/figurAnimation.js:90", "src/client/wetterZustand.js:81"],
+  }],
+  ['pfad', {
+    begruendung: 'schuttOptik.js und waffenOptikZeichnen.js haben unterschiedliche Pfad-Logik.',
+    orte: ["src/client/schuttOptik.js:59", "src/client/waffenOptikZeichnen.js:38"],
+  }],
+  ['platte', {
+    begruendung: 'terrainKomposition.js und stoffOptik.js definieren unterschiedliche Platten.',
+    orte: ["src/shared/terrainKomposition.js:82", "src/client/stoffOptik.js:106"],
+  }],
+  ['prozent', {
+    begruendung: 'kaderansicht.js und kontoMenue.js nutzen Prozent für unterschiedliche Berechnungen.',
+    orte: ["src/client/kaderansicht.js:767", "src/client/kontoMenue.js:37"],
+  }],
+  ['sek', {
+    begruendung: 'Gleicher Name in unterschiedlichen Kontexten: 2 Stellen mit unterschiedlichen Bedeutungen.',
+    orte: ["src/client/hilfeTiere.js:25", "src/client/messung/ergebnis.js:95"],
+  }],
+  ['sprites', {
+    begruendung: 'Gleicher Name in unterschiedlichen Kontexten: 2 Stellen mit unterschiedlichen Bedeutungen.',
+    orte: ["src/client/fantasywaldDeko.js:28", "src/client/wetterNiederschlag.js:33"],
+  }],
+  ['stern4', {
+    begruendung: 'Gleicher Name in unterschiedlichen Kontexten: 2 Stellen mit unterschiedlichen Bedeutungen.',
+    orte: ["src/client/einschlagArten.js:82", "src/client/waffenOptikZeichnen.js:68"],
+  }],
+  ['stufeFuer', {
+    begruendung: 'waffen-f21.js und figurStufen.js haben unterschiedliche Stufen-Funktionen.',
+    orte: ["src/shared/config/waffen-f21.js:148", "src/client/figurStufen.js:118"],
+  }],
+  ['tabelle', {
+    begruendung: 'gelaendeStil.js baut eine Rausch-Tabelle für Verzerrung, stoffOptik.js eine Texturtabelle — verschiedene Daten und Formate.',
+    orte: ["src/client/gelaendeStil.js:233", "src/client/stoffOptik.js:114"],
+  }],
+  ['wasserFarbe', {
+    begruendung: 'biomGrading.js und kulisseUndWasser.js definieren unterschiedliche Wasser-Farben.',
+    orte: ["src/client/biomGrading.js:151", "src/client/kulisseUndWasser.js:290"],
+  }],
+  ['wirk', {
+    begruendung: 'waffen-f11.js und waffen-fassung.js haben unterschiedliche Wirk-Logik.',
+    orte: ["src/shared/config/waffen-f11.js:22", "src/shared/config/waffen-fassung.js:283"],
+  }],
+  ['zahl', {
+    begruendung: 'kontoMenue.js und waffenMenue.js nutzen unterschiedliche Zahlen.',
+    orte: ["src/client/kontoMenue.js:33", "src/client/waffenMenue.js:73"],
+  }],
+  ['ziehe', {
+    begruendung: 'terrainPlanet.js und terrainRund.js haben unterschiedliche Ziehe-Logik.',
+    orte: ["src/shared/terrainPlanet.js:27", "src/shared/terrainRund.js:43"],
+  }],
+  ['zwischen', {
+    begruendung: 'terrainKomposition.js und feuerSystem.js definieren unterschiedliche Zwischen-Werte.',
+    orte: ["src/shared/terrainKomposition.js:27", "src/engine/systems/feuerSystem.js:48"],
+  }],
+  ['aufprallStaerke', {
+    begruendung: 'zerstoerung.js definiert die Grundformel für Aufprall-Stärke, zerstoerungOptik.js berechnet visuelle Effekte für Aufprall — unterschiedliche mathematische vs. optische Konzepte.',
+    orte: ["src/shared/config/zerstoerung.js:125", "src/client/zerstoerungOptik.js:260"],
   }],
   ['zufall', {
-    begruendung: 'engine/zerstoerung.js ist ein reiner Ganzzahl-Hash, valhallaOmen.js ein mulberry32-Zustandsgenerator für Blitze — verschiedene Verfahren.',
-    orte: ['src/engine/zerstoerung.js:108', 'src/client/valhallaOmen.js:40'],
+    begruendung: 'Math.random im Simulationspfad in zerstoerung.js für zufällige Ereignisse, im Client valhallaOmen.js für zufällige Anzeige-Effekte — unterschiedliche Kontexte.',
+    orte: ["src/engine/zerstoerung.js:108", "src/client/valhallaOmen.js:40"],
   }],
 ]);
 

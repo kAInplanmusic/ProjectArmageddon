@@ -32,7 +32,7 @@
  *     `config/stoff-rezepte-material.js`). Die Ziehung läuft über zwanzig Kennungen; die Fassungen 1 bis 6 kennen die
  *     sechs nicht und bleiben Bit für Bit gleich. Zufall nur aus dem Seed-Zweig „BIO“ (unverändert).
  *
- *   - `GELAENDE_KLAR` (8, TODO N-29/UI-8): Jedes Biom bekommt einen Leitstoff und eine Kontrastader
+ *   - `GELAENDE_KLAR` (8, N-29/UI-8 erledigt 2026-11-12): Jedes Biom bekommt einen Leitstoff und eine Kontrastader
  *     (`config/stoff-rezepte-klar.js`), Ruinen der Bauteilkarten tragen Schutthalden und eine begehbare Krone
  *     (`terrainKomposition.ruine`), und Figuren starten nur auf der Hauptlandmasse, nicht auf losen Brocken
  *     (`engine/karteStart.trockenerStartX`). Die Ziehung bleibt wie in 7; die Fassungen 1 bis 7 bleiben Bit für Bit gleich.
@@ -67,7 +67,7 @@
  *     Zonen; hohe senkrechte Felswände zu trockenem Land (Fall ≥ 200 px) bekommen eine steile Schutthalde; auf Karten unter 2800 px füllt `fuelleSchaechte` die
  *     Schächte (auch den Vulkan-Schlot). Fassung 12 und alle älteren bleiben Bit für Bit gleich.
  *
- *   - `GELAENDE_RUND` (14, TODO N-40 „rund“, Entscheidung 2026-11-11): drei runde Kartenarten (`KARTENARTEN_RUND`: Planet, runde Höhle,
+ *   - `GELAENDE_RUND` (14, N-40 „rund“, Entscheidung 2026-11-11, Stand 2026-11-14: Engine umgesetzt, Sichtabnahme offen): drei runde Kartenarten (`KARTENARTEN_RUND`: Planet, runde Höhle,
  *     schwebende Insel; `terrainRund.js`) für das Format 1:1, dazu die Kartenstufe `kolossal` (1:1 = 5760 × 5760 = 33,18 Mio. Pixel,
  *     `engine/karte.js`). Ohne gewählte runde Art (auf allen Formaten außer 1:1, und auf 1:1 mit den elf alten Arten) baut Fassung 14 Bit für
  *     Bit wie 13; nur auf 1:1 zieht der Seed ohne Wahl aus vierzehn statt elf Arten (derselbe eine Zug, anderer Teiler). Der Startplatz

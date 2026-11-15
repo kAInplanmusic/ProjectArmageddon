@@ -1,5 +1,5 @@
 /**
- * Menü: Kartengröße `kolossal` und die drei runden Kartenarten (Geländefassung 14, TODO N-40).
+ * Menü: Kartengröße `kolossal` und die drei runden Kartenarten (Geländefassung 14, N-40 Stand 2026-11-14: Menü-Auswahl umgesetzt, Sichtabnahme auf echtem Gerät offen).
  *
  * Die Felder stehen in `index.html` (`#cfg-kartengroesse`, `#cfg-kartenformat`, `#cfg-kartenart`, Hinweis `#cfg-kartenwahl-hinweis`).
  * Dieses Modul verdrahtet sie:

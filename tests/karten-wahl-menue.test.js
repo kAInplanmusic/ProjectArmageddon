@@ -58,7 +58,7 @@ test('pruefeKolossal: iOS und Lite gesperrt, Ultra mit Warnung, Budget ab 33,2 M
   const ios = pruefeKolossal(IOS);
   assert.equal(ios.status, 'gesperrt');
   assert.match(ios.grund, /iPhone und iPad/);
-  assert.match(ios.grund, /16,7 Mio/);
+  assert.match(ios.grund, /16.8 Mio/);
   const lite = pruefeKolossal(LITE);
   assert.equal(lite.status, 'gesperrt');
   assert.match(lite.grund, /Lite/);
