@@ -1,21 +1,9 @@
 /**
- * Netzwerk-Regel-Konfiguration für ProjectArmageddon.
- */
-export const NETWORK_RULES = Object.freeze({
-  authoritativeServer: true,
-  protocol: 'binary-websocket',
-  lagCompensationBufferMs: 200,
-  deterministicSeeds: true,
-  clientValidatedInputs: Object.freeze(['angle', 'power']),
-  projectileCollisionMode: 'ccd-raycast'
-});
-
-/**
  * Der Simulationstakt — EINE Zahl für Server und Client.
  *
  * FUND (belegt, Audit-Bericht): Der Takt stand ZWEIMAL im Baum, je einmal pro
  * Seite — `SIMULATION_HZ = 60` in `src/server/gameServer.js` und
- * `TICKS_PER_SECOND = 60` in `src/client/networkClient.js`. Beide leiteten
+ * `TICKS_PER_SECOND = 60` in `src/client/networkClient.js`. Beide leiten
  * daraus ihr eigenes `TICK_MS` ab. Solange beide 60 sagen, fällt nichts auf;
  * ändert jemand eine der beiden, zählt der Client Ticks anders als der Server
  * sie erzeugt — und das äußert sich nicht als Fehler, sondern als Client, der

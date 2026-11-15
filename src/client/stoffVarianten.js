@@ -29,10 +29,6 @@ export const ZELLE = 8;
 /** Zellen je Blockkante: 16 Zellen = 128 px (Zweierpotenz, damit Blockindex und Rest per Bitoperation fallen). */
 export const BLOCK_ZELLEN = 16;
 export const BLOCK_PX = ZELLE * BLOCK_ZELLEN;
-/** Breite des Überblendbandes beiderseits einer Blockgrenze in Pixeln. */
-export const NAHT_BAND = 6;
-/** Größte Verschiebung der Blockgrenzen durch das Rauschen in Pixeln. */
-export const GRENZ_VERSATZ = 22;
 
 /**
  * Verzerrungsfeld der Texturkoordinate in `tinteStoffe`: je Oktave [Wellenlänge in px, größte Verschiebung in Texturpixeln].

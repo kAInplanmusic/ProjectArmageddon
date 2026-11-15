@@ -22,9 +22,6 @@
  * @module waffenIcons
  */
 
-/** Spalten des Icon-Atlasses (siehe `scripts/waffen-sprites.py`, `ICON_SPALTEN`). */
-export const ICON_ATLAS_SPALTEN = 16;
-
 /**
  * CSS-Ausschnitt einer Atlaszelle.
  *

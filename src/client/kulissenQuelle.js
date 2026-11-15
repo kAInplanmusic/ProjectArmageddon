@@ -29,9 +29,6 @@ export const KULISSEN_BREITEN = Object.freeze([1280, 1920, 2560, 3840]);
 /** Obergrenze der Pixeldichte für die Quellwahl (Geräte melden bis 4). */
 export const DPR_OBERGRENZE = 2;
 
-/** Ordner der nativen 4K-Fassungen (noch leer; siehe Produktionsplan). */
-export const KULISSEN_4K_ORDNER = 'backdrops-4k';
-
 const LEISTUNGS_GRENZE = Object.freeze({ lite: 1920, mittel: 2560, hoch: 3840 });
 
 /** Begrenzt eine gemeldete DPR auf den sinnvollen Bereich 1…2. */

@@ -1,5 +1,5 @@
 /**
- * Werte der Waffenfassung 21 über der Fassung 20 (Entscheidungen des Auftraggebers vom 2026-11-11, `docs/TODO.md`
+ * Werte der Waffenfassung 21 über der Fassung 20 (Entscheidungen des Auftraggebers vom 2026-11-11, siehe `docs/TODO.md` Zeile ENTSCHEIDUNGEN-2026-11-11)
  * Zeile ENTSCHEIDUNGEN-2026-11-11, Nummern (8) bis (25)).
  *
  * Alles, was den Spielablauf verändert, steht hinter dieser Versionsmarke (AGENTS.md §2): Aufzeichnungen der
@@ -33,11 +33,6 @@
 
 /** Wählbare Zündzeiten in Sekunden (wie Worms: 1, 3 oder 5). */
 export const ZUENDZEITEN = Object.freeze([1, 3, 5]);
-/** Voreinstellung, wenn der Spieler nichts wählt: die mittlere Zeit. */
-export const ZUENDZEIT_STANDARD = 3;
-
-/** Zünderwaffen (`fuseTime` > 0 im Katalog): Entscheidung (21), +15 %. */
-export const ZUENDER_FAKTOR = 1.15;
 
 /** Wahr, wenn die Sekundenzahl eine erlaubte Zündzeit ist. */
 export function istZuendzeit(sekunden) {
@@ -110,7 +105,7 @@ const ANFLUG_ALS_PROJEKTIL = Object.freeze({
  * mal Abklingzeitfaktor 0,9 (wie im Leistungswert) bei Abklingzeit > 0. Die Stufe folgt `STUFEN_SCHWELLEN` (dieselben
  * Schwellen wie `POWER_TIERS` im Generator; ein Test prüft die Gleichheit). Das Feld `nutzwert` zeigt den Grund an;
  * `powerScore` und `powerTier` der Fassungsschicht lesen Menü und Anzeige. Die Beute (`lootSystem`) liest weiter den
- * Katalog und bleibt damit unverändert (offen, siehe TODO GP-1 (9)).
+ * Katalog und bleibt damit unverändert (offen, siehe TODO GP-1 (9), Stand 2026-11-14: Entscheidung des Auftraggebers ausstehend).
  */
 export const NUTZEN_JE_WAFFE = Object.freeze({
   pa_032: Object.freeze({ art: 'versetzen', wert: 100, cooldown: 1 }), // Raketenrucksack

@@ -53,7 +53,7 @@ const FORMATE = Object.freeze({
 });
 
 /**
- * Stufe `kolossal` (TODO N-40, Entscheidung 2026-11-11: Auflösungsdecke mindestens 33 Mio. Pixel): nur das Format 1:1 wächst darüber
+ * Stufe `kolossal` (N-40, Entscheidung 2026-11-11, Stand 2026-11-14: Auflösungsdecke mindestens 33 Mio. Pixel, Engine umgesetzt, Darstellung im Browser und Sichtabnahme offen): nur das Format 1:1 wächst darüber
  * hinaus, 5760 × 5760 = 33 177 600 px (Drahtformat: 5760 ≤ 8191,75). Jedes andere Format behält auf dieser Stufe die Maße von `riesig`
  * (die breiten Formate kämen mit 33 Mio. Pixeln über 8191,75 px; 16:9 mit 7680 × 4320 bliebe möglich, ist aber nicht verlangt).
  * Die Stufe steht bewusst NICHT in `MAP_GROESSEN`/`MAP_GROESSEN_ALLE`/`MAP_SIZES`: deren Tests und Menüs rechnen mit gleicher Fläche je Stufe
@@ -119,7 +119,6 @@ export function mapGroesseFuerSpieler(spieler) {
 
 /** Körpermaß einer Figur in Kartenpixeln (`config/player.js`: 14 × 20) — für Maßangaben in Figurenbreiten. */
 export const FIGUR_BREITE_PX = 14;
-export const FIGUR_HOEHE_PX = 20;
 
 /**
  * Stufe für die Figurenzahl einer Partie (Vorschlag für das Menü, Format 24:9): Je Figur sollen rund 40–55 Figurenbreiten

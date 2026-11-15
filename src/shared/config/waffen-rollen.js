@@ -79,13 +79,6 @@ export const ROLLEN = Object.freeze({
   }),
 });
 
-/** Die drei Wirkpfade mit Anzeigenamen. */
-export const WIRKPFAADE = Object.freeze({
-  projektil: Object.freeze({ label: 'Projektil', beschreibung: 'Startet ein Geschoss mit eigener Flugbahn.' }),
-  strahl: Object.freeze({ label: 'Strahl', beschreibung: 'Trifft sofort entlang einer Sichtlinie (Hitscan).' }),
-  selbst: Object.freeze({ label: 'Selbst/Welt', beschreibung: 'Wirkt am Anwender oder setzt ein Objekt in die Welt; keine Flugbahn.' }),
-});
-
 /**
  * Die Tabelle: `id: [Rolle, Wirkpfad]`.
  *

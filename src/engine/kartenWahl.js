@@ -1,5 +1,5 @@
 /**
- * Kartenwahl: Stufe `kolossal` und die drei runden Kartenarten (Geländefassung 14, TODO N-40) für Menü, Lobby und Client-Protokoll.
+ * Kartenwahl: Stufe `kolossal` und die drei runden Kartenarten (Geländefassung 14, N-40 Stand 2026-11-14: Menü und Lobby umgesetzt, Sichtabnahme und 33-Mio.-px-Darstellung im Browser offen) für Menü, Lobby und Client-Protokoll.
  *
  * Reine Funktionen ohne DOM und ohne Zufall; sie ändern keine Engine-Regel. Die Engine kennt `kolossal` (`engine/karte.js`:
  * nur 1:1 = 5760 × 5760 = 33,18 Mio. Pixel, jedes andere Format behält die Maße von `riesig`) und die runden Arten
@@ -23,10 +23,10 @@ export const FORMAT_QUADRAT = '1:1';
 
 /** Fläche der Stufe `kolossal` in Pixeln (33 177 600). */
 export const KOLOSSAL_PIXEL = MAP_SIZES_KOLOSSAL[FORMAT_QUADRAT].width * MAP_SIZES_KOLOSSAL[FORMAT_QUADRAT].height;
-/** Größte Canvasfläche von iOS-Safari (4096 × 4096). */
-export const IOS_CANVAS_MAX_PIXEL = 16_777_216;
 /** Kleinstes Flächenbudget (Mio. Pixel), bei dem `kolossal` noch angeboten wird (Ultra = 14; Lite = 3,7 sperrt). */
 export const KOLOSSAL_MIN_BUDGET_MIO = 14;
+/** Größte Canvasfläche von iOS-Safari (4096 × 4096 = 16 777 216 Pixel). */
+export const IOS_CANVAS_MAX_PIXEL = 16_777_216;
 
 /** Die runden Kartenarten mit deutscher Beschriftung für das Menü (Reihenfolge wie `KARTENARTEN_RUND`). */
 export const RUNDE_ARTEN_MENUE = Object.freeze([
@@ -59,7 +59,7 @@ export function pruefeKolossal({ ios = false, flaechenBudgetMio = null } = {}) {
   if (ios) {
     return {
       status: 'gesperrt',
-      grund: 'Auf iPhone und iPad gesperrt: Die Karte hat 33,2 Mio. Pixel, Safari erlaubt höchstens 16,7 Mio. je Fläche. Die Anzeige bliebe leer.',
+      grund: `Auf iPhone und iPad gesperrt: Die Karte hat ${(KOLOSSAL_PIXEL / 1_000_000).toFixed(1)} Mio. Pixel, Safari erlaubt höchstens ${(IOS_CANVAS_MAX_PIXEL / 1_000_000).toFixed(1)} Mio. je Fläche. Die Anzeige bliebe leer.`,
     };
   }
   // Ohne Angabe (Messung fehlt) wird nichts gesperrt; `Number(null)` wäre 0 und würde fälschlich sperren.
@@ -67,13 +67,13 @@ export function pruefeKolossal({ ios = false, flaechenBudgetMio = null } = {}) {
   if (Number.isFinite(budget) && budget < KOLOSSAL_MIN_BUDGET_MIO) {
     return {
       status: 'gesperrt',
-      grund: `Mit Grafik „Lite“ gesperrt: Die Karte hat 33,2 Mio. Pixel, Lite rechnet mit höchstens ${String(budget).replace('.', ',')} Mio. Wähle „Ultra“ oder „Automatisch“, wenn dein Gerät es schafft.`,
+      grund: `Mit Grafik „Lite“ gesperrt: Die Karte hat ${(KOLOSSAL_PIXEL / 1_000_000).toFixed(1)} Mio. Pixel, Lite rechnet mit höchstens ${String(budget).replace('.', ',')} Mio. Wähle „Ultra“ oder „Automatisch“, wenn dein Gerät es schafft.`,
     };
   }
   if (Number.isFinite(budget) && budget * 1_000_000 < KOLOSSAL_PIXEL) {
     return {
       status: 'warnung',
-      grund: 'Kolossal ist sehr groß (33,2 Mio. Pixel): braucht viel Arbeitsspeicher, baut langsam auf und kann auf schwächeren Geräten ruckeln oder abstürzen.',
+      grund: `Kolossal ist sehr groß (${(KOLOSSAL_PIXEL / 1_000_000).toFixed(1)} Mio. Pixel): braucht viel Arbeitsspeicher, baut langsam auf und kann auf schwächeren Geräten ruckeln oder abstürzen.`,
     };
   }
   return { status: 'frei', grund: '' };

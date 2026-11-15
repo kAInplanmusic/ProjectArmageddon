@@ -41,8 +41,6 @@ import { buildEffect, SELF_TARGET_KINDS } from '../engine/specials.js';
 import { wirkungLabel } from '../shared/config/wirkungstexte.js';
 import { ROLLEN, rolleFuer, wirkpfadFuer, rollenLabel } from '../shared/config/waffen-rollen.js';
 
-export const WAFFEN_ROLLEN = Object.freeze(['hand', 'geschoss', 'ruecken', 'selbst', 'weltobjekt', 'ui']);
-
 /**
  * Die fünf semantischen Rollen (BAL-11) mit deutschen Anzeigenamen. Sie stehen
  * in `config/waffen-rollen.js`; hier nur der Durchgriff für die Anzeige.

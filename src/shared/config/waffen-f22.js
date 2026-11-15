@@ -16,8 +16,6 @@
  * @module shared/config/waffen-f22
  */
 
-export const WURFMINE_ID = 'pa_127';
-
 export const WAFFEN_F22_WERTE = Object.freeze({
   pa_127: Object.freeze({
     description: 'Wird im Bogen geworfen wie ein Stein (Schwerkraft und Wind), bleibt beim Aufprall liegen und ist sofort scharf. Wer sie berührt, löst sie aus, auch du. Selten ein Blindgänger, selten doppelt stark.',

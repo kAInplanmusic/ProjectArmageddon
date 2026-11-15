@@ -1,5 +1,5 @@
 /**
- * Runde Kartenarten (Geländefassung 14, TODO N-40: „rund“ = Format 1:1 mit Planet, runder Höhle, schwebender Insel).
+ * Runde Kartenarten (Geländefassung 14, N-40 Stand 2026-11-14: „rund“ = Format 1:1 mit Planet, runder Höhle, schwebender Insel; Engine-Umsetzung abgeschlossen, Sichtabnahme offen).
  *
  * ## Was „rund“ hier heißt
  *
@@ -31,10 +31,6 @@
  *
  * @module terrainRund
  */
-import { KARTENARTEN_RUND } from './config/gelaende.js';
-
-/** Die drei Kennungen (`config/gelaende.js`). */
-export const RUND_ARTEN = KARTENARTEN_RUND;
 
 /** Körperhöhe einer Figur (px, `config/player.js`: 14 × 20); die kleinste lichte Höhe ist ein Mehrfaches davon. */
 const FIGUR_H = 20;
