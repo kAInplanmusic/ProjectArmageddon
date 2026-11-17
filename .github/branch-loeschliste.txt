@@ -61,3 +61,6 @@ worktree-agent-a8a280901a4ce4a92
 wip/stand-2026-10-05
 bild/b5-waffen-anim-versuch
 bg/wave-4
+claude/design-audit-p0
+ci/node-24
+fix-lint-unused-vars

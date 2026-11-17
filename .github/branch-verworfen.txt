@@ -1,0 +1,6 @@
+bg/wave-4
+bg/wave-5
+bild/b5-waffen-anim-versuch
+wip/stand-2026-10-05
+plan/letzter-halt
+arbeit/e2e-triage

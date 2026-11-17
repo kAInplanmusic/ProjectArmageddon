@@ -10,6 +10,10 @@ on:
         description: 'Probelauf: nur anzeigen, nichts löschen'
         type: boolean
         default: true
+      verworfene:
+        description: 'Zusätzlich Branches aus .github/branch-verworfen.txt löschen, auch MIT Commits (geprüft, übernommen/archiviert/überholt)'
+        type: boolean
+        default: false
   # Gemergte Pull Requests räumen ihren Quell-Branch selbst weg (nur Branches im selben Repo).
   pull_request:
     types: [closed]
@@ -40,6 +44,21 @@ jobs:
               gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${b}" && echo "DEL   $b"
             fi
           done < .github/branch-loeschliste.txt
+
+      - name: Geprüfte, verworfene Branches löschen (nur auf ausdrücklichen Wunsch)
+        if: ${{ inputs.verworfene }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          set -u
+          while IFS= read -r b; do
+            [ -z "$b" ] && continue
+            case "$b" in main|master) echo "SKIP  $b (geschützt)"; continue;; esac
+            if [ "$DRY" = "true" ]; then echo "DRY   $b würde gelöscht (verworfen)"; else
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${b}" && echo "DEL   $b" || echo "SKIP  $b (existiert nicht)"
+            fi
+          done < .github/branch-verworfen.txt
 
   gemergt:
     if: >-
