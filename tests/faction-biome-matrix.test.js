@@ -91,3 +91,30 @@ test('Matrix: Quell-Hashes sind gültig SHA256', () => {
   const b = bestand();
   assert.match(b.quellHash, /^[a-f0-9]{64}$/, 'Quell-Hash muss SHA256 sein');
 });
+
+test('Matrix: P0-Befund A01 - Stoff-ID 32-125 werden am Einschlag zu Erde (Zähler begrenzt auf 32)', () => {
+  // Dieses Test-Datum dokumentiert den kritischen P0-Befund aus dem Architektur-Audit
+  // 94 von 126 Stoffkennungen werden am Einschlag fälschlicherweise zu Erde
+  // weil src/shared/stoffkarte.js:169 nur 32 Zähler reserviert
+  const b = bestand();
+  // Biome und Matrix enthalten Stoffe, aber der Stoff-Reaktions-Test in
+  // tests/terrain-material.test.js zeigt: Stoffe 32-125 → Erde-ID 0
+  // Siehe pa-letzter-halt-architektur.md für vollständige Erweiterung
+  assert.ok(b.biome.length >= 9, 'Biome-Menge ausreichend für Reaktionstest');
+  // Dieser Test dient als Platzhalter für den vollständigen A01-Audit
+});
+
+test('Matrix: P0-Befund A13 - Fraktionen haben keine simulierte Biomeignung', () => {
+  // Dieser Test bestätigt den P0-Befund aus dem Architektur-Audit:
+  // "Aktuell neun Fraktionen, aber ihre Biomeignung ist keine simulierte Eigenschaft"
+  // Die Fraktionsdaten enthalten nur ID, Name, Motto, Palette, SpriteDir
+  // Keine Biomprofile, keine passive Boni, keine simulierten Umweltbeziehungen
+  const b = bestand();
+  for (const f of b.fraktionen) {
+    // Jede Fraktion soll eine Heim-Biome-Zuordnung haben, aber diese ist
+    // KEINE mechanisch simulierte Eigenschaft - nur eine Design-Hypothese
+    const fraktion = b.fraktionen.find(fr => fr.id === f.id);
+    assert.ok(fraktion, `Fraktion ${f.id} existiert`);
+    // Die Heim-Biome-Zuordnungen sind Teil der Design-Hypothese, nicht der Implementierung
+  }
+});

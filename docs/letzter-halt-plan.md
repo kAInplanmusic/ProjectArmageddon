@@ -282,10 +282,40 @@ datacult  -> eiswueste
 
 ---
 
-**Quellen:**
+## 12. Unabhängige Prüfungsergebnisse
+
+**Architektur-Audit (15 Befunde, P0-Priorität):**
+
+| ID / Klasse | Befund | Konsequenz für den Plan |
+|-------------|--------|--------------------------|
+| **A01 P0** | 94 von 126 Stoffkennungen werden am Einschlag fälschlicherweise zu Erde (Zählertabelle auf 32 begrenzt) | **VOR DEM BIOM-/MATERIALBALANCING BEHEBEN** - Reparatur ändert heutige Ergebnisse und Replays |
+| **A03 P0** | Fallende Landschaft transportiert Belegung, nicht ihren Stoff | Entscheidung: geografischer Materialraum **oder** mitwandernder Stoff |
+| **A04 P0** | `stateHash()` ist kein vollständiger Simulationsbeweis - erkennt Terrainänderungen nicht | Replayabnahme: Zustand **und** Terrain **und** dynamisches Material |
+| **A05 P0** | Dynamischer Stoff (Feuer/Asche) ist vom Stoffhash ausgenommen | Versions-/sequenzfähigen Overlay-Snapshot oder Replaylog ergänzen |
+| **A07 P0** | Zugabschluss wartet nicht auf Einsturz-Folgen | Auflösungsabschluss definieren: "Geschoss fertig" vs "Folgen fertig" |
+| **A08 P0** | Keine durchgängige Ursachen-ID vom Schützen bis zum Schaden | Additiver Ursachenvertrag (actionId, parentId, Besitzer, Tick, betroffener Bereich) voranstellen |
+| **A13 P0** | Fraktionen haben keine simulierten Biomeignungen - jede Zuordnung ist Designhypothese | **JEDE GUT/SCHLECHT-BIOMZUORDNUNG IM PLAN ALS DESIGNHYPOTHESE KENNzeichnen** |
+
+**Design-Gegenprüfung:**
+- Bestätigt: 9 Fraktionen, 20 Sonderbiome, 6 Planetvarianten = 25 konkrete Biome; 93 Tests grün
+- **Kritisch**: Biomname garantiert keine Topologie - zwei Seeds ergaben gleiche Geometrie über alle Nicht-Planet-Biome
+- **Empfehlung**: Zuerst kausale Lesbarkeit, dann gemeinsamer optionaler Terrainprofil-Prototyp statt neun Fraktionskräften
+
+**Reihenfolge für P0-Korrekturen:**
+1. D0 → D1: Materialwahrheit (A01, A03)
+2. D1 + D2 → D3/D4: Deterministic Auflösung, Semantische Karte
+3. D3 + D4 → D5: Ursache und Online, Ursachenwiederholung
+
+---
+
+## Quellen
+
 - User-Test: "Spieler wählen Gelände-weg" (persönlicher Bericht)
 - Code-Analyse: `src/shared/config/`, `tests/`
 - Design-Review: AGENTS.md, README.md
+- Architektur-Audit: `/home/patrick/.hermes/cache/scratch/pa-letzter-halt-architektur.md`
+- Design-Gegenprüfung: `/home/patrick/.hermes/cache/scratch/pa-letzter-halt-design-review.md`
 
 ---
+
 *Ende des Plans*
