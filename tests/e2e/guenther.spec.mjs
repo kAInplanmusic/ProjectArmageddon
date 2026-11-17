@@ -17,7 +17,7 @@ async function startMitGuenther(page, { maxSeeds = 120 } = {}) {
     const api = window.__PA__;
     for (let seed = 0; seed < grenze; seed += 1) {
       api.setAutoLoop(false);
-      api.startMatch({ seed, teams: 2, playersPerTeam: 2, preset: 'hills' });
+      await api.startMatch({ seed, teams: 2, playersPerTeam: 2, preset: 'hills' });
       api.setAutoLoop(false);
       const g = api.guenther();
       if (!g?.plan?.length) continue;

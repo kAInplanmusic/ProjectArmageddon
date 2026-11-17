@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
 
+// Der Home-Bildschirm (A6) liegt vor dem Menü; diese Spezifikation beginnt am Menü bzw. im Match.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('pa.home.v1', '1'));
+});
+
 /**
  * Spielerprofil im Browser.
  *
@@ -50,7 +55,7 @@ async function matchZuEndeSpielen(page, { seed = 4242 } = {}) {
   await page.evaluate(async ({ seed }) => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed, teams: 2, playersPerTeam: 1, preset: 'hills' });
+    await api.startMatch({ seed, teams: 2, playersPerTeam: 1, preset: 'hills' });
     api.setAutoLoop(false);
 
     const match = api.game.match;

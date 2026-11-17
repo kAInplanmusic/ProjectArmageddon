@@ -53,10 +53,10 @@ const verdeckte = (page, wurzel) => page.evaluate(sel => [...document.querySelec
 async function starte(page, optionen) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(o => {
+  await page.evaluate(async o => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed: 4711, kartentyp: 'autonom', ...o });
+    await api.startMatch({ seed: 4711, kartentyp: 'autonom', ...o });
     api.setAutoLoop(false);
   }, optionen);
   await expect(page.locator('#touch-laufen')).toBeVisible();

@@ -20,9 +20,9 @@ test('Mahlstrom: ab der Valhalla-Runde zeigt das HUD den Sturm, meldet jede Eins
   page.on('pageerror', e => fehler.push(String(e)));
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     window.__PA__.setAutoLoop(false);
-    window.__PA__.startMatch({ seed: 4711, teams: 2, playersPerTeam: 1, preset: 'hills' });
+    await window.__PA__.startMatch({ seed: 4711, teams: 2, playersPerTeam: 1, preset: 'hills' });
   });
   await expect(page.locator('#menu-overlay')).toBeHidden();
   await hakeHudLog(page);

@@ -10,9 +10,9 @@ import { test, expect } from '@playwright/test';
 async function boot(page, seed = 20261019) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(options => {
+  await page.evaluate(async options => {
     window.__PA__.setAutoLoop(false);
-    window.__PA__.startMatch(options);
+    await window.__PA__.startMatch(options);
     window.__PA__.setAutoLoop(false);
   }, { seed, teams: 2, playersPerTeam: 1 });
   await expect(page.locator('#menu-overlay')).toBeHidden();

@@ -12,6 +12,7 @@ jobs:
   test:
     name: Lint, Tests & Build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -157,6 +158,8 @@ jobs:
   e2e:
     name: Browser-Tests (Teil ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
+    # Frühere grüne Läufe: 7–20 Minuten je Teil. 40 fängt Hänger ab, statt sie stundenlang laufen zu lassen.
+    timeout-minutes: 40
     needs: test
     strategy:
       fail-fast: false

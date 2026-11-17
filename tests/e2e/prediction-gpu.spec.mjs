@@ -184,7 +184,7 @@ test.describe('Tastatur feuert', () => {
         return treffer.length > 0 ? Number(treffer[0][1]) : null;
       };
       const starte = async () => {
-        api.startMatch({ seed: 20260916, teams: 2, playersPerTeam: 1, preset: 'hills' });
+        await api.startMatch({ seed: 20260916, teams: 2, playersPerTeam: 1, preset: 'hills' });
         await warte(100);
       };
 

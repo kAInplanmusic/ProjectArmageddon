@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
 
+// Der Home-Bildschirm (A6) liegt vor dem Menü; diese Spezifikation beginnt am Menü bzw. im Match.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('pa.home.v1', '1'));
+});
+
 /**
  * E2E-Prüfung von Abwurfmechanik und Nachladezeit im Browser.
  *
@@ -12,9 +17,9 @@ import { test, expect } from '@playwright/test';
 async function boot(page, { seed = 20260911 } = {}) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(options => {
+  await page.evaluate(async options => {
     window.__PA__.setAutoLoop(false);
-    window.__PA__.startMatch(options);
+    await window.__PA__.startMatch(options);
     window.__PA__.setAutoLoop(false);
     window.__PA__.advance(1);
   }, { seed, teams: 2, playersPerTeam: 1 });

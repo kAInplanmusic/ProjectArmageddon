@@ -193,9 +193,9 @@ test('Versteckte Overlays nehmen keinen Fokus', async ({ page }) => {
 
 /** Startet ein Match und lässt eine Explosion auslösen. */
 async function matchMitExplosion(page) {
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     window.__PA__.setAutoLoop(false);
-    window.__PA__.startMatch({ seed: 9091, teams: 2, playersPerTeam: 1, preset: 'hills' });
+    await window.__PA__.startMatch({ seed: 9091, teams: 2, playersPerTeam: 1, preset: 'hills' });
     window.__PA__.setAutoLoop(false);
     window.__PA__.advance(1);
   });

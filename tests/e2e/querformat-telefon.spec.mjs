@@ -37,10 +37,10 @@ for (const [breite, hoehe] of [[844, 390], [915, 412]]) {
       await page.goto('/');
       await page.waitForFunction(() => Boolean(window.__PA__));
       await expect(page.locator('#dreh-hinweis')).toBeHidden();
-      await page.evaluate(() => {
+      await page.evaluate(async () => {
         const api = window.__PA__;
         api.setAutoLoop(false);
-        api.startMatch({ seed: 4711, kartentyp: 'autonom' });
+        await api.startMatch({ seed: 4711, kartentyp: 'autonom' });
         api.setAutoLoop(false);
       });
       await expect(page.locator('#touch-laufen')).toBeVisible();
