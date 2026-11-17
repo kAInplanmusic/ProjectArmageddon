@@ -1,5 +1,9 @@
 # Balancing je Rolle, Messung 2026-11-12
 
+> **Überholt am 2026-11-17 (QV-1):** Dieser Lauf startete ohne `kartentyp`, das Menü immer mit `autonom`. Ohne autonome Karte
+> gibt es kein Stofffeld, das Biom wirkt nicht, und die Ertrinkenquote ist ein Artefakt (53–81 % hier, 7–15 % im Menümodus).
+> Gültige Zahlen: `docs/balance-rollen-2026-11-17.md`. Dieser Bericht bleibt als Verlauf stehen.
+
 Auftrag: Entscheidung 24 vom 2026-11-11 („Balancing je Rolle mit festen Seeds messen und vorlegen“). Dieses Dokument trennt strikt
 **Messung** (Abschnitte 1 bis 6, nur Zahlen aus dem nachweisbar gelaufenen Skript) von **Vorschlägen** (Abschnitt 7, nicht umgesetzt).
 Es wurde keine Spielregel und kein Spielwert geändert; das Skript liest nur.
