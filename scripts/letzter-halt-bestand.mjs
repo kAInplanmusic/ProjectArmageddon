@@ -99,7 +99,7 @@ const biomeCount = Object.keys(biomeList).length;
 const factionCount = Object.keys(factionsData).length;
 
 const matrix = [];
-for (const [frakId, fraktionObj] of Object.entries(factionsData)) {
+for (const [frakId, _fraktionObj] of Object.entries(factionsData)) {
   const bio = fraktionZuBiome[frakId];
   // Wenn kein Biome gefunden, verwende 'keine' als Platzhalter
   const homeBiomeId = bio?.id ?? 'keine';

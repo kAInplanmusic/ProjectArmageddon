@@ -15,7 +15,7 @@ test('Matrix: Jede Fraktion hat genau ein Heim-Biome (ausgenommen rodentia)', ()
   for (const f of b.fraktionen) {
     const eintraege = b.matrix.filter(m => m.fraktion === f.id);
     const homes = eintraege.filter(m => m.home);
-    const gegen = eintraege.filter(m => !m.home);
+    const _gegen = eintraege.filter(m => !m.home);
 
     if (f.id === 'rodentia') {
       // rodentia hat kein zugehöriges Biome in FASSUNG_2
