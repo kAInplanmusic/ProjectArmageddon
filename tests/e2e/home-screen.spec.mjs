@@ -98,4 +98,15 @@ test.describe('Home-Bildschirm', () => {
     const fs = await page.locator('#home-ueberrasch').evaluate(el => getComputedStyle(el).fontSize);
     expect(fs).toBe('20px'); // früher wirkte die Regel wegen eines Tippfehlers im Selektor nicht
   });
+
+  test('Auf iPhone quer (844x390) liegen beide Knöpfe vollständig im Viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await wartePastSplash(page);
+    for (const id of ['#home-start', '#home-ueberrasch']) {
+      const b = await page.locator(id).boundingBox();
+      expect(b, id).not.toBeNull();
+      expect(b.y, id + ' oben').toBeGreaterThanOrEqual(0);
+      expect(b.y + b.height, id + ' unten').toBeLessThanOrEqual(390);
+    }
+  });
 });

@@ -1454,6 +1454,22 @@ select option { background: #14181d; color: var(--ink); }
 
 .home-hinweis { margin: 6px 0 0; font-size: var(--fs-xs); color: var(--muted); text-align: center; }
 
+/* Niedrige Viewports (z. B. iPhone quer): Marke links, Aktionen rechts, kompaktes Logo. */
+@media (max-height: 520px) {
+  #home-screen .home-card {
+    grid-template-columns: auto 1fr;
+    align-items: center; column-gap: 24px; row-gap: 8px;
+    padding: 16px 24px; width: min(760px, 94%); max-width: 760px;
+  }
+  .home-marke { grid-column: 1; grid-row: 1 / span 2; gap: 6px; }
+  .home-marke .menu-logo { width: min(100%, 110px); }
+  .home-marke h1 { font-size: 22px; }
+  .home-marke .subtitle { display: none; }
+  .home-aktionen { grid-column: 2; flex-direction: column; align-items: stretch; gap: 10px; }
+  .home-aktionen .pa-btn { font-size: 22px; padding: 10px 20px; }
+  .home-hinweis { grid-column: 2; margin: 0; }
+}
+
 /* Reduzierte Animation: Kein Pulsieren der Marke. */
 @media (prefers-reduced-motion: reduce) {
   #home-screen .home-card { animation: none; }
