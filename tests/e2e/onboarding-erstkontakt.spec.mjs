@@ -25,6 +25,8 @@ import { test, expect } from '@playwright/test';
 async function oeffneStartseite(page) {
   const fehler = [];
   page.on('pageerror', error => fehler.push(String(error)));
+  // Der Home-Bildschirm (A6) liegt vor dem Menü; der Erstkontakt dieser Spezifikation beginnt am Menü.
+  await page.addInitScript(() => sessionStorage.setItem('pa.home.v1', '1'));
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__?.game), { timeout: 20_000 });
   await page.evaluate(() => window.__PA__.setAutoLoop(false));
@@ -81,6 +83,34 @@ test('Erstkontakt: Spielziel und Steuerung stehen vor der Einrichtung', async ({
 
   expect(fehler).toEqual([]);
 });
+
+/*
+ * Regression (aus arbeit/e2e-triage, 2026-11-10): Ein stehengebliebenes `grid-column: 1 / -1` überschrieb den Bereich
+ * `keymap`; die Tastenliste lag über „Match starten“ und der Konfiguration. Geprüft: Die Kästen schneiden sich nicht,
+ * und an der Mitte von „Match starten“ liegt der Knopf selbst oben.
+ */
+for (const [breite, hoehe] of [[1440, 900], [1024, 768], [915, 412], [844, 390]]) {
+  test(`Erstkontakt ${breite}×${hoehe}: Tastenliste überdeckt weder Einrichtung noch Startknopf`, async ({ page }) => {
+    await page.setViewportSize({ width: breite, height: hoehe });
+    const fehler = await oeffneStartseite(page);
+    // Der Intro-Splash (1,8 s) liegt anfangs über allem und würde die Abdeckungsmessung verfälschen.
+    await expect(page.locator('#intro-splash')).toBeHidden({ timeout: 10_000 });
+    const stand = await page.evaluate(() => {
+      const a = document.querySelector('#menu-overlay .keymap').getBoundingClientRect();
+      const b = document.querySelector('#menu-overlay .menu-konfig').getBoundingClientRect();
+      const breiteSchnitt = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+      const hoeheSchnitt = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+      const knopf = document.getElementById('start-button');
+      knopf.scrollIntoView({ block: 'center' });
+      const r = knopf.getBoundingClientRect();
+      const oben = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return { schnitt: breiteSchnitt * hoeheSchnitt, knopfOben: Boolean(oben && knopf.contains(oben)) };
+    });
+    expect(stand.schnitt, 'Tastenliste und Einrichtung überlappen').toBe(0);
+    expect(stand.knopfOben, 'an der Mitte von „Match starten“ liegt etwas anderes').toBe(true);
+    expect(fehler).toEqual([]);
+  });
+}
 
 test('Erstkontakt: Tastaturweg von der Startseite über die Hilfe ins Match', async ({ page }) => {
   const fehler = await oeffneStartseite(page);
