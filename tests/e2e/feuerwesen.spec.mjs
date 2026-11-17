@@ -26,7 +26,8 @@ test('Feuerwesen: abfeuern, laufen, springen, zerbersten — ohne Seitenfehler',
     return id;
   });
   expect(await page.evaluate(id => window.__PA__.getMatch().inventory.getActiveWeaponId(id), spieler)).toBe('pa_118');
-  expect(await page.evaluate(() => window.__PA__.getMatch().waffen)).toBe(20);
+  // Das Feuerwesen gibt es ab Fassung 20; der Standard ist inzwischen höher (22).
+  expect(await page.evaluate(() => window.__PA__.getMatch().waffen)).toBeGreaterThanOrEqual(20);
 
   // Beobachten: Lagen aus dem Zustand und die gezeichneten Gnome je Bild, bis der Gnom und seine Kugeln weg sind.
   const beob = page.evaluate(() => new Promise((ok) => {
