@@ -131,8 +131,8 @@ test('Build: Messseite ist eigener Einstieg, nicht im Spiel-Bündel, ohne Zugang
 });
 
 test('Frame-Schutz bleibt: Die Messseite bettet das Spiel per srcdoc ein, die Header-Regel DENY bleibt', () => {
-  const toml = fs.readFileSync(path.join(WURZEL, 'netlify.toml'), 'utf8');
-  assert.match(toml, /X-Frame-Options = "DENY"/);
+  const header = fs.readFileSync(path.join(WURZEL, 'public/_headers'), 'utf8');
+  assert.match(header, /X-Frame-Options: DENY/);
   const lauf = fs.readFileSync(path.join(WURZEL, 'src/client/messung/messlauf.js'), 'utf8');
   assert.match(lauf, /\.srcdoc = /);
   assert.doesNotMatch(lauf, /\.src = (?!'about:blank')/);

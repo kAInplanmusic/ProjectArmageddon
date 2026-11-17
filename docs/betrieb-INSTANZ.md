@@ -358,7 +358,7 @@ löscht **nie** selbst Server.
 
 > **Seit der Freigabe vom 2026-11-10 (Abschnitt 10) ist dieser Ablauf zusätzlich
 > automatisiert** — Idle-Bremse 15 min → verifiziertes Abbild → Selbstlöschung
-> (`PA_ACTION=abbild-loeschen`), Start über die Netlify-Seite
+> (`PA_ACTION=abbild-loeschen`), Start über die Web-Seite (Cloudflare)
 > (`docs/zugang-www.md`). Abschnitt 6 bleibt der prüfbare **Betreiber-Ablauf**
 > für die manuelle Wiederholung und den Fail-Safe (ohne geprüftes Abbild wird
 > nie gelöscht); Abschnitt 10 hält den echten Lauf und die Belege fest.
@@ -532,4 +532,4 @@ Belege (echter Lauf gegen Hetzner, 2026-11-10, Mock-Tests getrennt in tests/betr
 
 iPhone-Klickfolge: GitHub-App/Browser, Repo, Settings, Secrets and variables, Actions, New repository secret `HCLOUD_TOKEN` (Wert selbst eintragen), optional Variable `PA_DOMAIN`; dann Actions, "server-hochfahren", Run workflow, Modus `hochfahren`.
 
-Offene Punkte: Web-Zugang www (Option D, docs/zugang-www.md) ist gebaut und Mock-getestet, aber nicht auf Netlify ausgeführt; Token liegt während der Laufzeit im Server-RAM; Abbild-Dauer wächst mit Datenmenge.
+Offene Punkte: Web-Zugang www (Option D, docs/zugang-www.md) ist gebaut und Mock-getestet, aber nicht auf Cloudflare ausgeführt; Token liegt während der Laufzeit im Server-RAM; Abbild-Dauer wächst mit Datenmenge.

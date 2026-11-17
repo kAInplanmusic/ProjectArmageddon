@@ -1,7 +1,7 @@
 /**
  * Nutzerdatenbank der Webseite (docs/zugang-www.md): Registrieren, Anmelden, Sitzung, Passwort ändern,
  * Sperre bei Fehlversuchen, Saat der festen Konten, Statistik. Nur gegen die Speicher-Schnittstelle
- * (`speicher.mjs`) — heute Netlify Blobs, in Tests ein Arbeitsspeicher.
+ * (`speicher.mjs`) — heute Cloudflare D1, in Tests ein Arbeitsspeicher.
  *
  * Wiederverwendet aus dem Spiel (`src/server/konto.js`): Namensregeln, Normalisierung, Passwortform, scrypt.
  *

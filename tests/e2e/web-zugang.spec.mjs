@@ -1,6 +1,6 @@
 /**
  * E2E: Web-Zugang (docs/zugang-www.md) im Browser. Die Funktionen unter /api/web/* sind durch Mocks ersetzt
- * (kein Netlify, kein Hetzner); das Modul `webStart.js` wird in die Dev-Seite geladen, wie es der Web-Build tut.
+ * (kein Hoster, kein Hetzner); das Modul `webStart.js` wird in die Dev-Seite geladen, wie es der Web-Build tut.
  */
 import { test, expect } from './helfer/test-basis.mjs';
 

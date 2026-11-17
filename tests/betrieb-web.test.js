@@ -1,11 +1,11 @@
 /**
- * Web-Zugang (Option D, scripts/betrieb/web/gateway-kern.mjs, netlify/functions): Login, Sitzung,
+ * Web-Zugang (Option D, scripts/betrieb/web/gateway-kern.mjs): Login, Sitzung,
  * Sperre, Herkunft, Start/Status/Not-aus gegen ein FALSCHES Hetzner (ersetztes fetch). Es wird nichts
  * bei Hetzner oder im Netz angefragt.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { scrypt } from 'node:crypto';
 import { promisify } from 'node:util';
@@ -62,7 +62,7 @@ function falschesHetzner(zustand = {}) {
 const deps = (f, extra = {}) => ({ env: ENV, fetch: f.fn, sleep: async () => {}, jetzt: () => 1_800_000_000_000, installer: () => '#!/bin/bash\necho installer\n', speicher: new SpeicherImSpeicher(), ...extra });
 const anfrage = (pfad, { methode = 'GET', body, cookie, origin = ORIGIN, ip = '1.2.3.4' } = {}) => new Request(`https://www.projectarmageddon.de/api/web/${pfad}`, {
   method: methode, body: body ? JSON.stringify(body) : undefined,
-  headers: { ...(methode !== 'GET' ? { 'x-pa-web': '1', origin } : {}), ...(cookie ? { cookie } : {}), 'x-nf-client-connection-ip': ip },
+  headers: { ...(methode !== 'GET' ? { 'x-pa-web': '1', origin } : {}), ...(cookie ? { cookie } : {}), 'cf-connecting-ip': ip },
 });
 const NUTZER = { email: 'test@example.org', name: 'Tester', passwort: 'geheim-1234', anmeldepasswort: REG };
 /** Registriert (oder meldet an) und gibt das Cookie zurück. Dieselben deps = derselbe Speicher. */
@@ -368,28 +368,28 @@ test('Web: Not-aus nur mit Sitzung UND Startcode; der Hintergrundauftrag prüft 
   assert.equal((await behandle(anfrage('not-aus', mitCode(cookie)), d)).status, 202);
   assert.equal(auftraege.length, 1);
   const k = leseKonfig(ENV); const t = 1_800_000_000_000;
-  const hinten = (a, o = {}) => new Request('https://www.projectarmageddon.de/.netlify/functions/not-aus-background', { method: 'POST', headers: a ? { 'x-pa-auftrag': a } : {}, ...o });
+  const hinten = (a, o = {}) => new Request('https://www.projectarmageddon.de/api/web/not-aus-auftrag', { method: 'POST', headers: a ? { 'x-pa-auftrag': a } : {}, ...o });
   assert.equal((await notAusAuftrag(hinten(null), deps(f))).status, 403);
   assert.equal((await notAusAuftrag(hinten(`${Math.floor(t / 1000) + 60}.gefaelscht`), deps(f))).status, 403);
   assert.equal((await notAusAuftrag(hinten(auftragsKopf(k, t - 120_000)), deps(f))).status, 403, 'abgelaufen');
   assert.equal((await notAusAuftrag(hinten(auftraege[0]), deps(f))).status, 200);
 });
 
-test('Web: netlify.toml, Funktionen und Client-Build sind verdrahtet, ohne Geheimnisse; die alte Einzelpasswort-Anmeldung ist weg', () => {
-  const toml = readFileSync(join(WURZEL, 'netlify.toml'), 'utf8');
-  assert.match(toml, /publish = "dist"/); assert.match(toml, /PA_WEB_BUILD=1/); assert.match(toml, /server-erstinstallation\.sh/);
-  assert.doesNotMatch(toml, /HCLOUD_TOKEN\s*=|pbkdf2\$|scrypt\$/);
-  assert.match(readFileSync(join(WURZEL, 'netlify/functions/web.mjs'), 'utf8'), /path: '\/api\/web\/\*'/);
-  assert.match(readFileSync(join(WURZEL, 'netlify/functions/not-aus-background.mjs'), 'utf8'), /notAusAuftrag/);
+test('Web: Header-Regeln, Client-Build und Speicher sind verdrahtet, ohne Geheimnisse; kein Netlify; die alte Einzelpasswort-Anmeldung ist weg', () => {
+  const header = readFileSync(join(WURZEL, 'public/_headers'), 'utf8');
+  assert.match(header, /X-Frame-Options: DENY/); assert.match(header, /Cache-Control: no-store/);
+  assert.doesNotMatch(header, /HCLOUD_TOKEN|pbkdf2\$|scrypt\$/);
+  assert.equal(existsSync(join(WURZEL, 'netlify.toml')) || existsSync(join(WURZEL, 'netlify')), false, 'Netlify-Reste');
+  assert.doesNotMatch(readFileSync(join(WURZEL, 'package.json'), 'utf8'), /netlify/i);
   assert.match(readFileSync(join(WURZEL, 'vite.config.mjs'), 'utf8'), /PA_WEB_BUILD/);
   assert.equal(readFileSync(join(WURZEL, 'scripts/betrieb/server-erstinstallation.sh'), 'utf8').startsWith('#!'), true);
-  for (const datei of ['scripts/betrieb/web/gateway-kern.mjs', 'src/client/webStart.js', 'docs/zugang-www.md', 'public/passwort-hash.html', 'netlify/functions/web.mjs']) {
+  for (const datei of ['scripts/betrieb/web/gateway-kern.mjs', 'src/client/webStart.js', 'docs/zugang-www.md', 'public/passwort-hash.html']) {
     assert.doesNotMatch(readFileSync(join(WURZEL, datei), 'utf8'), /PA_WEB_PASSWORT_HASH/, `${datei}: Rest der Einzelpasswort-Anmeldung`);
   }
 });
 
 test('Web: In Client, Funktionen, Doku und Konfiguration steht kein fertiger Passwort-Hash (Hashes gehören nur in die Hoster-Umgebung)', () => {
-  for (const datei of ['src/client/webStart.js', 'src/client/webApi.js', 'src/client/webAnmeldung.js', 'scripts/betrieb/web/gateway-kern.mjs', 'scripts/betrieb/web/nutzer.mjs', 'docs/zugang-www.md', 'netlify.toml', 'vite.config.mjs']) {
+  for (const datei of ['src/client/webStart.js', 'src/client/webApi.js', 'src/client/webAnmeldung.js', 'scripts/betrieb/web/gateway-kern.mjs', 'scripts/betrieb/web/nutzer.mjs', 'docs/zugang-www.md', 'public/_headers', 'vite.config.mjs']) {
     assert.doesNotMatch(readFileSync(join(WURZEL, datei), 'utf8'), /(scrypt|pbkdf2)\$\d+(\$\d+\$\d+)?\$[0-9a-f]{16,}\$[0-9a-f]{32,}/, `${datei} enthält einen Hash`);
   }
 });

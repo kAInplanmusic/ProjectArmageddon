@@ -1,9 +1,9 @@
 /**
  * Anbindung an die Nutzerdatenbank der Webseite (docs/zugang-www.md): Spieltoken und Statistik-Meldung.
  *
- * EINE Implementierung für beide Seiten: Die Netlify-Funktion (`scripts/betrieb/web/`) stellt Spieltoken
+ * EINE Implementierung für beide Seiten: Der Web-Einstieg (`scripts/betrieb/web/`) stellt Spieltoken
  * aus und prüft Meldungen; der Spielserver prüft Spieltoken und meldet Partieergebnisse. Beide teilen
- * das Geheimnis `PA_SPIEL_GEHEIMNIS` (Netlify: Umgebungsvariable; Spielserver: per cloud-init als
+ * das Geheimnis `PA_SPIEL_GEHEIMNIS` (Hoster: Umgebungsvariable; Spielserver: per cloud-init als
  * Datei unter /run, tmpfs — nie auf der Platte, nie im Abbild).
  *
  * ## Spieltoken

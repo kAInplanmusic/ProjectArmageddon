@@ -4,7 +4,7 @@
  */
 export const API = '/api/web';
 
-/** Ein Aufruf an die Netlify-Funktion. Das Sitzungscookie (HttpOnly) trägt der Browser selbst. */
+/** Ein Aufruf an den Web-Einstieg (`/api/web/*`). Das Sitzungscookie (HttpOnly) trägt der Browser selbst. */
 export async function ruf(pfad, methode = 'GET', body = null, fetchFn = globalThis.fetch) {
   const r = await fetchFn(`${API}/${pfad}`, {
     method: methode, credentials: 'same-origin',

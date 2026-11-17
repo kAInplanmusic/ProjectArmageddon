@@ -5,7 +5,7 @@
  *
  * Jede Szene läuft in einem frischen, bildschirmgroßen `iframe` mit dem echten Spiel (`index.html`). Der
  * Frame bekommt den Text der Seite als `srcdoc` statt als `src`: Die Auslieferung setzt
- * `X-Frame-Options: DENY` (netlify.toml, Frame-Schutz), ein `src`-Frame würde dort verweigert. Ein
+ * `X-Frame-Options: DENY` (`public/_headers`, Frame-Schutz), ein `src`-Frame würde dort verweigert. Ein
  * `srcdoc`-Dokument hat keine eigene Antwort und damit keinen solchen Kopf; seine Skripte laden über
  * `<base href>` vom selben Ursprung. Der Schutz gegen fremdes Einbetten bleibt unberührt. Ein frischer
  * Frame je Szene gibt den Speicher der vorigen Karte wieder frei (wichtig auf dem iPhone).

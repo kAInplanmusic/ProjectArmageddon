@@ -1,10 +1,10 @@
 /**
  * Web-Zugang (Option D, docs/zugang-www.md): Konten (Registrieren, Anmelden, Passwort ändern), Spieltoken,
  * Statistik-Meldung und Server-Start auf Abruf als reine Web-Standard-Funktionen (Request -> Response),
- * unabhängig vom Hoster. Die Netlify-Funktionen unter `netlify/functions/` rufen nur `behandle()` bzw.
+ * unabhängig vom Hoster. Der Einstieg des Hosters ruft nur `behandle()` bzw.
  * `notAusAuftrag()` auf. Die Nutzerlogik steht in `nutzer.mjs`, der Speicher in `speicher.mjs`.
  *
- * Keine Abhängigkeiten außer `@netlify/blobs` (nur in der Funktion, nur über `speicher.mjs`), Node >= 22.
+ * Keine Abhängigkeiten, Node >= 22; die Ablage kommt über `speicher.mjs` (D1).
  * Alle Geheimnisse kommen aus Umgebungsvariablen des Hosters (nie aus Dateien, nie in Antworten oder Logs):
  *   HCLOUD_TOKEN         Hetzner-Projekt-Token
  *   PA_WEB_GEHEIMNIS     zufälliger Schlüssel für Sitzungs-Cookie und Hintergrundauftrag (mind. 32 Zeichen)
@@ -26,7 +26,6 @@ import { join } from 'node:path';
 import { GEHEIMNIS_MIN, pruefeMeldung, stelleSpieltokenAus } from '../../../src/server/webAnbindung.js';
 import { hashePasswort, pruefeGeheimnis, pruefePbkdf2 as pruefePasswort, RUNDEN } from './hash.mjs';
 import { NutzerDienst, cookieAusKopf, cookieLoeschen, cookieSetzen, neueSitzung, nutzerOeffentlich } from './nutzer.mjs';
-import { erzeugeBlobSpeicher } from './speicher.mjs';
 
 export { hashePasswort, pruefePasswort, RUNDEN };
 const L_SERVER = 'projectarmageddon-server';
@@ -45,7 +44,7 @@ export function leseKonfig(env) {
     idle: env.PA_IDLE_MINUTES || '15', grace: env.PA_GRACE_MINUTES || '5',
     maxRt: env.PA_MAX_RUNTIME_MINUTES || '480', maxM: env.PA_MAX_MACHINE_MINUTES || '540',
     gitUrl: env.PA_GIT_URL || 'https://github.com/kAInplanmusic/projectarmageddon', gitRef: env.PA_GIT_REF || 'main',
-    nodeMajor: env.PA_NODE_MAJOR || '22', frisch: env.PA_WEB_FRISCH !== 'nein', ipKopf: (env.PA_WEB_IP_HEADER || 'x-nf-client-connection-ip').toLowerCase(),
+    nodeMajor: env.PA_NODE_MAJOR || '22', frisch: env.PA_WEB_FRISCH !== 'nein', ipKopf: (env.PA_WEB_IP_HEADER || 'cf-connecting-ip').toLowerCase(),
   };
 }
 /** Grundlage für alles (Konten, Spieltoken). Server-Start braucht zusätzlich `startFehler`. */
@@ -105,11 +104,11 @@ export function baueUserData(k, domain, installer, modus) {
 }
 
 export function ladeInstaller() {
-  for (const wurzel of [process.env.LAMBDA_TASK_ROOT, process.cwd(), join(import.meta.dirname ?? '.', '..', '..', '..')]) {
+  for (const wurzel of [process.cwd(), join(import.meta.dirname ?? '.', '..', '..', '..')]) {
     if (!wurzel) continue;
     try { return readFileSync(join(wurzel, 'scripts/betrieb/server-erstinstallation.sh'), 'utf8'); } catch { /* nächster */ }
   }
-  throw new Error('server-erstinstallation.sh nicht gefunden (netlify.toml: included_files)');
+  throw new Error('server-erstinstallation.sh nicht gefunden (beim Bau des Einstiegs als Text einbinden)');
 }
 
 const neuesterAbbild = liste => (liste ?? []).filter(x => x.status === 'available').sort((a, b) => String(b.created).localeCompare(String(a.created)) || b.id - a.id)[0] ?? null;
@@ -213,14 +212,15 @@ const antwort = (code, obj, extra) => new Response(JSON.stringify(obj), { status
 const ablehnung = r => antwort(r.status, { fehler: r.fehler, code: r.code }, r.status === 429 ? { 'retry-after': '900' } : undefined);
 const gleich = (a, b) => { const x = Buffer.from(String(a)); const y = Buffer.from(String(b)); return x.length === y.length && timingSafeEqual(x, y); };
 
-/** Auftrag an die Hintergrundfunktion: kurzlebig (60 s) und mit dem Cookie-Geheimnis signiert (statt Cookie + Startpasswort weiterzureichen). */
+/** Auftrag an den Hintergrundauftrag: kurzlebig (60 s) und mit dem Cookie-Geheimnis signiert (statt Cookie + Startpasswort weiterzureichen). */
 export const auftragsKopf = (k, jetztMs) => { const e = Math.floor(jetztMs / 1000) + 60; return `${e}.${createHmac('sha256', k.geheimnis).update(`not-aus.${e}`).digest('base64url')}`; };
 const auftragGueltig = (k, wert, jetztMs) => { const [e, m] = String(wert ?? '').split('.'); return Number(e) * 1000 > jetztMs && m !== undefined && gleich(createHmac('sha256', k.geheimnis).update(`not-aus.${e}`).digest('base64url'), m); };
 
 const saatErledigt = new WeakSet(); // je Speicher-Objekt (= je Funktionsinstanz) einmal; die Saat selbst ist idempotent
-const standardSpeicher = { wert: null };
 async function dienstFuer(k, deps) {
-  const speicher = deps.speicher ?? (standardSpeicher.wert ??= await erzeugeBlobSpeicher());
+  // Der Speicher kommt vom Einstieg des Hosters (z. B. `erzeugeD1Speicher(env.DB)`); ohne ihn gibt es keine Konten.
+  const speicher = deps.speicher;
+  if (!speicher) throw new Error('Kein Speicher verdrahtet (deps.speicher, siehe speicher.mjs)');
   const dienst = new NutzerDienst({ speicher, jetzt: deps.jetzt, sleep: deps.sleep });
   if (k.saat && !saatErledigt.has(speicher)) { await dienst.saat(k.saat); saatErledigt.add(speicher); }
   return dienst;
@@ -298,7 +298,7 @@ export async function behandle(req, depsIn = {}) {
         const r = await starten(k, deps);
         return antwort(r.code, r.code < 300 ? { zustand: 'startet', hinweis: r.text } : { fehler: r.text });
       }
-      // Not-aus dauert Minuten: eine Hintergrundfunktion (bis 15 min) übernimmt; sie prüft den signierten Auftrag selbst.
+      // Not-aus dauert Minuten: eine Hintergrundauftrag (Minuten) übernimmt; sie prüft den signierten Auftrag selbst.
       if (deps.notAusStarten) { await deps.notAusStarten(req, auftragsKopf(k, t)); return antwort(202, { zustand: 'sichert', hinweis: 'Not-aus läuft im Hintergrund (Abbild, Prüfung, Löschen).' }); }
       return antwort(501, { fehler: 'Kein Hintergrundauftrag verdrahtet' });
     }
@@ -308,7 +308,7 @@ export async function behandle(req, depsIn = {}) {
   return antwort(404, { fehler: 'unbekannt' });
 }
 
-/** Hintergrundauftrag (Netlify `*-background`): prüft den signierten Auftrag (kein Cookie, kein Startpasswort), dann notAus(). */
+/** Hintergrundauftrag (eigener, langlaufender Aufruf): prüft den signierten Auftrag (kein Cookie, kein Startpasswort), dann notAus(). */
 export async function notAusAuftrag(req, depsIn = {}) {
   const deps = { env: process.env, fetch: globalThis.fetch, sleep: ms => new Promise(r => setTimeout(r, ms)), jetzt: Date.now, ...depsIn };
   const k = leseKonfig(deps.env);

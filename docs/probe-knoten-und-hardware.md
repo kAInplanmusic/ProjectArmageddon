@@ -199,7 +199,7 @@ Das JSON hat das Schema `pa-messung/1` (Prüfung: `pruefeErgebnis` in `src/clien
 - Die Grafikstufe (Lite/Ultra) bleibt auf „Automatisch“, wie ein Spieler sie hätte; sie steht je Szene
   im Ergebnis (`grafik`).
 - Die Seite bettet das Spiel per `srcdoc` ein, weil die Auslieferung `X-Frame-Options: DENY` setzt
-  (`netlify.toml`); dieser Schutz bleibt unverändert.
+  (`public/_headers`); dieser Schutz bleibt unverändert.
 - Die Software-Rasterung in der Testumgebung (`?plan=test`: dieselben Szenen mit je 8 Bildern) belegt nur,
   dass die Seite durchläuft und das JSON dem Schema entspricht. **Sie sagt nichts über echte Geräte.**
 
