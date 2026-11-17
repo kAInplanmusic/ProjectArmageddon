@@ -25,6 +25,7 @@ import { CharacterSystem } from './systems/characterSystem.js';
 import { MaelstromSystem } from './systems/maelstromSystem.js';
 import { LootSystem } from './systems/lootSystem.js';
 import { PlayerInventory } from './inventory.js';
+import { WAFFEN_HISTORIE, aabStatus } from './aab.js';
 import {
   StatusStore,
   buildEffect,
@@ -2303,6 +2304,9 @@ export class MatchController {
     const entityId = this.#turnOrder[index];
     // Lebensstatus des Spielers, nicht der ECS-Platz (siehe #checkVictory).
     if (!this.isPlayerAlive(entityId)) return;
+
+    // AAB-05: Historie-Update für aktuellen Zug
+    this.#inventory.setzeZug(index);
 
     /*
      * AERO: Ab Windfassung 2 wird der Wind JEDEN ZUG neu gewürfelt — aus dem

@@ -2,6 +2,11 @@
  * Projekt-Armageddon Engine Index
  * Exportiert alle ECS-Komponenten, Systeme und Utilities.
  *
+ * Plus AAB-Regeln (Arsenalwert-System):
+ * - arsenalwert(), computeArsenalwert(), computeKampfwert(), computeHybridWert()
+ * - bewerteFairness(), istUnterversorgt(), aabStatus()
+ * - WAFFEN_HISTORIE (Singleton für 3-Züge-Waffenhistorie)
+ *
  * @module engine/index
  */
 
@@ -25,3 +30,15 @@ export { computeTrajectory, computeAimAngle, ccdRaycast } from './physics/ballis
 export { createGameWorld } from './init.js';
 export { HeadlessRuntime } from './headless.js';
 export { terrainMaskFromBitmap, terrainMaskFromRows } from './terrain/terrainLoader.js';
+
+// AAB-Regeln (Arsenalwert-System)
+export {
+  arsenalwert,
+  computeArsenalwert,
+  computeKampfwert,
+  computeHybridWert,
+  bewerteFairness,
+  istUnterversorgt,
+  aabStatus,
+  WAFFEN_HISTORIE,
+} from './aab.js';

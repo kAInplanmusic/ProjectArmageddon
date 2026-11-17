@@ -10,6 +10,7 @@
 import { getWeapon, WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FALLBACK_WEAPON_ID } from '../shared/config/weapons.js';
 import { munitionsKlasse, MUNITION_OBERGRENZE } from '../shared/config/munition.js';
+import { WAFFEN_HISTORIE, computeKampfwert, computeArsenalwert, computeHybridWert } from './aab.js';
 
 /**
  * Obergrenze gleichzeitig geführter Waffen.
@@ -24,6 +25,11 @@ export class PlayerInventory {
   #players = new Map();
   /** Waffenfassung 11: Munitionsklassen, Obergrenze 5, unbegrenzte Startwaffen (`config/munition.js`). */
   #munition = false;
+  /** Aktueller Match-Zug für Historie (AAB-05) */
+  #currentTurn = 0;
+
+  /** Setzt den aktuellen Match-Zug (für Historie-Aufzeichnung). */
+  setzeZug(zug) { this.#currentTurn = zug; }
 
   /** Schaltet die Munitionsklassen der Waffenfassung 11 ein (vor `register`). */
   setzeMunition(an) { this.#munition = Boolean(an); }
@@ -86,6 +92,12 @@ export class PlayerInventory {
       credits: 0,
       unlimited,
     });
+
+    // AAB-05: Historie-Ereignis für Startwaffen
+    for (const id of reihenfolge) {
+      WAFFEN_HISTORIE.addEreignis(playerId, id, 'erhalten', this.#currentTurn);
+    }
+
     return this.#players.get(playerId);
   }
 
@@ -137,6 +149,9 @@ export class PlayerInventory {
       ? this.fundMunition(weaponId)
       : (ammo < 0 ? Infinity : Math.max(0, ammo));
 
+    // Pruefung, ob Waffe bereits vorhanden (fuer Historie)
+    const warVorhanden = entry.ammo.has(weaponId);
+
     if (this.#munition && (ammo === null || ammo === undefined)) {
       // Fassung 11: ein Fund ist voll geladen mit der Klasse der Waffe; mehr als 3 gibt nur die Munitionskiste.
       if (entry.ammo.has(weaponId)) {
@@ -148,14 +163,21 @@ export class PlayerInventory {
         if (!Number.isFinite(menge)) entry.unlimited.add(weaponId);
       }
       entry.activeWeaponId ??= weaponId;
+      // AAB-05: Historie-Ereignis (nur bei NEUER Waffe)
+      if (!warVorhanden) {
+        WAFFEN_HISTORIE.addEreignis(playerId, weaponId, 'erhalten', this.#currentTurn);
+      }
       return true;
     }
 
     if (entry.ammo.has(weaponId)) {
       entry.ammo.set(weaponId, entry.ammo.get(weaponId) + (Number.isFinite(menge) ? menge : 0));
+      // Munition nachladen = kein neues Ereignis fuer Historie
     } else {
       entry.ammo.set(weaponId, menge);
       entry.weapons.push(weaponId);
+      // AAB-05: Historie-Ereignis
+      WAFFEN_HISTORIE.addEreignis(playerId, weaponId, 'erhalten', this.#currentTurn);
     }
     entry.activeWeaponId ??= weaponId;
     return true;
@@ -266,6 +288,10 @@ export class PlayerInventory {
     if (entry.activeWeaponId === weaponId) {
       entry.activeWeaponId = entry.weapons[0] ?? null;
     }
+
+    // AAB-05: Historie-Ereignis
+    WAFFEN_HISTORIE.addEreignis(playerId, weaponId, 'verloren', this.#currentTurn);
+
     return { ok: true, ammo: Number.isFinite(rest) ? rest : -1 };
   }
 
@@ -277,7 +303,57 @@ export class PlayerInventory {
     const current = entry.ammo.get(weaponId) ?? 0;
     if (current < amount) return false;
     entry.ammo.set(weaponId, current - amount);
+
+    // AAB-05: Historie-Ereignis (Verbrauch zählt nur beim leeren Schießpulver)
+    if (current - amount <= 0 && current > 0) {
+      WAFFEN_HISTORIE.addEreignis(playerId, weaponId, 'verbraucht', this.#currentTurn);
+    }
+
     return true;
+  }
+
+  /**
+   * Berechnet den aktuellen Kampfwert des Spielers (AAB-04).
+   * @param {string} playerId - Spieler-ID
+   * @param {Object} zustaende - Spieler-Zustand (health, effekte, className)
+   * @returns {number} Kampfwert
+   */
+  getKampfwert(playerId, zustaende = {}) {
+    const entry = this.#players.get(playerId);
+    if (!entry) return 0;
+    return computeKampfwert(
+      { weaponIds: entry.weapons, ammo: entry.ammo },
+      zustaende,
+      zustaende.className
+    );
+  }
+
+  /**
+   * Gibt den Arsenalwert des Inventars zurück (AAB-01).
+   * @param {string} playerId - Spieler-ID
+   * @returns {number} Arsenalwert
+   */
+  getArsenalwert(playerId) {
+    const entry = this.#players.get(playerId);
+    if (!entry) return 0;
+    return computeArsenalwert(entry.weapons);
+  }
+
+  /**
+   * Gibt den Hybrid-Wert (60% Arsenal, 25% Kampf, 15% Historie) zurück (AAB-06).
+   * @param {string} playerId - Spieler-ID
+   * @param {Object} zustaende - Spieler-Zustand
+   * @returns {number} Hybrid-Wert
+   */
+  getHybridWert(playerId, zustaende = {}) {
+    const entry = this.#players.get(playerId);
+    if (!entry) return 0;
+    return computeHybridWert(
+      { weaponIds: entry.weapons, ammo: entry.ammo },
+      zustaende,
+      zustaende.className,
+      playerId
+    );
   }
 
   /** Entfernt einen Spieler (bei Tod). */
