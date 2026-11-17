@@ -6,7 +6,7 @@
  * um den Krater ändert sich gegenüber vorher. Mit `PA_BILDER=1` entstehen die Vorher/Nachher-
  * Bilder `docs/bilder/einschlag-vorher.jpg` und `docs/bilder/einschlag-nachher.jpg` (klein, JPEG).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { mkdirSync } from 'node:fs';
 
 test.use({ viewport: { width: 1280, height: 720 } });

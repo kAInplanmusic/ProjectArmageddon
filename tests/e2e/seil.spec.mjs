@@ -6,7 +6,7 @@
  * Der Zielwinkel wird vorher so gesetzt, dass das Seil Halt findet (Abtastung mit derselben Strahlfunktion wie der
  * Motor, `engine/seil.js#seilStrahl`); alles Weitere läuft über die Tastatur wie beim Spieler.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 async function oeffne(page) {
   const fehler = [];

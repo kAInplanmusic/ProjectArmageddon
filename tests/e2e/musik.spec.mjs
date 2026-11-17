@@ -7,7 +7,7 @@
  * echtes Audio nötig. Ein Test erzwingt die Wiedergabe mit `?musik=1`, um den
  * Weg Geste → Stück → Stimmungswechsel im echten Browser zu prüfen.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const zustand = page => page.evaluate(() => window.__PA__.musik());
 

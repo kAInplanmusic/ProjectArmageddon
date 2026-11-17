@@ -6,7 +6,7 @@
  * Bewegung bleibt der Blitz und die Bewegung entfällt, und ein Geschoss fliegt
  * als Sprite mit Schweif. Mit `PA_SHOTS=<Ordner>` werden Bilder abgelegt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 async function matchStarten(page, seed = '4') {
   const fehler = [];

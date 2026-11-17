@@ -2,7 +2,7 @@
  * E2E: Figuren-Feinschliff — Typen, Hangneigung, Culling, Mip-Stufen, Figurenkarte.
  * Mit `PA_SHOTS=<Ordner>` werden Bilder abgelegt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 async function oeffne(page, { seed = '20260910', fraktionen = null } = {}) {
   const fehler = [];

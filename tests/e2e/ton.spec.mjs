@@ -5,7 +5,7 @@
  * Klänge entstehen aber wie sonst und werden über `window.__PA__.sound()` gezählt. Ein Test
  * erzwingt mit `?ton=1` den hörbaren Zustand (Ausgang offen).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const zustand = page => page.evaluate(() => window.__PA__.sound());
 

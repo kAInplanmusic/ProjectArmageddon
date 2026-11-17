@@ -6,7 +6,7 @@
  * Audit 2026-11-16: `verlasseHome()` hatte die Bedingung umgedreht, der Home-Bildschirm
  * blieb nach dem Klick stehen.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, HOME_SCHLUESSEL } from './helfer/test-basis.mjs';
 
 /** Wartet, bis der Intro-Splash (1,8 s) vorbei ist und der Home-Bildschirm bedienbar ist. */
 async function wartePastSplash(page) {
@@ -17,6 +17,11 @@ async function wartePastSplash(page) {
 }
 
 test.describe('Home-Bildschirm', () => {
+  // Die gemeinsame Basis markiert die Startseite als gesehen; hier gilt der echte Weg ohne Umgehung.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(schluessel => sessionStorage.removeItem(schluessel), HOME_SCHLUESSEL);
+  });
+
   test('„Match starten“ verlässt den Home-Bildschirm und zeigt das Menü', async ({ page }) => {
     const fehler = [];
     page.on('pageerror', e => fehler.push(String(e)));

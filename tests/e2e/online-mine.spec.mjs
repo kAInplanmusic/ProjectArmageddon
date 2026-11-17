@@ -15,7 +15,7 @@
  * Das LEGEN einer Mine (Waffe `pa_127`) ist am Server in `tests/minen-server.test.js` belegt: Im Startinventar gibt es
  * keine Minen, und ein Browser-Client kann sich keine Munition geben (der Server vertraut ihm nicht).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { freierPort } from './helfer/freier-port.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';

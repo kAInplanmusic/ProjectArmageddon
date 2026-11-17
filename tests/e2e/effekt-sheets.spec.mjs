@@ -6,7 +6,7 @@
  * - N-05: kein Frame ist am Zellrand angeschnitten (Alpha am Rand ≤ 20). Ausnahme: Pilzwolke und
  *   Flamme stehen mit dem Fuß auf dem Boden (unterer Rand erlaubt).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 test('Effekt-Sheets: Frames unterscheiden sich und sind nicht angeschnitten', async ({ page }) => {
   await page.goto('/');

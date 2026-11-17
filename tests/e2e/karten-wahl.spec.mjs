@@ -9,7 +9,7 @@
  *
  * NICHT geprüft: Aussehen und echte Berührbedienung auf einem Gerät (Sichtabnahme offen), ein kolossal-Match im Browser (33 Mio. px).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const oeffne = async (page) => {
   await page.goto('/');
@@ -93,7 +93,7 @@ test('kolossal auf iOS (Browserkennung iPhone): gesperrt mit Grund, Touch-Bedien
     const hinweis = page.locator('#cfg-kartenwahl-hinweis');
     await expect(hinweis).toBeVisible();
     await expect(hinweis).toContainText('Auf iPhone und iPad gesperrt');
-    await expect(hinweis).toContainText('16,7 Mio.');
+    await expect(hinweis).toContainText('16,8 Mio.'); // 4096² = 16 777 216 Pixel, gerundet 16,8 (wie der Unit-Test)
     for (const id of ['cfg-kartengroesse', 'cfg-kartenformat', 'cfg-kartenart']) {
       const box = await page.locator(`#${id}`).boundingBox();
       expect(box.height, `#${id} Berührfläche`).toBeGreaterThanOrEqual(44);

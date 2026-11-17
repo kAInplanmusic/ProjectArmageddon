@@ -5,7 +5,7 @@
  * ihn), springt (Hopser, in der Luft) und am Ende zerbirst (Protokollzeile, danach fliegen Feuerkugeln). Kein
  * Seitenfehler. Mit `PA_SHOTS=<Ordner>` wird ein Bild abgelegt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 test('Feuerwesen: abfeuern, laufen, springen, zerbersten — ohne Seitenfehler', async ({ page }) => {
   test.setTimeout(120_000); // der Gnom läuft 4,5 s Spielzeit; unter Last braucht der Browser länger

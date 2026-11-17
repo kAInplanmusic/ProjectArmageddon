@@ -51,7 +51,7 @@
  * ihrer Ursache protokolliert. Zusicherungen (`AssertionError`) werden NICHT
  * wiederholt: Sie sind das Ergebnis, auf das es ankommt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** Fester Seed — sonst misst jeder Lauf eine andere Karte. */
 const SEED = 20260927;

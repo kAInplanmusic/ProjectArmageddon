@@ -5,7 +5,7 @@
  * die Auswahl im MENÜ existiert, aus der Config stammt und den lokalen Start
  * wirklich erreicht — also der Weg vom Formular bis ins Kampfprofil.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** Öffnet den Sidegrade-Bereich im Menü. */
 async function oeffneSidegrades(page) {

@@ -10,7 +10,7 @@
  * Emblem an einem fremden Namen wäre geraten — und ein geratener Erfolg ist
  * schlimmer als keiner. Genau das wird hier geprüft.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** Startet ein lokales Match und wartet, bis es läuft. */
 async function starteMatch(page) {

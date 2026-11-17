@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /**
  * E2E-Prüfung von Abwurfmechanik und Nachladezeit im Browser.

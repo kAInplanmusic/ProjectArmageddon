@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /*
  * Waffenmenü: Dropdown des Besitzes (Taste E / Knopf neben der Leiste).

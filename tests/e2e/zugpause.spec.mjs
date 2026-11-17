@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /*
  * Zugpause im Browser (lokal): vor dem Zug steht der Hinweis mit Zähler, Schießen ist gesperrt,

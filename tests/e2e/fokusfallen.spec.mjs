@@ -19,7 +19,7 @@
  * nicht als bestandene Prüfung getarnt. Die Sicherheitszusage, die das Menü
  * heute gibt — nichts davon erreicht das Spiel — wird geprüft.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** Startet ein lokales Match über den sichtbaren Weg. */
 async function starteMatch(page) {

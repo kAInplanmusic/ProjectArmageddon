@@ -23,6 +23,11 @@ export const FORMAT_QUADRAT = '1:1';
 
 /** Fläche der Stufe `kolossal` in Pixeln (33 177 600). */
 export const KOLOSSAL_PIXEL = MAP_SIZES_KOLOSSAL[FORMAT_QUADRAT].width * MAP_SIZES_KOLOSSAL[FORMAT_QUADRAT].height;
+/** Millionen Pixel für Texte der Oberfläche: eine Nachkommastelle mit deutschem Komma („33,2“, nicht „33.2“). */
+function mio(pixel) {
+  return (pixel / 1_000_000).toFixed(1).replace('.', ',');
+}
+
 /** Kleinstes Flächenbudget (Mio. Pixel), bei dem `kolossal` noch angeboten wird (Ultra = 14; Lite = 3,7 sperrt). */
 export const KOLOSSAL_MIN_BUDGET_MIO = 14;
 /** Größte Canvasfläche von iOS-Safari (4096 × 4096 = 16 777 216 Pixel). */
@@ -59,7 +64,7 @@ export function pruefeKolossal({ ios = false, flaechenBudgetMio = null } = {}) {
   if (ios) {
     return {
       status: 'gesperrt',
-      grund: `Auf iPhone und iPad gesperrt: Die Karte hat ${(KOLOSSAL_PIXEL / 1_000_000).toFixed(1)} Mio. Pixel, Safari erlaubt höchstens ${(IOS_CANVAS_MAX_PIXEL / 1_000_000).toFixed(1)} Mio. je Fläche. Die Anzeige bliebe leer.`,
+      grund: `Auf iPhone und iPad gesperrt: Die Karte hat ${mio(KOLOSSAL_PIXEL)} Mio. Pixel, Safari erlaubt höchstens ${mio(IOS_CANVAS_MAX_PIXEL)} Mio. je Fläche. Die Anzeige bliebe leer.`,
     };
   }
   // Ohne Angabe (Messung fehlt) wird nichts gesperrt; `Number(null)` wäre 0 und würde fälschlich sperren.
@@ -67,13 +72,13 @@ export function pruefeKolossal({ ios = false, flaechenBudgetMio = null } = {}) {
   if (Number.isFinite(budget) && budget < KOLOSSAL_MIN_BUDGET_MIO) {
     return {
       status: 'gesperrt',
-      grund: `Mit Grafik „Lite“ gesperrt: Die Karte hat ${(KOLOSSAL_PIXEL / 1_000_000).toFixed(1)} Mio. Pixel, Lite rechnet mit höchstens ${String(budget).replace('.', ',')} Mio. Wähle „Ultra“ oder „Automatisch“, wenn dein Gerät es schafft.`,
+      grund: `Mit Grafik „Lite“ gesperrt: Die Karte hat ${mio(KOLOSSAL_PIXEL)} Mio. Pixel, Lite rechnet mit höchstens ${String(budget).replace('.', ',')} Mio. Wähle „Ultra“ oder „Automatisch“, wenn dein Gerät es schafft.`,
     };
   }
   if (Number.isFinite(budget) && budget * 1_000_000 < KOLOSSAL_PIXEL) {
     return {
       status: 'warnung',
-      grund: `Kolossal ist sehr groß (${(KOLOSSAL_PIXEL / 1_000_000).toFixed(1)} Mio. Pixel): braucht viel Arbeitsspeicher, baut langsam auf und kann auf schwächeren Geräten ruckeln oder abstürzen.`,
+      grund: `Kolossal ist sehr groß (${mio(KOLOSSAL_PIXEL)} Mio. Pixel): braucht viel Arbeitsspeicher, baut langsam auf und kann auf schwächeren Geräten ruckeln oder abstürzen.`,
     };
   }
   return { status: 'frei', grund: '' };

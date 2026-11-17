@@ -5,7 +5,7 @@
  * Zustandswahl am echten Renderer (kein Zustands-Hash, keine Spiellogik). Mit `PA_SHOTS=<Ordner>`
  * werden Bilder abgelegt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const FORMATE = [
   { name: 'quer', viewport: { width: 1280, height: 720 } },

@@ -5,7 +5,7 @@
  * drei Klassen und keine Archetyp-Auswahl. Geprüft wird, dass jede Option ihre
  * wirksamen Werte nennt — und dass die Zahl mit `combatProfile()` übereinstimmt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** Öffnet das Menü und wartet auf die Klassen-Auswahl. */
 async function oeffneAuswahl(page) {

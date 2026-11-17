@@ -19,7 +19,7 @@
  * Ein frischer Browserkontext hat keinen gespeicherten Stand — das ist der
  * Erstkontakt, nicht der wiederkehrende Spieler.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** Öffnet die Startseite und wartet auf die laufende Anwendung. */
 async function oeffneStartseite(page) {

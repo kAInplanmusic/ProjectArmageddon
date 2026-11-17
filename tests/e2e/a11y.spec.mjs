@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import AxeBuilder from '@axe-core/playwright';
 import { oeffneMenue, oeffneLobby, starteHud } from './helfer/ux-zustand.mjs';
 

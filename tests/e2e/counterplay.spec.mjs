@@ -4,7 +4,7 @@
  * Die Unit-Tests prüfen die Ableitung. Hier wird geprüft, dass die Anzeige sie
  * zeigt — und dass sie NICHTS behauptet, was die Zahlen nicht hergeben.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 test.describe('Counterplay-Anzeige', () => {
   /*

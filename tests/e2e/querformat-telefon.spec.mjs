@@ -7,7 +7,7 @@
  * Touch-Laufknöpfe, Touch-Aktionen, Kopfzeile, Waffenleiste, FEUER, Wählrad und Kraftanzeige schneiden sich nicht,
  * und jeder sichtbare Knopf der Kopfzeile (auch im offenen Einstellungs-Dropdown) liegt oben (`elementFromPoint`).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const schneidet = (a, b) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
