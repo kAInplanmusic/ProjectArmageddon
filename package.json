@@ -67,6 +67,7 @@
     "balance:kisten": "node scripts/kisten-zaehlung.mjs",
     "balance:tiere": "node scripts/tiere-verteilung.mjs",
     "balance:bot": "node scripts/bot-partien.mjs",
+    "balance:biome": "node scripts/biom-wirkung.mjs",
     "server": "node scripts/server.mjs",
     "release:paket": "node scripts/release/paket.mjs",
     "release:smoke": "node scripts/release/smoke.mjs",

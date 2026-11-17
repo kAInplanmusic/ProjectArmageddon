@@ -1,0 +1,1503 @@
+{
+  "stand": {
+    "datum": "2026-11-17",
+    "seeds": [
+      20261111,
+      20269030,
+      20276949,
+      20284868
+    ],
+    "kit": 4,
+    "karte": {
+      "format": "24:9",
+      "groesse": "gross"
+    }
+  },
+  "zusammenfassung": {
+    "biome": 20,
+    "seeds": 4,
+    "formUnterscheidbar": 1,
+    "stoffeUnterscheidbar": 20,
+    "verlaufUnterscheidbar": 20,
+    "verlaufWieKlassischBeiAllenSeeds": [],
+    "verschiedeneVerlaeufeJeSeed": [
+      3,
+      15,
+      8,
+      14
+    ],
+    "groessteGruppeJeSeed": [
+      18,
+      7,
+      13,
+      7
+    ],
+    "nieEigenerVerlauf": [
+      "kristallhoehle",
+      "dschungel",
+      "fabrik",
+      "schlackeschmiede",
+      "tiefsee",
+      "dimensionsriss",
+      "kristallwald"
+    ]
+  },
+  "jeSeed": [
+    {
+      "seed": 20261111,
+      "verschiedeneVerlaeufe": 3,
+      "groessteGruppe": 18,
+      "gruppen": [
+        [
+          "klassisch",
+          "eiswueste"
+        ],
+        [
+          "vulkan",
+          "kristallhoehle",
+          "dschungel",
+          "duenen",
+          "schrott",
+          "schwebinseln",
+          "riff",
+          "pilzwald",
+          "kosmos",
+          "surreal",
+          "fabrik",
+          "burg",
+          "schlackeschmiede",
+          "kristallarchipel",
+          "tempelstadt",
+          "tiefsee",
+          "dimensionsriss",
+          "kristallwald"
+        ],
+        [
+          "planet"
+        ]
+      ]
+    },
+    {
+      "seed": 20269030,
+      "verschiedeneVerlaeufe": 15,
+      "groessteGruppe": 7,
+      "gruppen": [
+        [
+          "klassisch"
+        ],
+        [
+          "vulkan"
+        ],
+        [
+          "kristallhoehle",
+          "dschungel",
+          "fabrik",
+          "schlackeschmiede",
+          "tiefsee",
+          "dimensionsriss",
+          "kristallwald"
+        ],
+        [
+          "eiswueste"
+        ],
+        [
+          "duenen"
+        ],
+        [
+          "schrott"
+        ],
+        [
+          "schwebinseln"
+        ],
+        [
+          "riff"
+        ],
+        [
+          "pilzwald"
+        ],
+        [
+          "kosmos"
+        ],
+        [
+          "surreal"
+        ],
+        [
+          "burg"
+        ],
+        [
+          "planet"
+        ],
+        [
+          "kristallarchipel"
+        ],
+        [
+          "tempelstadt"
+        ]
+      ]
+    },
+    {
+      "seed": 20276949,
+      "verschiedeneVerlaeufe": 8,
+      "groessteGruppe": 13,
+      "gruppen": [
+        [
+          "klassisch"
+        ],
+        [
+          "vulkan",
+          "kristallarchipel"
+        ],
+        [
+          "kristallhoehle",
+          "dschungel",
+          "schrott",
+          "schwebinseln",
+          "kosmos",
+          "surreal",
+          "fabrik",
+          "burg",
+          "schlackeschmiede",
+          "tempelstadt",
+          "tiefsee",
+          "dimensionsriss",
+          "kristallwald"
+        ],
+        [
+          "eiswueste"
+        ],
+        [
+          "duenen"
+        ],
+        [
+          "riff"
+        ],
+        [
+          "pilzwald"
+        ],
+        [
+          "planet"
+        ]
+      ]
+    },
+    {
+      "seed": 20284868,
+      "verschiedeneVerlaeufe": 14,
+      "groessteGruppe": 7,
+      "gruppen": [
+        [
+          "klassisch"
+        ],
+        [
+          "vulkan"
+        ],
+        [
+          "kristallhoehle",
+          "dschungel",
+          "fabrik",
+          "schlackeschmiede",
+          "tiefsee",
+          "dimensionsriss",
+          "kristallwald"
+        ],
+        [
+          "eiswueste"
+        ],
+        [
+          "duenen"
+        ],
+        [
+          "schrott"
+        ],
+        [
+          "schwebinseln"
+        ],
+        [
+          "riff",
+          "kosmos"
+        ],
+        [
+          "pilzwald"
+        ],
+        [
+          "surreal"
+        ],
+        [
+          "burg"
+        ],
+        [
+          "planet"
+        ],
+        [
+          "kristallarchipel"
+        ],
+        [
+          "tempelstadt"
+        ]
+      ]
+    }
+  ],
+  "zeilen": [
+    {
+      "biom": "klassisch",
+      "formAnders": 0,
+      "stoffeAnders": 0,
+      "verlaufAnders": 0,
+      "top": "schnee 55 %, fels 41 %, eis 3 %",
+      "eigenerVerlauf": 3
+    },
+    {
+      "biom": "vulkan",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "asche 56 %, basalt 37 %, magmaadern 6 %",
+      "eigenerVerlauf": 2
+    },
+    {
+      "biom": "kristallhoehle",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "kristallfelsen 93 %, leuchtkristall 6 %, grundgestein 1 %",
+      "eigenerVerlauf": 0
+    },
+    {
+      "biom": "dschungel",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "moos 55 %, humus 38 %, lehmige_erde 6 %",
+      "eigenerVerlauf": 0
+    },
+    {
+      "biom": "eiswueste",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 3,
+      "top": "schnee 57 %, gletschereis 39 %, gefrorene_wurzeln 4 %",
+      "eigenerVerlauf": 3
+    },
+    {
+      "biom": "duenen",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "feinsand 61 %, sandstein 34 %, keramik 4 %",
+      "eigenerVerlauf": 3
+    },
+    {
+      "biom": "schrott",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "korrosion 55 %, rostmetall 37 %, metall 7 %",
+      "eigenerVerlauf": 2
+    },
+    {
+      "biom": "schwebinseln",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "moos 55 %, wolkenstein 37 %, kristall 7 %",
+      "eigenerVerlauf": 2
+    },
+    {
+      "biom": "riff",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "feinsand 55 %, koralle 37 %, seegras 6 %",
+      "eigenerVerlauf": 2
+    },
+    {
+      "biom": "pilzwald",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "pilz 56 %, pilzbruecke 38 %, saeureablagerungen 5 %",
+      "eigenerVerlauf": 3
+    },
+    {
+      "biom": "kosmos",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "regolith_staub 56 %, meteoritenfels 37 %, nickel_eisen 5 %",
+      "eigenerVerlauf": 1
+    },
+    {
+      "biom": "surreal",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "traumgestein 91 %, gehaertetes_glas 8 %, grundgestein 1 %",
+      "eigenerVerlauf": 2
+    },
+    {
+      "biom": "fabrik",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "poroeser_beton 57 %, stahlbeton 37 %, rostmetall 3 %",
+      "eigenerVerlauf": 0
+    },
+    {
+      "biom": "burg",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "mutterboden 55 %, mauerwerk 38 %, magiekristall 5 %",
+      "eigenerVerlauf": 2
+    },
+    {
+      "biom": "planet",
+      "formAnders": 4,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "schnee 51 %, gletschereis 40 %, firnschnee 4 %",
+      "eigenerVerlauf": 4
+    },
+    {
+      "biom": "schlackeschmiede",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "schlacke 92 %, rostmetall 5 %, grundgestein 1 %",
+      "eigenerVerlauf": 0
+    },
+    {
+      "biom": "kristallarchipel",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "firnschnee 55 %, klareiskristall 35 %, klareis 5 %",
+      "eigenerVerlauf": 2
+    },
+    {
+      "biom": "tempelstadt",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "humus 55 %, tempelstein 38 %, alienharz 5 %",
+      "eigenerVerlauf": 2
+    },
+    {
+      "biom": "tiefsee",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "tiefseeschlamm 56 %, tiefseebasalt 39 %, leuchtalgen 4 %",
+      "eigenerVerlauf": 0
+    },
+    {
+      "biom": "dimensionsriss",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "instabiler_boden 55 %, phasen_fels 37 %, zeitkristall 6 %",
+      "eigenerVerlauf": 0
+    },
+    {
+      "biom": "kristallwald",
+      "formAnders": 0,
+      "stoffeAnders": 4,
+      "verlaufAnders": 4,
+      "top": "moos 55 %, versteinertes_holz 37 %, kristalladern 6 %",
+      "eigenerVerlauf": 0
+    }
+  ],
+  "ergebnis": {
+    "klassisch": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "schnee 55 %",
+            "fels 41 %",
+            "eis 3 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": true,
+          "verlaufWieKlassisch": true,
+          "verlauf": "16/16/8/55/0/9507"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "fels 95 %",
+            "stalaktiten 4 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": true,
+          "verlaufWieKlassisch": true,
+          "verlauf": "64/64/2/18/0/39222"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "fels 94 %",
+            "stalaktiten 4 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": true,
+          "verlaufWieKlassisch": true,
+          "verlauf": "13/13/8/63/0/7430"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "sand 47 %",
+            "kalkstein 46 %",
+            "koralle 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": true,
+          "verlaufWieKlassisch": true,
+          "verlauf": "64/64/0/0/1/39669"
+        }
+      ]
+    },
+    "vulkan": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "asche 56 %",
+            "basalt 37 %",
+            "magmaadern 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "asche 48 %",
+            "basalt 43 %",
+            "magmaadern 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39346"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "basalt 47 %",
+            "asche 43 %",
+            "magmaadern 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7440"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "basalt 45 %",
+            "asche 45 %",
+            "magmaadern 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39531"
+        }
+      ]
+    },
+    "kristallhoehle": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "kristallfelsen 93 %",
+            "leuchtkristall 6 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "kristallfelsen 91 %",
+            "leuchtkristall 7 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39334"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "kristallfelsen 91 %",
+            "leuchtkristall 8 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "kristallfelsen 91 %",
+            "leuchtkristall 8 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39614"
+        }
+      ]
+    },
+    "dschungel": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "moos 55 %",
+            "humus 38 %",
+            "lehmige_erde 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "moos 47 %",
+            "humus 44 %",
+            "lehmige_erde 7 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39334"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "humus 48 %",
+            "moos 42 %",
+            "lehmige_erde 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "humus 47 %",
+            "moos 44 %",
+            "lehmige_erde 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39614"
+        }
+      ]
+    },
+    "eiswueste": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "schnee 57 %",
+            "gletschereis 39 %",
+            "gefrorene_wurzeln 4 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": true,
+          "verlauf": "16/16/8/55/0/9507"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "schnee 49 %",
+            "gletschereis 46 %",
+            "gefrorene_wurzeln 4 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39373"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "gletschereis 51 %",
+            "schnee 44 %",
+            "gefrorene_wurzeln 4 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/64/0/7490"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "gletschereis 48 %",
+            "schnee 46 %",
+            "gefrorene_wurzeln 4 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39645"
+        }
+      ]
+    },
+    "duenen": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "feinsand 61 %",
+            "sandstein 34 %",
+            "keramik 4 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "feinsand 53 %",
+            "sandstein 40 %",
+            "keramik 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39463"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "feinsand 48 %",
+            "sandstein 46 %",
+            "keramik 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7441"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "feinsand 51 %",
+            "sandstein 43 %",
+            "keramik 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39647"
+        }
+      ]
+    },
+    "schrott": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "korrosion 55 %",
+            "rostmetall 37 %",
+            "metall 7 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "korrosion 47 %",
+            "rostmetall 43 %",
+            "metall 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39326"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "rostmetall 48 %",
+            "korrosion 42 %",
+            "metall 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "rostmetall 46 %",
+            "korrosion 44 %",
+            "metall 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39546"
+        }
+      ]
+    },
+    "schwebinseln": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "moos 55 %",
+            "wolkenstein 37 %",
+            "kristall 7 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "moos 47 %",
+            "wolkenstein 43 %",
+            "kristall 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39256"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "wolkenstein 47 %",
+            "moos 42 %",
+            "kristall 9 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "wolkenstein 45 %",
+            "moos 44 %",
+            "kristall 9 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39599"
+        }
+      ]
+    },
+    "riff": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "feinsand 55 %",
+            "koralle 37 %",
+            "seegras 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "feinsand 47 %",
+            "koralle 44 %",
+            "seegras 7 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39286"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "koralle 49 %",
+            "feinsand 42 %",
+            "seegras 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7435"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "koralle 47 %",
+            "feinsand 44 %",
+            "seegras 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39613"
+        }
+      ]
+    },
+    "pilzwald": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "pilz 56 %",
+            "pilzbruecke 38 %",
+            "saeureablagerungen 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "pilz 48 %",
+            "pilzbruecke 45 %",
+            "saeureablagerungen 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39359"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "pilzbruecke 50 %",
+            "pilz 43 %",
+            "saeureablagerungen 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7433"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "pilzbruecke 47 %",
+            "pilz 45 %",
+            "saeureablagerungen 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39649"
+        }
+      ]
+    },
+    "kosmos": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "regolith_staub 56 %",
+            "meteoritenfels 37 %",
+            "nickel_eisen 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "regolith_staub 48 %",
+            "meteoritenfels 44 %",
+            "nickel_eisen 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39324"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "meteoritenfels 49 %",
+            "regolith_staub 43 %",
+            "nickel_eisen 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "meteoritenfels 47 %",
+            "regolith_staub 45 %",
+            "nickel_eisen 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39613"
+        }
+      ]
+    },
+    "surreal": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "traumgestein 91 %",
+            "gehaertetes_glas 8 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "traumgestein 89 %",
+            "gehaertetes_glas 9 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39240"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "traumgestein 88 %",
+            "gehaertetes_glas 10 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "traumgestein 88 %",
+            "gehaertetes_glas 10 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39559"
+        }
+      ]
+    },
+    "fabrik": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "poroeser_beton 57 %",
+            "stahlbeton 37 %",
+            "rostmetall 3 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "poroeser_beton 49 %",
+            "stahlbeton 44 %",
+            "rostmetall 4 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39334"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "stahlbeton 49 %",
+            "poroeser_beton 44 %",
+            "rostmetall 4 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "stahlbeton 47 %",
+            "poroeser_beton 46 %",
+            "rostmetall 4 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39614"
+        }
+      ]
+    },
+    "burg": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "mutterboden 55 %",
+            "mauerwerk 38 %",
+            "magiekristall 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "mutterboden 47 %",
+            "mauerwerk 45 %",
+            "magiekristall 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39304"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "mauerwerk 50 %",
+            "mutterboden 42 %",
+            "magiekristall 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "mauerwerk 48 %",
+            "mutterboden 44 %",
+            "magiekristall 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39587"
+        }
+      ]
+    },
+    "planet": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "schnee 51 %",
+            "gletschereis 40 %",
+            "firnschnee 4 %"
+          ],
+          "formWieKlassisch": false,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "26/26/8/60/0/14563"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "schrott 49 %",
+            "rostmetall 44 %",
+            "metall 5 %"
+          ],
+          "formWieKlassisch": false,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "61/61/6/54/0/37247"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "schnee 50 %",
+            "gletschereis 42 %",
+            "wasserader 4 %"
+          ],
+          "formWieKlassisch": false,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "27/27/7/63/0/15612"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "moos 49 %",
+            "lehmige_erde 42 %",
+            "wurzeln 6 %"
+          ],
+          "formWieKlassisch": false,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "62/62/1/29/0/38052"
+        }
+      ]
+    },
+    "schlackeschmiede": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "schlacke 92 %",
+            "rostmetall 5 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "schlacke 91 %",
+            "rostmetall 6 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39334"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "schlacke 91 %",
+            "rostmetall 6 %",
+            "metallschienen 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "schlacke 91 %",
+            "rostmetall 6 %",
+            "grundgestein 1 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39614"
+        }
+      ]
+    },
+    "kristallarchipel": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "firnschnee 55 %",
+            "klareiskristall 35 %",
+            "klareis 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "firnschnee 47 %",
+            "klareiskristall 41 %",
+            "klareis 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39345"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "klareiskristall 47 %",
+            "firnschnee 42 %",
+            "magnetgestein 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7440"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "klareiskristall 44 %",
+            "firnschnee 44 %",
+            "klareis 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39618"
+        }
+      ]
+    },
+    "tempelstadt": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "humus 55 %",
+            "tempelstein 38 %",
+            "alienharz 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "humus 47 %",
+            "tempelstein 46 %",
+            "alienharz 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39342"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "tempelstein 50 %",
+            "humus 42 %",
+            "alienharz 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "tempelstein 48 %",
+            "humus 44 %",
+            "alienharz 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39602"
+        }
+      ]
+    },
+    "tiefsee": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "tiefseeschlamm 56 %",
+            "tiefseebasalt 39 %",
+            "leuchtalgen 4 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "tiefseeschlamm 48 %",
+            "tiefseebasalt 46 %",
+            "leuchtalgen 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39334"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "tiefseebasalt 51 %",
+            "tiefseeschlamm 43 %",
+            "leuchtalgen 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "tiefseebasalt 48 %",
+            "tiefseeschlamm 45 %",
+            "leuchtalgen 5 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39614"
+        }
+      ]
+    },
+    "dimensionsriss": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "instabiler_boden 55 %",
+            "phasen_fels 37 %",
+            "zeitkristall 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "instabiler_boden 47 %",
+            "phasen_fels 44 %",
+            "zeitkristall 7 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39334"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "phasen_fels 49 %",
+            "instabiler_boden 42 %",
+            "zeitkristall 7 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "phasen_fels 47 %",
+            "instabiler_boden 44 %",
+            "zeitkristall 8 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39614"
+        }
+      ]
+    },
+    "kristallwald": {
+      "seeds": [
+        {
+          "seed": 20261111,
+          "top": [
+            "moos 55 %",
+            "versteinertes_holz 37 %",
+            "kristalladern 6 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "16/16/8/55/0/9506"
+        },
+        {
+          "seed": 20269030,
+          "top": [
+            "moos 48 %",
+            "versteinertes_holz 44 %",
+            "kristalladern 7 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/2/18/0/39334"
+        },
+        {
+          "seed": 20276949,
+          "top": [
+            "versteinertes_holz 49 %",
+            "moos 43 %",
+            "kristalladern 7 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "13/13/8/63/0/7428"
+        },
+        {
+          "seed": 20284868,
+          "top": [
+            "versteinertes_holz 46 %",
+            "moos 45 %",
+            "kristalladern 7 %"
+          ],
+          "formWieKlassisch": true,
+          "stoffeWieKlassisch": false,
+          "verlaufWieKlassisch": false,
+          "verlauf": "64/64/0/0/1/39614"
+        }
+      ]
+    }
+  }
+}
