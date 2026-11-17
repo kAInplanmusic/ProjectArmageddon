@@ -31,8 +31,11 @@ test('Klassisch (ohne Figuren): die Figurenkarte bleibt verborgen', async ({ pag
 test('Fraktionsfelder folgen der Teamzahl, Standard ist Zufällig / Automatisch', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#cfg-fraktion-0')).toHaveValue('');
-  await expect(page.locator('#cfg-fraktion-1')).toHaveCount(1);
-  await expect(page.locator('#cfg-fraktion-2')).toHaveCount(0);
+  // Fraktion je Spielerplatz (LIEBLING-1): Felder = Teams × Figuren je Team.
+  const plaetze = Number(await page.locator('#cfg-teams').inputValue()) * Number(await page.locator('#cfg-players').inputValue());
+  await expect(page.locator('[id^="cfg-fraktion-"]')).toHaveCount(plaetze);
+  await expect(page.locator(`#cfg-fraktion-${plaetze - 1}`)).toHaveCount(1);
+  await expect(page.locator(`#cfg-fraktion-${plaetze}`)).toHaveCount(0);
   const werte = await page.locator('#cfg-fraktion-0 option').evaluateAll(o => o.map(x => x.value));
   expect(werte.length).toBe(11);
   expect(werte.slice(0, 2)).toEqual(['', 'klassisch']);
