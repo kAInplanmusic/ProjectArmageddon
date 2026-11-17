@@ -2,29 +2,12 @@
  * Vertrag des Speichers der Nutzerdatenbank (scripts/betrieb/web/speicher.mjs): Der D1-Speicher verhält sich wie der
  * Arbeitsspeicher-Speicher der Tests, einschließlich der atomaren Bedingungen (`neu` nur bei neuem Schlüssel,
  * `ersetze` nur bei passender Version). Die D1-Bindung wird hier von einer echten SQLite-Datenbank (`node:sqlite`)
- * bedient, die dieselbe Schnittstelle (`prepare().bind().first()/run()`, `meta.changes`) anbietet.
+ * bedient (`tests/helfer/fake-d1.mjs`).
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DatabaseSync } from 'node:sqlite';
 import { SpeicherImSpeicher, D1Speicher, erzeugeD1Speicher } from '../scripts/betrieb/web/speicher.mjs';
-
-/** Minimale D1-Hülle über node:sqlite (gleiche Aufrufform wie die Cloudflare-Bindung). */
-function fakeD1() {
-  const db = new DatabaseSync(':memory:');
-  return {
-    prepare(sql) {
-      const stmt = db.prepare(sql);
-      let args = [];
-      const h = {
-        bind(...a) { args = a; return h; },
-        async first() { return stmt.get(...args) ?? null; },
-        async run() { const r = stmt.run(...args); return { meta: { changes: Number(r.changes) } }; },
-      };
-      return h;
-    },
-  };
-}
+import { fakeD1 } from './helfer/fake-d1.mjs';
 
 const faelle = {
   'Arbeitsspeicher': async () => new SpeicherImSpeicher(),

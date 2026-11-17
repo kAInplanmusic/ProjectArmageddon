@@ -26,7 +26,8 @@ Kosten: Cloudflare im Gratis-Tarif 0 EUR (Pages, Workers, D1) – Grenzen des Ta
 | Hashes (scrypt, PBKDF2) | `scripts/betrieb/web/hash.mjs`, Werkzeug `scripts/betrieb/web/geheimnis-hash.mjs` |
 | Spieltoken, Statistik-Signatur (beide Seiten, EINE Implementierung) | `src/server/webAnbindung.js` |
 | Spielkonten (Spiegel der Web-Konten, Rangliste) | `src/server/konto.js` (`externPruefer`), `kontoSpeicher.js`, `bestenliste.js` |
-| Einstieg des Hosters | **noch nicht gebaut** (siehe „Einstieg auf Cloudflare“): ruft `behandle()` für `/api/web/*` und `notAusAuftrag()` für den Hintergrundauftrag |
+| Einstieg (Cloudflare Pages Function) | `functions/api/web/[[path]].mjs` → `scripts/betrieb/web/cloudflare-einstieg.mjs` (Verdrahtung: Secrets aus `env`, D1-Bindung `DB`, Hintergrundauftrag per `waitUntil`); `public/_routes.json` lässt nur `/api/web/*` die Function aufrufen |
+| Installer als Text | `scripts/betrieb/web/installer-text.mjs`, ERZEUGT mit `npm run web:installer` aus `server-erstinstallation.sh` (ein Test hält beide gleich) |
 | Client | `src/client/webStart.js`, `webAnmeldung.js`, `webApi.js` (nur im Web-Build, plus `pa-web.json`) |
 | Titellied | `src/client/assets/music/titellied.mp3`, Manifest-Eintrag `"titellied": true`, Logik `musikListe.js` / `musik.js` |
 | Hash im Browser erzeugen | `public/passwort-hash.html` |
@@ -110,13 +111,30 @@ Neue Secrets wirken erst nach einem neuen Deploy.
 
 Das GitHub-Verfahren `server-hochfahren.yml` (docs/betrieb.md) bleibt als Alternative zum Starten erhalten.
 
-## Einstieg auf Cloudflare (noch zu bauen)
+## Einstieg auf Cloudflare
 
-Der Kern ist hosterunabhängig (`gateway-kern.mjs`, `nutzer.mjs`, `speicher.mjs`). Der Einstieg muss nur:
+Gebaut und mit einer SQLite-Hülle für D1 getestet (`tests/cloudflare-einstieg.test.js`), **nicht auf Cloudflare ausgeführt**. Einstellungen im Cloudflare-Dashboard (Workers & Pages, Projekt aus dem GitHub-Repository, Branch `main`):
 
-1. `/api/web/*` an `behandle(request, { env, speicher: await erzeugeD1Speicher(env.DB), notAusStarten })` übergeben (`env` = Secrets, `notAusStarten` stößt `notAusAuftrag` mit dem Kopf `x-pa-auftrag` an, z. B. per `ctx.waitUntil`).
-2. `scripts/betrieb/server-erstinstallation.sh` als Text einbinden und als `installer` mitgeben (kein Dateizugriff im Worker; `ladeInstaller()` liest sonst vom Dateisystem).
-3. `nodejs_compat` einschalten (scrypt, HMAC) und die Antwort ohne `x-nf-*`-Kopf auskommen lassen (Adresse: `cf-connecting-ip`).
+| Einstellung | Wert |
+| --- | --- |
+| Build-Befehl | `npm ci && PA_WEB_BUILD=1 npm run build` |
+| Ausgabeordner | `dist` (enthält `_headers` und `_routes.json` aus `public/`) |
+| Node-Version | Umgebungsvariable `NODE_VERSION` = `22` |
+| Kompatibilitäts-Kennzeichen | `nodejs_compat` (Settings, Functions; für `node:crypto`, `Buffer`) |
+| D1-Datenbank | anlegen (z. B. Name `pa-nutzer`), als Bindung **`DB`** an das Projekt hängen; die Tabelle legt der Code selbst an |
+| Secrets | Tabelle „Umgebungsvariablen“ oben |
+
+Es gibt bewusst **keine `wrangler.toml`**: Mit einer solchen Datei gälte sie als alleinige Quelle für die Bindungen, und die D1-ID, die nur der Auftraggeber kennt, müsste im Repo stehen.
+
+Bekannte Stolpersteine (im Code berücksichtigt):
+
+- `fetch` wird als Hülle übergeben; ein gespeichertes `globalThis.fetch` wirft in Workers „Illegal invocation“.
+- Kein Dateisystem: Der Installer kommt als Text (`installer-text.mjs`).
+- Die Adresse für die Sperre kommt aus `cf-connecting-ip`.
+
+**Rechenzeit prüfen, bevor der Dienst öffentlich wird:** Anmeldung und Registrierung rechnen scrypt (`N=16384`, Geheimnisse `N=65536`). Nach meinem Kenntnisstand begrenzt der kostenlose Tarif die Rechenzeit je Aufruf auf wenige Millisekunden; scrypt braucht deutlich mehr. Geht das nicht, sind zwei Wege offen: der bezahlte Workers-Tarif (Preis, Entscheidung und Besitzer legt der Auftraggeber fest, AGENTS.md §5/§7) oder ein kleineres `N` (schwächerer Hash, nur mit ausdrücklicher Entscheidung). Erst ein echter Aufruf zeigt es.
+
+**Not-aus** läuft als eigener Aufruf an `/api/web/not-aus-auftrag` (signierter, 60 Sekunden gültiger Auftrag), den die Antwort-Function mit `waitUntil` anstößt. Ob Cloudflare einen solchen Aufruf über mehrere Minuten (Abbild, Prüfung, Löschen) am Leben hält, ist nicht belegt; ein Not-aus-Versuch auf Cloudflare gehört zur ersten Abnahme. Bleibt er hängen, löscht `server-hochfahren.yml` (GitHub) bzw. die Idle-Bremse auf dem Knoten.
 
 ## Aktualisieren
 
@@ -134,9 +152,9 @@ Neuer Code: nach dem Push baut Cloudflare Pages die Seite selbst. Der Spielserve
 
 ## Ungeprüft (nicht in dieser Umgebung nachweisbar)
 
-- Der echte Deploy auf Cloudflare (Pages, Function, D1-Bindung, Hintergrundauftrag) wurde nicht ausgeführt.
+- Der echte Deploy auf Cloudflare (Pages, Function, D1-Bindung, Hintergrundauftrag, Rechenzeit von scrypt, Dauer des Not-aus-Aufrufs) wurde nicht ausgeführt.
 - **D1 gegen die echte Datenbank:** getestet ist `D1Speicher` gegen SQLite über dieselbe Aufrufform (`prepare().bind().first()/run()`, `meta.changes`); das Verhalten der Cloudflare-Bindung selbst ist nicht erprobt.
-- Läuft `scrypt` (`node:crypto`) im Worker? Cloudflare Workers brauchen dafür das Kennzeichen `nodejs_compat`; nicht erprobt. Fällt es aus, bleibt der Kern lauffähig auf Node-Hosting, nur der Einstieg ändert sich.
+- Läuft `scrypt` (`node:crypto`) im Worker und reicht die Rechenzeit des Tarifs? Siehe „Einstieg auf Cloudflare“; nicht erprobt.
 - DNS und Zertifikat für www bei Cloudflare: nicht erprobt.
 - Spieltoken-Prüfung und Statistik-Meldung auf einem echten Hetzner-Knoten (Datei unter `/run`, Rechte, Meldung durch das Netz): nicht erprobt; Unit-getestet sind Token, Signatur, Zuordnung zum lokalen Konto und das Bauen der Meldung.
 - Die Hörbarkeit des Titelliedes (Schleife, Überblendung) und das Aussehen der Leiste: nur automatisch geprüft, nicht von Menschen gehört oder gesehen.
