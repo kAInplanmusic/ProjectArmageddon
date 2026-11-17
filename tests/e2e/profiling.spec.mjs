@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { bildStatistik } from '../../src/client/messung/statistik.js';
 
 /**

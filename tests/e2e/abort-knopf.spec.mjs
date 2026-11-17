@@ -22,7 +22,7 @@
  * Seit UI-3 ist die Rückfrage ein eigenes Overlay (`#bestaetigung`) statt
  * `window.confirm` — der native Dialog blockierte den Hauptfaden.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /**
  * Wartet auf die Rückfrage und antwortet.

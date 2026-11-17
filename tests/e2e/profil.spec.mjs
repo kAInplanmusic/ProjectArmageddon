@@ -1,9 +1,4 @@
-import { test, expect } from '@playwright/test';
-
-// Der Home-Bildschirm (A6) liegt vor dem Menü; diese Spezifikation beginnt am Menü bzw. im Match.
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => sessionStorage.setItem('pa.home.v1', '1'));
-});
+import { test, expect } from './helfer/test-basis.mjs';
 
 /**
  * Spielerprofil im Browser.

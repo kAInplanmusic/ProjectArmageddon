@@ -29,7 +29,7 @@
  * **0 Einträge** — der Selektor heißt `#roster` (mit `.roster-item` je Eintrag).
  * Der Fehlschlag sah nach einem kaputten Match aus, war aber ein falscher Test.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** Startet ein lokales Match mit der gegebenen Matchart. */
 async function starteMit(page, teams, einheiten) {

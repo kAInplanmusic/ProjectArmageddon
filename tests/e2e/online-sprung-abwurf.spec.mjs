@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { freierPort } from './helfer/freier-port.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';

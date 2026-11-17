@@ -6,7 +6,7 @@
  * Formate: 1280x720, 800x400, Touch 844x390. Seeds: 20260921, 80, 5, 123.
  * Mit `PA_SHOTS=<Ordner>` werden Bilder abgelegt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const FORMATE = [
   { name: 'd1280', viewport: { width: 1280, height: 720 } },

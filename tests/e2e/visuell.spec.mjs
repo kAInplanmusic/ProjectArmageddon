@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { FORMATE, oeffneMenue, oeffneLobby, starteHud } from './helfer/ux-zustand.mjs';

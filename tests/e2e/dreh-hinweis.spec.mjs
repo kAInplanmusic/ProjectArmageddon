@@ -5,7 +5,7 @@
  * (zugänglich als `role="alert"`/`aria-live`), das Spiel darunter ist nicht bedienbar (Tippen trifft den Hinweis,
  * `#app` ist `inert`, Tasten starten nichts), und nach dem Drehen ins Querformat verschwindet er und das Spiel läuft.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 for (const [breite, hoehe] of [[390, 844], [412, 915]]) {
   test.describe(`Telefon hochkant ${breite}x${hoehe}`, () => {

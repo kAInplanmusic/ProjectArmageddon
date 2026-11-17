@@ -7,7 +7,7 @@
  * Geprüft am echten Spiel: die Position ändert sich, der Gehzyklus des Renderers läuft (Phase und Rolle `walk`
  * bzw. Prozedur-Fallback ohne Blatt), Zielen verändert nur den Winkel, Laden schießt erst beim Loslassen.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 async function oeffne(page) {
   const fehler = [];

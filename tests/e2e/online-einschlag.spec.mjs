@@ -16,7 +16,7 @@
  * Das Biom ist fest `klassisch`: Ohne diese Wahl zieht der Seed seit den Sonderbiomen oft ein anderes Gelände,
  * und der Schuss träfe nicht mehr den See. Die Messwerte werden vorab mit der Engine nachgerechnet (Abweichung = klarer Fehler, kein Rätselraten).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { freierPort } from './helfer/freier-port.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';

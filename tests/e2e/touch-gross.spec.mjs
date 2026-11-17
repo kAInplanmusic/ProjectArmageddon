@@ -15,7 +15,7 @@
  *   - Daumenreichweite: Aktionen in der linken, Bewegung in der rechten unteren Ecke der Bühne;
  *   - nichts ragt aus dem Fenster, keine waagerechte Rollleiste.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** [Breite, Höhe, isMobile, Name] — Touch ist überall an. */
 const FORMATE = [

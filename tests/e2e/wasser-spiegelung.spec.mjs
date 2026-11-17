@@ -6,7 +6,7 @@
  * 90 Bilder; verglichen werden die Mediane der Rundenmittel. Bei sehr kleiner absoluter Bildzeit
  * (unter 0,3 ms Unterschied) gilt der Unterschied als Messrauschen.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 test.use({ viewport: { width: 1280, height: 720 } });
 

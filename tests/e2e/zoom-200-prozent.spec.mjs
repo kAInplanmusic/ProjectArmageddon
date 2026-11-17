@@ -23,7 +23,7 @@
  * Strukturprüfung; ein Zoom-Test über Baselines wäre dort eine zweite,
  * umgebungsabhängige Ampel.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 test.use({
   // 1440×900 bei 200 % Zoom = 720×450 CSS-Pixel bei DPR 2.

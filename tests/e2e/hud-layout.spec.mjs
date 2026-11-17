@@ -7,7 +7,7 @@
  * Gemessen wird über `window.__PA__.sichtbereich()` (gemessene DOM-Rechtecke,
  * keine Konstanten). Mit `PA_SHOTS=<Ordner>` werden Bilder abgelegt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const FORMATE = [
   { name: 'd1280', viewport: { width: 1280, height: 720 } },

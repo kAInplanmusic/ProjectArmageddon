@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { MatchController } from '../../src/engine/match.js';
 import { ReplayRecorder } from '../../src/engine/replay.js';
 

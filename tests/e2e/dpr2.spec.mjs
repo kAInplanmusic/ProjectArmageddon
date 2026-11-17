@@ -6,7 +6,7 @@
  * gibt keine Seitenfehler. Mit `PA_BILDER=1` entstehen kleine JPEGs `docs/bilder/dpr2-hud.jpg` und
  * `docs/bilder/dpr2-figuren.jpg` zur Sichtprüfung.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { mkdirSync } from 'node:fs';
 
 test.use({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 });

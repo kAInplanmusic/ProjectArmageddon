@@ -11,7 +11,7 @@
  * Färbung lief ohnehin auf der CPU, und der Rückweg über `getImageData` machte
  * ihn zwangsläufig langsamer als der einteilige CPU-Aufbau.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** Startet ein lokales Match mit festem Seed. */
 async function starteLokalesMatch(page, seed = '20260916') {

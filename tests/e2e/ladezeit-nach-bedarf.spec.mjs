@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /**
  * LADEZEIT (2026-11-09): Das Menü lädt keine Match-Bilder, das Match nur, was die Karte zeigt.

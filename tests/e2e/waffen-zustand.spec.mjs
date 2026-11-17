@@ -7,7 +7,7 @@
  *   - Minen vom Kartenaufbau liegen sofort (kein Fallen), eine neu gelegte Mine wird verfolgt.
  * Ob es GUT aussieht, belegt das nicht: Sichtprüfung bleibt (`PA_SHOTS=<Ordner>` legt Bilder ab).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 async function matchStarten(page, seed = '4') {
   const fehler = [];

@@ -6,7 +6,7 @@
  * liegt bei 1280x720 / 800x400 / Touch im vorgesehenen Bereich; die Hitbox
  * bleibt unverändert. Mit `PA_SHOTS=<Ordner>` werden Bilder abgelegt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const FORMATE = [
   { name: 'd1280', viewport: { width: 1280, height: 720 }, min: 70, max: 100 },

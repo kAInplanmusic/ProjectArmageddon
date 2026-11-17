@@ -6,7 +6,7 @@
  * 5 px, keine Sprünge von Bild zu Bild, keine bleibende Kameraabweichung, HUD-Bereich bleibt
  * stehen, Schießen bleibt möglich; bei „Bewegung reduzieren" kein Zittern.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 test.use({ viewport: { width: 1280, height: 720 } });
 

@@ -3,7 +3,7 @@
  * Prüft Spitze (kein Clipping nach dem Begrenzer), Ausklang, NaN, Dauer und die Trennung der
  * Kategorien über den spektralen Schwerpunkt — live, nicht nur gegen `docs/klang/auswertung.json`.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { mitKlangRenderer, SAMPLERATE } from '../helfer/klangRender.mjs';
 import { kennzahlen } from '../helfer/klangAnalyse.js';
 import { ALLE_PROFILE, KATEGORIE_PROFIL, STIMMEN_MAX } from '../../src/client/klangProfile.js';

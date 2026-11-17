@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /*
  * Touch (Handy, Querformat): Gehen (gehalten), Sprung links/rechts, Salto und Abwurf als Tasten; am Desktop (feiner Zeiger) unsichtbar.

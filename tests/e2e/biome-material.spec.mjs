@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /**
  * Sonderbiome und Stoffkarte im Spielerpfad: Auswahl im Menü, Start, spielbares Match,

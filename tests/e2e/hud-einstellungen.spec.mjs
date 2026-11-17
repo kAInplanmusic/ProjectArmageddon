@@ -7,7 +7,7 @@
  * Tastatur (Enter öffnet, Pfeile wandern, Esc gibt den Fokus zurück) ohne Spieleingaben (kein Schuss, kein
  * Zielen); Musik schalten; Aufgeben fragt nach (Nein = weiter, Ja = Spielende); Berührflächen ≥ 44 px.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 async function starte(page) {
   const fehler = [];

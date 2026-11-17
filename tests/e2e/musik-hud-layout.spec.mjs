@@ -6,7 +6,7 @@
  * Tooltip. In schmalen oder niedrigen Fenstern zeigt die Kachel nur Schalter
  * und Regler. `?musik=1` erzwingt die Wiedergabe, damit ein Titel erscheint.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const FORMATE = [
   { name: 'd1280', w: 1280, h: 720, touch: false, titel: true },

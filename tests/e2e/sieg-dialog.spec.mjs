@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /*
  * Sieg-Dialog (Redesign 2026-10-14): Siegerzeichen, Siegerzeile in der Teamfarbe, Kennzahlen, zwei Knöpfe —

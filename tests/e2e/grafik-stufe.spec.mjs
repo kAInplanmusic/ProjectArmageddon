@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /**
  * Grafikstufe im Menü: Auswahl Automatisch/Lite/Ultra, Speichern im Browser, Anzeige mit Grund,

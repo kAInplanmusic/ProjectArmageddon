@@ -10,7 +10,7 @@
  * Zahlenwert zeigt, wäre schlimmer als keine: Sie würde für eine geprüfte
  * Aussage gehalten.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /**
  * Öffnet den Hilfe-Bereich im Menü.

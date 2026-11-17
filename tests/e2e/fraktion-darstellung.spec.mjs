@@ -6,7 +6,7 @@
  * Fraktion unterscheidet sich vom Bild ohne); die Spielwerte bleiben gleich.
  * Mit `PA_SHOTS=<Ordner>` werden Bilder dort abgelegt.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 async function starte(page, fraktionen) {
   const fehler = [];

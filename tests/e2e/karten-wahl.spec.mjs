@@ -9,7 +9,7 @@
  *
  * NICHT geprüft: Aussehen und echte Berührbedienung auf einem Gerät (Sichtabnahme offen), ein kolossal-Match im Browser (33 Mio. px).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 const oeffne = async (page) => {
   await page.goto('/');

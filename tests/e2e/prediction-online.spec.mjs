@@ -15,7 +15,7 @@
  * verzögert die Antwort künstlich. Ohne diese Verzögerung wäre die Vorhersage
  * nach 1–2 ms schon wieder weg und der Test würde ein Wettrennen prüfen.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 import { freierPort } from './helfer/freier-port.mjs';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';

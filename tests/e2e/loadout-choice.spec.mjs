@@ -5,7 +5,7 @@
  * Klassen und KEINE Archetyp-Auswahl mehr. Geprüft wird, dass nur die drei
  * Klassen angeboten werden, aus den Configs stammen und den Start erreichen.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helfer/test-basis.mjs';
 
 /** Öffnet den Loadout-Bereich im Menü. */
 async function oeffneLoadouts(page) {
