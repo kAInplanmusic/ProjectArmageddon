@@ -65,10 +65,10 @@ async function oeffne(page) {
 
 /** Lokales Match starten, kurz zeichnen lassen, dann anhalten. */
 async function starteMatch(page, optionen, { warte = 450 } = {}) {
-  await page.evaluate((o) => {
+  await page.evaluate(async (o) => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch(o);
+    await api.startMatch(o);
   }, optionen);
   await expect(page.locator('#menu-overlay'), 'Menue blieb offen').toBeHidden();
   await page.evaluate(() => window.__PA__.setAutoLoop(true));
@@ -297,10 +297,10 @@ test.describe('Spielansicht', () => {
   test('Bildkulisse (gewaehlt)', async ({ page }) => {
     const fehler = fehlerSammeln(page);
     await oeffne(page);
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       const api = window.__PA__;
       api.setAutoLoop(false);
-      api.startMatch({
+      await api.startMatch({
         seed: 5, teams: 2, playersPerTeam: 2, preset: 'mountains',
         backdropKey: 'cosmos/black_hole',
       });
@@ -474,7 +474,7 @@ test.describe('Replay und Ende', () => {
     const status = await page.evaluate(async () => {
       const api = window.__PA__;
       api.setAutoLoop(false);
-      api.startMatch({ seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills' });
+      await api.startMatch({ seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills' });
       api.setAutoLoop(false);
 
       const match = api.game.match;

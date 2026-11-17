@@ -18,7 +18,7 @@ async function matchZuEndeSpielen(page, { seed = 4242 } = {}) {
   await page.evaluate(async ({ seed }) => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed, teams: 2, playersPerTeam: 1, preset: 'hills' });
+    await api.startMatch({ seed, teams: 2, playersPerTeam: 1, preset: 'hills' });
     api.setAutoLoop(false);
 
     // Ein paar Schüsse für die Schuss-/Trefferkennzahlen.

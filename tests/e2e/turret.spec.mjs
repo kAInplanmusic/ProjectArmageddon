@@ -18,10 +18,10 @@ async function starteMitGeschuetz(page, { preset = 'open', seed = 4242, spielerP
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
-  return page.evaluate(({ preset, seed, spielerProTeam }) => {
+  return page.evaluate(async ({ preset, seed, spielerProTeam }) => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed, teams: 2, playersPerTeam: spielerProTeam, preset });
+    await api.startMatch({ seed, teams: 2, playersPerTeam: spielerProTeam, preset });
     api.setAutoLoop(false);
 
     const match = api.game.match;
@@ -191,10 +191,10 @@ test('Zwei Schüsse in einem Zug sind auch über die Anzeige nicht möglich', as
    */
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'open' });
+    await api.startMatch({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'open' });
     api.setAutoLoop(false);
   });
 

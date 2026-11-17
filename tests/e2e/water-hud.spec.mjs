@@ -17,9 +17,9 @@ import { test, expect } from './helfer/test-basis.mjs';
 async function boot(page, { seed = 20260911 } = {}) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(options => {
+  await page.evaluate(async options => {
     window.__PA__.setAutoLoop(false);
-    window.__PA__.startMatch(options);
+    await window.__PA__.startMatch(options);
     window.__PA__.setAutoLoop(false);
     window.__PA__.advance(1);
   }, { seed, teams: 2, playersPerTeam: 1 });

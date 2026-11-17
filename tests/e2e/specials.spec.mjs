@@ -12,9 +12,9 @@ import { test, expect } from './helfer/test-basis.mjs';
 async function boot(page, { seed = 20260910 } = {}) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(options => {
+  await page.evaluate(async options => {
     window.__PA__.setAutoLoop(false);
-    window.__PA__.startMatch(options);
+    await window.__PA__.startMatch(options);
     window.__PA__.setAutoLoop(false);
   }, { seed, teams: 2, playersPerTeam: 1 });
   await expect(page.locator('#menu-overlay')).toBeHidden();
@@ -252,12 +252,12 @@ test('Determinismus bleibt mit Effekten erhalten', async ({ page }) => {
   // Effekte im Spiel sind. Der Zufall der Zufallswaffe darf daran nichts ändern.
   await boot(page, { seed: 777 });
 
-  const hashes = await page.evaluate(() => {
+  const hashes = await page.evaluate(async () => {
     const ergebnisse = [];
 
     for (let lauf = 0; lauf < 2; lauf++) {
       window.__PA__.setAutoLoop(false);
-      window.__PA__.startMatch({ seed: 777, teams: 2, playersPerTeam: 1 });
+      await window.__PA__.startMatch({ seed: 777, teams: 2, playersPerTeam: 1 });
       window.__PA__.setAutoLoop(false);
 
       const match = window.__PA__.getMatch();

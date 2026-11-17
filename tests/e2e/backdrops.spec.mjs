@@ -22,10 +22,10 @@ import { test, expect } from './helfer/test-basis.mjs';
 async function startMitKulisse(page, { seed = 4242, preset = 'islands', backdropKey = 'maritime/calm_day' } = {}) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(({ s, p, key }) => {
+  await page.evaluate(async ({ s, p, key }) => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed: s, teams: 2, playersPerTeam: 2, preset: p, backdropKey: key });
+    await api.startMatch({ seed: s, teams: 2, playersPerTeam: 2, preset: p, backdropKey: key });
     api.setAutoLoop(false);
   }, { s: seed, p: preset, key: backdropKey });
   await page.waitForFunction(
@@ -92,10 +92,10 @@ test('Gleicher Seed zeigt dieselbe Kulisse', async ({ page }) => {
 
   // Neues Match mit demselben Seed UND demselben Kulissenschlüssel: Ohne den
   // Schlüssel griffe die generative Kulisse und der Vergleich wäre wertlos.
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({
+    await api.startMatch({
       seed: 31337, teams: 2, playersPerTeam: 1, preset: 'islands',
       backdropKey: 'maritime/calm_day',
     });
@@ -176,10 +176,10 @@ test('Der Boden bekommt die Farbe der Kulisse', async ({ page }) => {
   const bodenfarbe = async (backdropKey) => {
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
-    await page.evaluate((key) => {
+    await page.evaluate(async (key) => {
       const api = window.__PA__;
       api.setAutoLoop(false);
-      api.startMatch({ seed: 5, teams: 2, playersPerTeam: 4, preset: 'mountains', backdropKey: key });
+      await api.startMatch({ seed: 5, teams: 2, playersPerTeam: 4, preset: 'mountains', backdropKey: key });
       api.setAutoLoop(false);
     }, backdropKey);
 
@@ -222,10 +222,10 @@ test('Eine gewählte Kulisse wird auch wirklich verwendet', async ({ page }) => 
   // Eine Kulisse wählen, die NICHT die Vorauswahl des Geländes ist: nur so ist
   // belegt, dass die Wahl die Ableitung schlägt.
   const gewaehlt = 'cosmos/black_hole';
-  await page.evaluate((key) => {
+  await page.evaluate(async (key) => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed: 5, teams: 2, playersPerTeam: 2, preset: 'hills', backdropKey: key });
+    await api.startMatch({ seed: 5, teams: 2, playersPerTeam: 2, preset: 'hills', backdropKey: key });
     api.setAutoLoop(false);
   }, gewaehlt);
 
@@ -290,10 +290,10 @@ test('Ohne Wahl ist die generative Kulisse aktiv', async ({ page }) => {
   // ein Bild nicht.
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills' });
+    await api.startMatch({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills' });
     api.setAutoLoop(false);
   });
 
@@ -345,7 +345,7 @@ test('Jede Stimmung ist wählbar, lädt und wird gezeichnet', async ({ page }) =
     const ergebnis = await page.evaluate(async (k) => {
       const api = window.__PA__;
       api.setAutoLoop(false);
-      api.startMatch({ seed: 11, teams: 2, playersPerTeam: 1, preset: 'hills', backdropKey: k });
+      await api.startMatch({ seed: 11, teams: 2, playersPerTeam: 1, preset: 'hills', backdropKey: k });
       api.setAutoLoop(false);
       const r = api.game.renderer;
       for (let i = 0; i < 300 && !(r.backdropKey === k && r.backdropReady); i++) {
@@ -367,10 +367,10 @@ test('Stimmungsbilder werden in Quer- und Quadratformat unverzerrt gezeichnet', 
   for (const [name, [b, h]] of Object.entries(formate)) {
     await page.setViewportSize({ width: b, height: h });
     for (const key of bilder) {
-      await page.evaluate(k => {
+      await page.evaluate(async k => {
         const api = window.__PA__;
         api.setAutoLoop(false);
-        api.startMatch({ seed: 3, teams: 2, playersPerTeam: 1, preset: 'hills', backdropKey: k });
+        await api.startMatch({ seed: 3, teams: 2, playersPerTeam: 1, preset: 'hills', backdropKey: k });
         api.setAutoLoop(false);
       }, key);
       await page.waitForFunction(

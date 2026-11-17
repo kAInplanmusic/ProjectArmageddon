@@ -69,10 +69,10 @@ export async function starteHud(page, optionen = {}) {
   const konfiguration = {
     seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', ...optionen,
   };
-  await page.evaluate((options) => {
+  await page.evaluate(async (options) => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch(options);
+    await api.startMatch(options);
     api.setAutoLoop(false);
     api.advance(2);
   }, konfiguration);

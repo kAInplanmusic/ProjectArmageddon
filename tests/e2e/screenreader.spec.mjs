@@ -31,9 +31,9 @@ const INTERAKTIVE_ROLLEN = new Set([
 async function matchStarten(page, { seed = 20260911 } = {}) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(optionen => {
+  await page.evaluate(async optionen => {
     window.__PA__.setAutoLoop(false);
-    window.__PA__.startMatch(optionen);
+    await window.__PA__.startMatch(optionen);
     window.__PA__.setAutoLoop(false);
     window.__PA__.advance(1);
   }, { seed, teams: 2, playersPerTeam: 1, preset: 'hills' });
