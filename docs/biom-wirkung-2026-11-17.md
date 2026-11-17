@@ -43,6 +43,6 @@ Der Vergleich nur gegen `klassisch` (Spalte 4) täuscht: Fast alle weichen von k
 ## Lesart
 
 - Gemessen: Für einen Bot macht bei einem Drittel der Biome die Wahl keinen Unterschied zu anderen Biomen; die Stoffe unterscheiden sich, die Wirkung im Duell nicht.
-- Hypothese (ungeprüft): Die sieben Biome der festen Gruppe haben Oberflächenstoffe mit gleicher Härte und ohne Feuer/Lava, sodass Krater und Treffer gleich ausfallen. Prüfbar über die Stoffhärten in `src/shared/config/stoffe.js`.
+- Hypothese „gleiche Härte“ geprüft und **widerlegt**: In der festen Gruppe stehen weiche Deckstoffe (dschungel: moos, humus) neben harten und sehr harten (fabrik: Beton, Stahlbeton). Warum diese sieben im Bot-Duell gleich verlaufen, ist offen; nächster Prüfschritt: Ereignisse zweier Gruppenmitglieder Zug für Zug vergleichen und die erste Abweichung zu einem Nicht-Mitglied suchen.
 - Ein Bot nutzt wenige Waffen und zielt direkt; Menschen nutzen mehr Waffen und Gelände. Die Zahlen sind deshalb eine Untergrenze der Wirkung, kein Spielerurteil (Spieltest QV-4).
 - Folge für QV-6 (eine Regel je Biom): mit diesen sieben anfangen.
