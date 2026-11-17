@@ -55,6 +55,15 @@ export function findeFlaechen(bitmap, width, height) {
   const flaeche = new Int32Array(width * height).fill(-1);
   const groessen = [];
   let naechste = 0;
+  /*
+   * QV-7 (gemessen): Diese Füllung war mit 32 % der größte Einzelposten des Matchstarts. Der Grund war
+   * nicht der Algorithmus, sondern ein Array-Literal samt Destrukturierung je Nachbar und Pixel. Jetzt:
+   * ein einziger Stapel als Int32Array (höchstens einmal je Pixel eingetragen) und die vier Nachbarn
+   * ausgeschrieben. Ergebnis unverändert — Nummer und Größe hängen nur von der Scan-Reihenfolge der
+   * Startpixel ab, nicht von der Reihenfolge innerhalb einer Fläche (Test: tests/erreichbarkeit-flaechen.test.js).
+   */
+  const stapel = new Int32Array(width * height);
+  const letzteZeile = height - 1;
 
   for (let start = 0; start < bitmap.length; start += 1) {
     if (!bitmap[start] || flaeche[start] !== -1) continue;
@@ -62,23 +71,31 @@ export function findeFlaechen(bitmap, width, height) {
     const nummer = naechste;
     naechste += 1;
     let groesse = 0;
-    const stapel = [start];
+    let oben = 0;
+    stapel[oben++] = start;
     flaeche[start] = nummer;
 
-    while (stapel.length > 0) {
-      const p = stapel.pop();
+    while (oben > 0) {
+      const p = stapel[--oben];
       groesse += 1;
       const x = p % width;
       const y = (p - x) / width;
 
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        const nx = x + dx;
-        const ny = y + dy;
-        if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
-        const q = ny * width + nx;
-        if (!bitmap[q] || flaeche[q] !== -1) continue;
-        flaeche[q] = nummer;
-        stapel.push(q);
+      if (x + 1 < width) {
+        const q = p + 1;
+        if (bitmap[q] && flaeche[q] === -1) { flaeche[q] = nummer; stapel[oben++] = q; }
+      }
+      if (x > 0) {
+        const q = p - 1;
+        if (bitmap[q] && flaeche[q] === -1) { flaeche[q] = nummer; stapel[oben++] = q; }
+      }
+      if (y < letzteZeile) {
+        const q = p + width;
+        if (bitmap[q] && flaeche[q] === -1) { flaeche[q] = nummer; stapel[oben++] = q; }
+      }
+      if (y > 0) {
+        const q = p - width;
+        if (bitmap[q] && flaeche[q] === -1) { flaeche[q] = nummer; stapel[oben++] = q; }
       }
     }
     groessen.push(groesse);
