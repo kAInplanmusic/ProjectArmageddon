@@ -261,10 +261,10 @@ export function bewerteFairness(kampfwerte) {
  * Liefert die Wahrscheinlichkeit, eine bestimmte Waffe zu erhalten.
  *
  * @param {number} aktuellerZug - Aktueller Zug im Match
- * @param {number} gespielteSpiele - Anzahl gespielte Spiele
+ * @param {number} _gespielteSpiele - Anzahl gespielte Spiele (derzeit ungenutzt, reserviert für spätere Feinabstimmung)
  * @returns {number} Wahrscheinlichkeit (0-1)
  */
-export function wahrscheinlichkeitMindestausstattung(aktuellerZug, gespielteSpiele = 0) {
+export function wahrscheinlichkeitMindestausstattung(aktuellerZug, _gespielteSpiele = 0) {
   // Die 3-Züge-Garantie: Spätestens Zug 3 gibt es nutzbare Versorgung
   if (aktuellerZug >= 3) return 1.0;
   // Sanfte Regelung: erhöhte Chance in frühen Zügen
