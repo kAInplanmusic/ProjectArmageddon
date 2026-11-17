@@ -79,4 +79,23 @@ test.describe('Home-Bildschirm', () => {
     await expect(page.locator('#menu-overlay')).toBeHidden();
     await expect(page.locator('#hud')).toBeVisible();
   });
+
+  test('Das Logo des Home-Bildschirms wird geladen und hat Größe', async ({ page }) => {
+    await wartePastSplash(page);
+    const logo = page.locator('#home-screen .menu-logo');
+    const stil = await logo.evaluate(el => {
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return { bild: cs.backgroundImage, w: r.width, h: r.height };
+    });
+    expect(stil.bild).toContain('logo.webp'); // früher: 'none', leerer Block
+    expect(stil.w).toBeGreaterThan(40);
+    expect(stil.h).toBeGreaterThan(40);
+  });
+
+  test('Die Nebenaktion „Überrasch mich“ ist als Zweitknopf formatiert', async ({ page }) => {
+    await wartePastSplash(page);
+    const fs = await page.locator('#home-ueberrasch').evaluate(el => getComputedStyle(el).fontSize);
+    expect(fs).toBe('20px'); // früher wirkte die Regel wegen eines Tippfehlers im Selektor nicht
+  });
 });

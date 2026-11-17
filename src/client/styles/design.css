@@ -1438,14 +1438,19 @@ select option { background: #14181d; color: var(--ink); }
 #home-screen .home-card::after { bottom: 10px; right: 10px; border-left: 0; border-top: 0; border-bottom-right-radius: 8px; }
 
 .home-marke { display: grid; gap: 12px; justify-items: center; text-align: center; }
-.home-marke .menu-logo { width: min(100%, 200px); aspect-ratio: 660 / 860; }
+.home-marke .menu-logo {
+  width: min(100%, 200px);
+  aspect-ratio: 660 / 860;
+  background: url('/logo.webp') center / contain no-repeat;
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.6));
+}
 .home-marke h1 { margin: 0; font-size: 36px; letter-spacing: 0.12em; text-shadow: 0 0 18px rgba(124, 252, 0, 0.35); }
 .home-marke h1 .accent { color: var(--lime); }
 .home-marke .subtitle { margin: 0; font-size: var(--fs-s); color: var(--muted); line-height: 1.6; max-width: 380px; }
 
 .home-aktionen { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%; }
 .home-aktionen .pa-btn { font-size: 26px; letter-spacing: 0.06em; padding: 14px 28px; min-width: 180px; }
-.home-aktiones .secondary { font-size: 20px; padding: 10px 20px; }
+.home-aktionen .secondary { font-size: 20px; padding: 10px 20px; }
 
 .home-hinweis { margin: 6px 0 0; font-size: var(--fs-xs); color: var(--muted); text-align: center; }
 
