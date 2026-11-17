@@ -25,7 +25,6 @@ import { CharacterSystem } from './systems/characterSystem.js';
 import { MaelstromSystem } from './systems/maelstromSystem.js';
 import { LootSystem } from './systems/lootSystem.js';
 import { PlayerInventory } from './inventory.js';
-import { WAFFEN_HISTORIE, aabStatus } from './aab.js';
 import {
   StatusStore,
   buildEffect,
