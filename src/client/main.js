@@ -178,8 +178,8 @@ const STOFF_TEXTUR_URLEN = {
   // Biom-Materialien, dann die Basisstoffe; bei gleichem Namen gewinnt die alte Datei nur für Basisstoffe (das Foto `moos.jpg` verdeckte sonst das gemalte `moos.webp`, Stilbruch).
   ...STOFF_TEXTUR_NEU,
   ...Object.fromEntries(
-    Object.entries(import.meta.glob('./assets/stoff-texturen/*.webp', { query: '?url', import: 'default', eager: true }))
-      .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.jpg$/, ''), url])
+    Object.entries(import.meta.glob('./assets/stoff-texturen/*.{webp,jpg}', { query: '?url', import: 'default', eager: true }))
+      .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.(webp|jpg)$/, ''), url])
       .filter(([name]) => BASIS_TEXTUREN.includes(name) || !(name in STOFF_TEXTUR_NEU)),
   ),
 };

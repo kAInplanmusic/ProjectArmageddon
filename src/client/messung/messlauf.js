@@ -260,7 +260,8 @@ export async function messeSzene(doc, seitenText, szene, plan) {
 
     // Match-Aufbau: Karte (Generator), Gelände, Grading — der synchrone Teil von `startMatch`.
     const t0 = jetzt();
-    const r = pa.startMatch({
+    // `startMatch` ist seit dem Code-Splitting asynchron (Match-Code per import()); `await` gilt für beide Fälle.
+    const r = await pa.startMatch({
       teams: 2, playersPerTeam: szene.spielerProTeam, preset: 'hills', kartentyp: 'autonom', seed: MESS_SEED,
       backdropKey: 'automatisch', biom: szene.biom ?? 'klassisch', mapSize: szene.groesse, mapFormat: szene.format,
     });
