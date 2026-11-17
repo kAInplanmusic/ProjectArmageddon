@@ -1,0 +1,55 @@
+# Räumt Branches auf, deren Inhalt bereits vollständig in main steckt.
+# Sicherheitsnetz: Gelöscht wird nur, was laut Compare-API 0 Commits vor main liegt
+# (also nichts, was nicht schon in main ist). Standard ist ein Probelauf (dry_run).
+name: Branches aufräumen
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Probelauf: nur anzeigen, nichts löschen'
+        type: boolean
+        default: true
+  # Gemergte Pull Requests räumen ihren Quell-Branch selbst weg (nur Branches im selben Repo).
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  liste:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Branches aus .github/branch-loeschliste.txt prüfen und löschen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          set -u
+          while IFS= read -r b; do
+            [ -z "$b" ] && continue
+            case "$b" in main|master) echo "SKIP  $b (geschützt)"; continue;; esac
+            enc=$(printf '%s' "$b" | sed 's#/#%2F#g')
+            ahead=$(gh api "repos/${GITHUB_REPOSITORY}/compare/main...${enc}" --jq .ahead_by 2>/dev/null || echo "fehlt")
+            if [ "$ahead" = "fehlt" ]; then echo "SKIP  $b (existiert nicht)"; continue; fi
+            if [ "$ahead" != "0" ]; then echo "SKIP  $b ($ahead Commits nicht in main)"; continue; fi
+            if [ "$DRY" = "true" ]; then echo "DRY   $b würde gelöscht"; else
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${b}" && echo "DEL   $b"
+            fi
+          done < .github/branch-loeschliste.txt
+
+  gemergt:
+    if: >-
+      github.event_name == 'pull_request' && github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref != 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Quell-Branch des gemergten PR löschen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ github.event.pull_request.head.ref }}
+        run: gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${REF}"
