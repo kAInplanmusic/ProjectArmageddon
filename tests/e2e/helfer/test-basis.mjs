@@ -10,13 +10,33 @@
  */
 import { test as basis, expect } from '@playwright/test';
 
+const home = () => {
+  try { sessionStorage.setItem('pa.home.v1', '1'); } catch { /* kein Speicher: Home bleibt sichtbar */ }
+};
+
 export const test = basis.extend({
   context: async ({ context }, use) => {
-    await context.addInitScript(() => {
-      try { sessionStorage.setItem('pa.home.v1', '1'); } catch { /* kein Speicher: Home bleibt sichtbar */ }
-    });
+    await context.addInitScript(home);
     await use(context);
   },
+  // Specs, die mit `browser.newContext()` / `browser.newPage()` eigene Kontexte anlegen (Mehrspieler, Viewports).
+  browser: [async ({ browser }, use) => {
+    const neuerKontext = browser.newContext.bind(browser);
+    const neueSeite = browser.newPage.bind(browser);
+    browser.newContext = async (...args) => {
+      const kontext = await neuerKontext(...args);
+      await kontext.addInitScript(home);
+      return kontext;
+    };
+    browser.newPage = async (...args) => {
+      const seite = await neueSeite(...args);
+      await seite.addInitScript(home);
+      return seite;
+    };
+    await use(browser);
+    browser.newContext = neuerKontext;
+    browser.newPage = neueSeite;
+  }, { scope: 'worker' }],
 });
 
 export { expect };
