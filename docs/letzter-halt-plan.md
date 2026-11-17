@@ -1,24 +1,22 @@
 # Plan: Der letzte Halt
 
-Dokumentiert die evidenzbasierte Implementierung des Gelände-weg-over-Schaden-Prinzips in ProjectArmageddon.
+Entwurf zur Umsetzung des Prinzips „Gelände vor Schaden“ in ProjectArmageddon. Die Gelände-These ist eine **Designhypothese, noch nicht durch Spieltests belegt**; belegt ist nur der Katalogbestand (Abschnitt 1).
 
-**Stand:** 2026-11-17 | **Ziel:** Test bewiesener Spielergebnis standardisieren
+**Stand:** 2026-11-17 | **Ziel:** Hypothese prüfbar machen (Spieltest steht aus)
 
 ---
 
-## 1. Evidenzgrundlage (Was wurde getestet?)
+## 1. Ausgangslage (Katalogbestand, live gemessen)
 
-**Behauptung des Tests:** "Spieler wählen den Weg über das Gelände nicht über Schaden."
+**Hypothese (ungeprüft):** „Spieler wählen den Weg über das Gelände, nicht über reinen Schaden.“
 
 **Bestand:**
 - 9 Fraktionen (xeno, rodentia, pirates, machina, undead, shinobi, beasts, pixel, datacult)
-- 9 Haupt-Sonderbiome (vulkan, kristallhoehle, dschungel, eiswueste, duenden, schrott, schwebinseln, riff, pilzwald)
+- 9 Haupt-Sonderbiome (vulkan, kristallhoehle, dschungel, eiswueste, duenen, schrott, schwebinseln, riff, pilzwald)
 - Jedes Biome hat zugehörige Stoffe und Terrainmatrizen
-- 17 definierte Bodenmaterialien mit rutschigkeit/rueckprall
+- 3 Terrain-Materialien (rutschigkeit/rueckprall) und 126 Stoffe (`scripts/letzter-halt-bestand.mjs`)
 
-**Testprotokoll:** Einzelner Prototyp mit zwei Teams und begrenztem Arsenal testete die Spielerpräferenz für Geländetransition vs. reinen Schaden. Ergebnis: Spieler nutzten Gelände als taktische Ressource.
-
-**Schlussfolgerung (evidenzbasiert):** Das Spiel hat ein intuitives Informationssignal, dass Geländeinteraktionen strategischere Optionen bieten als reiner Schaden.
+**Spieltest:** Liegt nicht vor. Eine frühere Fassung dieses Dokuments nannte ein Testergebnis ohne Beleg; es wurde entfernt. Ein belastbarer Befund braucht einen dokumentierten Test (Setup, Teilnehmerzahl, Messgröße).
 
 ---
 
@@ -53,7 +51,7 @@ Dokumentiert die evidenzbasierte Implementierung des Gelände-weg-over-Schaden-P
 | Fraktion | Biome | Vorteil | Nachteil |
 |----------|-------|---------|----------|
 | xeno | pilzwald | Brennbares Material → Säurereaktion +1 | Feuchtigkeit reduziert Rutschigkeit |
-| pirates | duenden | Sand + Fels → Deckglasur | Windveränderung |
+| pirates | duenen | Sand + Fels → Deckglasur | Windveränderung |
 | machina | schrott | Metallplatten → Präzision | Einsturz-Gefahr bei Kollision |
 | shinobi | schwebinseln | Klarer Blick → Präzision | Fallgefahr ohne Boden |
 | beasts | vulkan | Fels + Basalt → Beständigkeit | Eis in Schatten |
@@ -71,7 +69,7 @@ Dokumentiert die evidenzbasierte Implementierung des Gelände-weg-over-Schaden-P
 | pirates | kristallhoehle | Reflexion → Deckung | Verschattung |
 | machina | eiswueste | Rutschigkeit | Antirutsch-Profile |
 | undead | schrott | Metall → kein Brennen | Feuchte Waffen |
-| shinobi | duenden | Sand → Pixel | Versiegelung |
+| shinobi | duenen | Sand → Pixel | Versiegelung |
 | beasts | dschungel | Schwerer Boden | Muskulatur |
 | pixel | pilzwald | Brennbar | Kopierwiderstand |
 | datacult | riff | Unterwasser | Netz-Topologie |
@@ -79,7 +77,7 @@ Dokumentiert die evidenzbasierte Implementierung des Gelände-weg-over-Schaden-P
 ### 3.3 WICHTIGE FUNKTIONSBLENDEN
 
 **Pirates hat 2 Heim-Biome in FASSUNG_2:**
-- `duenden` (Haupt): Sand + Fels
+- `duenen` (Haupt): Sand + Fels
 - `riff` (Zusätzlich): Sand + Koralle + Fels
 
 **Rodentia hat KEIN Heim-Biome:**
@@ -259,9 +257,9 @@ Dann:
 
 ### 11.1 Quellcode-Integrität
 
-- BIOME_FASSUNG_2: 9 Biome, je Fraktion
+- SONDERBIOM_IDS: 9 Biome (`biome-neu.js`), Fraktionszuordnung je Biom
 - FACTION_IDS: 9 Fraktionen
-- STOFFE: 17 Materialien
+- STOFFE: 126 Stoffe (`src/shared/config/stoffe.js`)
 - TERRAIN_MATERIALS: 3 Basismaterialien
 
 ### 11.2 Datenbank-Mapping
@@ -271,7 +269,7 @@ Fraktion -> Heim-Biome (aus BIOME_FASSUNG_2)
 ============================================
 xeno      -> pilzwald
 rodentia  -> (KEIN BIOME)
-pirates   -> duenden  (riff ist zusätzlich)
+pirates   -> duenen  (riff ist zusätzlich)
 machina   -> schrott
 undead    -> dschungel
 shinobi   -> schwebinseln

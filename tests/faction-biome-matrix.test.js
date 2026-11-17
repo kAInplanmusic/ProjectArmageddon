@@ -38,7 +38,7 @@ test('Matrix: Rodentia hat kein Heim-Biome in FASSUNG_2', () => {
 test('Matrix: Pirates hat 2 Biome in FASSUNG_2', () => {
   const b = bestand();
   const pirateBiomes = b.biome.filter(bm => bm.fraktion === 'pirates');
-  assert.equal(pirateBiomes.length, 2, 'pirates hat 2 Biome in FASSUNG_2 (duenden + riff)');
+  assert.equal(pirateBiomes.length, 2, 'pirates hat 2 Biome in FASSUNG_2 (duenen + riff)');
 });
 
 test('Matrix: Vollständige Abdeckung aller Faction-Biome-Kombinationen', () => {

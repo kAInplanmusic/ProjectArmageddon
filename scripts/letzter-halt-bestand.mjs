@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 /**
- * Letzter Halt: Rekonstruktionsbestand ProjectArmageddon
+ * Letzter Halt: Bestandsmessung ProjectArmageddon
  *
- * Dieses Skript extrahiert den ISSTAND (ohne Gameplay-Daten) für die
- * Evaluierung des Umsetzungsplans "Der letzte Halt".
- *
- * Ziel: Reproduzierbare, maschinenlesbare Konsistenzprüfung.
+ * Liest den IST-Stand live aus den Projektkatalogen (keine Kopien im Skript,
+ * keine Partienmessung) und gibt ihn als JSON aus. Grundlage für die
+ * Konsistenzprüfung im Plan docs/letzter-halt-plan.md.
  *
  * @module letzter-halt-bestand
  */
@@ -15,104 +14,62 @@ import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const projRoot = join(__dirname, '..');
+import { FACTIONS } from '../src/shared/config/factions.js';
+import { NEUE_BIOME, SONDERBIOM_IDS } from '../src/shared/config/biome-neu.js';
+import { STOFFE } from '../src/shared/config/stoffe.js';
+import { TERRAIN_MATERIALS } from '../src/shared/config/terrain.js';
 
-const hashAllFiles = (paths) => {
-  const hasher = createHash('sha256');
-  for (const p of paths.sort()) {
-    const content = readFileSync(p, 'utf8');
-    hasher.update(p + ':');
-    hasher.update(content.slice(0, 1024));
-  }
-  return hasher.digest('hex');
-};
-
-// Extract BIOME_FASSUNG_2 from biome-neu.js
-const biomeContent = readFileSync(join(projRoot, 'src/shared/config/biome-neu.js'), 'utf8');
-if (!biomeContent.includes('BIOME_FASSUNG_2')) {
-  console.error('BIOME_FASSUNG_2 not found in biome-neu.js');
-  process.exit(1);
-}
-
-const factionsData = {
-  xeno: { id: 'xeno', name: 'Die Säurebrut', short: 'Xeno-Schwarm', motto: 'Was wir berühren, löst sich auf.', palette: ['#6b2d8f', '#c026d3', '#4ade80'], stoffe: ['pilz'] },
-  rodentia: { id: 'rodentia', name: 'Zahnrad-Garde', short: 'Rodentia', motto: 'Klein, zahlreich, unaufhaltsam.', palette: ['#b91c1c', '#d4d4d8', '#8b5a2b'], stoffe: ['holz', 'metall'] },
-  pirates: { id: 'pirates', name: 'Goldküsten-Korsaren', short: 'Korsaren', motto: 'Wer den Hafen hält, hält die See.', palette: ['#111111', '#d4af37', '#6b5b3e'], stoffe: ['sand'] },
-  machina: { id: 'machina', name: 'Stahl-Protokoll', short: 'Machina', motto: 'Der Befehl läuft. Der Befehl trifft.', palette: ['#1e293b', '#22d3ee', '#94a3b8'], stoffe: ['metall'] },
-  undead: { id: 'undead', name: 'Giftgrüne Legion', short: 'Legion', motto: 'Der Krieg endet nicht mit dem Tod.', palette: ['#14532d', '#4ade80', '#1c1917'], stoffe: ['erde', 'holz'] },
-  shinobi: { id: 'shinobi', name: 'Klingen des Windes', short: 'Shinobi', motto: 'Man hört uns erst, wenn es zu spät ist.', palette: ['#e5e5e5', '#0a0a0a', '#737373'], stoffe: ['kristall'] },
-  beasts: { id: 'beasts', name: 'Rudel der Urkräfte', short: 'Urkräfte', motto: 'Wir brauchen keine Waffen. Wir sind welche.', palette: ['#ea580c', '#facc15', '#78350f'], stoffe: ['eiserner_rock'] },
-  pixel: { id: 'pixel', name: 'Die Acht-Bit-Brut', short: 'Acht-Bit', motto: 'Aus jedem Fehler entsteht mehr von uns.', palette: ['#16a34a', '#f97316', '#7c3aed'], stoffe: ['pixel'] },
-  datacult: { id: 'datacult', name: 'Der Datenkult', short: 'Datenkult', motto: 'Alles ist Adresse. Alles ist erreichbar.', palette: ['#166534', '#22c55e', '#cbd5e1'], stoffe: ['daten'] },
-};
-
-const terrainMaterials = [
-  { id: 0, key: 'normal', label: 'Erde', rutschigkeit: 0, rueckprall: 0 },
-  { id: 1, key: 'ice', label: 'Eis', rutschigkeit: 1, rueckprall: 0 },
-  { id: 2, key: 'rubber', label: 'Gummi', rutschigkeit: 0, rueckprall: 0.6 },
+const projRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const QUELLDATEIEN = [
+  'src/shared/config/biome-neu.js',
+  'src/shared/config/factions.js',
+  'src/shared/config/stoffe.js',
+  'src/shared/config/terrain.js',
 ];
 
-const stoffe = [
-  { id: 0, key: 'normal', label: 'Erde', haerte: 'normal', radius: 1, tiefe: 1, bruechig: 0, brennbar: false, schmelzbar: false },
-  { id: 1, key: 'eis', label: 'Eis', haerte: 'normal', radius: 1, tiefe: 1, bruechig: 0, brennbar: false, schmelzbar: true },
-  { id: 2, key: 'fels', label: 'Fels', haerte: 'hart', radius: 1, tiefe: 1, bruechig: 0, brennbar: false, schmelzbar: true },
-  { id: 3, key: 'basalt', label: 'Basalt', haerte: 'sehr_hart', radius: 0.75, tiefe: 0.75, bruechig: 0, brennbar: false, schmelzbar: true },
-  { id: 4, key: 'holz', label: 'Holz', haerte: 'normal', radius: 1, tiefe: 1, bruechig: 1, brennbar: true, schmelzbar: true },
-  { id: 5, key: 'sand', label: 'Sand', haerte: 'normal', radius: 1, tiefe: 1, bruechig: 0, brennbar: false, schmelzbar: false },
-  { id: 6, key: 'schnee', label: 'Schnee', haerte: 'weich', radius: 1.15, tiefe: 1.2, bruechig: 0, brennbar: true, schmelzbar: true },
-  { id: 7, key: 'obsidian', label: 'Obsidian', haerte: 'sehr_hart', radius: 0.4, tiefe: 0.35, bruechig: 0, brennbar: false, schmelzbar: true },
-  { id: 8, key: 'kristall', label: 'Kristall', haerte: 'hart', radius: 0.7, tiefe: 0.5, bruechig: 0, brennbar: false, schmelzbar: true },
-  { id: 9, key: 'halde', label: 'Halde', haerte: 'normal', radius: 1, tiefe: 1, bruechig: 0, brennbar: true, schmelzbar: true },
-  { id: 10, key: 'halde_feucht', label: 'Feuchter Halde', haerte: 'normal', radius: 1, tiefe: 1, bruechig: 0, brennbar: false, schmelzbar: true },
-  { id: 11, key: 'asche', label: 'Asche', haerte: 'weich', radius: 1.1, tiefe: 1, bruechig: 0, brennbar: true, schmelzbar: true },
-  { id: 12, key: 'metallplatte', label: 'Metallplatte', haerte: 'sehr_hart', radius: 0.4, tiefe: 0.35, bruechig: 0, brennbar: false, schmelzbar: true },
-  { id: 13, key: 'koralle', label: 'Koralle', haerte: 'weich', radius: 1.1, tiefe: 1.05, bruechig: 0, brennbar: true, schmelzbar: true },
-  { id: 14, key: 'pilz', label: 'Pilz', haerte: 'weich', radius: 1.15, tiefe: 1.2, bruechig: 1, brennbar: true, schmelzbar: true },
-  { id: 15, key: 'rohestein', label: 'Rostein', haerte: 'normal', radius: 1, tiefe: 1, bruechig: 0, brennbar: false, schmelzbar: true },
-  { id: 16, key: 'rosterbeton', label: 'Rostener Beton', haerte: 'hart', radius: 0.75, tiefe: 0.5, bruechig: 0, brennbar: false, schmelzbar: true },
-];
-
-// BIOME_FASSUNG_2 aus der Source
-const biomeList = {
-  vulkan: { fraktion: 'beasts', stoffe: ['basalt', 'obsidian'], besonderheit: 'Eis, staub, Rutschen' },
-  kristallhoehle: { fraktion: 'pixel', stoffe: ['kristall', 'obsidian'], besonderheit: 'Reflexion, Splitter' },
-  dschungel: { fraktion: 'undead', stoffe: ['erde', 'holz', 'pilz'], besonderheit: 'Feucht, Brennbar' },
-  eiswueste: { fraktion: 'datacult', stoffe: ['eis', 'sand', 'kristall'], besonderheit: 'Rutschig, Einsturzgefahr' },
-  duenden: { fraktion: 'pirates', stoffe: ['sand', 'fels'], besonderheit: 'Wind, Sinken' },
-  schrott: { fraktion: 'machina', stoffe: ['rosterbeton', 'metallplatte'], besonderheit: 'Nah am Einsturz, Schutz' },
-  schwebinseln: { fraktion: 'shinobi', stoffe: ['erde', 'kristall', 'obsidian'], besonderheit: 'Luftströmung, Fallgefahr' },
-  riff: { fraktion: 'pirates', stoffe: ['sand', 'koralle', 'fels'], besonderheit: 'Unterwasser, Brennbar' },
-  pilzwald: { fraktion: 'xeno', stoffe: ['pilz', 'holz', 'erde'], besonderheit: 'Brennbar, Säurewasser' },
+/** SHA-256 über die vollständigen Quelldateien (feste Reihenfolge). */
+const quellHash = () => {
+  const h = createHash('sha256');
+  for (const p of [...QUELLDATEIEN].sort()) {
+    h.update(`${p}:`);
+    h.update(readFileSync(join(projRoot, p), 'utf8'));
+  }
+  return h.digest('hex');
 };
 
-// Build reverse lookup: faction -> biome (first match wins)
-// KNOWN ISSUES: rodentia hat kein Biome, pirates hat 2 Biome
-const fraktionZuBiome = {};
-for (const [biomeId, biome] of Object.entries(biomeList)) {
-  if (!fraktionZuBiome[biome.fraktion]) {
-    fraktionZuBiome[biome.fraktion] = { id: biomeId, ...biome };
-  }
-}
+/** Alle Stoffschlüssel, die ein Biom im Aufbau (deck/kern/adern) verwendet. */
+const stoffeVonBiom = (b) => {
+  const s = b.stoffe ?? {};
+  const keys = [...(s.deck ?? []).map(([k]) => k), s.kern, ...(s.adern ?? []).map(a => a.stoff)];
+  return [...new Set(keys.filter(Boolean))];
+};
 
-const biomeCount = Object.keys(biomeList).length;
-const factionCount = Object.keys(factionsData).length;
+const fraktionen = FACTIONS.map(({ id, name, short, motto, palette }) => ({ id, name, short, motto, palette }));
+const biome = SONDERBIOM_IDS.map(id => ({
+  id, label: NEUE_BIOME[id].label, fraktion: NEUE_BIOME[id].fraktion, stoffe: stoffeVonBiom(NEUE_BIOME[id]),
+}));
+const stoffe = STOFFE.map(({ id, key, label, haerte, radius, tiefe, bruechig, brennbar, schmelzbar }) => (
+  { id, key, label, haerte, radius, tiefe, bruechig, brennbar, schmelzbar }));
+const material = TERRAIN_MATERIALS.map(({ id, key, label, rutschigkeit, rueckprall }) => (
+  { id, key, label, rutschigkeit, rueckprall }));
+
+// Heim-Biom je Fraktion: erstes Biom (in Katalogreihenfolge) mit dieser Fraktion.
+const heim = {};
+for (const b of biome) if (!heim[b.fraktion]) heim[b.fraktion] = b;
 
 const matrix = [];
-for (const [frakId, _fraktionObj] of Object.entries(factionsData)) {
-  const bio = fraktionZuBiome[frakId];
-  // Wenn kein Biome gefunden, verwende 'keine' als Platzhalter
-  const homeBiomeId = bio?.id ?? 'keine';
-  const homeStoffe = bio?.stoffe ?? [];
-  matrix.push({ fraktion: frakId, biome: homeBiomeId, home: true, stoffe: homeStoffe });
-
-  // Alle anderen Biome als Gegen-Biome
-  for (const [bId, b] of Object.entries(biomeList)) {
-    if (bId !== homeBiomeId) {
-      matrix.push({ fraktion: frakId, biome: bId, home: false, stoffe: b.stoffe, gegen: homeBiomeId });
-    }
+for (const f of fraktionen) {
+  const home = heim[f.id];
+  const homeId = home?.id ?? 'keine';
+  matrix.push({ fraktion: f.id, biome: homeId, home: true, stoffe: home?.stoffe ?? [] });
+  for (const b of biome) {
+    if (b.id !== homeId) matrix.push({ fraktion: f.id, biome: b.id, home: false, stoffe: b.stoffe, gegen: homeId });
   }
 }
+
+const ohneHeim = fraktionen.filter(f => !heim[f.id]).map(f => f.id);
+const mehrfach = Object.entries(biome.reduce((m, b) => ({ ...m, [b.fraktion]: [...(m[b.fraktion] ?? []), b.id] }), {}))
+  .filter(([, ids]) => ids.length > 1).map(([f, ids]) => `${f} (${ids.join(', ')})`);
 
 const report = {
   schema: 1,
@@ -123,29 +80,25 @@ const report = {
     branch: process.env.GIT_BRANCH ?? 'HEAD',
   },
   quellen: {
-    biome: 'src/shared/config/biome-neu.js (BIOME_FASSUNG_2)',
+    biome: 'src/shared/config/biome-neu.js (NEUE_BIOME, SONDERBIOM_IDS)',
     factions: 'src/shared/config/factions.js (FACTIONS)',
-    stoffe: 'src/shared/config/zerstoerung.js (STOFFE)',
+    stoffe: 'src/shared/config/stoffe.js (STOFFE)',
     material: 'src/shared/config/terrain.js (TERRAIN_MATERIALS)',
   },
   zaehler: {
-    fraktionen: factionCount,
-    biome: biomeCount,
+    fraktionen: fraktionen.length,
+    biome: biome.length,
     stoffe: stoffe.length,
-    material: terrainMaterials.length,
+    material: material.length,
     matrix_eintraege: matrix.length,
-    beachte: 'rodentia hat kein Heim-Biome; pirates hat 2 Biome (duenden, riff)',
+    beachte: `ohne Heim-Biom: ${ohneHeim.join(', ') || '–'}; mehrere Biome: ${mehrfach.join('; ') || '–'}`,
   },
-  fraktionen: Object.values(factionsData),
-  biome: Object.entries(biomeList).map(([id, b]) => ({ id, ...b })),
+  fraktionen,
+  biome,
   stoffe,
-  material: terrainMaterials,
+  material,
   matrix,
-  quellHash: hashAllFiles([
-    join(projRoot, 'src/shared/config/biome-neu.js'),
-    join(projRoot, 'src/shared/config/factions.js'),
-    join(projRoot, 'src/shared/config/zerstoerung.js'),
-  ]),
+  quellHash: quellHash(),
 };
 
 console.log(JSON.stringify(report, null, 2));
