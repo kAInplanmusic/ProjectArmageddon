@@ -14,6 +14,7 @@ import { FOTOS, panorama, fotoFuerBiom, fotoFuerKarte, findeKulisse } from './pa
  * @module main
  */
 import { MALI_LEITUNGSMARKE, maskeZuMali } from '../shared/config/schaden.js';
+import { MENUE_KARTENTYP } from '../shared/config/menueStart.js';
 import { isTextEntry } from './dom.js';
 import { haerteAusTreffer } from './gefuehl.js';
 import { TEAM_COLORS } from '../shared/config/match-konstanten.js';
@@ -893,7 +894,7 @@ class Game {
      * für Wege, die keine autonome Karte bauen (Werkzeuge, Tests).
      */
     const preset = 'hills';
-    const kartentyp = 'autonom';
+    const kartentyp = MENUE_KARTENTYP;
     // Gewählte Kulisse (leer = automatisch aus dem Seed).
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
     // Biomwahl (leer = der Seed entscheidet; `klassisch` = Biom folgt der Karte; sonst ein Sonderbiom).

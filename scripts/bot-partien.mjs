@@ -20,6 +20,7 @@
  *                                [--teams=2] [--pro-team=2]
  */
 import { MatchController } from '../src/engine/match.js';
+import { MENUE_KARTENTYP } from '../src/shared/config/menueStart.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
 import { getTurnDurationForSize } from '../src/engine/systems/turnSystem.js';
 
@@ -81,15 +82,23 @@ function planeSchuss(match, aktiv, gegner, waffe) {
   return beste;
 }
 
-export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = FEHLER, waffen = WAFFEN, denkzeit = DENKZEIT, extra = {}, ereignis = null, beiZug = null } = {}) {
+/**
+ * Die Partie, die `spiele` austrägt, ohne sie zu spielen. Startet wie das Menü (`MENUE_KARTENTYP`, QV-1);
+ * `extra.kartentyp` (auch `null`) überschreibt das ausdrücklich, z. B. für alte Vergleichsläufe.
+ */
+export function neuesMatch(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, waffen = WAFFEN, extra = {} } = {}) {
   // Zugzeit hängt seit 2026-11-05 an der Kartenstufe, nicht an der Spielerzahl (hier: Vorgabe mittel).
   const zugSek = getTurnDurationForSize('mittel') / 1000;
-  const zufall = strom(seed ^ 0x5bd1e995);
-  const FEHLER = fehler;
-  const match = new MatchController({
-    seed, teams, playersPerTeam: proTeam, preset: 'hills', kit, waffen,
+  return new MatchController({
+    seed, teams, playersPerTeam: proTeam, preset: 'hills', kartentyp: MENUE_KARTENTYP, kit, waffen,
     turnDurationMs: zugSek * 1000, turnPauseTicks: 0, ...(ZUGREGELN ? { zugregeln: ZUGREGELN, bewegung: 2 } : {}), ...extra,
   });
+}
+
+export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = FEHLER, waffen = WAFFEN, denkzeit = DENKZEIT, extra = {}, ereignis = null, beiZug = null } = {}) {
+  const zufall = strom(seed ^ 0x5bd1e995);
+  const FEHLER = fehler;
+  const match = neuesMatch(seed, kit, { teams, proTeam, waffen, extra });
   // Messwerkzeuge (Tier-Verteilung): jede Ereignisliste (ein Schritt) geht durch `ereignis(liste, match)`; ohne Haken bleibt alles wie vorher.
   const ev = () => { const liste = match.consumeEvents(); if (ereignis && liste.length) ereignis(liste, match); return liste; };
   match.start();

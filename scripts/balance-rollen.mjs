@@ -255,6 +255,7 @@ export function messeSpiel(job) {
     karte: job.karte.id,
     biom: match.sonderbiom ?? 'klassisch',
     biomWahl: job.biom ?? null,
+    kartentyp: match.kartentyp ?? null, // QV-1: muss MENUE_KARTENTYP sein
     bot: job.bot,
     klassen: job.klassen,
     sieger: sieger === -1 ? null : sieger,
