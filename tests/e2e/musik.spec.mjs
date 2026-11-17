@@ -136,7 +136,8 @@ test.describe('Musik', () => {
     await expect.poll(async () => (await zustand(page)).gestartet).toBe(true);
     z = await zustand(page);
     expect(z.starts).toBe(1);
-    expect(['heathcliff', 'thief']).toContain(z.id);
+    // Das Titellied verdrängt im Menü die übrigen Stücke (musikListe.js, `titellied: true`).
+    expect(z.id).toBe('titellied');
     await expect(page.locator('#menu-overlay [data-musik-titel]')).toHaveText(`Läuft: ${z.titel}`);
     // Genau ein Audio-Element, nicht die ganze Bibliothek.
     expect(await page.evaluate(() => document.querySelectorAll('audio').length)).toBeLessThanOrEqual(2);
