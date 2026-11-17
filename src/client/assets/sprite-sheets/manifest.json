@@ -318,7 +318,13 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "identitaet": {
+    "gesperrteZellen": [
+     2
+    ],
+    "grund": "Zelle 2: Hintergrundreste (graue Fläche), Sichtprüfung 2026-11-17"
+   }
   },
   "datacult/10_quantum-qubit-knight": {
    "aktion": "datacult/10_quantum-qubit-knight__aktion.webp",
@@ -421,7 +427,13 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "identitaet": {
+    "gesperrteZellen": [
+     2
+    ],
+    "grund": "Zelle 2: Szene statt Figur mit grauem Hintergrund, Sichtprüfung 2026-11-17"
+   }
   },
   "datacult/21_hyper-link-hound": {
    "aktion": "datacult/21_hyper-link-hound__aktion.webp",
@@ -834,7 +846,13 @@
     6,
     7
    ],
-   "gehenOk": 8
+   "gehenOk": 8,
+   "identitaet": {
+    "gesperrteZellen": [
+     7
+    ],
+    "grund": "Zelle 7: Rauschfläche statt Figur, Sichtprüfung 2026-11-17"
+   }
   },
   "pirates/12_bombard-billy": {
    "aktion": "pirates/12_bombard-billy__aktion.webp",
