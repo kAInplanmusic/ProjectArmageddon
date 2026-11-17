@@ -30,7 +30,8 @@ function markiereHomeGesehen() {
 function verlasseHome() {
   const home = document.getElementById('home-screen');
   const menu = document.getElementById('menu-overlay');
-  if (!home || !home.hasAttribute('hidden')) return;
+  // Nur abbrechen, wenn es nichts zu verlassen gibt (kein Home oder schon zu).
+  if (!home || home.hasAttribute('hidden')) return;
   home.setAttribute('hidden', '');
   markiereHomeGesehen();
   if (menu) menu.removeAttribute('hidden');
