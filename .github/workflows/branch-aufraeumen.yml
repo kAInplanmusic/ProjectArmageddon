@@ -52,4 +52,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REF: ${{ github.event.pull_request.head.ref }}
-        run: gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${REF}"
+        run: |
+          # 422 = Branch ist schon weg (z. B. durch die GitHub-Einstellung "Branch nach Merge löschen"): kein Fehler.
+          if out=$(gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${REF}" 2>&1); then echo "DEL   ${REF}";
+          elif echo "$out" | grep -q "HTTP 422"; then echo "SKIP  ${REF} (existiert nicht mehr)";
+          else echo "$out"; exit 1; fi
