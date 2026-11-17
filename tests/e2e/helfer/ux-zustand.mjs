@@ -48,6 +48,8 @@ export async function oeffneMenue(page) {
   }));
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
+  // Das Intro (Ladebild) deckt das Menü kurz ab; ein Bild davor zeigt das Ladebild statt des Menüs.
+  await page.locator('#intro-splash').waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {});
   await page.evaluate(() => window.__PA__.setAutoLoop(false));
   // Webfonts müssen stehen, sonst verschiebt sich das Menü zwischen zwei Läufen.
   await page.evaluate(() => document.fonts.ready.then(() => true));

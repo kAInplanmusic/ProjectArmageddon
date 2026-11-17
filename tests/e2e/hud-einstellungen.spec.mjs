@@ -95,13 +95,13 @@ test('Tastatur: Enter öffnet, Pfeile wandern, Leertaste schaltet Musik ohne Sch
   await expect(page.locator('#hud-ton')).toBeFocused();
   await page.keyboard.press('ArrowDown');
   await expect(page.locator('#hud-abort')).toBeFocused();
-  // Seit KAMERA C6 steht die Gruppe „Kameraeffekte" hinter „Aufgeben": Ende ist ihr letzter Knopf.
+  // Seit KAMERA C6 steht die Gruppe „Kameraeffekte" hinter „Aufgeben": Ende ist ihr letzter Knopf (Zeitlupe).
   await page.keyboard.press('End');
-  await expect(page.locator('#hud-menue [data-kamera-effekt="ketten"]')).toBeFocused();
+  await expect(page.locator('#hud-menue [data-kamera-effekt="zeitlupe"]')).toBeFocused();
   await page.keyboard.press('Home');
   await expect(schalter).toBeFocused();
   await page.keyboard.press('ArrowUp');
-  await expect(page.locator('#hud-menue [data-kamera-effekt="ketten"]')).toBeFocused();
+  await expect(page.locator('#hud-menue [data-kamera-effekt="zeitlupe"]')).toBeFocused();
   await page.keyboard.press('Home');
 
   // Leertaste auf dem Musikschalter: schaltet die Musik, feuert nicht und zielt nicht.

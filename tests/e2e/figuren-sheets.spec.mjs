@@ -95,10 +95,20 @@ test('Sheets: Sprung zeigt Luft/Hocke, Treffer den Treffer-Frame, Tod die liegen
       if (z?.fig?.blatt?.treffer) { z.hitT = 0.01; }
       return p;
     };
-    await new Promise(res => setTimeout(res, 300));
-    const out = [];
     // Nur Figuren, die der Renderer in diesem Zeitraum posiert hat (hitT wurde gesetzt): auf Bauteilkarten liegen manche außerhalb des Kamerabilds.
-    for (const z of r.figurPosen.zustaende.values()) if (z.fig?.blatt?.treffer && z.hitT < 1) out.push(z.frame === z.fig.blatt.treffer);
+    // Der Treffer-Frame greift ab dem Bild NACH dem Setzen von hitT; auf langsamen CI-Rechnern dauert das länger als 300 ms.
+    // Deshalb bis zu 3 s warten, bis jede posierte Figur den Treffer-Frame zeigt (die Prüfung selbst bleibt: alle müssen ihn zeigen).
+    const lies = () => {
+      const out = [];
+      for (const z of r.figurPosen.zustaende.values()) if (z.fig?.blatt?.treffer && z.hitT < 1) out.push(z.frame === z.fig.blatt.treffer);
+      return out;
+    };
+    let out = [];
+    for (let i = 0; i < 30; i += 1) {
+      await new Promise(res => setTimeout(res, 100));
+      out = lies();
+      if (out.length > 0 && out.every(Boolean)) break;
+    }
     return out;
   });
   expect(treffer.length).toBeGreaterThan(0);
