@@ -179,7 +179,7 @@ const STOFF_TEXTUR_URLEN = {
   ...STOFF_TEXTUR_NEU,
   ...Object.fromEntries(
     Object.entries(import.meta.glob('./assets/stoff-texturen/*.webp', { query: '?url', import: 'default', eager: true }))
-      .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.jpg$/, ''), url])
+      .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.(webp|jpg)$/, ''), url]) // Endung .webp muss weg: sonst heißt die Textur "erde.webp" und wird nie angefragt
       .filter(([name]) => BASIS_TEXTUREN.includes(name) || !(name in STOFF_TEXTUR_NEU)),
   ),
 };
