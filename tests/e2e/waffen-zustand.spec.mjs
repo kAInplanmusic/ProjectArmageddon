@@ -69,7 +69,8 @@ test.describe('Waffen-Zustandsanzeigen', () => {
     const fehler = await matchStarten(page);
     const spieler = await page.evaluate(() => window.__PA__.getMatch().activePlayerId);
     const abfrage = () => page.evaluate(id => window.__PA__.waffenAnimation().zustand.schild[id] ?? null, spieler);
-    expect(await abfrage()).toBeNull();
+    // Ohne Schild: kein Eintrag oder einer mit Wert 0 (die Anzeige legt für jede Figur einen an).
+    expect((await abfrage())?.wert ?? 0).toBe(0);
     await page.evaluate(id => window.__PA__.getMatch().statuses.addShield(id, 40), spieler);
     await expect.poll(async () => (await abfrage())?.wert, { timeout: 5000 }).toBe(40);
     await ablegen(page, 'waffen-zustand-schild');

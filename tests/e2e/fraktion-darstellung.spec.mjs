@@ -1,7 +1,7 @@
 /**
- * E2E: Fraktionswahl je Team (reine Darstellung).
+ * E2E: Fraktionswahl je Platz (reine Darstellung).
  *
- * Geprüft: Die Felder gibt es und folgen der Teamzahl; die Wahl erreicht den
+ * Geprüft: Die Felder gibt es und folgen der Platzzahl (Platz i = Team i % Teams); die Wahl erreicht den
  * Renderer; die Figuren werden mit Sprites gezeichnet (ein Spielbild mit
  * Fraktion unterscheidet sich vom Bild ohne); die Spielwerte bleiben gleich.
  * Mit `PA_SHOTS=<Ordner>` werden Bilder dort abgelegt.
@@ -28,11 +28,12 @@ test('Klassisch (ohne Figuren): die Figurenkarte bleibt verborgen', async ({ pag
   await expect(page.locator('#hud-figur')).toBeHidden();
 });
 
-test('Fraktionsfelder folgen der Teamzahl, Standard ist Zufällig / Automatisch', async ({ page }) => {
+test('Fraktionsfelder folgen der Platzzahl (Teams × Figuren), Standard ist Zufällig / Automatisch', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#cfg-fraktion-0')).toHaveValue('');
-  await expect(page.locator('#cfg-fraktion-1')).toHaveCount(1);
-  await expect(page.locator('#cfg-fraktion-2')).toHaveCount(0);
+  // Vorgabe 2 Teams × 3 Figuren = 6 Plätze (Fraktionswahl je Platz seit LIEBLING-1).
+  await expect(page.locator('#cfg-fraktion-5')).toHaveCount(1);
+  await expect(page.locator('#cfg-fraktion-6')).toHaveCount(0);
   const werte = await page.locator('#cfg-fraktion-0 option').evaluateAll(o => o.map(x => x.value));
   expect(werte.length).toBe(11);
   expect(werte.slice(0, 2)).toEqual(['', 'klassisch']);

@@ -420,6 +420,8 @@ test('Menü reicht Kartenformat, Größenstufe und Hagel bis in die Partie durch
   await page.selectOption('#cfg-wetter', 'hagel');
   await page.fill('#cfg-seed', '4242');
   await page.click('#start-button');
+  // Der Matchstart lädt den Match-Code per import() nach: erst warten, bis das Match steht.
+  await page.waitForFunction(() => Boolean(window.__PA__.game.match));
   const werte = await page.evaluate(() => {
     const g = window.__PA__.game;
     return { breite: g.match.width, hoehe: g.match.height, zeit: g.match.turnDurationMs, wetter: g.renderer.stimmung.wetter };

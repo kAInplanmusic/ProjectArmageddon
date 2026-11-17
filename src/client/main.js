@@ -1458,8 +1458,8 @@ class Game {
     this.renderer.setzeWaffenFassung(this.match.waffen);
     // Darstellung: Fraktion je Team (nur Anzeige, wirkt nicht auf den Motor).
     // fraktionen ist jetzt je Platz (plaetze = teams * playersPerTeam).
-    // Für die Anzeige je Team nehmen wir die erste Figur jedes Teams.
-    const fraktionenJeTeam = fraktionen ? fraktionen.filter((_, i) => i % teams === 0).slice(0, teams) : null;
+    // Platz i gehört zu Team i % teams (Menü-Beschriftung): die erste Figur von Team t ist Platz t.
+    const fraktionenJeTeam = fraktionen ? fraktionen.slice(0, teams) : null;
     this.renderer.fraktionJeTeam = loeseFraktionen(fraktionenJeTeam, teams, this.match.seedManager.baseSeed);
     starteLadebild(document, this.renderer.fraktionJeTeam, ladeBereit); // Ladebild (A11)
 
