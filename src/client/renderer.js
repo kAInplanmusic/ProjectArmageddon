@@ -12,8 +12,6 @@ import { zeichneBiomobjekt } from './biomobjektBild.js';
 import { WATER_SCALE, TEAM_COLORS } from '../shared/config/match-konstanten.js';
 import { teamMarke } from './teamFarben.js';
 import { DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
-import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
-import { cookieStufe, COOKIE_HUNGER } from '../shared/config/cookie.js';
 import { TierBuehne } from './tierBuehne.js';
 import { holeTierPose, ladeTierPosenVor } from './tierBilder.js';
 import { prefersReducedMotion } from './dom.js';
@@ -61,9 +59,9 @@ import {
   GeschossLagen, geschossDarstellung, geschossWinkel, zeichneGruppenmarke,
 } from './waffenAnimation.js';
 import { getWaffe, normalisiereWaffen, WAFFEN_STANDARD } from '../shared/config/waffen-fassung.js';
-import { zeichneKistenInhalt } from './kistenSichtAnzeige.js';
 import { waffenRolle } from './waffenSicht.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
+import { zeichneKisten, zeichneWiederholung, zeichneCookie, zeichneGuenther, zeichneHeimdall, zeichneMaelstrom } from './rendererOverlays.js';
 import { baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js'; import { anzahlStoffTexturen } from './stoffTexturen.js';
 import {
   plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAufRutsch, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen, pflanzenWiegen,
@@ -93,8 +91,6 @@ import {
  * zweite Zahlenliste geführt — sonst zeigte die Anzeige irgendwann eine andere
  * Kiste als die, die dort liegt. Die Logik ist dort ohne Canvas prüfbar (A5/ENG-12).
  */
-import { kistenFarbe, kistenMarke } from './rendererLogik.js';
-import { KISTE_KANTE } from '../shared/config/kisten.js';
 
 /**
  * Kulissen-URLs kommen aus `kulissenUrls.js` (Vite-Glob).
@@ -1114,63 +1110,9 @@ export class Renderer {
     }
   }
 
+  /** Auszug nach `rendererOverlays.js` (QV-5). */
   #drawCrates(crates) {
-    for (const crate of crates) {
-      const color = kistenFarbe(crate.rarity);
-      const size = KISTE_KANTE;
-      this.ctx.save();
-      this.ctx.translate(crate.x, crate.y);
-      this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      this.ctx.fillRect(-size / 2 + 1, -size / 2 + 2, size, size);
-      this.ctx.fillStyle = '#2b3540';
-      this.ctx.fillRect(-size / 2, -size / 2, size, size);
-      this.ctx.strokeStyle = color;
-      this.ctx.lineWidth = 2;
-      this.ctx.strokeRect(-size / 2, -size / 2, size, size);
-      /*
-       * DIE ART DER KISTE SICHTBAR MACHEN (FUND behoben, docs/verkabelung.md §B1).
-       *
-       * Hier stand NUR die Seltenheitsfarbe. Die Art (`crateType`) war die ganze
-       * Zeit auf der Leitung und im Zustand, wurde aber nirgends gezeichnet —
-       * eine SPENGFALLE sah damit aus wie eine Waffenkiste. Für den Spieler ist
-       * das der Unterschied zwischen „holen" und „nicht anfassen".
-       *
-       * Die Marke ersetzt das X der alten Zeichnung, weil das X die einzige
-       * Aussage war, die über jeder Kiste stand. Gefülltes Quadrat = Waffe,
-       * Ring = Nachschub, leer = leer, Warndreieck = Falle.
-       */
-      this.ctx.strokeStyle = color;
-      this.ctx.globalAlpha = 0.85;
-      this.ctx.lineWidth = 2;
-      const halb = size / 2;
-      switch (kistenMarke(crate.crateType)) {
-        case 'gefuellt':
-          this.ctx.fillStyle = color;
-          this.ctx.fillRect(-halb + 3, -halb + 3, size - 6, size - 6);
-          break;
-        case 'ring':
-          this.ctx.beginPath();
-          this.ctx.arc(0, 0, halb - 3, 0, Math.PI * 2);
-          this.ctx.stroke();
-          break;
-        case 'streifen': for (const dx of [-3, 0, 3]) this.ctx.strokeRect(dx - 0.5, -halb + 3, 1, size - 6); break; // Patronen
-        case 'dreieck': {
-          // Warndreieck — die einzige Art, die man NICHT öffnen will.
-          this.ctx.beginPath();
-          this.ctx.moveTo(0, -halb + 2);
-          this.ctx.lineTo(halb - 2, halb - 2);
-          this.ctx.lineTo(-halb + 2, halb - 2);
-          this.ctx.closePath();
-          this.ctx.stroke();
-          break;
-        }
-        default:
-          // `leer` — die Kiste bleibt leer gezeichnet, das ist die Aussage.
-          break;
-      }
-      this.ctx.restore();
-      if (crate.inhalt) zeichneKistenInhalt(this.ctx, crate, this.waffenFassung); // Allsehendes Auge
-    }
+    zeichneKisten(this, crates);
   }
 
   /** Die Fraktion, deren Sprite eine Figur zeigt (`null` = klassische prozedurale Figur). */
@@ -1625,41 +1567,9 @@ export class Renderer {
     return this;
   }
 
-  /**
-   * Wiederholung des letzten Schusses (Zugpause): verblassende Spur, leuchtender Kopf,
-   * am Ende ein Einschlagring. Nur Anzeige; die Daten stammen aus `SchussAufnahme`.
-   */
+  /** Auszug nach `rendererOverlays.js` (QV-5). */
   #drawWiederholung(w) {
-    if (!w?.spur?.length) return;
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    for (let i = 1; i < w.spur.length; i += 1) {
-      const alter = i / w.spur.length;
-      ctx.strokeStyle = `rgba(76, 201, 240, ${0.12 + 0.6 * alter})`;
-      ctx.beginPath();
-      ctx.moveTo(w.spur[i - 1][0], w.spur[i - 1][1]);
-      ctx.lineTo(w.spur[i][0], w.spur[i][1]);
-      ctx.stroke();
-    }
-    const [kx, ky] = w.kopf;
-    const glut = ctx.createRadialGradient(kx, ky, 0, kx, ky, 12);
-    glut.addColorStop(0, '#ffffff');
-    glut.addColorStop(0.45, '#4cc9f0');
-    glut.addColorStop(1, 'rgba(76,201,240,0)');
-    ctx.fillStyle = glut;
-    ctx.beginPath();
-    ctx.arc(kx, ky, 12, 0, Math.PI * 2);
-    ctx.fill();
-    if (w.aufprall) {
-      ctx.strokeStyle = 'rgba(244, 162, 97, 0.9)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(kx, ky, 22, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.restore();
+    zeichneWiederholung(this, w);
   }
 
   /**
@@ -1800,135 +1710,14 @@ export class Renderer {
   /** Sprechblasen, Miau-Wellen, Teilchen und Kameraauftritt der Tiere (nur Darstellung). */
   tierBuehne = new TierBuehne();
 
-  /** Cookie, der Kater des Weltuntergangs: Sprite je Pose, darüber Name und Hungerbalken. */
+  /** Auszug nach `rendererOverlays.js` (QV-5). */
   #drawCookie(cookie) {
-    if (!cookie?.aktiv) return;
-    const ctx = this.ctx;
-    if (!this.#zeichneTier('cookie', cookie)) {
-      // Rückfall bis das Bild da ist: ein schlichter Körper.
-      ctx.save();
-      ctx.fillStyle = 'rgb(120,90,70)';
-      ctx.beginPath();
-      ctx.ellipse(cookie.x, cookie.y - 14, 22, 14, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-    const stufe = cookieStufe(cookie.hunger ?? 0);
-    const breite = 46;
-    const x = cookie.x - breite / 2;
-    const y = cookie.y - 92;
-    ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.fillRect(x - 1, y - 1, breite + 2, 7);
-    ctx.fillStyle = stufe === 'wut' ? '#e5484d' : stufe === 'laut' ? '#f0a020' : stufe === 'leise' ? '#d8c24a' : '#5aa86a';
-    ctx.fillRect(x, y, breite * Math.min(1, (cookie.hunger ?? 0) / COOKIE_HUNGER.max), 5);
-    ctx.fillStyle = '#fff';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Cookie', cookie.x, y - 4);
-    ctx.restore();
+    zeichneCookie(this, cookie, (...a) => this.#zeichneTier(...a));
   }
 
-  /**
-   * Zeichnet Günther als Kleinspitz.
-   *
-   * Prozedural statt als Bild: Der Hund ist klein, bewegt sich und muss zu
-   * jeder Kulisse passen. Ein Bild hätte eine feste Größe, einen festen
-   * Blickwinkel und einen Hintergrund, der zu neun Wasser- und zehn Himmelarten
-   * nicht passt.
-   *
-   * @param {object|null} guenther - Zustand aus `getState().guenther`
-   */
+  /** Auszug nach `rendererOverlays.js` (QV-5). */
   #drawGuenther(guenther) {
-    if (!guenther?.aktiv) return;
-    // Fassung 2 trägt eine Pose: dann zeichnet das Sprite (geladen) — sonst der Hund unten.
-    if (guenther.pose && this.#zeichneTier('guenther', guenther)) return;
-    const { coat, coatDark, belly, nose, height, length } = GUENTHER_IDENTITY;
-    const richtung = guenther.richtung >= 0 ? 1 : -1;
-    const x = guenther.x - length / 2;
-    const y = guenther.y;
-
-    this.ctx.save();
-    this.ctx.translate(x, y);
-    this.ctx.scale(richtung, 1);
-
-      const h = height;
-      const l = length;
-
-      // Schatten
-      this.ctx.fillStyle = 'rgba(0,0,0,0.28)';
-      this.ctx.beginPath();
-      this.ctx.ellipse(l * 0.5, 1, l * 0.55, 4, 0, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      // Beine (vier kurze Striche)
-      this.ctx.strokeStyle = `rgb(${coatDark.join(',')})`;
-      this.ctx.lineWidth = 3;
-      const lauf = Math.sin(this.time * 0.22) * 2;
-      for (const [ox, phase] of [[l * 0.2, 1], [l * 0.32, -1], [l * 0.68, 1], [l * 0.8, -1]]) {
-        this.ctx.beginPath();
-        this.ctx.moveTo(ox, -h * 0.42);
-        this.ctx.lineTo(ox + phase * lauf * 0.6, 0);
-        this.ctx.stroke();
-      }
-
-      // Körper
-      this.ctx.fillStyle = `rgb(${coat.join(',')})`;
-      this.ctx.beginPath();
-      this.ctx.ellipse(l * 0.5, -h * 0.62, l * 0.42, h * 0.34, 0, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      // Brust (heller Bauch)
-      this.ctx.fillStyle = `rgb(${belly.join(',')})`;
-      this.ctx.beginPath();
-      this.ctx.ellipse(l * 0.5, -h * 0.44, l * 0.3, h * 0.18, 0, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      // Kopf
-      this.ctx.fillStyle = `rgb(${coat.join(',')})`;
-      this.ctx.beginPath();
-      this.ctx.arc(l * 0.86, -h * 0.86, h * 0.3, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      // Schnauze
-      this.ctx.fillStyle = `rgb(${coatDark.join(',')})`;
-      this.ctx.beginPath();
-      this.ctx.ellipse(l * 1.02, -h * 0.8, h * 0.16, h * 0.11, 0, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      // Nase
-      this.ctx.fillStyle = `rgb(${nose.join(',')})`;
-      this.ctx.beginPath();
-      this.ctx.arc(l * 1.12, -h * 0.8, 1.8, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      // Spitze Ohren — das Kennzeichen eines Kleinspitzes.
-      this.ctx.fillStyle = `rgb(${coatDark.join(',')})`;
-      for (const ohr of [-0.12, 0.12]) {
-        this.ctx.beginPath();
-        this.ctx.moveTo(l * (0.8 + ohr), -h * 1.02);
-        this.ctx.lineTo(l * (0.82 + ohr), -h * 1.3);
-        this.ctx.lineTo(l * (0.92 + ohr), -h * 1.04);
-        this.ctx.closePath();
-        this.ctx.fill();
-      }
-
-      // Auge
-      this.ctx.fillStyle = '#2b2622';
-      this.ctx.beginPath();
-      this.ctx.arc(l * 0.9, -h * 0.9, 1.5, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      // Schwanz: geringelt, wie beim Spitz, und wedelt.
-      this.ctx.strokeStyle = `rgb(${coat.join(',')})`;
-      this.ctx.lineWidth = 4;
-      const wedeln = Math.sin(this.time * 0.3) * 4;
-      this.ctx.beginPath();
-      this.ctx.moveTo(l * 0.1, -h * 0.72);
-      this.ctx.quadraticCurveTo(-l * 0.14, -h * 1.0 + wedeln, l * 0.04, -h * 1.2 + wedeln);
-      this.ctx.stroke();
-
-    this.ctx.restore();
+    zeichneGuenther(this, guenther, (...a) => this.#zeichneTier(...a));
   }
 
   /**
@@ -1956,51 +1745,9 @@ export class Renderer {
     }
   }
 
-  /**
-   * Bifröst und Blitze — die Verwandlung zu Heimdall.
-   *
-   * Rein visuell und zeitlich begrenzt. Wird vom Client über `addHeimdall()`
-   * ausgelöst, wenn das Ereignis eintrifft.
-   */
+  /** Auszug nach `rendererOverlays.js` (QV-5). */
   #drawHeimdall() {
-    const effekt = this.effects.find(e => e.kind === 'heimdall');
-    if (!effekt) return;
-
-    const fortschritt = 1 - effekt.life;
-    const staerke = Math.sin(fortschritt * Math.PI);
-
-    this.ctx.save();
-    // Regenbogenbrücke: sieben Streifen, die sich über das Feld legen.
-    const farben = ['#e63946', '#f77f00', '#fcbf49', '#a7c957', '#4cc9f0', '#4361ee', '#9d4edd'];
-    const hoehe = this.height * 0.5;
-    for (let i = 0; i < farben.length; i++) {
-      this.ctx.globalAlpha = 0.28 * staerke;
-      this.ctx.fillStyle = farben[i];
-      const y = this.height * 0.34 + i * (hoehe / farben.length) * 0.5;
-      this.ctx.fillRect(0, y, this.width, (hoehe / farben.length) * 0.5);
-    }
-
-    // Blitze
-    this.ctx.globalAlpha = staerke;
-    this.ctx.strokeStyle = 'rgba(240,248,255,0.95)';
-    this.ctx.lineWidth = 3;
-    for (let b = 0; b < 5; b += 1) {
-      const startX = (effekt.seed * 37 + b * 233) % this.width;
-      this.ctx.beginPath();
-      this.ctx.moveTo(startX, 0);
-      let lx = startX;
-      for (let seg = 1; seg <= 6; seg += 1) {
-        lx += Math.sin(seg * 2.1 + b) * 26;
-        this.ctx.lineTo(lx, (seg / 6) * this.height * 0.6);
-      }
-      this.ctx.stroke();
-    }
-
-    // Aufhellung
-    this.ctx.globalAlpha = 0.35 * staerke;
-    this.ctx.fillStyle = '#ffffff';
-    this.ctx.fillRect(0, 0, this.width, this.height);
-    this.ctx.restore();
+    zeichneHeimdall(this);
   }
 
   /** Löst die Heimdall-Animation aus (Blitze, Bifröst, Gjallarhorn). */
@@ -2192,31 +1939,9 @@ export class Renderer {
     zeichneOmen(this.ctx, this.width, this.height, zustand);
   }
 
+  /** Auszug nach `rendererOverlays.js` (QV-5). */
   #drawMaelstrom(maelstrom) {
-    if (!maelstrom?.active || maelstrom.inset <= 0) return;
-    const { inset } = maelstrom;
-    const gradientLeft = this.ctx.createLinearGradient(0, 0, inset * 2, 0);
-    gradientLeft.addColorStop(0, 'rgba(255, 77, 0, 0.5)');
-    gradientLeft.addColorStop(1, 'rgba(255, 77, 0, 0)');
-    this.ctx.fillStyle = gradientLeft;
-    this.ctx.fillRect(0, 0, inset * 2, this.height);
-
-    const gradientRight = this.ctx.createLinearGradient(this.width, 0, this.width - inset * 2, 0);
-    gradientRight.addColorStop(0, 'rgba(255, 77, 0, 0.5)');
-    gradientRight.addColorStop(1, 'rgba(255, 77, 0, 0)');
-    this.ctx.fillStyle = gradientRight;
-    this.ctx.fillRect(this.width - inset * 2, 0, inset * 2, this.height);
-
-    this.ctx.strokeStyle = 'rgba(255, 120, 40, 0.9)';
-    this.ctx.lineWidth = 2;
-    this.ctx.setLineDash([10, 8]);
-    this.ctx.beginPath();
-    this.ctx.moveTo(inset, 0);
-    this.ctx.lineTo(inset, this.height);
-    this.ctx.moveTo(this.width - inset, 0);
-    this.ctx.lineTo(this.width - inset, this.height);
-    this.ctx.stroke();
-    this.ctx.setLineDash([]);
+    zeichneMaelstrom(this, maelstrom);
   }
 
   /**

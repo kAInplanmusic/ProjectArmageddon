@@ -51,12 +51,15 @@ test('ENG-3: der Renderer führt keine eigene Seltenheitsfarbliste', () => {
   // aus `config/loot.js`, keine zweite Liste — nur an ihrem neuen Ort geprüft.
   const quelle = lies('src/client/renderer.js');
   assert.doesNotMatch(quelle, /RARITY_COLORS|CRATE_COLORS/, 'eine eigene Farbliste ist zurück');
-  assert.match(quelle, /import \{ kistenFarbe, kistenMarke \} from '\.\/rendererLogik\.js';/,
+  // QV-5: Die Kistenzeichnung liegt seit dem Auszug in `rendererOverlays.js`; dort steht der Import.
+  const ueberlagerungen = lies('src/client/rendererOverlays.js');
+  assert.doesNotMatch(ueberlagerungen, /RARITY_COLORS|CRATE_COLORS/, 'eine eigene Farbliste ist zurück');
+  assert.match(ueberlagerungen, /import \{ kistenFarbe, kistenMarke \} from '\.\/rendererLogik\.js';/,
     'Renderer nutzt nicht die gemeinsame Kistenlogik');
   const logik = lies('src/client/rendererLogik.js');
   assert.doesNotMatch(logik, /RARITY_COLORS|CRATE_COLORS/, 'eine eigene Farbliste ist zurück');
   assert.match(logik, /LOOT_DROP_RULES\.rarityColors\[RARITY_IDS\[/, 'Farbe nicht aus config/loot.js');
-  assert.match(quelle, /const size = KISTE_KANTE;/, 'Kistenkante nicht aus config/kisten.js');
+  assert.match(ueberlagerungen, /const size = KISTE_KANTE;/, 'Kistenkante nicht aus config/kisten.js');
 });
 
 /** Normalisierter Rumpf einer `export function name(` ab Textstelle (Kommentare und Leerraum entfernt). */
