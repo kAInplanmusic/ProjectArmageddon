@@ -30,6 +30,20 @@ Schaden, Sieger, Tick.
 
 Die Strömung ändert den Duellverlauf in genau den drei Biomen, in denen sie gilt, und sonst nirgends.
 
+## Kontrolle Schwerkraft (Teil B): Biomregel 2 gegen 3
+
+Gleiche Seeds, gleiches Biom, 24:9 groß, Menü-Fassungen; nur `biomregeln` 2 (ohne Schwerkraft) gegen 3 (mit).
+
+| Biom | Seed 1 | Seed 2 | Seed 3 | Seed 4 |
+|---|---|---|---|---|
+| kosmos | anders | anders | anders | anders |
+| planet | anders | anders | anders | anders |
+| schwebinseln | anders | anders | anders | anders |
+| surreal | anders | anders | anders | anders |
+| vulkan (ohne Regel) | gleich | gleich | gleich | gleich |
+
+Die Tabelle darunter stammt von der Messung nach Teil A (Fassung 2) und ist für Teil B nicht neu gemessen.
+
 ## Tabelle (Menümodus, Biomregel 2)
 
 | Biom | Form anders | Stoffe anders | Verlauf anders als klassisch | eigener Verlauf | häufigste Stoffe (Seed 1) |

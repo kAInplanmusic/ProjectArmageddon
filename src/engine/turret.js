@@ -311,7 +311,7 @@ export function aimTurret(quelle, turret, ziel) {
  * @param {{turret:object, waffe:object, winkel:number, speed:number}} werte
  * @returns {{position:{x:number,y:number}, velocity:{x:number,y:number}, projectile:object}}
  */
-export function turretProjectile({ turret, waffe, winkel, speed }) {
+export function turretProjectile({ turret, waffe, winkel, speed, schwerkraft = 1 }) {
   const vx = Math.cos(winkel) * speed;
   const vy = -Math.sin(winkel) * speed;
 
@@ -331,7 +331,7 @@ export function turretProjectile({ turret, waffe, winkel, speed }) {
       trefferRadius: 0,
       knockback: waffe.knockback ?? 0,
       drag: PROJECTILE_DRAG,
-      gravityScale: waffe.gravityScale ?? 1,
+      gravityScale: (waffe.gravityScale ?? 1) * schwerkraft, // Biomregel B (Faktor 1 = unverändert)
       windFactor: 1,
       terrainDamage: waffe.terrainDamage ?? 0,
       bounces: 0,

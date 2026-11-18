@@ -392,7 +392,7 @@ function erzeugeGeschoss(quelle, { playerId, weapon, profile, strike, x, y, vx, 
     stossKraft: weapon.stossRichtung === undefined ? 0 : anteilVon(weapon.knockback, anteil),
     stossGrad: weapon.stossRichtung ?? 0,
     drag: 0.995,
-    gravityScale: weapon.gravityScale || 1,
+    gravityScale: (weapon.gravityScale || 1) * (quelle.schwerkraft ?? 1), // Biomregel B
     // AERO: Windfaktor der Waffe — erst ab Windfassung 2 (alte Replays: 1, Bit für Bit).
     windFactor: windFaktorFuerWaffe(weapon, quelle.windFassung),
     terrainDamage: anteilVon(weapon.terrainDamage, anteil),
@@ -618,7 +618,7 @@ function resolveStrike(quelle, weapon, x, y, angle, power) {
    * den Zielpunkt in der Höhe erreicht. Bis Fassung 20 bleibt es beim festen Wert.
    */
   if (quelle.waffenFassung >= WAFFEN_ENTSCHEIDUNG && weapon.delivery === 'projectile') {
-    const g = PROJECTILE_GRAVITY * (weapon.gravityScale || 1);
+    const g = PROJECTILE_GRAVITY * (weapon.gravityScale || 1) * (quelle.schwerkraft ?? 1);
     let vx = tempo; let vy = 0; let x = 0; let y = 0; let steigung = 0; let faktor = 1;
     for (let k = 0; k < 400 && x < weite; k += 1) {
       vy += g; vx *= PROJECTILE_DRAG; vy *= PROJECTILE_DRAG;
@@ -686,7 +686,7 @@ export function projectileLifetime(quelle, playerId, angle, power, weapon = null
    * ist der Deckel mindestens die Flugzeit über ebenem Grund (`2·v_auf / g`, mit 25 % Reserve für Luftwiderstand
    * und tiefer liegendes Ziel). Der alte Deckel bleibt die Untergrenze; kein Schuss wird kürzer als vorher.
    */
-  const g = PROJECTILE_GRAVITY * (waffe.gravityScale || 1);
+  const g = PROJECTILE_GRAVITY * (waffe.gravityScale || 1) * (quelle.schwerkraft ?? 1);
   const aufwaerts = Math.max(0, -vy);
   return Math.max(deckel, Math.ceil((2 * aufwaerts / g) * 1.25));
 }
@@ -738,7 +738,7 @@ export function aimPreview(quelle, playerId, angle, power, steps = 180, weapon =
     // Der Schwerkraftfaktor der Waffe gehört dazu: 28 der 150 Waffen fliegen
     // mit einem anderen Faktor, und ohne ihn zeigte die Vorschau dort eine
     // Bahn, die das Projektil nicht fliegt.
-    gravityScale: waffe?.gravityScale ?? 1,
+    gravityScale: (waffe?.gravityScale ?? 1) * (quelle.schwerkraft ?? 1), // Biomregel B
     /*
      * AERO: Der Wind der VORSCHAU ist der Wind der Waffe. Ohne den Faktor zeigte
      * die Bahn bei einer Rakete (1,8) und einem Strahl (0) dieselbe Kurve — und

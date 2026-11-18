@@ -77,7 +77,7 @@ import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { TierHud } from './tierHud.js';
 import { SeilSteuerung } from './seilSteuerung.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
-import { WIND_JE_ZUG } from '../shared/config/wind.js'; import { meldeBiomregel } from './biomregelAnzeige.js'; import { HagelAnzeige } from './hagelAnzeige.js'; // Hagel (HAGEL-1)
+import { WIND_JE_ZUG } from '../shared/config/wind.js'; import { meldeBiomregel, schwerkraftFaktor } from './biomregelAnzeige.js'; import { HagelAnzeige } from './hagelAnzeige.js'; // Hagel (HAGEL-1)
 import { LaufVorhersage } from './laufVorhersage.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
@@ -2583,7 +2583,7 @@ class Game {
       angle,
       power,
       speedMultiplier: faktor,
-      gravityScale: waffe?.gravityScale ?? 1,
+      gravityScale: (waffe?.gravityScale ?? 1) * schwerkraftFaktor(zustand.round), // Biomregel B: wie der Motor
       /*
        * AERO: Der Wind der Vorhersage ist der Wind der WAFFE — dieselbe Regel wie
        * im Motor (`shooting.js`, `windFaktorFuerWaffe`). Die Fassung kommt vom

@@ -62,7 +62,7 @@ import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, WIND_JE_ZUG, MAX_WIND, normalisiereWind } from '../shared/config/wind.js';
-import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
+import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
 import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
@@ -1429,6 +1429,7 @@ export class MatchController {
       waffenFassung: this.waffen,
       // AERO: Windfassung für Waffenfaktor und Vorhersage (`shooting.js`).
       windFassung: this.windFassung,
+      schwerkraft: this.schwerkraft, // Biomregel B: Faktor der laufenden Runde (1 ohne Regel)
       klassen: this.klassen,
       world: this.#world,
       terrain: this.#terrain,
@@ -1862,7 +1863,7 @@ export class MatchController {
     let vx = abschuss.vx;
     let vy = abschuss.vy;
     // Schwerkraft direkt aus `ballistics.js` (N-19: hier stand früher eine Abschrift `GRAVITY = 0.32`).
-    const gravitation = PROJECTILE_GRAVITY * (waffe.gravityScale ?? 1);
+    const gravitation = PROJECTILE_GRAVITY * (waffe.gravityScale ?? 1) * this.schwerkraft; // Biomregel B
 
     // Die Wind-Quelle ist `wind` — die Größe, die auch das `ProjectileSystem`
     // liest. Der frühere Zugriff auf `currentStrength` war der eigentliche
@@ -1926,7 +1927,7 @@ export class MatchController {
     // Dieselbe Abschussgeschwindigkeit wie die Bahnersuchung — EIN Aufruf der
     // gemeinsamen Funktion (`#turretLaunch`).
     const { speed } = this.#turretLaunch(schuss.power, schuss.angle, waffe);
-    const geschoss = turretProjectile({ turret, waffe, winkel: schuss.angle, speed });
+    const geschoss = turretProjectile({ turret, waffe, winkel: schuss.angle, speed, schwerkraft: this.schwerkraft });
     const [vx, vy] = [geschoss.velocity.x, geschoss.velocity.y];
 
     const entityId = this.#world.createEntity();
@@ -2733,6 +2734,8 @@ export class MatchController {
   get status() { return this.#status; }
   get round() { return this.#round; }
   get wind() { return this.#wind; }
+  /** Schwerkraftfaktor der laufenden Runde (Biomregel B); 1 ohne Regel. Gilt für alle Geschosse beim Abschuss. */
+  get schwerkraft() { return schwerkraftFuer(this.sonderbiom, this.biomregeln, this.#seedManager.baseSeed, this.#round)?.faktor ?? 1; }
   get winnerTeamId() { return this.#winnerTeamId; }
   get seedManager() { return this.#seedManager; }
   get maelstrom() { return this.#maelstrom; }
