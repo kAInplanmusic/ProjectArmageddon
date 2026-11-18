@@ -62,6 +62,24 @@ Gleiche Seeds (4), 24:9 groß, Menü-Fassungen. Ein Duell ändert sich nur, wenn
 Die Wirkung hängt an der Wasserart, die der Seed zieht, nicht am Biom allein (klassisch zieht in Seed 2 Lava). Schrott und Fabrik
 haben in diesen Seeds kein Gefahrenwasser gezogen; ob sie je eines ziehen, ist hier nicht belegt.
 
+## Kontrolle Wasserlauf: Biomregel 4 gegen 5 (Wasserlauf), 5 gegen 6 (Treiben)
+
+Gleiche Seeds (4), 24:9 groß, Menü-Fassungen, Biome mit Wasser.
+
+| Biom | 4 gegen 5: Seed 1 | Seed 2 | Seed 3 | Seed 4 | 5 gegen 6 |
+|---|---|---|---|---|---|
+| klassisch | anders | gleich | gleich | gleich | gleich |
+| vulkan | anders | anders | gleich | gleich | gleich |
+| riff | anders | anders | gleich | gleich | gleich |
+| tiefsee | gleich | anders | gleich | gleich | gleich |
+| dschungel | gleich | anders | gleich | gleich | gleich |
+| pilzwald | gleich | anders | gleich | gleich | gleich |
+
+- Der Wasserlauf (Fassung 5) ändert 6 von 24 Duellen. Er wirkt nur, wo eine Explosion Wasser in Bewegung bringt.
+- Das Treiben (Fassung 6) ändert in diesen Duellen keinen Verlauf. Minen, Kisten und Fässer liegen selten in strömendem Wasser;
+  die Wirkung ist durch Unit-Tests belegt (`tests/biomregeln-treiben.test.js`), im Bot-Duell nicht messbar. Ob sie im Spiel
+  spürbar ist, zeigt erst der Spieltest (QV-4).
+
 ## Tabelle (Menümodus, Biomregel 2)
 
 | Biom | Form anders | Stoffe anders | Verlauf anders als klassisch | eigener Verlauf | häufigste Stoffe (Seed 1) |

@@ -62,7 +62,7 @@ import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, WIND_JE_ZUG, MAX_WIND, normalisiereWind } from '../shared/config/wind.js';
-import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer, wasserlaufAktiv, WASSERLAUF } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
+import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer, wasserlaufAktiv, WASSERLAUF, treibenAktiv } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
 import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
@@ -642,6 +642,7 @@ export class MatchController {
         round: this.#round,
         wasserSchaden: wasserWirkungFuer(this.scenery?.waterId, this.biomregeln)?.schaden ?? null, // Biomregel E (null = Ertrinken wie bisher)
         wasserSchub: wasserlaufAktiv(this.biomregeln) ? WASSERLAUF.schub : 0, // Biomregel Wasserlauf (0 = Wasser schiebt nicht)
+        wasserTreiben: treibenAktiv(this.biomregeln), // Biomregel Treiben: Kisten und Bodenobjekte treiben mit
         wind: this.#wind,
         currentStrength: this.#currentStrength,
         knockbackMultiplier: 1,
