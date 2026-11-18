@@ -18,11 +18,12 @@ import { MENUE_FASSUNGEN } from '../src/shared/config/menueStart.js';
 
 const NEAR = (a, b, eps = 1.5e-4) => Math.abs(a - b) <= eps;
 
-test('Fassungen: Standard ist 3, unbekannte Werte fallen auf den Standard, ALT bleibt ALT', () => {
-  assert.equal(BIOMREGELN_STANDARD, BIOMREGELN_SCHWERKRAFT);
+test('Fassungen: Standard ist die neueste (4), unbekannte Werte fallen auf den Standard, ALT bleibt ALT', () => {
+  assert.equal(BIOMREGELN_STANDARD, 4);
   assert.equal(normalisiereBiomregeln(1), BIOMREGELN_ALT);
   assert.equal(normalisiereBiomregeln(2), BIOMREGELN_STROEMUNG);
   assert.equal(normalisiereBiomregeln(3), BIOMREGELN_SCHWERKRAFT);
+  assert.equal(normalisiereBiomregeln(4), 4);
   assert.equal(normalisiereBiomregeln(undefined), BIOMREGELN_STANDARD);
   assert.equal(normalisiereBiomregeln(99), BIOMREGELN_STANDARD);
 });
@@ -73,7 +74,7 @@ test('Engine: ohne Angabe gilt ALT (Replay-Kompatibilität), Wind unverändert g
   }
 });
 
-test('Menü und Messwerkzeug starten mit dem Standard (3); MENUE_FASSUNGEN enthält die Biomregel', () => {
+test('Menü und Messwerkzeug starten mit dem Standard; MENUE_FASSUNGEN enthält die Biomregel', () => {
   assert.equal(MENUE_FASSUNGEN.biomregeln, BIOMREGELN_STANDARD);
   assert.equal(neuesMatch(1, 4, { teams: 2, proTeam: 1 }).biomregeln, BIOMREGELN_STANDARD);
 });

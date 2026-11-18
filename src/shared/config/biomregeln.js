@@ -11,6 +11,7 @@
  *   - `BIOMREGELN_STROEMUNG` (2): Welle 1, Baustein A „Strömung / Windneigung" für Düne, Riff und Tiefsee.
  *   - `BIOMREGELN_SCHWERKRAFT` (3, Standard): Welle 1, Baustein B „Schwerkraftfaktor" für Kosmos, Planet, Schwebinseln
  *     und Surreal; enthält A.
+ *   - `BIOMREGELN_WASSER` (4, Standard): Welle 2, Baustein E (Gefahrenwasser: Lava, Gift, Leere, Schlamm); enthält A und B.
  *
  * ## Strömung (Baustein A)
  *
@@ -33,11 +34,13 @@
 export const BIOMREGELN_ALT = 1;
 export const BIOMREGELN_STROEMUNG = 2;
 export const BIOMREGELN_SCHWERKRAFT = 3;
-export const BIOMREGELN_STANDARD = BIOMREGELN_SCHWERKRAFT;
+export const BIOMREGELN_WASSER = 4;
+export const BIOMREGELN_STANDARD = BIOMREGELN_WASSER;
 
 /** Unbekannte Werte fallen auf den Standard; das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBiomregeln(fassung) {
   return fassung === BIOMREGELN_ALT || fassung === BIOMREGELN_STROEMUNG || fassung === BIOMREGELN_SCHWERKRAFT
+    || fassung === BIOMREGELN_WASSER
     ? fassung : BIOMREGELN_STANDARD;
 }
 
@@ -134,4 +137,30 @@ export function schwerkraftFuer(biom, fassung, basisSeed, runde = 1) {
     return { faktor, jeRunde: true, name: regel.name, text: regel.text };
   }
   return { faktor: regel.faktor, jeRunde: false, name: regel.name, text: regel.text };
+}
+
+/**
+ * Gefahrenwasser (Baustein E, ab Fassung 4): Schaden je Sekunde für eine tief untergetauchte Figur.
+ *
+ * Bis Fassung 3 galt für jedes Wasser dasselbe Ertrinken (9 LP/s); `hazard` in `config/scenery.js` war nur
+ * beschriftet, kein Leser (FUND 2026-09-27). Jetzt ersetzt dieser Wert die 9 LP/s in genau diesen Wasserarten.
+ * Treibsand (`snare`) ist NICHT umgesetzt: Er braucht einen Eingriff in die Bewegung (Welle 3, Baustein C).
+ * Erste Ansätze, nicht balanciert.
+ */
+export const WASSER_SCHADEN = Object.freeze({
+  lava: Object.freeze({ schaden: 16, name: 'Lava', text: 'Lava verbrennt: Wer hineinfällt, verliert schnell Leben.' }),
+  poison: Object.freeze({ schaden: 13, name: 'Giftbrühe', text: 'Giftbrühe ätzt: Wer hineinfällt, verliert schnell Leben.' }),
+  void: Object.freeze({ schaden: 11, name: 'Galaktisches Nichts', text: 'Das Nichts saugt Leben: Wer hineinfällt, verliert schnell Leben.' }),
+  acid: Object.freeze({ schaden: 13, name: 'Säure', text: 'Säure ätzt: Wer hineinfällt, verliert schnell Leben.' }),
+  swamp_sludge: Object.freeze({ schaden: 14, name: 'Sumpfschlamm', text: 'Im Schlamm erstickt man schneller als im Wasser.' }),
+});
+
+/**
+ * @param {string|null|undefined} wasserId - Wasserart der Szene (`scenery.waterId`)
+ * @param {number} fassung - Biomregel-Fassung
+ * @returns {{schaden:number, name:string, text:string}|null} `null` = normales Ertrinken
+ */
+export function wasserWirkungFuer(wasserId, fassung) {
+  if (fassung < BIOMREGELN_WASSER || !wasserId) return null;
+  return WASSER_SCHADEN[wasserId] ?? null;
 }

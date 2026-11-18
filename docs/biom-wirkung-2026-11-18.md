@@ -44,6 +44,24 @@ Gleiche Seeds, gleiches Biom, 24:9 groß, Menü-Fassungen; nur `biomregeln` 2 (o
 
 Die Tabelle darunter stammt von der Messung nach Teil A (Fassung 2) und ist für Teil B nicht neu gemessen.
 
+## Kontrolle Gefahrenwasser (Welle 2, Baustein E): Biomregel 3 gegen 4
+
+Gleiche Seeds (4), 24:9 groß, Menü-Fassungen. Ein Duell ändert sich nur, wenn eine Figur tief im Gefahrenwasser steht.
+
+| Biom | Seed 1 | Seed 2 | Seed 3 | Seed 4 |
+|---|---|---|---|---|
+| vulkan | gleich | anders | anders | gleich |
+| schlackeschmiede | anders | anders | gleich | gleich |
+| dschungel | anders | anders | gleich | gleich |
+| pilzwald | anders | anders | anders | gleich |
+| tempelstadt | anders | anders | anders | gleich |
+| schrott | gleich | gleich | gleich | gleich |
+| fabrik | gleich | gleich | gleich | gleich |
+| klassisch | gleich | anders | gleich | gleich |
+
+Die Wirkung hängt an der Wasserart, die der Seed zieht, nicht am Biom allein (klassisch zieht in Seed 2 Lava). Schrott und Fabrik
+haben in diesen Seeds kein Gefahrenwasser gezogen; ob sie je eines ziehen, ist hier nicht belegt.
+
 ## Tabelle (Menümodus, Biomregel 2)
 
 | Biom | Form anders | Stoffe anders | Verlauf anders als klassisch | eigener Verlauf | häufigste Stoffe (Seed 1) |

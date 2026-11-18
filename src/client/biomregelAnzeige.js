@@ -9,7 +9,7 @@
  *
  * @module biomregelAnzeige
  */
-import { stroemungFuer, schwerkraftFuer } from '../shared/config/biomregeln.js';
+import { stroemungFuer, schwerkraftFuer, wasserWirkungFuer } from '../shared/config/biomregeln.js';
 import { MAX_WIND } from '../shared/config/wind.js';
 
 /** Die Partie, deren Hinweis zuletzt gemeldet wurde (eine Partie je Seite): Quelle für die Vorhersage. */
@@ -45,5 +45,21 @@ export function schwerkraftFaktor(runde) {
 export function meldeBiomregel(hud, partie) {
   aktuellePartie = partie;
   const text = biomregelText(partie);
+  if (text) hud.log(text, 'accent');
+}
+
+/**
+ * Hinweiszeile zum Gefahrenwasser der Szene oder `null` (normales Wasser, Fassung unter 4).
+ * @param {string|null|undefined} wasserId - `scenery.waterId`
+ * @param {number|undefined} biomregeln
+ */
+export function wasserregelText(wasserId, biomregeln) {
+  const w = wasserWirkungFuer(wasserId ?? null, biomregeln ?? 1);
+  return w ? `${w.name}: ${w.text} (${w.schaden} Leben je Sekunde)` : null;
+}
+
+/** Meldet das Gefahrenwasser der Szene; nimmt die Fassung der zuletzt gemeldeten Partie. */
+export function meldeWasserregel(hud, wasserId) {
+  const text = wasserregelText(wasserId, aktuellePartie?.biomregeln);
   if (text) hud.log(text, 'accent');
 }
