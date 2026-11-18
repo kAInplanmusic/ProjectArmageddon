@@ -1,0 +1,63 @@
+# Biom-Wirkung nach QV-6 Welle 1 (2026-11-18)
+
+Messung: `npm run balance:biome` (4 Seeds, Bot-Duell, 24:9 groß, Menümodus). Rohdaten: `docs/biom-wirkung-2026-11-18.json`.
+
+## Wichtig: die Messbasis hat sich geändert
+
+Die Messung vom 2026-11-17 (`docs/biom-wirkung-2026-11-17.md`) startete die Partien mit `kartentyp: 'autonom'`, aber mit dem
+**Altstand jeder Regelfamilie** (Wind je Runde, kein Hagel, kein Seil, …), weil der Motor ohne Angabe jede Fassung auf ALT setzt,
+das Menü aber überall STANDARD übergibt. Seit QV-6 liest das Messwerkzeug dieselbe Liste wie das Menü
+(`MENUE_FASSUNGEN`, `src/shared/config/menueStart.js`). **Die Zahlen beider Tage sind deshalb nicht vergleichbar**, und die
+Balance-Berichte vom 12. und 17.11. (`docs/balance-rollen-*`) beruhen auf den Altregeln dieser Familien; sie sind neu zu messen.
+
+## Ergebnis
+
+- Verschiedene Verläufe je Seed (von 21 Biom-Wahlen): 12, 10, 19, 12 (am 17.11.: 3, 15, 8, 14).
+- Nie ein eigener Verlauf: kristallhoehle, fabrik, dimensionsriss (am 17.11.: sieben Biome, darunter dschungel, schlackeschmiede, tiefsee, kristallwald).
+- Wie viel davon an den Menü-Fassungen liegt und wie viel an der Biomregel, trennt die Kontrolle unten.
+
+## Kontrolle: Biomregel 1 gegen 2 bei gleichen Menü-Fassungen
+
+Dasselbe Biom und derselbe Seed, nur `biomregeln` 1 (keine Regel) gegen 2 (Strömung). Verlaufsschlüssel: Züge, Schüsse, Treffer,
+Schaden, Sieger, Tick.
+
+| Biom | Seed 1 | Seed 2 | Seed 3 | Seed 4 |
+|---|---|---|---|---|
+| duenen | anders | anders | anders | anders |
+| riff | anders | anders | anders | anders |
+| tiefsee | anders | anders | anders | anders |
+| vulkan (ohne Regel) | gleich | gleich | gleich | gleich |
+
+Die Strömung ändert den Duellverlauf in genau den drei Biomen, in denen sie gilt, und sonst nirgends.
+
+## Tabelle (Menümodus, Biomregel 2)
+
+| Biom | Form anders | Stoffe anders | Verlauf anders als klassisch | eigener Verlauf | häufigste Stoffe (Seed 1) |
+|---|---:|---:|---:|---:|---|
+| klassisch | 0/4 | 0/4 | 0/4 | 4/4 | schnee 55 %, fels 41 %, eis 3 % |
+| vulkan | 0/4 | 4/4 | 4/4 | 4/4 | asche 56 %, basalt 37 %, magmaadern 6 % |
+| kristallhoehle | 0/4 | 4/4 | 4/4 | 0/4 | kristallfelsen 93 %, leuchtkristall 6 %, grundgestein 1 % |
+| dschungel | 0/4 | 4/4 | 4/4 | 2/4 | moos 55 %, humus 38 %, lehmige_erde 6 % |
+| eiswueste | 0/4 | 4/4 | 4/4 | 4/4 | schnee 57 %, gletschereis 39 %, gefrorene_wurzeln 4 % |
+| duenen | 0/4 | 4/4 | 4/4 | 4/4 | feinsand 61 %, sandstein 34 %, keramik 4 % |
+| schrott | 0/4 | 4/4 | 4/4 | 2/4 | korrosion 55 %, rostmetall 37 %, metall 7 % |
+| schwebinseln | 0/4 | 4/4 | 4/4 | 1/4 | moos 55 %, wolkenstein 37 %, kristall 7 % |
+| riff | 0/4 | 4/4 | 4/4 | 4/4 | feinsand 55 %, koralle 37 %, seegras 6 % |
+| pilzwald | 0/4 | 4/4 | 4/4 | 4/4 | pilz 56 %, pilzbruecke 38 %, saeureablagerungen 5 % |
+| kosmos | 0/4 | 4/4 | 4/4 | 1/4 | regolith_staub 56 %, meteoritenfels 37 %, nickel_eisen 5 % |
+| surreal | 0/4 | 4/4 | 4/4 | 2/4 | traumgestein 91 %, gehaertetes_glas 8 %, grundgestein 1 % |
+| fabrik | 0/4 | 4/4 | 4/4 | 0/4 | poroeser_beton 57 %, stahlbeton 37 %, rostmetall 3 % |
+| burg | 0/4 | 4/4 | 4/4 | 1/4 | mutterboden 55 %, mauerwerk 38 %, magiekristall 5 % |
+| planet | 4/4 | 4/4 | 4/4 | 4/4 | schnee 51 %, gletschereis 40 %, firnschnee 4 % |
+| schlackeschmiede | 0/4 | 4/4 | 4/4 | 1/4 | schlacke 92 %, rostmetall 5 %, grundgestein 1 % |
+| kristallarchipel | 0/4 | 4/4 | 4/4 | 4/4 | firnschnee 55 %, klareiskristall 35 %, klareis 5 % |
+| tempelstadt | 0/4 | 4/4 | 4/4 | 1/4 | humus 55 %, tempelstein 38 %, alienharz 5 % |
+| tiefsee | 0/4 | 4/4 | 4/4 | 4/4 | tiefseeschlamm 56 %, tiefseebasalt 39 %, leuchtalgen 4 % |
+| dimensionsriss | 0/4 | 4/4 | 4/4 | 0/4 | instabiler_boden 55 %, phasen_fels 37 %, zeitkristall 6 % |
+| kristallwald | 0/4 | 4/4 | 4/4 | 1/4 | moos 55 %, versteinertes_holz 37 %, kristalladern 6 % |
+
+## Grenzen
+
+- Ein Bot nutzt wenige Waffen und zielt direkt; die Zahlen sind eine Untergrenze der Wirkung, kein Spielerurteil (Spieltest QV-4 steht aus).
+- „Anderer Verlauf" heißt nur: die Partie nimmt einen anderen Lauf. Ob die Regel Spaß macht oder fair ist, sagt diese Messung nicht.
+- Die Stärke der Strömung (Anteil 0,5 / 0,35 / 0,5 von `MAX_WIND`) ist ein erster Ansatz, nicht balanciert.

@@ -20,7 +20,7 @@
  *                                [--teams=2] [--pro-team=2]
  */
 import { MatchController } from '../src/engine/match.js';
-import { MENUE_KARTENTYP } from '../src/shared/config/menueStart.js';
+import { MENUE_KARTENTYP, MENUE_FASSUNGEN } from '../src/shared/config/menueStart.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
 import { getTurnDurationForSize } from '../src/engine/systems/turnSystem.js';
 
@@ -91,7 +91,7 @@ export function neuesMatch(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, waffe
   const zugSek = getTurnDurationForSize('mittel') / 1000;
   return new MatchController({
     seed, teams, playersPerTeam: proTeam, preset: 'hills', kartentyp: MENUE_KARTENTYP, kit, waffen,
-    turnDurationMs: zugSek * 1000, turnPauseTicks: 0, ...(ZUGREGELN ? { zugregeln: ZUGREGELN, bewegung: 2 } : {}), ...extra,
+    turnDurationMs: zugSek * 1000, turnPauseTicks: 0, ...MENUE_FASSUNGEN, ...(ZUGREGELN ? { zugregeln: ZUGREGELN, bewegung: 2 } : {}), ...extra,
   });
 }
 

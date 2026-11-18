@@ -62,6 +62,7 @@ import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, WIND_JE_ZUG, MAX_WIND, normalisiereWind } from '../shared/config/wind.js';
+import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
 import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
@@ -512,7 +513,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT, wind = WIND_ALT, hagel = HAGEL_ALT, // Hagel (`config.hagel`, 2 = Hagellagen und Körner, HAGEL-1); Seil (`config.seil`, 2 = Ninja Rope, `engine/seil.js`); Wind (`config.wind`, 2 = je Zug, Waffenfaktor, Wasser still; AERO/ENG-1); Bodenobjektfassung (`config.bodenobjekte`, 2 = Minen); Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT, wind = WIND_ALT, hagel = HAGEL_ALT, biomregeln = BIOMREGELN_ALT, // Biomregeln (`config.biomregeln`, 2 = Strömung in Düne/Riff/Tiefsee, QV-6); Hagel (`config.hagel`, 2 = Hagellagen und Körner, HAGEL-1); Seil (`config.seil`, 2 = Ninja Rope, `engine/seil.js`); Wind (`config.wind`, 2 = je Zug, Waffenfaktor, Wasser still; AERO/ENG-1); Bodenobjektfassung (`config.bodenobjekte`, 2 = Minen); Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
     gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
   } = {}) {
@@ -591,6 +592,8 @@ export class MatchController {
     this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
     this.#feuerwesen = this.waffen >= WAFFEN_FEUERWESEN ? new FeuerwesenSystem(this, () => this.#schussQuelle()) : null;
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
+    this.biomregeln = normalisiereBiomregeln(biomregeln); // Fassung 1: keine Regel, kein Eingriff
+    this.stroemung = stroemungFuer(this.sonderbiom, this.biomregeln, this.#seedManager.baseSeed, MAX_WIND); // Baustein A, oder null
     this.schaden = normalisiereSchaden(schaden);
 
     // Kartenmaße als Instanzwerte: Form und Stufe unterscheiden sich nur hier.
@@ -2377,7 +2380,8 @@ export class MatchController {
   #rollWind() {
     // Fassung 2: eigener Strom (AERO); Fassung 1: `MATCH_BASE` wie bisher (bitgleich).
     const rng = this.#windRng ?? this.#rng;
-    return Math.round(rng.nextFloat(-MAX_WIND, MAX_WIND) * 10000) / 10000;
+    const roh = Math.round(rng.nextFloat(-MAX_WIND, MAX_WIND) * 10000) / 10000; // gleiche Zahl gezogener Werte mit und ohne Regel
+    return this.stroemung ? Math.round(verschiebeWind(roh, this.stroemung.drift, MAX_WIND) * 10000) / 10000 : roh;
   }
 
   #checkVictory() {

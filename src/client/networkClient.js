@@ -528,6 +528,7 @@ export class NetworkClient {
             // AERO: Windfassung für die Bahnvorschau (Waffenfaktor); fehlt sie, gilt 1 (alte Partie).
             windFassung: message.windFassung,
             hagel: message.hagel, // Hagelfassung der Partie (HAGEL-1); fehlt sie: alte Partie, kein Engine-Hagel
+            biomregeln: message.biomregeln, // Biomregelfassung (QV-6); fehlt sie: alte Partie, keine Regel
             craters: Array.isArray(message.craters) ? message.craters : [],
             inset: Number(message.inset) || 0,
           });
