@@ -9,8 +9,11 @@
  *
  * @module biomregelAnzeige
  */
-import { stroemungFuer } from '../shared/config/biomregeln.js';
+import { stroemungFuer, schwerkraftFuer } from '../shared/config/biomregeln.js';
 import { MAX_WIND } from '../shared/config/wind.js';
+
+/** Die Partie, deren Hinweis zuletzt gemeldet wurde (eine Partie je Seite): Quelle für die Vorhersage. */
+let aktuellePartie = null;
 
 /**
  * Text der Hinweiszeile oder `null`, wenn das Biom keine Regel hat.
@@ -18,13 +21,29 @@ import { MAX_WIND } from '../shared/config/wind.js';
  * @returns {string|null}
  */
 export function biomregelText({ biom, biomregeln, seed } = {}) {
+  const teile = [];
   const s = stroemungFuer(biom ?? null, biomregeln ?? 1, seed ?? 0, MAX_WIND);
-  if (!s) return null;
-  return `${s.name}: ${s.text} Wind meist nach ${s.richtung > 0 ? 'rechts →' : '← links'}.`;
+  if (s) teile.push(`${s.name}: ${s.text} Wind meist nach ${s.richtung > 0 ? 'rechts →' : '← links'}.`);
+  const g = schwerkraftFuer(biom ?? null, biomregeln ?? 1, seed ?? 0, 1);
+  if (g) {
+    teile.push(g.jeRunde ? `${g.name}: ${g.text}` : `${g.name}: ${g.text} (Faktor ${String(g.faktor).replace('.', ',')})`);
+  }
+  return teile.length ? teile.join(' ') : null;
 }
 
-/** Schreibt die Zeile ins Protokoll des HUD (`hud.log(text, art)`). */
+/**
+ * Schwerkraftfaktor der Runde für die Flugbahn-Vorhersage; 1 ohne Regel. Rechnet mit derselben Funktion wie der Motor.
+ * @param {number} runde
+ */
+export function schwerkraftFaktor(runde) {
+  if (!aktuellePartie) return 1;
+  const { biom, biomregeln, seed } = aktuellePartie;
+  return schwerkraftFuer(biom ?? null, biomregeln ?? 1, seed ?? 0, runde ?? 1)?.faktor ?? 1;
+}
+
+/** Schreibt die Zeile ins Protokoll des HUD (`hud.log(text, art)`) und merkt sich die Partie für die Vorhersage. */
 export function meldeBiomregel(hud, partie) {
+  aktuellePartie = partie;
   const text = biomregelText(partie);
   if (text) hud.log(text, 'accent');
 }
