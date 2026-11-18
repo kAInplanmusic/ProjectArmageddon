@@ -297,7 +297,8 @@ test('A11: Jedes Banner ist ein eigenes, textfreies Vektorband', () => {
 
 test('A11: Embleme sind in Auswahl, Ladebild und Ergebnis angebunden', () => {
   // Auswahl: Emblem neben dem Fraktionsfeld, 24 px.
-  assert.match(mainQuelle, /fraktionsEmblem\(auswahl\)/,
+  // QV-5: Die Fraktionswahl liegt seit dem Auszug in `menueFelder.js`.
+  assert.match(fs.readFileSync(path.join(ROOT, 'src/client/menueFelder.js'), 'utf8'), /fraktionsEmblem\(auswahl\)/,
     'die Fraktionsauswahl zeigt kein Emblem');
   assert.match(anzeigeQuelle, /fraktions-wahl-zeichen/, 'der Emblem-Baustein fehlt');
   assert.match(anzeigeQuelle, /zeichen\.width = 24;[\s\S]{0,60}zeichen\.height = 24;/,
