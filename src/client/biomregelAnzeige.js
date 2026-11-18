@@ -9,7 +9,7 @@
  *
  * @module biomregelAnzeige
  */
-import { stroemungFuer, schwerkraftFuer, wasserWirkungFuer } from '../shared/config/biomregeln.js';
+import { stroemungFuer, schwerkraftFuer, wasserWirkungFuer, WASSERLAUF, wasserlaufAktiv } from '../shared/config/biomregeln.js';
 import { MAX_WIND } from '../shared/config/wind.js';
 
 /** Die Partie, deren Hinweis zuletzt gemeldet wurde (eine Partie je Seite): Quelle für die Vorhersage. */
@@ -62,4 +62,5 @@ export function wasserregelText(wasserId, biomregeln) {
 export function meldeWasserregel(hud, wasserId) {
   const text = wasserregelText(wasserId, aktuellePartie?.biomregeln);
   if (text) hud.log(text, 'accent');
+  if (wasserlaufAktiv(aktuellePartie?.biomregeln ?? 1)) hud.log(`${WASSERLAUF.name}: ${WASSERLAUF.text}`, 'accent');
 }

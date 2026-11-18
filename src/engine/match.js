@@ -62,7 +62,7 @@ import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, WIND_JE_ZUG, MAX_WIND, normalisiereWind } from '../shared/config/wind.js';
-import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
+import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer, wasserlaufAktiv, WASSERLAUF } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
 import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
@@ -439,6 +439,7 @@ export class MatchController {
   #appliedDamage = new Map();
   #rng;
   #waterBaseY = 0;
+  #wasserlauf = false;
   #lastShotBy = null;
 
   constructor({
@@ -640,6 +641,7 @@ export class MatchController {
       match: {
         round: this.#round,
         wasserSchaden: wasserWirkungFuer(this.scenery?.waterId, this.biomregeln)?.schaden ?? null, // Biomregel E (null = Ertrinken wie bisher)
+        wasserSchub: wasserlaufAktiv(this.biomregeln) ? WASSERLAUF.schub : 0, // Biomregel Wasserlauf (0 = Wasser schiebt nicht)
         wind: this.#wind,
         currentStrength: this.#currentStrength,
         knockbackMultiplier: 1,
@@ -855,6 +857,8 @@ export class MatchController {
       }
     }
     this.#world.services.water = this.#water;
+    // Die Explosion verdrängt das Wasser über `displace` und weckt es dabei selbst (`WaterField.displace`).
+    this.#wasserlauf = wasserlaufAktiv(this.biomregeln);
   }
 
   #registerSystems() {
@@ -984,6 +988,7 @@ export class MatchController {
     this.gehen?.schritt();
     this.seilSystem?.schritt(); // vor dem Physikschritt: das CharacterSystem lässt die Figur am Seil aus
     this.#merkeBewegung();
+    if (this.#wasserlauf) this.#water.stepAktiv(); // Biomregel Wasserlauf: vor den Figuren, damit sie die Strömung dieses Taktes lesen
     this.#world.step();
     this.#setzung?.schritt();
     // Nach dem Physikschritt prüfen, wer gelandet ist — davon hängt ab, ob ein

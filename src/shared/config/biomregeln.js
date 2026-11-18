@@ -11,7 +11,9 @@
  *   - `BIOMREGELN_STROEMUNG` (2): Welle 1, Baustein A „Strömung / Windneigung" für Düne, Riff und Tiefsee.
  *   - `BIOMREGELN_SCHWERKRAFT` (3, Standard): Welle 1, Baustein B „Schwerkraftfaktor" für Kosmos, Planet, Schwebinseln
  *     und Surreal; enthält A.
- *   - `BIOMREGELN_WASSER` (4, Standard): Welle 2, Baustein E (Gefahrenwasser: Lava, Gift, Leere, Schlamm); enthält A und B.
+ *   - `BIOMREGELN_WASSERLAUF` (5, Standard): Welle 2, Wasserlauf: Wasser fließt nach Zerstörung nach (Grundwasser), die Strömung
+ *     schiebt Figuren; enthält A, B und E.
+ *   - `BIOMREGELN_WASSER` (4): Welle 2, Baustein E (Gefahrenwasser: Lava, Gift, Leere, Schlamm); enthält A und B.
  *
  * ## Strömung (Baustein A)
  *
@@ -35,12 +37,13 @@ export const BIOMREGELN_ALT = 1;
 export const BIOMREGELN_STROEMUNG = 2;
 export const BIOMREGELN_SCHWERKRAFT = 3;
 export const BIOMREGELN_WASSER = 4;
-export const BIOMREGELN_STANDARD = BIOMREGELN_WASSER;
+export const BIOMREGELN_WASSERLAUF = 5;
+export const BIOMREGELN_STANDARD = BIOMREGELN_WASSERLAUF;
 
 /** Unbekannte Werte fallen auf den Standard; das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBiomregeln(fassung) {
   return fassung === BIOMREGELN_ALT || fassung === BIOMREGELN_STROEMUNG || fassung === BIOMREGELN_SCHWERKRAFT
-    || fassung === BIOMREGELN_WASSER
+    || fassung === BIOMREGELN_WASSER || fassung === BIOMREGELN_WASSERLAUF
     ? fassung : BIOMREGELN_STANDARD;
 }
 
@@ -163,4 +166,23 @@ export const WASSER_SCHADEN = Object.freeze({
 export function wasserWirkungFuer(wasserId, fassung) {
   if (fassung < BIOMREGELN_WASSER || !wasserId) return null;
   return WASSER_SCHADEN[wasserId] ?? null;
+}
+
+/**
+ * Wasserlauf (ab Fassung 5). Bis Fassung 4 wurde das Wasserfeld im Spiel nie weitergerechnet: Wasser stand still, außer
+ * ein Einschlag verdrängte es. Jetzt fließt es nach jeder Zerstörung nach (`WaterField.stepAktiv`, nur an der bewegten
+ * Stelle), bis es zur Ruhe kommt. Dünnes Wasser (unter der Ertrinkungsschwelle, `DROWN_LEVEL`) ist Grundwasser: es
+ * schiebt Figuren in Fließrichtung, ertränkt aber nicht; erst tiefes Wasser ertränkt wie bisher.
+ *
+ * `schub`: Geschwindigkeitszuwachs je Takt je Einheit Strömung (Zellen je Schritt, etwa 0 bis 0,5). Erster Ansatz.
+ */
+export const WASSERLAUF = Object.freeze({
+  schub: 0.6,
+  name: 'Wasserlauf',
+  text: 'Zerstörtes Land lässt Wasser fließen: Die Strömung schiebt Figuren mit, dünnes Wasser ertränkt nicht.',
+});
+
+/** Gilt der Wasserlauf in dieser Fassung? */
+export function wasserlaufAktiv(fassung) {
+  return fassung >= BIOMREGELN_WASSERLAUF;
 }

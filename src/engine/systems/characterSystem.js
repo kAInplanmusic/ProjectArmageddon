@@ -140,6 +140,8 @@ export class CharacterSystem {
         vy *= 0.72;
         vx *= 0.8;
         vx += (services.match?.currentStrength ?? 0) * 0.02;
+        // Wasserlauf (Fassung 5): die Strömung des Wasserfelds schiebt mit (0 = aus, Altstand)
+        if (services.match?.wasserSchub && typeof water?.flussAn === 'function') vx += water.flussAn(x, y) * services.match.wasserSchub;
       } else {
         vx *= 0.995;
       }
