@@ -62,7 +62,7 @@ import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, WIND_JE_ZUG, MAX_WIND, normalisiereWind } from '../shared/config/wind.js';
-import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
+import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
 import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
@@ -639,6 +639,7 @@ export class MatchController {
       inventory: this.#inventory,
       match: {
         round: this.#round,
+        wasserSchaden: wasserWirkungFuer(this.scenery?.waterId, this.biomregeln)?.schaden ?? null, // Biomregel E (null = Ertrinken wie bisher)
         wind: this.#wind,
         currentStrength: this.#currentStrength,
         knockbackMultiplier: 1,
@@ -752,6 +753,7 @@ export class MatchController {
     const biomId = this.sonderbiom ?? biomeKennungFuerCharakter(this.kartencharakter);
     this.biomId = this.#world.services.match.biomId = biomId; // auch für den Einschlagklang (shared/einschlag.js)
     this.scenery = pickScenery(this.#seedManager.baseSeed, this.preset, biomId);
+    this.#world.services.match.wasserSchaden = wasserWirkungFuer(this.scenery.waterId, this.biomregeln)?.schaden ?? null; // Biomregel E
     return this.scenery;
   }
 

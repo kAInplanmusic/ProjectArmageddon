@@ -247,7 +247,7 @@ export class CharacterSystem {
 
       // Ertrinken: tief untergetauchte Figuren verlieren kontinuierlich Leben.
       if (waterLevel >= this.#submergedLevel && damageSystem) {
-        const damage = (this.#drownDamagePerSecond / 60) * (dt / (1000 / 60));
+        const damage = ((services.match?.wasserSchaden ?? this.#drownDamagePerSecond) / 60) * (dt / (1000 / 60)); // Biomregel E: Gefahrenwasser ersetzt 9 LP/s
         damageSystem.applyDamage(world, entityId, damage, null);
         events?.emit('drowning', { entityId, level: waterLevel });
       }
