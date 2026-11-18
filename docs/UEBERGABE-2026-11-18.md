@@ -100,8 +100,8 @@ AGENTS.md §3 verlangt `PA_ZUGPAUSE_SEKUNDEN=0`; `npm test` setzt das. Mit der V
 - Okkultist-Vorsprung (69 %) bleibt bestehen; die Zahl ist aus 36 Partien je Rolle, Wilson-Intervall beachten.
 - Die Erreichbarkeitsprüfung der Karte (`pruefeErreichbarkeit`) rechnet die Schwerkraft mit Faktor 1. Bei Faktor
   1,3 (surreal) wird sie etwas zu optimistisch, bei 0,6 zu vorsichtig. Das ist offen.
-- Die Kontrollmessungen laufen über `/tmp`-Skripte (nicht im Repo). Das Muster steht in `docs/biom-wirkung-2026-11-18.md`:
-  zwei Fassungen mit gleichem Seed und Biom, Verlaufsschlüssel „Züge/Schüsse/Treffer/Schaden/Sieger/Tick" vergleichen.
+- Kontrollmessungen für Biomregeln: `npm run balance:regelkontrolle -- --von=4 --bis=5 --biome=klassisch,vulkan --markdown`
+  (`scripts/regel-kontrolle.mjs`): zwei Fassungen, gleicher Seed und Biom, Verlaufsschlüssel „Züge/Schüsse/Treffer/Schaden/Sieger/Tick" vergleichen.
 
 ## 5. Dateien, die man kennen muss
 

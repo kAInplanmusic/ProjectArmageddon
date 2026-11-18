@@ -83,7 +83,8 @@
     "audit:liste": "node tools/audit-mcp/server.mjs --liste",
     "audit:status": "node tools/audit-mcp/server.mjs --ruf audit_status",
     "audit:bericht": "node tools/audit-mcp/server.mjs --ruf audit_bericht",
-    "web:installer": "node scripts/betrieb/web/installer-erzeugen.mjs"
+    "web:installer": "node scripts/betrieb/web/installer-erzeugen.mjs",
+    "balance:regelkontrolle": "node scripts/regel-kontrolle.mjs"
   },
   "keywords": [
     "artillery",
