@@ -8,7 +8,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { MENUE_KARTENTYP } from '../src/shared/config/menueStart.js';
+import { MENUE_KARTENTYP, MENUE_FASSUNGEN } from '../src/shared/config/menueStart.js';
 import { neuesMatch } from '../scripts/bot-partien.mjs';
 
 test('Das Menü startet mit MENUE_KARTENTYP (keine eigene Konstante in main.js)', () => {
@@ -16,6 +16,16 @@ test('Das Menü startet mit MENUE_KARTENTYP (keine eigene Konstante in main.js)'
   assert.match(quelle, /const kartentyp = MENUE_KARTENTYP;/);
   assert.doesNotMatch(quelle, /const kartentyp = 'autonom'/);
   assert.equal(MENUE_KARTENTYP, 'autonom');
+});
+
+test('Menü und Bot-Partien lesen dieselbe Fassungsliste (MENUE_FASSUNGEN)', () => {
+  const main = fs.readFileSync(new URL('../src/client/main.js', import.meta.url), 'utf8');
+  assert.match(main, /\.\.\.MENUE_FASSUNGEN,/);
+  const bot = fs.readFileSync(new URL('../scripts/bot-partien.mjs', import.meta.url), 'utf8');
+  assert.match(bot, /\.\.\.MENUE_FASSUNGEN,/);
+  const m = neuesMatch(1, 4, { teams: 2, proTeam: 1 });
+  assert.equal(m.windFassung, MENUE_FASSUNGEN.wind, 'Wind wie im Menü, nicht ALT');
+  assert.equal(m.hagel, MENUE_FASSUNGEN.hagel);
 });
 
 test('Bot-Partien starten wie das Menü: autonome Karte mit Stofffeld', () => {

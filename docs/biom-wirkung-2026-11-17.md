@@ -1,5 +1,7 @@
 # Biom-Wirkung im Menümodus (2026-11-17, QV-3)
 
+> **Überholt (2026-11-18):** Diese Messung lief mit den Altständen der Regelfamilien (Wind je Runde, kein Hagel, …), nicht mit den Fassungen, die das Menü übergibt. Aktuelle Messung: `docs/biom-wirkung-2026-11-18.md`.
+
 Wie stark ändert die Biom-Wahl das Spiel? Gemessen mit `npm run balance:biome` (`scripts/biom-wirkung.mjs`),
 Menümodus (`kartentyp: 'autonom'`, 24:9 groß), Kit 4, Bot-Duell 1 gegen 1, 4 Seeds. Rohdaten:
 `docs/biom-wirkung-2026-11-17.json`. Laufzeit 5 min; zwei Läufe ergaben identische Zahlen (deterministisch).

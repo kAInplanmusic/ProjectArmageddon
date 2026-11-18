@@ -14,7 +14,7 @@ import { FOTOS, panorama, fotoFuerBiom, fotoFuerKarte, findeKulisse } from './pa
  * @module main
  */
 import { MALI_LEITUNGSMARKE, maskeZuMali } from '../shared/config/schaden.js';
-import { MENUE_KARTENTYP } from '../shared/config/menueStart.js';
+import { MENUE_KARTENTYP, MENUE_FASSUNGEN } from '../shared/config/menueStart.js';
 import { isTextEntry } from './dom.js';
 import { haerteAusTreffer } from './gefuehl.js';
 import { TEAM_COLORS } from '../shared/config/match-konstanten.js';
@@ -73,17 +73,11 @@ import HYMNEN_MANIFEST from './assets/music/fraktionen/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
 import { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 as SONDERBIOM_IDS, BIOM_IDS_FASSUNG_7 } from '../shared/config/biome-neu.js';
 import { PLANET_BIOM_IDS, PLANET_WAHL } from '../shared/config/biome-planet.js';
-import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
+import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { TierHud } from './tierHud.js';
-import { COOKIE_STANDARD } from '../shared/config/cookie.js';
-import { FEUER_STANDARD } from '../shared/config/feuer.js';
-import { BEWEGUNG_STANDARD } from '../shared/config/bewegung.js';
-import { SEIL_STANDARD } from '../shared/config/seil.js';
 import { SeilSteuerung } from './seilSteuerung.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
-import { WIND_STANDARD, WIND_JE_ZUG } from '../shared/config/wind.js'; import { HAGEL_STANDARD } from '../shared/config/hagel.js'; import { HagelAnzeige } from './hagelAnzeige.js'; // Hagel (HAGEL-1)
-import { BODENOBJEKTE_STANDARD } from '../shared/config/bodenobjekte.js';
-import { ZUGREGELN_STANDARD } from '../shared/config/zugregeln.js';
+import { WIND_JE_ZUG } from '../shared/config/wind.js'; import { meldeBiomregel } from './biomregelAnzeige.js'; import { HagelAnzeige } from './hagelAnzeige.js'; // Hagel (HAGEL-1)
 import { LaufVorhersage } from './laufVorhersage.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
@@ -1109,7 +1103,7 @@ class Game {
     const { MatchController: MatchControllerDyn } = await import('../engine/match.js');
     this.match = new MatchControllerDyn({
       seed, teams, playersPerTeam, preset, kartentyp, format: mapFormat, groesse: mapSize, sidegrades, loadouts, biom, kartenart,
-      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, wind: WIND_STANDARD, hagel: HAGEL_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
+      ...MENUE_FASSUNGEN, // neue Partien: alle Regelfassungen auf Standard (`config/menueStart.js`)
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
@@ -1153,7 +1147,7 @@ class Game {
     this.endOverlay.hidden = true;
     this.#zeigeAbbruch(true);
     this.running = true;
-    this.hud.log(`Lokales Match — Seed ${this.match.seedManager.baseSeed}`, 'accent');
+    this.hud.log(`Lokales Match — Seed ${this.match.seedManager.baseSeed}`, 'accent'); meldeBiomregel(this.hud, { biom: this.match.sonderbiom, biomregeln: this.match.biomregeln, seed: this.match.seedManager.baseSeed });
     if (!this.animationHandle) this.#loop(performance.now());
     return { ok: true, mode: 'local' };
   }
@@ -1474,7 +1468,7 @@ class Game {
       // Neue Sitzung beim Server: die Takte zählen von vorn, alte Dedup-Schlüssel gelten nicht mehr.
       if (!payload.resumed) this.ereignisDedup.zuruecksetzen();
       // AERO: Windfassung der Partie für die Bahnvorschau (fehlt sie: alte Partie, Faktor 1).
-      this.remoteWindFassung = payload.windFassung ?? null;
+      this.remoteWindFassung = payload.windFassung ?? null; meldeBiomregel(this.hud, { biom: payload.biom, biomregeln: payload.biomregeln, seed: payload.seed });
       if (payload.seed !== null && payload.seed !== undefined) {
         // Die Ausrichtung kommt vom Server (neue Lobbys: immer Querformat; eine wiederhergestellte alte ggf. Hochformat).
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, kartentyp }));
