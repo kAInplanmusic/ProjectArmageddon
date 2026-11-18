@@ -11,7 +11,9 @@
  *   - `BIOMREGELN_STROEMUNG` (2): Welle 1, Baustein A „Strömung / Windneigung" für Düne, Riff und Tiefsee.
  *   - `BIOMREGELN_SCHWERKRAFT` (3, Standard): Welle 1, Baustein B „Schwerkraftfaktor" für Kosmos, Planet, Schwebinseln
  *     und Surreal; enthält A.
- *   - `BIOMREGELN_WASSERLAUF` (5, Standard): Welle 2, Wasserlauf: Wasser fließt nach Zerstörung nach (Grundwasser), die Strömung
+ *   - `BIOMREGELN_TREIBEN` (6, Standard): Wasserlauf-Ausbau, auch Kisten und Bodenobjekte (Minen, Fässer) treiben mit der Strömung;
+ *     enthält A, B, E und den Wasserlauf.
+ *   - `BIOMREGELN_WASSERLAUF` (5): Welle 2, Wasserlauf: Wasser fließt nach Zerstörung nach (Grundwasser), die Strömung
  *     schiebt Figuren; enthält A, B und E.
  *   - `BIOMREGELN_WASSER` (4): Welle 2, Baustein E (Gefahrenwasser: Lava, Gift, Leere, Schlamm); enthält A und B.
  *
@@ -38,12 +40,13 @@ export const BIOMREGELN_STROEMUNG = 2;
 export const BIOMREGELN_SCHWERKRAFT = 3;
 export const BIOMREGELN_WASSER = 4;
 export const BIOMREGELN_WASSERLAUF = 5;
-export const BIOMREGELN_STANDARD = BIOMREGELN_WASSERLAUF;
+export const BIOMREGELN_TREIBEN = 6;
+export const BIOMREGELN_STANDARD = BIOMREGELN_TREIBEN;
 
 /** Unbekannte Werte fallen auf den Standard; das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBiomregeln(fassung) {
   return fassung === BIOMREGELN_ALT || fassung === BIOMREGELN_STROEMUNG || fassung === BIOMREGELN_SCHWERKRAFT
-    || fassung === BIOMREGELN_WASSER || fassung === BIOMREGELN_WASSERLAUF
+    || fassung === BIOMREGELN_WASSER || fassung === BIOMREGELN_WASSERLAUF || fassung === BIOMREGELN_TREIBEN
     ? fassung : BIOMREGELN_STANDARD;
 }
 
@@ -185,4 +188,39 @@ export const WASSERLAUF = Object.freeze({
 /** Gilt der Wasserlauf in dieser Fassung? */
 export function wasserlaufAktiv(fassung) {
   return fassung >= BIOMREGELN_WASSERLAUF;
+}
+
+/**
+ * Treiben (ab Fassung 6): Kisten und Bodenobjekte (Minen, Fässer) im Wasser wandern mit der Strömung.
+ *
+ * `treibenKiste`/`treibenBoden`: Pixel je Takt je Einheit Strömung (Strömung etwa 0 bis 0,5, also bis ~1,5 px/Takt).
+ * `schwelle`: Wasserstand (0 bis 1), ab dem ein Objekt „im Wasser" treibt (Grundwasser reicht, es muss nicht tief sein).
+ * Erste Ansätze, nicht balanciert. Treiben ist rein seitlich; ein Objekt stoppt an Gelände (fester Boden).
+ */
+export const TREIBEN = Object.freeze({
+  treibenKiste: 3,
+  treibenBoden: 3,
+  schwelle: 0.3,
+  name: 'Treibgut',
+  text: 'Kisten, Minen und Fässer im Wasser treiben mit der Strömung.',
+});
+
+/** Gilt das Treiben in dieser Fassung? */
+export function treibenAktiv(fassung) {
+  return fassung >= BIOMREGELN_TREIBEN;
+}
+
+/**
+ * Wegstrecke (Pixel, seitlich) eines Objekts in diesem Takt: Strömung am Ort mal Faktor, 0 außerhalb von Wasser oder
+ * wenn der Zielpunkt fest ist. Rein, keine Zufallszahl. `services` ist `world.services` (`water`, `terrain`).
+ * @returns {number}
+ */
+export function treibweg(services, x, y, faktor) {
+  const water = services?.water;
+  if (!services?.match?.wasserTreiben || typeof water?.flussAn !== 'function') return 0;
+  if ((water.levelAtWorld?.(x, y) ?? 0) < TREIBEN.schwelle) return 0;
+  const dx = water.flussAn(x, y) * faktor;
+  if (dx === 0) return 0;
+  if (services.terrain?.isSolid?.(Math.round(x + dx), Math.round(y))) return 0;
+  return dx;
 }

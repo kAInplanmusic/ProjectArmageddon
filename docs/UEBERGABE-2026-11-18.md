@@ -19,7 +19,14 @@ an ihn sind auf Deutsch. Vor Freigaben (Balance-Werte, Merges kritischer Änderu
 
 QV-4 (Spieltest mit Menschen) ist NICHT erfolgt und liegt beim Auftraggeber.
 
-### Offen auf Branch `claude/qv6-wasser-stroemung` (NICHT committet)
+### Nachtrag (2026-11-18 abends)
+
+- PR #31 (Wasserlauf, Fassung 5) ist gemergt. Kontrollmessung 4 gegen 5 steht in `docs/biom-wirkung-2026-11-18.md` (6 von 24 Duellen anders).
+- Fassung 6 (Treiben): Kisten (`lootSystem.js`), Minen und Fässer (`bodenobjektSystem.js`) wandern im Wasser seitlich mit der Strömung
+  (`treibweg` und `TREIBEN` in `biomregeln.js`, Flag `services.match.wasserTreiben`). Würmer (Figuren) wurden schon in Fassung 5 geschoben.
+  Im Bot-Duell nicht messbar; Wirkung nur durch Unit-Tests belegt. Wasserfälle, Seen in Höhlen/auf Inseln und Treibsand sind weiter offen.
+
+### Stand der Wasserlauf-Arbeit (Fassung 5, inzwischen gemergt, ursprünglicher Bericht)
 
 Wasserlauf, Biomregel-Fassung 5 (Standard). Stand:
 
@@ -41,10 +48,10 @@ AGENTS.md §3 verlangt `PA_ZUGPAUSE_SEKUNDEN=0`; `npm test` setzt das. Mit der V
 
 ## 2. Fahrplan (Reihenfolge)
 
-1. **Wasserlauf abschließen** (Abschnitt 1, Branch oben): Suite, Messung, TODO, Commit, PR, CI, Merge.
+1. ~~Wasserlauf abschließen~~ (Fassung 5 gemergt; Fassung 6 Treiben, siehe Nachtrag).
 2. **Wasserlauf-Ausbau** (Grundwasser-Physik, Vorgaben des Nutzers, 2026-11-18):
    - Flaches Wasser schiebt Figuren in Fließrichtung und ertränkt nicht; tiefes Wasser ertränkt wie bisher.
-   - Fließrichtung und Schub auch für Kisten und Fässer (Bodenobjekte), nicht nur für Figuren.
+   - ~~Fließrichtung und Schub auch für Kisten und Fässer~~ (Fassung 6 erledigt).
    - Würmer (als Spielfiguren oder Bodenobjekte) werden vom Wasser weggespült oder an Hindernisse gedrückt.
    - Sprengung als Spielzug: Damm sprengen, Wasser umleiten (bereits durch Fenster und displace möglich, nicht getestet).
    - Vor dem Ausbau Schub-Stärke messen (`balance:biome`-Muster), nicht schätzen.
@@ -117,6 +124,5 @@ AGENTS.md §3 verlangt `PA_ZUGPAUSE_SEKUNDEN=0`; `npm test` setzt das. Mit der V
 
 ## 6. Nächster Schritt für den Übernehmenden
 
-Branch `claude/qv6-wasser-stroemung` öffnen, `npm test` mit `PA_ZUGPAUSE_SEKUNDEN=0` (über `npm test` automatisch)
-laufen lassen, Wasserlauf-Kontrollmessung (Fassung 4 gegen 5, Biome mit Wasser: klassisch, vulkan, riff, tiefsee)
-ausführen, Ergebnis in `docs/biom-wirkung-2026-11-18.md` ergänzen, dann committen und PR öffnen.
+Von `main` abzweigen. Als Nächstes die Karten-Ausstattung (Seen in Höhlen oder auf Inseln, Wasserfälle) oder, wenn der Nutzer
+zuerst den Spieltest QV-4 macht, auf sein Ergebnis zu Wasserlauf und Treiben warten und erst dann Stärken ändern.

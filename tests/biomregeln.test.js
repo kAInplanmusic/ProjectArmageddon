@@ -18,13 +18,14 @@ import { MENUE_FASSUNGEN } from '../src/shared/config/menueStart.js';
 
 const NEAR = (a, b, eps = 1.5e-4) => Math.abs(a - b) <= eps;
 
-test('Fassungen: Standard ist die neueste (5), unbekannte Werte fallen auf den Standard, ALT bleibt ALT', () => {
-  assert.equal(BIOMREGELN_STANDARD, 5);
+test('Fassungen: Standard ist die neueste (6), unbekannte Werte fallen auf den Standard, ALT bleibt ALT', () => {
+  assert.equal(BIOMREGELN_STANDARD, 6);
   assert.equal(normalisiereBiomregeln(1), BIOMREGELN_ALT);
   assert.equal(normalisiereBiomregeln(2), BIOMREGELN_STROEMUNG);
   assert.equal(normalisiereBiomregeln(3), BIOMREGELN_SCHWERKRAFT);
   assert.equal(normalisiereBiomregeln(4), 4);
   assert.equal(normalisiereBiomregeln(5), 5);
+  assert.equal(normalisiereBiomregeln(6), 6);
   assert.equal(normalisiereBiomregeln(undefined), BIOMREGELN_STANDARD);
   assert.equal(normalisiereBiomregeln(99), BIOMREGELN_STANDARD);
 });

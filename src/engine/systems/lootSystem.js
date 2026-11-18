@@ -7,6 +7,7 @@
  *
  * @module LootSystem
  */
+import { treibweg as treibwegFuer, TREIBEN } from '../../shared/config/biomregeln.js';
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 import {
   weightedRarity, rollCrateCount, rollCrateContents, LOOT_DROP_RULES,
@@ -302,8 +303,11 @@ export class LootSystem {
       // Luft. Sonst könnte man sie im Vorbeifliegen aufschnappen.
       if (world.getComponent(crateId, 'Crate', 'inFlight') === 1) continue;
 
-      const crateX = world.getComponent(crateId, 'Position', 'x') || 0;
+      let crateX = world.getComponent(crateId, 'Position', 'x') || 0;
       const crateY = world.getComponent(crateId, 'Position', 'y') || 0;
+      // Biomregel Treiben (Fassung 6): eine liegende Kiste im Wasser wandert mit der Strömung (0 sonst).
+      const treibweg = services.match?.wasserTreiben ? treibwegFuer(services, crateX, crateY, TREIBEN.treibenKiste) : 0;
+      if (treibweg !== 0) { crateX += treibweg; world.setComponent(crateId, 'Position', 'x', crateX); }
       const crateType = world.getComponent(crateId, 'Crate', 'crateType');
       const weaponIndex = world.getComponent(crateId, 'Crate', 'weaponId');
 

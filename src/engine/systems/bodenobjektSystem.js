@@ -28,6 +28,7 @@ import { MINEN, FAESSER, BIOMOBJEKTE, BODENOBJEKTE_BREIT_BASIS, BODENOBJEKTE_BRE
 import { damageTypeId } from '../damageTypes.js';
 import { wendeExplosionAn } from '../explosion.js';
 import { freierPlatz } from '../turret.js';
+import { treibweg, TREIBEN } from '../../shared/config/biomregeln.js';
 
 /** Herkunft einer Mine (steht im Zustand und im Ereignis, die Anzeige kann sie unterscheiden). */
 export const MINEN_ART = Object.freeze({ ABGEWORFEN: 'abgeworfen', ABGELEGT: 'abgelegt', LIEGEND: 'liegend' });
@@ -260,6 +261,16 @@ export class BodenobjektSystem {
       if (objekt.fallend && this.#world.tickCount >= objekt.landetBeiTick) {
         objekt.fallend = false;
         this.#events.emit('fass_gelandet', { fassId: objekt.id, x: objekt.x, y: objekt.y });
+      }
+    }
+
+    // 0b. Biomregel Treiben (Fassung 6): liegende Objekte im Wasser wandern seitlich mit der Strömung (Kennung aufsteigend).
+    if (this.#world.services?.match?.wasserTreiben) {
+      for (const objekt of this.#sortierte()) {
+        if (objekt.fallend || objekt.ausgeloest || objekt.blindgaenger) continue;
+        const px = objekt.px ?? objekt.x;
+        const weg = treibweg(this.#world.services, px, objekt.y, TREIBEN.treibenBoden);
+        if (weg !== 0) { objekt.px = px + weg; objekt.x = Math.round(objekt.px); }
       }
     }
 
