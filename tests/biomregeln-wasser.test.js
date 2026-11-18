@@ -14,9 +14,9 @@ import { MatchController } from '../src/engine/match.js';
 import { CharacterSystem } from '../src/engine/systems/characterSystem.js';
 import { wasserregelText, meldeBiomregel, meldeWasserregel } from '../src/client/biomregelAnzeige.js';
 
-test('Fassung 4 ist der Standard; 1 bis 3 bleiben gültig, Unbekanntes fällt auf den Standard', () => {
-  assert.equal(BIOMREGELN_STANDARD, BIOMREGELN_WASSER);
-  for (const f of [1, 2, 3, 4]) assert.equal(normalisiereBiomregeln(f), f);
+test('Fassung 4 bleibt gültig; der Standard ist inzwischen neuer (Wasserlauf, 5); Unbekanntes fällt auf den Standard', () => {
+  assert.equal(BIOMREGELN_STANDARD, 5);
+  for (const f of [1, 2, 3, 4, 5]) assert.equal(normalisiereBiomregeln(f), f);
   assert.equal(normalisiereBiomregeln(77), BIOMREGELN_STANDARD);
 });
 

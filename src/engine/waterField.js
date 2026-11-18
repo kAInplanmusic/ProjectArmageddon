@@ -15,6 +15,9 @@ export class WaterField {
   #isSolid;
   #flowRate;
   #worldScale;
+  #fenster = null;
+  #fluss = null;
+  #bewegt = 0;
 
   /**
    * @param {object} options
@@ -139,6 +142,9 @@ export class WaterField {
       }
     }
 
+    // Wasserlauf: die verdrängte Stelle weckt das Feld (Fenster um den Ring). Ohne Aufruf von `stepAktiv` wirkungslos.
+    this.#vereine(cx - ring - 2, cy - ring - 2, cx + ring + 2, cy + ring + 2);
+
     // Ohne Ausweichplatz bleibt das Wasser, wo es ist.
     if (targets.length === 0 || totalCapacity <= 0.001) return 0;
 
@@ -161,17 +167,76 @@ export class WaterField {
 
   /** Ein Simulationsschritt: erst vertikaler Fluss, dann seitlicher Ausgleich. */
   step() {
+    return this.#schritt(0, 0, this.#width - 1, this.#height - 1, false);
+  }
+
+  /**
+   * Wasserlauf (Biomregel-Fassung 5): Ein Schritt NUR im wachen Fenster — und nur, solange sich etwas bewegt.
+   *
+   * Das Fenster ist der Umriss der Zellen, die sich im letzten Schritt änderten (plus Rand), oder der Bereich, den
+   * `wecke` meldete (Krater). Außerhalb des Fensters gilt der Rand als fest: Wasser kann das Fenster nicht verlassen,
+   * die Menge bleibt erhalten. So kostet ein Schritt die Größe der bewegten Stelle, nicht die der Karte.
+   * Liefert die Zahl der bewegten Zellen (0 = ruhig, das Fenster schläft).
+   * @returns {number}
+   */
+  stepAktiv() {
+    const f = this.#fenster;
+    if (!f) return 0;
+    this.#fenster = null;
+    this.#schritt(f.x0, f.y0, f.x1, f.y1, true);
+    return this.#bewegt;
+  }
+
+  /** Weckt das Wasser um einen Weltpunkt (Radius in Weltpixeln); mehrere Aufrufe vereinen sich zu einem Fenster. */
+  wecke(worldX, worldY, radiusWorld) {
+    const scale = this.#worldScale;
+    const r = Math.ceil(radiusWorld / scale) + 3;
+    const cx = Math.floor(worldX / scale);
+    const cy = Math.floor(worldY / scale);
+    this.#vereine(cx - r, cy - r, cx + r, cy + r);
+  }
+
+  #vereine(x0, y0, x1, y1) {
+    const a = Math.max(0, x0); const b = Math.max(0, y0);
+    const c = Math.min(this.#width - 1, x1); const d = Math.min(this.#height - 1, y1);
+    if (a > c || b > d) return;
+    const f = this.#fenster;
+    this.#fenster = f
+      ? { x0: Math.min(f.x0, a), y0: Math.min(f.y0, b), x1: Math.max(f.x1, c), y1: Math.max(f.y1, d) }
+      : { x0: a, y0: b, x1: c, y1: d };
+  }
+
+  /** Seitliche Strömung an einer Weltkoordinate im letzten Schritt: − nach links, + nach rechts (Zellen je Schritt, etwa −0,5 bis 0,5). */
+  flussAn(worldX, worldY) {
+    if (!this.#fluss) return 0;
+    const cell = this.toGrid(worldX, worldY);
+    if (cell.x < 0 || cell.y < 0 || cell.x >= this.#width || cell.y >= this.#height) return 0;
+    return this.#fluss[cell.y * this.#width + cell.x];
+  }
+
+  /**
+   * Der gemeinsame Schritt. `fenster` begrenzt die Zellen; `aktiv` schaltet Strömungsmessung und Fenster-Nachführung ein.
+   * Mit `aktiv = false` und vollem Fenster rechnet er Bit für Bit wie der frühere `step()`.
+   */
+  #schritt(fx0, fy0, fx1, fy1, aktiv) {
     const { width, height } = this;
     const levels = this.#levels;
     const next = this.#next;
-    next.fill(0);
+    if (aktiv) {
+      for (let y = fy0; y <= fy1; y++) next.fill(0, y * width + fx0, y * width + fx1 + 1);
+      if (!this.#fluss) this.#fluss = new Float32Array(width * height);
+      for (let y = fy0; y <= fy1; y++) this.#fluss.fill(0, y * width + fx0, y * width + fx1 + 1);
+    } else {
+      next.fill(0);
+    }
+    const fluss = aktiv ? this.#fluss : null;
 
     // Von UNTEN nach OBEN verarbeiten. Nur so ist die Kapazität der Zelle unter
     // uns bereits endgültig, wenn wir sie prüfen. Bei aufsteigender Reihenfolge
     // ist next[unten] noch leer, die Kapazitätsprüfung schlägt fehl und Wasser
     // stapelt sich unbegrenzt in der untersten Zelle.
-    for (let y = height - 1; y >= 0; y--) {
-      for (let x = 0; x < width; x++) {
+    for (let y = fy1; y >= fy0; y--) {
+      for (let x = fx0; x <= fx1; x++) {
         const index = y * width + x;
         if (this.#isSolid(x, y)) continue;
 
@@ -181,7 +246,7 @@ export class WaterField {
 
         // 1. Vertikal: maximaler Fall nach unten.
         const belowY = y + 1;
-        if (belowY < height && !this.#isSolid(x, belowY)) {
+        if (belowY <= fy1 && belowY < height && !this.#isSolid(x, belowY)) {
           const belowIndex = belowY * width + x;
           const capacity = Math.max(0, 1 - next[belowIndex]);
           if (capacity > 0) {
@@ -196,7 +261,7 @@ export class WaterField {
           for (const dx of [-1, 1]) {
             if (remaining <= 0.001) break;
             const nx = x + dx;
-            if (nx < 0 || nx >= width) continue;
+            if (nx < fx0 || nx > fx1 || nx < 0 || nx >= width) continue;
             if (this.#isSolid(nx, y)) continue;
             const neighbourIndex = y * width + nx;
             // Eigenes Wasser des Nachbarn plus bereits erhaltene Zuflüsse.
@@ -212,6 +277,7 @@ export class WaterField {
             if (transfer <= 0) continue;
             next[neighbourIndex] += transfer;
             remaining -= transfer;
+            if (fluss) { fluss[index] += dx * transfer; fluss[neighbourIndex] += dx * transfer; }
           }
         }
 
@@ -220,7 +286,25 @@ export class WaterField {
       }
     }
 
-    this.#levels.set(next);
+    if (!aktiv) {
+      this.#levels.set(next);
+      return this;
+    }
+    // Fenster: zurückschreiben, bewegte Zellen zählen, das nächste Fenster aus dem Umriss der Bewegung bilden.
+    let bewegt = 0;
+    let bx0 = width; let by0 = height; let bx1 = -1; let by1 = -1;
+    for (let y = fy0; y <= fy1; y++) {
+      for (let x = fx0; x <= fx1; x++) {
+        const i = y * width + x;
+        if (Math.abs(next[i] - levels[i]) > 0.002) {
+          bewegt += 1;
+          if (x < bx0) bx0 = x; if (x > bx1) bx1 = x; if (y < by0) by0 = y; if (y > by1) by1 = y;
+        }
+        levels[i] = next[i];
+      }
+    }
+    this.#bewegt = bewegt;
+    if (bewegt > 0) this.#vereine(bx0 - 2, by0 - 2, bx1 + 2, by1 + 2);
     return this;
   }
 
