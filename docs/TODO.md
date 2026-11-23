@@ -16,7 +16,7 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 
 | Bereich | Stand |
 |---|---|
-| Fassungen (Standard neuer Partien) | Gelände 14 (`GELAENDE_RUND`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 6 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben), Bodenobjekte 6 |
+| Fassungen (Standard neuer Partien) | Gelände 14 (`GELAENDE_RUND`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 7 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben, Sturzflut), Bodenobjekte 6 |
 | Zeilenbudgets | `match.js` 2772/2790, `main.js` 3707, `renderer.js` 2218 (`tests/zeilenbudget.test.js`) |
 | CI | grün auf `730f6bb` (2026-11-23, alle vier Browser-Teile, Lint/Tests/Build) |
 | Abhängigkeiten | `npm audit`: 0 Schwachstellen (2026-11-23, vite 8.3.8, eslint 10.15) |
@@ -30,7 +30,6 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 
 | ID | Arbeit | Abnahme / Hinweis |
 |---|---|---|
-| 2.1 WASSER-AUSBAU | Flaches Wasser schiebt in Fließrichtung und ertränkt nicht, tiefes ertränkt; Figuren werden weggespült oder an Hindernisse gedrückt; „Damm sprengen“ als Spielzug testen. Vorher Schub messen (`npm run balance:biome`), nicht schätzen | neue Biomregel-Fassung, Altfassungen bitgleich, Messbericht |
 | 2.2 KARTE-WASSER | Seen in Höhlen und auf Inseln, kleine Wasserfälle; Treibsand (`quicksand`) wirkt bisher gar nicht | Geländefassung mit Marke; Matchstart-Zeit (QV-7) und `check:erreichbarkeit` bleiben im Rahmen |
 | 2.3 KARTE-QUALITÄT | Fassung 15: Mindestgangbreite (Fantasywald-Lichtung zu eng), runde Karten interessanter (Planet: verzweigte Tunnel, hohler Kern), gelobte große Karten nicht verschlechtern; Qualitäts-Tor: Generator würfelt neu (Versuchszähler, deterministisch), wenn Gangbreite, Erreichbarkeit oder Spawn-Fairness unter der Schwelle liegen | 0 von 500 Seeds unter der Schwelle |
 | 2.5 QV-6-F | Bodenobjekte nach Biom (schrott, fabrik, dschungel, pilzwald, tempelstadt); Daten in `BODENOBJEKTE_BIOM` | Fassung mit Marke |
@@ -51,7 +50,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 
 | ID | Arbeit |
 |---|---|
-| 3.1 BIOM-WERTE | Schwerkraft 0,6–0,85, surreal 0,7–1,3, Strömung 0,5/0,35/0,5, Gefahrenwasser, Wasserlauf-Schub sind erste Ansätze: `npm run balance:biome`, `node scripts/balance-rollen.mjs --stufe=standard` |
+| 3.1 BIOM-WERTE | Schwerkraft 0,6–0,85, surreal 0,7–1,3, Strömung 0,5/0,35/0,5, Gefahrenwasser sind erste Ansätze; Sturzflut (Schub 1,5, 4 Teilschritte) ist nur in einer Rinne gemessen (`node scripts/messung-wasserlauf.mjs`), auf echten Karten noch nicht: `npm run balance:biome`, `node scripts/balance-rollen.mjs --stufe=standard` |
 | 3.2 ROLLEN | BAL-14 Feinbalancing je Rolle mit festen Seeds; Okkultist-Vorsprung 69 % (36 Partien je Rolle, Intervall beachten) |
 | 3.3 NAHKAMPF | Nahkampf-Reichweite erreicht den Startabstand mit 0 von 100 Projektilwaffen: Wurfweiten angleichen (Marke) oder Startabstände je Klasse mischen |
 | 3.4 BAL-1 | maxRange-Anzeige, Scout-Bewertung (N-21: Beweglichkeit ohne Netto-Vorteil), Wurfweiten-Deckel |
@@ -117,7 +116,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 
 ## 8. Abnahmen durch den Auftraggeber (maschinell nicht möglich)
 
-Spieltest mit Menschen (QV-4: Wasserlauf, Treiben, Strömung, Lesbarkeit der Hinweise, Windpfeil) · Sicht: Figuren
+Spieltest mit Menschen (QV-4: Wasserlauf, Sturzflut/Dammbruch, Treiben, Strömung, Lesbarkeit der Hinweise, Windpfeil) · Sicht: Figuren
 (Randlicht, Hocke, 8-Bit-pixel, Angst, Tod-Epilog-Sprüche), Waffenoptik im Flug und im Nahkampf (N-09, N-10, N-14,
 N-15, GP-8), Wetter und Hagel, Kameraeffekte, Mine und Fass (MINEN-1/2), Seil am Touch-Gerät, Menü `kolossal`
 am Telefon, Biome 15–20 · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkugel, Mine, Hagel, Titellied.

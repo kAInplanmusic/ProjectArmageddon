@@ -9,9 +9,12 @@
  *   - `BIOMREGELN_ALT` (1): keine Biomregeln. Das Feld FEHLT in jeder Datei aus der Zeit davor; `fromJSON` löst es auf
  *     diese Fassung auf, der Motor rechnet Bit für Bit wie vorher.
  *   - `BIOMREGELN_STROEMUNG` (2): Welle 1, Baustein A „Strömung / Windneigung" für Düne, Riff und Tiefsee.
- *   - `BIOMREGELN_SCHWERKRAFT` (3, Standard): Welle 1, Baustein B „Schwerkraftfaktor" für Kosmos, Planet, Schwebinseln
+ *   - `BIOMREGELN_SCHWERKRAFT` (3): Welle 1, Baustein B „Schwerkraftfaktor" für Kosmos, Planet, Schwebinseln
  *     und Surreal; enthält A.
- *   - `BIOMREGELN_TREIBEN` (6, Standard): Wasserlauf-Ausbau, auch Kisten und Bodenobjekte (Minen, Fässer) treiben mit der Strömung;
+ *   - `BIOMREGELN_STURZFLUT` (7, Standard): Wasserlauf-Ausbau 2 (TODO 2.1): Wasser fließt viermal so schnell
+ *     (`WASSERLAUF_STURZFLUT.teilschritte`), die Strömung schiebt stärker; ein Dammbruch spült Figuren fort oder drückt sie an
+ *     Hindernisse, tiefes Wasser ertränkt. Gemessen mit `scripts/messung-wasserlauf.mjs`; enthält A, B, E, Wasserlauf, Treiben.
+ *   - `BIOMREGELN_TREIBEN` (6): Wasserlauf-Ausbau, auch Kisten und Bodenobjekte (Minen, Fässer) treiben mit der Strömung;
  *     enthält A, B, E und den Wasserlauf.
  *   - `BIOMREGELN_WASSERLAUF` (5): Welle 2, Wasserlauf: Wasser fließt nach Zerstörung nach (Grundwasser), die Strömung
  *     schiebt Figuren; enthält A, B und E.
@@ -41,12 +44,14 @@ export const BIOMREGELN_SCHWERKRAFT = 3;
 export const BIOMREGELN_WASSER = 4;
 export const BIOMREGELN_WASSERLAUF = 5;
 export const BIOMREGELN_TREIBEN = 6;
-export const BIOMREGELN_STANDARD = BIOMREGELN_TREIBEN;
+export const BIOMREGELN_STURZFLUT = 7;
+export const BIOMREGELN_STANDARD = BIOMREGELN_STURZFLUT;
 
 /** Unbekannte Werte fallen auf den Standard; das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBiomregeln(fassung) {
   return fassung === BIOMREGELN_ALT || fassung === BIOMREGELN_STROEMUNG || fassung === BIOMREGELN_SCHWERKRAFT
     || fassung === BIOMREGELN_WASSER || fassung === BIOMREGELN_WASSERLAUF || fassung === BIOMREGELN_TREIBEN
+    || fassung === BIOMREGELN_STURZFLUT
     ? fassung : BIOMREGELN_STANDARD;
 }
 
@@ -205,6 +210,27 @@ export const WASSERLAUF = Object.freeze({
 /** Gilt der Wasserlauf in dieser Fassung? */
 export function wasserlaufAktiv(fassung) {
   return fassung >= BIOMREGELN_WASSERLAUF;
+}
+
+/**
+ * Sturzflut (ab Fassung 7, TODO 2.1). Messung `scripts/messung-wasserlauf.mjs` (Dammbruch in einer Rinne, 30 s):
+ * Mit Fassung 5/6 (1 Teilschritt, Schub 0,6) kroch die Wasserfront etwa 20 px/s, die Figur wurde 5 bis 183 px
+ * geschoben und stand nie tief: kein Schaden, nie an einem Hindernis. Mit 4 Teilschritten und Schub 1,5 kommt das
+ * Wasser in 0,5 bis 7 s an; ein kleiner Stau (80 px) spült die Figur 150 bis 270 px weit ohne Schaden, ein großer
+ * (160 px) drückt sie an den Fels und ertränkt sie. Kosten: der Wasserschritt läuft im wachen Fenster viermal je Takt.
+ */
+export const WASSERLAUF_STURZFLUT = Object.freeze({ schub: 1.5, teilschritte: 4 });
+
+/** Wasserschritte je Takt im wachen Fenster: 0 ohne Wasserlauf, 1 in Fassung 5/6, 4 ab Fassung 7. */
+export function wasserTeilschritte(fassung) {
+  if (!wasserlaufAktiv(fassung)) return 0;
+  return fassung >= BIOMREGELN_STURZFLUT ? WASSERLAUF_STURZFLUT.teilschritte : 1;
+}
+
+/** Schub der Strömung auf Figuren (0 = schiebt nicht). */
+export function wasserSchubFuer(fassung) {
+  if (!wasserlaufAktiv(fassung)) return 0;
+  return fassung >= BIOMREGELN_STURZFLUT ? WASSERLAUF_STURZFLUT.schub : WASSERLAUF.schub;
 }
 
 /**

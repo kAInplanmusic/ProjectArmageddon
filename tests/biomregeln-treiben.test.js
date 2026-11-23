@@ -20,11 +20,12 @@ const dienste = ({ treiben = true, level = 1, fluss = 0.4, fest = false } = {}) 
   terrain: { isSolid: () => fest },
 });
 
-test('Fassungen: 6 ist der Standard; 1 bis 5 bleiben gültig', () => {
-  assert.equal(BIOMREGELN_STANDARD, BIOMREGELN_TREIBEN);
+test('Fassungen: 6 bleibt gültig, der Standard (7, Sturzflut) enthält das Treiben; 1 bis 5 bleiben gültig', () => {
+  assert.ok(BIOMREGELN_STANDARD > BIOMREGELN_TREIBEN);
   for (const f of [1, 2, 3, 4, 5, 6]) assert.equal(normalisiereBiomregeln(f), f);
   assert.equal(treibenAktiv(5), false);
   assert.equal(treibenAktiv(6), true);
+  assert.equal(treibenAktiv(BIOMREGELN_STANDARD), true);
 });
 
 test('treibweg: Strömung mal Faktor im Wasser; 0 ohne Regel, ohne Wasser, bei Gegenströmung null und an festem Boden', () => {
