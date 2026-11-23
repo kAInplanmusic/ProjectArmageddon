@@ -15,10 +15,10 @@ import {
 import { lauf, werteFuer } from '../scripts/messung-wasserlauf.mjs';
 import { neuesMatch } from '../scripts/bot-partien.mjs';
 
-test('Fassungen: 7 ist der Standard; 6 und älter behalten Schub und Teilschritte', () => {
-  assert.equal(BIOMREGELN_STANDARD, BIOMREGELN_STURZFLUT);
+test('Fassungen: 7 bleibt gültig (Standard ist 8, Treibsand); 6 und älter behalten Schub und Teilschritte', () => {
+  assert.equal(BIOMREGELN_STANDARD, BIOMREGELN_STURZFLUT + 1);
   assert.equal(normalisiereBiomregeln(7), 7);
-  assert.equal(normalisiereBiomregeln(undefined), 7);
+  assert.equal(normalisiereBiomregeln(undefined), 8);
   assert.deepEqual([wasserTeilschritte(BIOMREGELN_WASSER), wasserSchubFuer(BIOMREGELN_WASSER)], [0, 0], 'vor Fassung 5 kein Wasserlauf');
   for (const f of [5, BIOMREGELN_TREIBEN]) assert.deepEqual([wasserTeilschritte(f), wasserSchubFuer(f)], [1, WASSERLAUF.schub]);
   assert.deepEqual([wasserTeilschritte(7), wasserSchubFuer(7)], [WASSERLAUF_STURZFLUT.teilschritte, WASSERLAUF_STURZFLUT.schub]);

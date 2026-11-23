@@ -142,6 +142,9 @@ export class CharacterSystem {
         vx += (services.match?.currentStrength ?? 0) * 0.02;
         // Wasserlauf (Fassung 5): die Strömung des Wasserfelds schiebt mit (0 = aus, Altstand)
         if (services.match?.wasserSchub && typeof water?.flussAn === 'function') vx += water.flussAn(x, y) * services.match.wasserSchub;
+        // Treibsand (Biomregel 8): seitlich stark gebremst, langsames Einsinken; nach oben frei (Springen trägt heraus)
+        const sand = services.match?.treibsand;
+        if (sand) { vx *= sand.bremse; if (vy > 0) vy *= sand.sinken; }
       } else {
         vx *= 0.995;
       }
@@ -248,7 +251,7 @@ export class CharacterSystem {
       }
 
       // Ertrinken: tief untergetauchte Figuren verlieren kontinuierlich Leben.
-      if (waterLevel >= this.#submergedLevel && damageSystem) {
+      if (waterLevel >= this.#submergedLevel && damageSystem && services.match?.wasserSchaden !== 0) { // 0 = Treibsand
         const damage = ((services.match?.wasserSchaden ?? this.#drownDamagePerSecond) / 60) * (dt / (1000 / 60)); // Biomregel E: Gefahrenwasser ersetzt 9 LP/s
         damageSystem.applyDamage(world, entityId, damage, null);
         events?.emit('drowning', { entityId, level: waterLevel });

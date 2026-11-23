@@ -55,7 +55,8 @@ export function meldeBiomregel(hud, partie) {
  */
 export function wasserregelText(wasserId, biomregeln) {
   const w = wasserWirkungFuer(wasserId ?? null, biomregeln ?? 1);
-  return w ? `${w.name}: ${w.text} (${w.schaden} Leben je Sekunde)` : null;
+  if (!w) return null;
+  return w.schaden > 0 ? `${w.name}: ${w.text} (${w.schaden} Leben je Sekunde)` : `${w.name}: ${w.text}`; // Treibsand: kein Schaden
 }
 
 /** Meldet das Gefahrenwasser der Szene; nimmt die Fassung der zuletzt gemeldeten Partie. */

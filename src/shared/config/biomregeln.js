@@ -11,7 +11,9 @@
  *   - `BIOMREGELN_STROEMUNG` (2): Welle 1, Baustein A „Strömung / Windneigung" für Düne, Riff und Tiefsee.
  *   - `BIOMREGELN_SCHWERKRAFT` (3): Welle 1, Baustein B „Schwerkraftfaktor" für Kosmos, Planet, Schwebinseln
  *     und Surreal; enthält A.
- *   - `BIOMREGELN_STURZFLUT` (7, Standard): Wasserlauf-Ausbau 2 (TODO 2.1): Wasser fließt viermal so schnell
+ *   - `BIOMREGELN_TREIBSAND` (8, Standard): Treibsand (`quicksand`, TODO 2.2) wirkt: kein Ertrinken, seitlich stark
+ *     gebremst, langsames Einsinken; heraus kommt man springend. Enthält alles aus 7.
+ *   - `BIOMREGELN_STURZFLUT` (7): Wasserlauf-Ausbau 2 (TODO 2.1): Wasser fließt viermal so schnell
  *     (`WASSERLAUF_STURZFLUT.teilschritte`), die Strömung schiebt stärker; ein Dammbruch spült Figuren fort oder drückt sie an
  *     Hindernisse, tiefes Wasser ertränkt. Gemessen mit `scripts/messung-wasserlauf.mjs`; enthält A, B, E, Wasserlauf, Treiben.
  *   - `BIOMREGELN_TREIBEN` (6): Wasserlauf-Ausbau, auch Kisten und Bodenobjekte (Minen, Fässer) treiben mit der Strömung;
@@ -45,13 +47,14 @@ export const BIOMREGELN_WASSER = 4;
 export const BIOMREGELN_WASSERLAUF = 5;
 export const BIOMREGELN_TREIBEN = 6;
 export const BIOMREGELN_STURZFLUT = 7;
-export const BIOMREGELN_STANDARD = BIOMREGELN_STURZFLUT;
+export const BIOMREGELN_TREIBSAND = 8;
+export const BIOMREGELN_STANDARD = BIOMREGELN_TREIBSAND;
 
 /** Unbekannte Werte fallen auf den Standard; das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBiomregeln(fassung) {
   return fassung === BIOMREGELN_ALT || fassung === BIOMREGELN_STROEMUNG || fassung === BIOMREGELN_SCHWERKRAFT
     || fassung === BIOMREGELN_WASSER || fassung === BIOMREGELN_WASSERLAUF || fassung === BIOMREGELN_TREIBEN
-    || fassung === BIOMREGELN_STURZFLUT
+    || fassung === BIOMREGELN_STURZFLUT || fassung === BIOMREGELN_TREIBSAND
     ? fassung : BIOMREGELN_STANDARD;
 }
 
@@ -172,7 +175,7 @@ export function schwerkraftHoechstwert(biom, fassung) {
  *
  * Bis Fassung 3 galt für jedes Wasser dasselbe Ertrinken (9 LP/s); `hazard` in `config/scenery.js` war nur
  * beschriftet, kein Leser (FUND 2026-09-27). Jetzt ersetzt dieser Wert die 9 LP/s in genau diesen Wasserarten.
- * Treibsand (`snare`) ist NICHT umgesetzt: Er braucht einen Eingriff in die Bewegung (Welle 3, Baustein C).
+ * Treibsand (`snare`) bis Fassung 7 NICHT umgesetzt (er ertränkte wie Wasser); ab Fassung 8 siehe `TREIBSAND`.
  * Erste Ansätze, nicht balanciert.
  */
 export const WASSER_SCHADEN = Object.freeze({
@@ -190,7 +193,25 @@ export const WASSER_SCHADEN = Object.freeze({
  */
 export function wasserWirkungFuer(wasserId, fassung) {
   if (fassung < BIOMREGELN_WASSER || !wasserId) return null;
+  if (fassung >= BIOMREGELN_TREIBSAND && wasserId === 'quicksand') return TREIBSAND;
   return WASSER_SCHADEN[wasserId] ?? null;
+}
+
+/**
+ * Treibsand (ab Fassung 8, TODO 2.2): `config/scenery.js` beschrieb `quicksand` seit jeher als „kein Schaden, aber die
+ * Figur kommt kaum voran" (`hazard.kind = 'snare'`, `factor` 0,25); der Motor ließ die Figur darin ertrinken wie im
+ * Wasser. Jetzt: `schaden` 0 (kein Ertrinken), `bremse` = Faktor auf das seitliche Tempo je Takt (aus `hazard.factor`),
+ * `sinken` = Faktor auf das Fallen je Takt (langsames Einsinken). Aufwärts bleibt frei: Ein Sprung trägt heraus.
+ * Erste Ansätze; gemessen in `tests/biomregeln-treibsand.test.js`.
+ */
+export const TREIBSAND = Object.freeze({
+  schaden: 0, bremse: 0.25, sinken: 0.5,
+  name: 'Treibsand', text: 'Treibsand hält fest: Man ertrinkt nicht, kommt aber kaum voran. Springen hilft heraus.',
+});
+
+/** Die Bremswirkung des Treibsands für die Szene, oder `null` (kein Treibsand oder ältere Fassung). */
+export function treibsandFuer(wasserId, fassung) {
+  return wasserWirkungFuer(wasserId, fassung) === TREIBSAND ? { bremse: TREIBSAND.bremse, sinken: TREIBSAND.sinken } : null;
 }
 
 /**

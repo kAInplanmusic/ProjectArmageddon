@@ -62,7 +62,7 @@ import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, WIND_JE_ZUG, MAX_WIND, normalisiereWind } from '../shared/config/wind.js';
-import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer, wasserTeilschritte, wasserSchubFuer, treibenAktiv } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
+import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer, treibsandFuer, wasserTeilschritte, wasserSchubFuer, treibenAktiv } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
 import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
@@ -641,6 +641,7 @@ export class MatchController {
       match: {
         round: this.#round,
         wasserSchaden: wasserWirkungFuer(this.scenery?.waterId, this.biomregeln)?.schaden ?? null, // Biomregel E (null = Ertrinken wie bisher)
+        treibsand: treibsandFuer(this.scenery?.waterId, this.biomregeln), // Biomregel Treibsand (null = wirkt wie Wasser)
         wasserSchub: wasserSchubFuer(this.biomregeln), // Biomregel Wasserlauf/Sturzflut (0 = Wasser schiebt nicht)
         wasserTreiben: treibenAktiv(this.biomregeln), // Biomregel Treiben: Kisten und Bodenobjekte treiben mit
         wind: this.#wind,
@@ -757,6 +758,7 @@ export class MatchController {
     this.biomId = this.#world.services.match.biomId = biomId; // auch für den Einschlagklang (shared/einschlag.js)
     this.scenery = pickScenery(this.#seedManager.baseSeed, this.preset, biomId);
     this.#world.services.match.wasserSchaden = wasserWirkungFuer(this.scenery.waterId, this.biomregeln)?.schaden ?? null; // Biomregel E
+    this.#world.services.match.treibsand = treibsandFuer(this.scenery.waterId, this.biomregeln); // Biomregel Treibsand
     return this.scenery;
   }
 
