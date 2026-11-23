@@ -149,3 +149,20 @@ test('Gehen: Leertaste ODER Shift gehalten lädt auf, erst das Loslassen feuert;
   expect(salto.dx, 'rückwärts = gegen die Blickrichtung (Blick rechts → nach links)').toBeLessThan(0);
   expect(fehler).toEqual([]);
 });
+
+test('Gehen: nach Mausklick auf einen HUD-Knopf lädt die Leertaste den Schuss (TODO 1.3); per Tastatur bleibt der Fokus', async ({ page }) => {
+  const fehler = await oeffne(page);
+  const kamera = page.locator('#hud-kamera');
+  await kamera.click();
+  await kamera.click();
+  expect(await page.evaluate(() => document.activeElement?.id ?? ''), 'Fokus nicht mehr am Knopf').not.toBe('hud-kamera');
+  await page.keyboard.down(' ');
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => window.__PA__.game.input.isCharging), 'Leertaste lädt').toBe(true);
+  await page.keyboard.up(' ');
+  // Tastaturbedienung: Ein per Enter ausgelöster Klick (detail 0) lässt den Fokus stehen.
+  await kamera.focus();
+  await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => document.activeElement?.id ?? '')).toBe('hud-kamera');
+  expect(fehler).toEqual([]);
+});

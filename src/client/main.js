@@ -15,7 +15,7 @@ import { FOTOS, panorama, fotoFuerBiom, fotoFuerKarte, findeKulisse } from './pa
  */
 import { MALI_LEITUNGSMARKE, maskeZuMali } from '../shared/config/schaden.js';
 import { MENUE_KARTENTYP, MENUE_FASSUNGEN } from '../shared/config/menueStart.js';
-import { isTextEntry } from './dom.js';
+import { fokusNachKlickFreigeben, isTextEntry } from './dom.js';
 import { haerteAusTreffer } from './gefuehl.js';
 import { TEAM_COLORS } from '../shared/config/match-konstanten.js';
 import { ZuendzeitSteuerung } from './zuendzeitSteuerung.js';
@@ -403,6 +403,8 @@ class Game {
       if (richtung) this.input?.setzeSeilVertikal(richtung);
     });
     for (const art of ['pointerup', 'pointercancel']) seilKnoepfe?.addEventListener(art, () => this.input?.setzeSeilVertikal(0));
+    // Nach Mausklick auf HUD-Knöpfe gehört die Leertaste wieder dem Schuss (TODO 1.3).
+    fokusNachKlickFreigeben(document.getElementById('hud'));
     // FEUER-Knopf: Halten lädt auf, Loslassen schießt — wie Leertaste/Maus auf dem Spielfeld.
     const feuerKnopf = document.getElementById('hud-fire');
     if (feuerKnopf) {

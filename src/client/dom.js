@@ -135,3 +135,22 @@ export function neueLeinwand(b, h) {
 export default {
   isTextEntry, prefersReducedMotion, REDUCED_MOTION_QUERY, el, ladeBild, neueLeinwand,
 };
+
+/**
+ * Gibt den Fokus nach einem MAUS- oder TIPP-Klick auf einen Knopf in `wurzel` wieder frei (TODO 1.3 MERGE-6).
+ *
+ * Sonst bleibt der Fokus am Knopf, und die nächste Leertaste drückt den Knopf erneut, statt zu laden
+ * (`spielTastenAus` sperrt Leertaste/Enter auf Knöpfen). Tastaturbedienung bleibt unberührt: Ein per Taste
+ * ausgelöster Klick hat `detail === 0`, dann bleibt der Fokus für die Tab-Navigation stehen. Ausgenommen sind
+ * Bereiche mit `data-spieltasten-aus` (z. B. das Einstellungs-Dropdown mit eigener Fokusführung) und Knöpfe,
+ * die den Fokus beim Klick selbst weitergereicht haben.
+ * @param {Element|null} wurzel
+ */
+export function fokusNachKlickFreigeben(wurzel) {
+  wurzel?.addEventListener?.('click', ereignis => {
+    if (!(ereignis.detail > 0)) return;
+    const knopf = ereignis.target?.closest?.('button, [role="button"]');
+    if (!knopf || !wurzel.contains(knopf) || knopf.closest('[data-spieltasten-aus]')) return;
+    if (knopf.ownerDocument?.activeElement === knopf) knopf.blur();
+  });
+}
