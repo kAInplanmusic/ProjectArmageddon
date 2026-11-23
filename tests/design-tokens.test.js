@@ -53,3 +53,9 @@ test('basis.css (aus index.html) hat keine eigene Palette mehr', () => {
   assert.ok(!/^:root\s*\{/m.test(basis), ':root gehört nach tokens.css');
   assert.ok(!/#[0-9a-fA-F]{6}\b/.test(basis), 'keine Sechs-Stellen-Farbwerte in der Grundschicht');
 });
+
+test('index.html enthält kein <style>: alle Stilregeln liegen unter src/client/styles (TODO 1.4 MERGE-4)', () => {
+  // Tests, die Stilregeln VERNEINEN, lesen die CSS-Dateien. Käme ein <style>-Block zurück, wären sie blind dafür.
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.doesNotMatch(html.replace(/<!--[\s\S]*?-->/g, ''), /<style[\s>]/i);
+});
