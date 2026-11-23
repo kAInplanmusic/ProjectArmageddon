@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { test, expect } from './helfer/test-basis.mjs';
-=======
-import { test, expect } from '@playwright/test';
->>>>>>> 97085048 (feat(ux): a11y und visuelle regression checks)
 import AxeBuilder from '@axe-core/playwright';
 import { oeffneMenue, oeffneLobby, starteHud } from './helfer/ux-zustand.mjs';
 

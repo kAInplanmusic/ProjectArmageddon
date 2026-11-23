@@ -1,20 +1,12 @@
-<<<<<<< HEAD
 import { test, expect } from './helfer/test-basis.mjs';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { FORMATE, oeffneMenue, oeffneLobby, starteHud } from './helfer/ux-zustand.mjs';
 import { vergleicheStruktur, GRENZEN } from './helfer/struktur-vergleich.mjs';
-=======
-import { test, expect } from '@playwright/test';
-import { mkdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { FORMATE, oeffneMenue, oeffneLobby, starteHud } from './helfer/ux-zustand.mjs';
->>>>>>> 97085048 (feat(ux): a11y und visuelle regression checks)
 
 /**
  * Visuelle Baselines für Menü, Lobby und HUD.
  *
-<<<<<<< HEAD
  * Ein Format: Desktop 1280x720 (das Hochformat 390x844 entfiel am 2026-11-04, „nur quer"). Animationen sind
  * abgeschaltet, das HUD wird mit festem Seed und eingefrorener Renderer-Zeit
  * gezeichnet.
@@ -96,22 +88,6 @@ async function pruefeBild(page, name) {
   }
   expect(urteil.ok, `${name}: ${urteil.grund}`).toBe(true);
 }
-=======
- * Zwei Formate: Desktop 1280x720 und Hochformat 390x844. Der Vergleich läuft
- * über `toHaveScreenshot` mit `maxDiffPixelRatio: 0.02`; Animationen sind
- * abgeschaltet, das HUD wird mit festem Seed und eingefrorener Renderer-Zeit
- * gezeichnet.
- *
- * Mit `PA_UX_LOOK=1` legt der Lauf zusätzlich die Desktop-Bilder unter
- * `test-results/ux-look/` ab (nicht versioniert, Beleg für den UX-Audit).
- */
-
-const OPTIONEN = {
-  animations: 'disabled',
-  caret: 'hide',
-  maxDiffPixelRatio: 0.02,
-};
->>>>>>> 97085048 (feat(ux): a11y und visuelle regression checks)
 
 const LOOK_DIR = fileURLToPath(new URL('../../test-results/ux-look/', import.meta.url));
 
@@ -131,11 +107,7 @@ for (const [formatName, viewport] of Object.entries(FORMATE)) {
       await expect(page.locator('#menu-overlay')).toBeVisible();
       await page.locator('#menu-overlay .overlay-card').evaluate(el => { el.scrollTop = 0; });
       await merkeLook(page, `menue-${formatName}`);
-<<<<<<< HEAD
       await pruefeBild(page, `menue-${formatName}`);
-=======
-      await expect(page).toHaveScreenshot(`menue-${formatName}.png`, OPTIONEN);
->>>>>>> 97085048 (feat(ux): a11y und visuelle regression checks)
       expect(fehler).toEqual([]);
     });
 
@@ -144,11 +116,7 @@ for (const [formatName, viewport] of Object.entries(FORMATE)) {
       const lobby = await oeffneLobby(page);
       await lobby.evaluate(el => el.scrollIntoView({ block: 'start' }));
       await merkeLook(page, `lobby-${formatName}`);
-<<<<<<< HEAD
       await pruefeBild(page, `lobby-${formatName}`);
-=======
-      await expect(page).toHaveScreenshot(`lobby-${formatName}.png`, OPTIONEN);
->>>>>>> 97085048 (feat(ux): a11y und visuelle regression checks)
       expect(fehler).toEqual([]);
     });
 
@@ -156,11 +124,7 @@ for (const [formatName, viewport] of Object.entries(FORMATE)) {
       const fehler = await oeffneMenue(page);
       await starteHud(page);
       await merkeLook(page, `hud-${formatName}`);
-<<<<<<< HEAD
       await pruefeBild(page, `hud-${formatName}`);
-=======
-      await expect(page).toHaveScreenshot(`hud-${formatName}.png`, OPTIONEN);
->>>>>>> 97085048 (feat(ux): a11y und visuelle regression checks)
       expect(fehler).toEqual([]);
     });
   });
