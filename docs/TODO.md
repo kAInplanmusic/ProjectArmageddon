@@ -18,7 +18,7 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 |---|---|
 | Fassungen (Standard neuer Partien) | Gelände 14 (`GELAENDE_RUND`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 6 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben), Bodenobjekte 6 |
 | Zeilenbudgets | `match.js` 2772/2790, `main.js` 3707, `renderer.js` 2218 (`tests/zeilenbudget.test.js`) |
-| CI | grün bis `4f37f10`; `fa8f2cd`/`c23613c`/`b383bee` (alte Stände vom 23.10.: Konfliktmarker, Hochformat zurück, `stoffTexturen.js` überschrieben) am 2026-11-23 zurückgenommen, Bestätigungslauf steht aus (1.1) |
+| CI | grün auf `730f6bb` (2026-11-23, alle vier Browser-Teile, Lint/Tests/Build) |
 | Abhängigkeiten | `npm audit`: Laufzeit 0 Schwachstellen; 4 nur in Entwicklungswerkzeugen (3 mittel, 1 hoch) |
 | Spieltest mit Menschen (QV-4) | nicht erfolgt |
 
@@ -26,7 +26,6 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 
 | ID | Arbeit | Abnahme |
 |---|---|---|
-| 1.1 CI-NACH-RÜCKNAHME | CI-Lauf auf dem Stand nach den Rücknahmen abwarten; rote Teile einzeln prüfen (Ursache, nicht Test abschwächen) | alle vier Browser-Teile, Lint/Tests/Build grün |
 | 1.2 VIS-REF | Bildvergleich `visuell` (Menü, HUD 1280×720): Referenzbilder nur aus einem grünen CI-Lauf übernehmen (Container-Schriften weichen ab) | `visuell.spec` in der CI grün |
 | 1.3 MERGE-6 | Leertaste nach Klick auf einen HUD-Knopf löst den Knopf statt des Schusses aus (Fokus bleibt am Knopf): prüfen, ggf. Fokus ans Spielfeld zurück | E2E: Klick auf HUD-Knopf, dann Leertaste schießt |
 | 1.4 MERGE-4 | Tests, die CSS in `index.html` verneinen (`doesNotMatch`), prüfen seit der Auslagerung nach `basis.css` nichts mehr | jeder solche Test liest die richtige Datei |
