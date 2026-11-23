@@ -3,7 +3,7 @@
  * Sperre bei Fehlversuchen, Saat der festen Konten, Statistik. Nur gegen die Speicher-Schnittstelle
  * (`speicher.mjs`) — heute Cloudflare D1, in Tests ein Arbeitsspeicher.
  *
- * Wiederverwendet aus dem Spiel (`src/server/konto.js`): Namensregeln, Normalisierung, Passwortform, scrypt.
+ * Wiederverwendet aus dem Spiel (`src/server/konto.js`): Namensregeln, Normalisierung, Passwortform. Hashes: ./hash.mjs (PBKDF2).
  *
  * ## Datensatz `nutzer/<id>` (Schema v1; Profil und Statistik sind vorbereitet, die Oberfläche folgt später)
  * ```
@@ -18,7 +18,7 @@
  */
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { nameSchluessel, pruefeName, pruefePasswortform, PASSWORT_MAX } from '../../../src/server/konto.js';
-import { hasheNutzerPasswort, pruefeGeheimnis } from './hash.mjs';
+import { brauchtNeuenHash, hasheNutzerPasswort, LEER_HASH, pruefeGeheimnis } from './hash.mjs';
 import { schluesselHash } from './speicher.mjs';
 
 export const SITZUNG_SEKUNDEN = 7 * 24 * 3600;
@@ -151,13 +151,28 @@ export class NutzerDienst {
     const idEintrag = await this.s.lies(kennung.includes('@') ? 'emails' : 'namen', schluesselHash(klein));
     const nutzer = idEintrag ? (await this.s.lies('nutzer', idEintrag.wert.id))?.wert : null;
     // Auch bei unbekannter Kennung wird gerechnet (Antwortzeit verrät nichts).
-    const ok = await pruefeGeheimnis(passwort.slice(0, PASSWORT_MAX), nutzer?.passwortHash ?? 'scrypt$16384$8$1$00$00');
+    const ok = await pruefeGeheimnis(passwort.slice(0, PASSWORT_MAX), nutzer?.passwortHash ?? LEER_HASH);
     if (!nutzer || !ok) {
       await this.fehlversuch(nKey); await this.fehlversuch(iKey); await this.sleep(400);
       return fehler(401, 'zugangsdaten_falsch', 'Benutzername/E-Mail oder Passwort ist falsch');
     }
     await this.entlaste(nKey);
+    if (brauchtNeuenHash(nutzer.passwortHash)) return { ok: true, nutzer: await this.#hashErneuern(nutzer, passwort.slice(0, PASSWORT_MAX)) };
     return { ok: true, nutzer };
+  }
+
+  /**
+   * Stellt einen älteren Hash (scrypt oder andere Rundenzahl) nach erfolgreicher Anmeldung auf das aktuelle Format um.
+   * Die Sitzungsversion bleibt (kein Abmelden anderer Geräte). Schlägt das Schreiben fehl, bleibt der alte Hash gültig.
+   */
+  async #hashErneuern(nutzer, passwort) {
+    try {
+      const r = await this.s.lies('nutzer', nutzer.id);
+      if (!r || r.wert.passwortHash !== nutzer.passwortHash) return nutzer;
+      const neu = { ...r.wert, passwortHash: await hasheNutzerPasswort(passwort) };
+      if (await this.s.ersetze('nutzer', nutzer.id, neu, r.etag)) { this.log('hash_erneuert', { id: nutzer.id }); return neu; }
+    } catch { /* alter Hash bleibt gültig */ }
+    return nutzer;
   }
 
   async nutzerNachId(id) { return (await this.s.lies('nutzer', String(id)))?.wert ?? null; }

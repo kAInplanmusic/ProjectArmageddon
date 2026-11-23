@@ -104,7 +104,7 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 
 | ID | Arbeit |
 |---|---|
-| 6.1 WWW-1 | Cloudflare (kein Netlify): Einstieg gebaut und getestet (Pages Function, D1, `_headers`, `_routes.json`). Offen beim Auftraggeber: Projekt anlegen, D1 und Bindung `DB`, `nodejs_compat`, Secrets, DNS und Zertifikat für www, alte Netlify-Seite `proarmgame` und Netlify-DNS abschalten. Erste Abnahme prüft: Rechenzeit von scrypt im Tarif, Dauer des Not-aus-Aufrufs (`docs/zugang-www.md`) |
+| 6.1 WWW-1 | Cloudflare (kein Netlify): Einstieg gebaut und getestet (Pages Function, D1, `_headers`, `_routes.json`). Offen beim Auftraggeber: Projekt anlegen, D1 und Bindung `DB`, `nodejs_compat`, Secrets, DNS und Zertifikat für www, alte Netlify-Seite `proarmgame` und Netlify-DNS abschalten. Hashes der Umgebung als `pbkdf2$20000$` neu erzeugen. Erste Abnahme prüft: Rechenzeit der Passwortprüfung im kostenlosen Tarif, Dauer des Not-aus-Aufrufs (`docs/zugang-www.md`) |
 | 6.2 KONTO-2/3 | Profil (Foto, Biografie, angepinnte Einheit) und Scoreboard-Oberfläche aus der Nutzerdatenbank; Kennzahlen Sprünge, Selbsttreffer, Schaden je Einheit und Waffe im Spiel erfassen und melden |
 | 6.3 ABBILD | Hetzner-Abbild auffrischen (Spielserver mit Spieltoken-Prüfung) |
 | 6.4 KNOTEN | Auf einem echten Knoten (Auftraggeber mietet, AGENTS.md §5): Firewall `deploy/firewall.nft`, Zertifikat, systemd-Units und Idle-Timer, Marker `ist-gemietet`, Belege S1–S3 und 5/6 in `docs/betrieb-INSTANZ.md`, `systemctl list-timers` als Nachweis |
@@ -122,6 +122,7 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 | 2026-11-11 | Versionsmarken bleiben Pflicht; Materialoptik-Shader gestrichen; „rund“ = 1:1 (Planet, runde Höhle, schwebende Insel), Auflösung bis 33 Mio. px; ungenutzte Bestände als Referenz, nichts löschen; GP-1/GP-2-Entscheidungen 8–25 (umgesetzt in Waffenfassung 21/22); Seil Fassung 3 „wie Worms“; Biome 15–20 freigegeben; Stil: alles Comic |
 | 2026-11-12 | Wurffass entfällt, 150 Waffen bleiben; Wetter immer zufällig; Menü vereinfachen (2.7) |
 | 2026-11-17 | Kein Netlify; Hosting des Web-Zugangs auf Cloudflare |
+| 2026-11-23 | Registrierung mit E-Mail (eindeutige Namen und Adressen, Anmeldung mit Name oder E-Mail); Web-Zugang mit schwächerem Hash (PBKDF2, 20 000 Runden) statt bezahltem Cloudflare-Tarif |
 
 ## 8. Abnahmen durch den Auftraggeber (maschinell nicht möglich)
 
@@ -132,8 +133,4 @@ am Telefon, Biome 15–20 · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkug
 
 ## 9. Fragen an den Auftraggeber
 
-1. **E-Mail bei der Registrierung:** Am 05.11. „Login ohne E-Mail, nur Name und Passwort“, am 11.11. (KONTO-1)
-   „eindeutige Namen/E-Mails“; gebaut ist die Variante mit E-Mail. Welche gilt?
-2. **Cloudflare-Tarif:** Reicht die Rechenzeit des kostenlosen Tarifs für scrypt nicht, braucht der Web-Zugang
-   den bezahlten Workers-Tarif (Kosten, AGENTS.md §5/§7) oder einen schwächeren Hash. Erst nach dem ersten echten
-   Aufruf zu entscheiden.
+Keine offen (E-Mail und Hash am 2026-11-23 entschieden, Abschnitt 7).

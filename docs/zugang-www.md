@@ -23,7 +23,7 @@ Kosten: Cloudflare im Gratis-Tarif 0 EUR (Pages, Workers, D1) – Grenzen des Ta
 | HTTP-Logik, Hetzner (Start, Status, Not-aus) | `scripts/betrieb/web/gateway-kern.mjs` |
 | Nutzerlogik (Registrieren, Login, Sperre, Passwort, Saat, Statistik) | `scripts/betrieb/web/nutzer.mjs` |
 | Speicher-Abstraktion (Cloudflare D1, Arbeitsspeicher für Tests) | `scripts/betrieb/web/speicher.mjs` |
-| Hashes (scrypt, PBKDF2) | `scripts/betrieb/web/hash.mjs`, Werkzeug `scripts/betrieb/web/geheimnis-hash.mjs` |
+| Hashes (PBKDF2; ältere scrypt-Hashes werden angenommen) | `scripts/betrieb/web/hash.mjs`, Werkzeug `scripts/betrieb/web/geheimnis-hash.mjs` |
 | Spieltoken, Statistik-Signatur (beide Seiten, EINE Implementierung) | `src/server/webAnbindung.js` |
 | Spielkonten (Spiegel der Web-Konten, Rangliste) | `src/server/konto.js` (`externPruefer`), `kontoSpeicher.js`, `bestenliste.js` |
 | Einstieg (Cloudflare Pages Function) | `functions/api/web/[[path]].mjs` → `scripts/betrieb/web/cloudflare-einstieg.mjs` (Verdrahtung: Secrets aus `env`, D1-Bindung `DB`, Hintergrundauftrag per `waitUntil`); `public/_routes.json` lässt nur `/api/web/*` die Function aufrufen |
@@ -55,7 +55,7 @@ Ablage: **Cloudflare D1** (SQLite, Gratis-Tarif; Tabelle `pa_kv`, Schema `D1_SCH
 
 - Benutzername: 3 bis 20 Zeichen, Buchstaben/Ziffern/Leerzeichen/`_`/`-`, **eindeutig ohne Groß/Klein, Unicode-normalisiert (NFC)**; Regeln aus `konto.js`.
 - E-Mail: eindeutig (ohne Groß/Klein). Nicht erkannt werden Alias-Schreibweisen (z. B. `+tag`, Punkte bei Gmail).
-- Passwörter: nur **scrypt** (`N=16384, r=8, p=1`, wie die Spielkonten), nie Klartext, nie in Logs. Die Geheimnisse der Umgebung (Anmelde-, Startpasswort) sind scrypt mit `N=65536`; PBKDF2 von `passwort-hash.html` wird ebenfalls akzeptiert.
+- Passwörter: **PBKDF2-SHA256 mit 20 000 Runden** (`pbkdf2$20000$salz$hash`), nie Klartext, nie in Logs. Entscheidung des Auftraggebers 2026-11-23: schwächerer Hash statt bezahltem Cloudflare-Tarif; gemessen 2,6 bis 4,6 ms je Prüfung. Gilt auch für die Geheimnisse der Umgebung (Anmelde-, Startpasswort). Ältere `scrypt$`-Hashes werden weiter angenommen; ein Nutzerkonto wird bei der nächsten Anmeldung auf PBKDF2 umgestellt. Ausgleich für die geringeren Kosten: die Sperren unten.
 - Sitzung: Cookie `pa_web` (`v2.<nutzer>.<sv>.<bis>.<hmac>`), HttpOnly, Secure, SameSite=Strict, 7 Tage, zustandslos; `sv` steigt beim Passwortwechsel. Abmelden löscht das Cookie im Browser; ein vorher kopiertes Cookie bleibt bis zum Ablauf oder Passwortwechsel gültig (Grenze der zustandslosen Sitzung).
 - Sperre (persistent, in der Datenbank): Login 5 Fehlversuche je Name, 20 je Adresse; Registrierung 5 falsche Anmeldepasswörter je Adresse; Startcode 5 je Nutzer, 10 je Adresse; Passwortwechsel 5 je Nutzer. Fenster 15 Minuten. Zusätzlich 0,4 bis 0,6 s Verzögerung je Fehlversuch. Die Adresse kommt aus `cf-connecting-ip` (einstellbar über `PA_WEB_IP_HEADER`).
 - Feste Konten (Saat): `PA_KONTEN_SAAT` wird beim ersten Aufruf je Instanz geprüft und idempotent angelegt; bestehende Namen oder Adressen bleiben unverändert (ein später geändertes Passwort wird nicht zurückgesetzt).
@@ -64,7 +64,7 @@ Ablage: **Cloudflare D1** (SQLite, Gratis-Tarif; Tabelle `pa_kv`, Schema `D1_SCH
 
 ```json
 { "v": 1, "id": "uuid", "name": "Wodan", "nameKlein": "wodan", "email": "...", "emailKlein": "...",
-  "passwortHash": "scrypt$...", "sv": 1, "angelegt": 0, "geaendert": 0,
+  "passwortHash": "pbkdf2$20000$...", "sv": 1, "angelegt": 0, "geaendert": 0,
   "profil": { "foto": null, "bio": "", "angepinnteEinheit": null },
   "stat": { "partien": 0, "siege": 0, "niederlagen": 0, "unentschieden": 0, "spruenge": 0, "schuesse": 0, "treffer": 0,
             "fehlschuesse": 0, "schaden": 0, "kills": 0, "tode": 0, "selbsttreffer": 0,
@@ -90,20 +90,20 @@ Als **Secrets** des Cloudflare-Projekts eintragen (Dashboard: Workers & Pages, d
 | `HCLOUD_TOKEN` | ja | Hetzner-Projekt-Token (nur dort eintragen) |
 | `PA_WEB_GEHEIMNIS` | ja | zufällige Zeichenkette, mindestens 32 Zeichen (Cookie-Signatur, Hintergrundauftrag) |
 | `PA_SPIEL_GEHEIMNIS` | ja | zweite, andere zufällige Zeichenkette, mindestens 32 Zeichen (Spieltoken und Statistik, wird dem Spielserver mitgegeben) |
-| `PA_REGISTRIER_HASH` | ja | Hash des Anmeldepassworts für die Registrierung (`scrypt$...`) |
-| `PA_START_HASH` | ja | Hash des Startcodes (`scrypt$...`) |
-| `PA_KONTEN_SAAT` | optional | JSON-Liste fester Konten mit **Hashes**: `[{"name":"...","email":"...","hash":"scrypt$..."}]` |
+| `PA_REGISTRIER_HASH` | ja | Hash des Anmeldepassworts für die Registrierung (`pbkdf2$20000$...`) |
+| `PA_START_HASH` | ja | Hash des Startcodes (`pbkdf2$20000$...`) |
+| `PA_KONTEN_SAAT` | optional | JSON-Liste fester Konten mit **Hashes**: `[{"name":"...","email":"...","hash":"pbkdf2$20000$..."}]` |
 | `PA_WEB_ORIGIN` | optional | Herkunft der Seite, Vorgabe `https://www.projectarmageddon.de` |
 | `PA_SERVER_TYP` (`cpx22`), `PA_ORT` (`fsn1`), `PA_DOMAIN`, `PA_ACME_EMAIL`, `PA_NAME`, `PA_WEB_FRISCH` | optional | wie bisher |
 
-Entfallen: die frühere Einzelpasswort-Variable der alten Anmeldung (sie gibt es nicht mehr). Die Werte der drei Hash-Variablen für die vereinbarten Passwörter stehen im Übergabebericht, nicht in diesem Repo.
+Entfallen: die frühere Einzelpasswort-Variable der alten Anmeldung (sie gibt es nicht mehr). Die Werte der drei Hash-Variablen stehen nicht in diesem Repo. Ältere Werte im Format `scrypt$...` (z. B. aus dem Übergabebericht) funktionieren, kosten aber ein Vielfaches der Rechenzeit (`N=65536` passt nicht in den kostenlosen Tarif): vor dem Deploy neu als `pbkdf2$20000$...` erzeugen.
 
 ## Einrichtung (iPhone oder Laptop, ohne Kommandozeile)
 
 1. **Zufallsgeheimnisse:** Zwei verschiedene zufällige Zeichenketten von mindestens 32 Zeichen erzeugen (Passwort-Manager des iPhones: "Starkes Passwort verwenden", Länge 40 oder mehr) und für `PA_WEB_GEHEIMNIS` und `PA_SPIEL_GEHEIMNIS` bereithalten.
-2. **Hashes:** Entweder die fertigen Werte aus dem Übergabebericht nehmen, oder neue im Browser erzeugen: `https://www.projectarmageddon.de/passwort-hash.html` öffnen (vor dem ersten Deploy: die Datei `public/passwort-hash.html` lokal im Browser öffnen), Passwort eingeben, "Hash erzeugen", das Ergebnis `pbkdf2$600000$...` kopieren. Es wird nichts gesendet.
-3. Cloudflare-Projekt (Pages) mit dem Repository verbinden, Branch `main`, Build `npm ci && PA_WEB_BUILD=1 npm run build`, Ausgabe `dist`; eine D1-Datenbank anlegen und als Bindung `DB` an das Projekt hängen. **Der Einstieg (Pages Function) fehlt noch im Repo**, siehe unten.
-4. Secrets der Tabelle oben anlegen: Pflichtvariablen immer, `PA_KONTEN_SAAT` mit dem Wert aus dem Bericht (eine Zeile, JSON).
+2. **Hashes:** Im Browser erzeugen (oder `printf '...' | node scripts/betrieb/web/geheimnis-hash.mjs`): `https://www.projectarmageddon.de/passwort-hash.html` öffnen (vor dem ersten Deploy: die Datei `public/passwort-hash.html` lokal im Browser öffnen), Passwort eingeben, "Hash erzeugen", das Ergebnis `pbkdf2$20000$...` kopieren. Es wird nichts gesendet.
+3. Cloudflare-Projekt (Pages) mit dem Repository verbinden, Branch `main`, Build `npm ci && PA_WEB_BUILD=1 npm run build`, Ausgabe `dist`; eine D1-Datenbank anlegen und als Bindung `DB` an das Projekt hängen. Der Einstieg (Pages Function) liegt in `functions/api/web/[[path]].mjs`, siehe unten.
+4. Secrets der Tabelle oben anlegen: Pflichtvariablen immer, `PA_KONTEN_SAAT` optional (eine Zeile, JSON, nur Hashes).
 5. Domain `www.projectarmageddon.de` im Projekt eintragen, DNS und Zertifikat über Cloudflare.
 6. Test: `https://www.projectarmageddon.de` öffnen, mit dem Konto aus `PA_KONTEN_SAAT` anmelden (die feste Konten entstehen beim ersten Aufruf), Passwort ändern prüfen, Startcode eingeben.
 
@@ -132,7 +132,7 @@ Bekannte Stolpersteine (im Code berücksichtigt):
 - Kein Dateisystem: Der Installer kommt als Text (`installer-text.mjs`).
 - Die Adresse für die Sperre kommt aus `cf-connecting-ip`.
 
-**Rechenzeit prüfen, bevor der Dienst öffentlich wird:** Anmeldung und Registrierung rechnen scrypt (`N=16384`, Geheimnisse `N=65536`). Nach meinem Kenntnisstand begrenzt der kostenlose Tarif die Rechenzeit je Aufruf auf wenige Millisekunden; scrypt braucht deutlich mehr. Geht das nicht, sind zwei Wege offen: der bezahlte Workers-Tarif (Preis, Entscheidung und Besitzer legt der Auftraggeber fest, AGENTS.md §5/§7) oder ein kleineres `N` (schwächerer Hash, nur mit ausdrücklicher Entscheidung). Erst ein echter Aufruf zeigt es.
+**Rechenzeit:** Der kostenlose Tarif begrenzt die Rechenzeit je Aufruf auf wenige Millisekunden. Darum rechnen Anmeldung und Registrierung PBKDF2 mit 20 000 Runden (gemessen 2,6 ms mit `node:crypto`, 4,6 ms mit WebCrypto, Entwicklungsrechner), nicht scrypt (Entscheidung 2026-11-23: schwächerer Hash, kein bezahlter Tarif). Ob das im echten Worker samt Datenbankzugriff in die Grenze passt, zeigt erst der erste echte Aufruf; alte `scrypt$`-Geheimnisse in der Umgebung sprengen sie sicher.
 
 **Not-aus** läuft als eigener Aufruf an `/api/web/not-aus-auftrag` (signierter, 60 Sekunden gültiger Auftrag), den die Antwort-Function mit `waitUntil` anstößt. Ob Cloudflare einen solchen Aufruf über mehrere Minuten (Abbild, Prüfung, Löschen) am Leben hält, ist nicht belegt; ein Not-aus-Versuch auf Cloudflare gehört zur ersten Abnahme. Bleibt er hängen, löscht `server-hochfahren.yml` (GitHub) bzw. die Idle-Bremse auf dem Knoten.
 
@@ -152,9 +152,9 @@ Neuer Code: nach dem Push baut Cloudflare Pages die Seite selbst. Der Spielserve
 
 ## Ungeprüft (nicht in dieser Umgebung nachweisbar)
 
-- Der echte Deploy auf Cloudflare (Pages, Function, D1-Bindung, Hintergrundauftrag, Rechenzeit von scrypt, Dauer des Not-aus-Aufrufs) wurde nicht ausgeführt.
+- Der echte Deploy auf Cloudflare (Pages, Function, D1-Bindung, Hintergrundauftrag, Rechenzeit der Passwortprüfung, Dauer des Not-aus-Aufrufs) wurde nicht ausgeführt.
 - **D1 gegen die echte Datenbank:** getestet ist `D1Speicher` gegen SQLite über dieselbe Aufrufform (`prepare().bind().first()/run()`, `meta.changes`); das Verhalten der Cloudflare-Bindung selbst ist nicht erprobt.
-- Läuft `scrypt` (`node:crypto`) im Worker und reicht die Rechenzeit des Tarifs? Siehe „Einstieg auf Cloudflare“; nicht erprobt.
+- Reicht die Rechenzeit des kostenlosen Tarifs für PBKDF2 (20 000 Runden, `node:crypto` im Worker)? Siehe „Rechenzeit“; nicht erprobt.
 - DNS und Zertifikat für www bei Cloudflare: nicht erprobt.
 - Spieltoken-Prüfung und Statistik-Meldung auf einem echten Hetzner-Knoten (Datei unter `/run`, Rechte, Meldung durch das Netz): nicht erprobt; Unit-getestet sind Token, Signatur, Zuordnung zum lokalen Konto und das Bauen der Meldung.
 - Die Hörbarkeit des Titelliedes (Schleife, Überblendung) und das Aussehen der Leiste: nur automatisch geprüft, nicht von Menschen gehört oder gesehen.

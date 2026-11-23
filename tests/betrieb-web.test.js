@@ -14,7 +14,7 @@ import { WURZEL } from '../scripts/release/bauinfo.mjs';
 import {
   auftragsKopf, behandle, baueUserData, leseKonfig, notAus, notAusAuftrag,
 } from '../scripts/betrieb/web/gateway-kern.mjs';
-import { hasheNutzerPasswort, pruefeGeheimnis } from '../scripts/betrieb/web/hash.mjs';
+import { brauchtNeuenHash, hasheNutzerPasswort, pruefeGeheimnis, RUNDEN } from '../scripts/betrieb/web/hash.mjs';
 import { SpeicherImSpeicher } from '../scripts/betrieb/web/speicher.mjs';
 import { liesSitzung, neueSitzung } from '../scripts/betrieb/web/nutzer.mjs';
 import { baueExternPruefer, pruefeSpieltoken, signiereMeldung } from '../src/server/webAnbindung.js';
@@ -74,7 +74,7 @@ async function anmelden(d, nutzer = NUTZER) {
 }
 const mitCode = (cookie, code = START) => ({ methode: 'POST', body: { startcode: code }, cookie });
 
-test('Web: Hashes (scrypt und PBKDF2 aus der Browserseite) werden erkannt; falsches Passwort und Müll nicht', async () => {
+test('Web: Hashes (neu PBKDF2, alt scrypt) werden erkannt; falsches Passwort und Müll nicht', async () => {
   assert.equal(await pruefeGeheimnis(REG, ENV.PA_REGISTRIER_HASH), true);
   assert.equal(await pruefeGeheimnis(REG + 'x', ENV.PA_REGISTRIER_HASH), false);
   assert.equal(await pruefeGeheimnis(REG, 'kaputt'), false);
@@ -83,7 +83,30 @@ test('Web: Hashes (scrypt und PBKDF2 aus der Browserseite) werden erkannt; falsc
   const pb = await hashePasswort(REG, Buffer.alloc(16, 7), 2000);
   assert.equal(await pruefeGeheimnis(REG, pb), true);
   assert.equal(await pruefeGeheimnis('x', pb), false);
-  assert.match(await hasheNutzerPasswort('abcdefgh'), /^scrypt\$16384\$8\$1\$[0-9a-f]{32}\$[0-9a-f]{128}$/);
+  // Entscheidung 2026-11-23: PBKDF2 mit 20 000 Runden (passt in die Rechenzeit des kostenlosen Cloudflare-Tarifs).
+  assert.equal(RUNDEN, 20_000);
+  const neu = await hasheNutzerPasswort('abcdefgh');
+  assert.match(neu, /^pbkdf2\$20000\$[0-9a-f]{32}\$[0-9a-f]{64}$/);
+  assert.equal(await pruefeGeheimnis('abcdefgh', neu), true);
+  assert.equal(brauchtNeuenHash(neu), false);
+  assert.equal(brauchtNeuenHash(ENV.PA_REGISTRIER_HASH), true, 'scrypt ist alt');
+  assert.equal(brauchtNeuenHash(pb), true, 'andere Rundenzahl ist alt');
+  const html = readFileSync(join(WURZEL, 'public/passwort-hash.html'), 'utf8');
+  assert.match(html, new RegExp(`iterations:${RUNDEN}\\b`), 'Browserseite erzeugt dieselbe Rundenzahl');
+});
+
+test('Web: ein alter scrypt-Hash wird bei der Anmeldung auf PBKDF2 umgestellt; Passwort und Sitzung bleiben gültig', async () => {
+  const { NutzerDienst } = await import('../scripts/betrieb/web/nutzer.mjs');
+  const dienst = new NutzerDienst({ speicher: new SpeicherImSpeicher(), sleep: async () => {} });
+  const alt = await schwach('altes-passwort-1');
+  const { nutzer } = await dienst.nutzerAnlegen({ name: 'Altkonto', email: 'alt@example.org', passwortHash: alt });
+  const r = await dienst.anmelden({ kennung: 'Altkonto', passwort: 'altes-passwort-1', ip: '1.1.1.1' });
+  assert.equal(r.ok, true);
+  const gespeichert = await dienst.nutzerNachId(nutzer.id);
+  assert.match(gespeichert.passwortHash, /^pbkdf2\$20000\$/);
+  assert.equal(gespeichert.sv, nutzer.sv, 'keine Abmeldung anderer Geräte');
+  assert.equal((await dienst.anmelden({ kennung: 'alt@example.org', passwort: 'altes-passwort-1', ip: '1.1.1.1' })).ok, true);
+  assert.equal((await dienst.anmelden({ kennung: 'Altkonto', passwort: 'falsch-falsch', ip: '1.1.1.1' })).ok, false);
 });
 
 test('Web: Sitzungscookie ist signiert, läuft ab, ist an die Sitzungsversion gebunden und lässt sich nicht fälschen', () => {
@@ -191,10 +214,10 @@ test('Web: Passwort ändern braucht das alte, macht alte Cookies ungültig und g
   assert.equal((await login('neues-passwort-1')).status, 200);
 });
 
-test('Web: Klartext-Passwörter liegen nie in der Datenbank; Hashes sind scrypt', async () => {
+test('Web: Klartext-Passwörter liegen nie in der Datenbank; Hashes sind PBKDF2', async () => {
   const speicher = new SpeicherImSpeicher(); const d = deps(falschesHetzner(), { speicher }); await anmelden(d);
   const roh = speicher.alsText();
-  assert.ok(!roh.includes(NUTZER.passwort)); assert.ok(!roh.includes(REG)); assert.match(roh, /scrypt\$16384/);
+  assert.ok(!roh.includes(NUTZER.passwort)); assert.ok(!roh.includes(REG)); assert.match(roh, /pbkdf2\$20000\$/); assert.ok(!roh.includes('scrypt$'));
   assert.ok(!roh.includes(NUTZER.name.toLowerCase() + '"') || roh.includes('nameKlein'), 'Schlüssel sind Hashes');
 });
 
