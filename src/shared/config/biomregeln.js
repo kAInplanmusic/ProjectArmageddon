@@ -146,6 +146,23 @@ export function schwerkraftFuer(biom, fassung, basisSeed, runde = 1) {
 }
 
 /**
+ * Stärkster Schwerkraftfaktor, den die Regel in einer Partie erreichen kann (1 ohne Regel).
+ *
+ * Für Prüfungen, die für ALLE Runden gelten müssen (Erreichbarkeit beim Kartenstart, TODO 2.4): Bei einer Spanne
+ * (Surreal 0,7 bis 1,3) zählt der Höchstwert, denn die stärkste Schwerkraft gibt die kürzeste Wurfweite.
+ * Liest keinen Seed; ändert nichts am Spielverlauf.
+ * @param {string|null} biom
+ * @param {number} fassung
+ * @returns {number}
+ */
+export function schwerkraftHoechstwert(biom, fassung) {
+  if (fassung < BIOMREGELN_SCHWERKRAFT || !biom) return 1;
+  const regel = BIOM_SCHWERKRAFT[schwerkraftSchluessel(biom)];
+  if (!regel) return 1;
+  return regel.spanne ? regel.spanne[1] : regel.faktor;
+}
+
+/**
  * Gefahrenwasser (Baustein E, ab Fassung 4): Schaden je Sekunde für eine tief untergetauchte Figur.
  *
  * Bis Fassung 3 galt für jedes Wasser dasselbe Ertrinken (9 LP/s); `hazard` in `config/scenery.js` war nur

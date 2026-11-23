@@ -16,6 +16,7 @@ import {
 import { weitenFaktor } from '../shared/reichweite.js';
 import { POWER_TO_SPEED } from '../shared/ballistics.js';
 import { DEFAULT_PROJECTILE_GRAVITY } from './systems/projectileSystem.js';
+import { schwerkraftHoechstwert } from '../shared/config/biomregeln.js';
 
 /**
  * Sucht eine Startposition auf festem, nicht überflutetem Grund.
@@ -254,7 +255,9 @@ export function pruefeKartenErreichbarkeit({ m, players, world, bitmap, events, 
   const wurfweite = maxWurfweite({
     powerToSpeed: POWER_TO_SPEED,
     maxPower: maxPower,
-    gravity: DEFAULT_PROJECTILE_GRAVITY,
+    // Biomregel B: mit dem stärksten Faktor der Partie rechnen (TODO 2.4); vorher galt immer 1, im Surrealen (bis 1,3)
+    // lag die Wurfweite damit zu hoch. Nur die Prüfung ändert sich, nicht der Spielverlauf.
+    gravity: DEFAULT_PROJECTILE_GRAVITY * schwerkraftHoechstwert(m.sonderbiom, m.biomregeln),
   }) * weitenFaktor(m.width);
 
   const urteil = pruefeErreichbarkeit({

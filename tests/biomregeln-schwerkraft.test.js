@@ -8,7 +8,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  BIOMREGELN_ALT, BIOMREGELN_STROEMUNG, BIOMREGELN_SCHWERKRAFT, BIOM_SCHWERKRAFT, schwerkraftFuer,
+  BIOMREGELN_ALT, BIOMREGELN_STROEMUNG, BIOMREGELN_SCHWERKRAFT, BIOM_SCHWERKRAFT, schwerkraftFuer, schwerkraftHoechstwert,
 } from '../src/shared/config/biomregeln.js';
 import { MatchController } from '../src/engine/match.js';
 import { turretProjectile } from '../src/engine/turret.js';
@@ -99,4 +99,20 @@ test('Abschuss: das echte Projektil trägt den Faktor (Fassung 3), in Fassung 2 
   const ohne = gravityScaleDesErstenSchusses('kosmos', BIOMREGELN_STROEMUNG);
   const mit = gravityScaleDesErstenSchusses('kosmos', BIOMREGELN_SCHWERKRAFT);
   assert.ok(Math.abs(mit - ohne * 0.6) < 1e-6, `${mit} gegen ${ohne} × 0,6`);
+});
+
+test('Erreichbarkeit beim Kartenstart rechnet mit dem stärksten Faktor des Bioms (TODO 2.4)', () => {
+  assert.equal(schwerkraftHoechstwert('surreal', BIOMREGELN_SCHWERKRAFT), 1.3, 'Spanne: Höchstwert');
+  assert.equal(schwerkraftHoechstwert('kosmos', BIOMREGELN_SCHWERKRAFT), 0.6);
+  assert.equal(schwerkraftHoechstwert('planet_eis', BIOMREGELN_SCHWERKRAFT), 0.85);
+  assert.equal(schwerkraftHoechstwert('vulkan', BIOMREGELN_SCHWERKRAFT), 1);
+  assert.equal(schwerkraftHoechstwert('surreal', BIOMREGELN_STROEMUNG), 1, 'vor Fassung 3 keine Regel');
+  // Wurfweite ~ v²/g: Bei gleicher Kartenbreite verhalten sich die Weiten umgekehrt wie die Faktoren.
+  const weite = (biom, f) => match(biom, f, 77).erreichbarkeit?.wurfweite;
+  const ohne = weite('surreal', BIOMREGELN_STROEMUNG);
+  const surreal = weite('surreal', BIOMREGELN_SCHWERKRAFT);
+  const kosmos = weite('kosmos', BIOMREGELN_SCHWERKRAFT);
+  assert.ok(ohne > 0 && surreal > 0 && kosmos > 0, `Wurfweiten: ${ohne} ${surreal} ${kosmos}`);
+  assert.ok(Math.abs(surreal * 1.3 - ohne) < 1e-6, `Surreal: ${surreal} * 1,3 = ${ohne}`);
+  assert.ok(Math.abs(kosmos * 0.6 - ohne) < 1e-6, `Kosmos: ${kosmos} * 0,6 = ${ohne}`);
 });
