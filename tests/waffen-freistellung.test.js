@@ -63,6 +63,8 @@ test('BAL-09: Werkzeug ist idempotent (nur mit scipy/Pillow prüfbar)', t => {
     encoding: 'utf8', env: { ...process.env, PYTHONPATH: '' },
   });
   if (probe.status !== 0) {
+    // In der CI sind die Pakete installiert (.github/workflows/ci.yml); fehlen sie dort, ist das ein Fehler, kein Skip.
+    assert.ok(!process.env.CI, `scipy/Pillow fehlen in der CI (${python}): ${probe.stderr}`);
     t.skip('scipy/Pillow im System-Python nicht verfügbar');
     return;
   }

@@ -44,8 +44,18 @@ jobs:
       - name: Prüfwerkzeuge (alle Gates)
         run: npm run checks
 
+      # Python für die Bildwerkzeuge (TODO 1.5 MERGE-10): Ohne scipy/Pillow würde BAL-09
+      # („Werkzeug ist idempotent“) übersprungen; in der CI schlägt er dann fehl statt still zu fehlen.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Python-Pakete für die Bildwerkzeuge
+        run: python -m pip install --quiet numpy scipy pillow
+
       - name: Katalog und Tests
         run: npm test
+        env:
+          PA_PYTHON: python
 
       - name: Build
         run: npm run build
