@@ -33,6 +33,7 @@ import { spawnSync } from 'node:child_process';
  */
 const GATES = [
   { skript: 'check:docs', schuetzt: 'Zahlen in der Doku' },
+  { skript: 'check:syntax', schuetzt: 'Syntax aller Skripte, Laden der Node-Module (fehlende Exporte)' },
   { skript: 'check:effects', schuetzt: 'Wirkfeld ohne Motorleser' },
   { skript: 'check:fuses', schuetzt: 'Zünder-Absicht (timed/impact)' },
   { skript: 'matrix:check', schuetzt: 'veraltete Wirkungs-Übersicht' },

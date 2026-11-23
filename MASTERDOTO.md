@@ -11,7 +11,7 @@ Nur die von `check:docs` geprüften Kennzahlen bleiben als Kompatibilitätsverme
 - Browser-E2E (`npx playwright test --list`): **397 Tests in 78 Spezifikationen** (Zählung 2026-11-12, Stand `f85e81c`; das ist eine Zählung, kein Lauf).
 - Aktuelle Dateizahlen: `npm run check:docs` (zählt die getrackten Dateien). Erfassen: `npm run testlauf:erfassen`. Verlauf: `git log -p -- docs/testlauf.json`.
 <!-- testzahlen:ende -->
-- **22 Gates in 105.2 s | fehlgeschlagen: 0**
+- **23 Gates in 70.9 s | fehlgeschlagen: 0** (Lauf 2026-11-23)
 - Node `>=22` festgeschrieben
 - `docs/matrix-terrain-waffen-wirkung.md`: 150 Waffen
 - 8 Terrain-Arten mit gemessenem Festanteil
