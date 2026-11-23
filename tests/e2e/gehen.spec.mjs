@@ -87,15 +87,30 @@ test('Gehen: W/S und Pfeile hoch/runter zielen nur, ohne die Figur zu bewegen; L
 test('Gehen: Leertaste ODER Shift gehalten lädt auf, erst das Loslassen feuert; Enter springt, Rück macht den Salto', async ({ page }) => {
   const fehler = await oeffne(page);
   const schuesse = () => page.evaluate(() => window.__PA__.getState().projectiles.length);
+  // Geschosse werden in JEDEM Bild mitgeschrieben: Ein schwacher Schuss (250 ms geladen) kann nach wenigen Takten
+  // einschlagen und zwischen zwei Abfragen von expect.poll schon wieder verschwunden sein (CI-Fehlschlag 109e87e).
+  const sammleSchuesse = () => page.evaluate(() => {
+    if (window.__schuss) window.__schuss.an = false;
+    const s = { gesehen: 0, an: true };
+    window.__schuss = s;
+    const lauf = () => {
+      s.gesehen = Math.max(s.gesehen, window.__PA__.getState().projectiles.length);
+      if (s.an) requestAnimationFrame(lauf);
+    };
+    lauf();
+  });
+  const gesehen = () => page.evaluate(() => window.__schuss.gesehen);
   for (const taste of [' ', 'Shift']) {
     expect(await schuesse()).toBe(0);
     const schuetze = await page.evaluate(() => window.__PA__.getState().activePlayerId);
+    await sammleSchuesse();
     await page.keyboard.down(taste);
     await page.waitForTimeout(250);
     expect(await page.evaluate(() => window.__PA__.game.input.isCharging), `${taste} lädt`).toBe(true);
-    expect(await schuesse(), 'noch kein Schuss beim Halten').toBe(0);
+    expect(await gesehen(), 'noch kein Schuss beim Halten').toBe(0);
     await page.keyboard.up(taste);
-    await expect.poll(schuesse, { timeout: 3000 }).toBeGreaterThan(0);
+    await expect.poll(gesehen, { timeout: 3000 }).toBeGreaterThan(0);
+    await page.evaluate(() => { window.__schuss.an = false; });
     // Nächster Zug: warten bis das Geschoss verbraucht ist und die Figur steht.
     await expect.poll(() => page.evaluate(() => window.__PA__.getState().projectiles.length), { timeout: 30000 }).toBe(0);
     await expect.poll(() => page.evaluate(() => window.__PA__.isGrounded()), { timeout: 15000 }).toBe(true);
