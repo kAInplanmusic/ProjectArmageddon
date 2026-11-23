@@ -19,19 +19,12 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 | Fassungen (Standard neuer Partien) | Gelände 14 (`GELAENDE_RUND`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 6 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben), Bodenobjekte 6 |
 | Zeilenbudgets | `match.js` 2772/2790, `main.js` 3707, `renderer.js` 2218 (`tests/zeilenbudget.test.js`) |
 | CI | grün auf `730f6bb` (2026-11-23, alle vier Browser-Teile, Lint/Tests/Build) |
-| Abhängigkeiten | `npm audit`: Laufzeit 0 Schwachstellen; 4 nur in Entwicklungswerkzeugen (3 mittel, 1 hoch) |
+| Abhängigkeiten | `npm audit`: 0 Schwachstellen (2026-11-23, vite 8.3.8, eslint 10.15) |
 | Spieltest mit Menschen (QV-4) | nicht erfolgt |
 
 ## 1. Sofort: Fehler und rote Prüfungen
 
-| ID | Arbeit | Abnahme |
-|---|---|---|
-| 1.2 VIS-REF | Bildvergleich `visuell` (Menü, HUD 1280×720): Referenzbilder nur aus einem grünen CI-Lauf übernehmen (Container-Schriften weichen ab) | `visuell.spec` in der CI grün |
-| 1.3 MERGE-6 | Leertaste nach Klick auf einen HUD-Knopf löst den Knopf statt des Schusses aus (Fokus bleibt am Knopf): prüfen, ggf. Fokus ans Spielfeld zurück | E2E: Klick auf HUD-Knopf, dann Leertaste schießt |
-| 1.4 MERGE-4 | Tests, die CSS in `index.html` verneinen (`doesNotMatch`), prüfen seit der Auslagerung nach `basis.css` nichts mehr | jeder solche Test liest die richtige Datei |
-| 1.5 MERGE-10 | Ein Test wird übersprungen, wenn scipy/Pillow fehlen; CI-Python ergänzen oder ehrlich als übersprungen führen | 0 übersprungen in der CI |
-| 1.6 AUDIT-DEV | 4 Schwachstellen in Entwicklungsabhängigkeiten: `npm audit fix` ohne `--force` prüfen | `npm audit` 0 oder begründet |
-| 1.7 SYNTAX-TOR | `node --check` über `src/**` als Prüfschritt (der Server war auf `main` zeitweise nicht ladbar) | Gate in `npm run checks` |
+Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit und Syntax-Tor erledigt).
 
 ## 2. Spiel: nächste Bauschritte (Reihenfolge)
 
@@ -40,7 +33,6 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 | 2.1 WASSER-AUSBAU | Flaches Wasser schiebt in Fließrichtung und ertränkt nicht, tiefes ertränkt; Figuren werden weggespült oder an Hindernisse gedrückt; „Damm sprengen“ als Spielzug testen. Vorher Schub messen (`npm run balance:biome`), nicht schätzen | neue Biomregel-Fassung, Altfassungen bitgleich, Messbericht |
 | 2.2 KARTE-WASSER | Seen in Höhlen und auf Inseln, kleine Wasserfälle; Treibsand (`quicksand`) wirkt bisher gar nicht | Geländefassung mit Marke; Matchstart-Zeit (QV-7) und `check:erreichbarkeit` bleiben im Rahmen |
 | 2.3 KARTE-QUALITÄT | Fassung 15: Mindestgangbreite (Fantasywald-Lichtung zu eng), runde Karten interessanter (Planet: verzweigte Tunnel, hohler Kern), gelobte große Karten nicht verschlechtern; Qualitäts-Tor: Generator würfelt neu (Versuchszähler, deterministisch), wenn Gangbreite, Erreichbarkeit oder Spawn-Fairness unter der Schwelle liegen | 0 von 500 Seeds unter der Schwelle |
-| 2.4 ERREICHBARKEIT-G | `pruefeErreichbarkeit` rechnet mit Schwerkraft 1; bei Biom-Faktoren 0,6 bis 1,3 falsch | Prüfung nutzt den Faktor des Bioms |
 | 2.5 QV-6-F | Bodenobjekte nach Biom (schrott, fabrik, dschungel, pilzwald, tempelstadt); Daten in `BODENOBJEKTE_BIOM` | Fassung mit Marke |
 | 2.6 QV-6-C/D | C Bodenwirkung (Eis, Schlacke, Sumpf: Reibung, Gehtempo; höchstes Replay-Risiko), D Splitter/Kettenreaktion (Kristalle, Burg, Dimensionsriss) | Fassung mit Marke, Goldwerte |
 | 2.7 MENUE-EINFACH | Ein-Klick-Start: ein großer „Spielen“-Knopf, Karte/Art/Seed/Wetter zufällig; Biomwahl (20) und Größe hinter einem Knopf; Wetterwahl entfällt | Partie mit ≤ 2 Klicks (E2E) |
