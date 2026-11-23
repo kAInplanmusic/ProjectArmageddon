@@ -19,7 +19,7 @@ import { NetworkClient } from '../src/client/networkClient.js';
  * Der Befund (TODO-SSOT): `CONTROL.RESUME` war deklariert, aber nie
  * implementiert; der Sitzplatz-Token lebte nur im Tab, und nach einem Neuladen
  * war der Platz verloren. Der Auftraggeber hat am 2026-11-05 „bauen" entschieden
- * (`docs/plan-produktion.md` Abschnitt 1).
+ * (`docs/TODO.md` Abschnitt 7).
  *
  * Diese Datei prüft den Vertrag am ECHTEN Server (nicht gegen eine nachgebaute
  * Lobby): Token-Vergabe, Fortsetzen mit Zustand, Ablehnungen mit Grund,

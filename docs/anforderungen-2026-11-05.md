@@ -2,7 +2,7 @@
 
 *Auftraggeber-Nachricht vom 2026-11-05, wörtlich in Stichpunkten; darunter der
 Ist-Stand im Code, die Entscheidungen des Agenten und die Arbeitspakete.
-Diese Datei ergänzt `docs/plan-produktion.md`; die Einzelliste bleibt
+Diese Datei ergänzt `docs/plan-produktion.md`, in Git; heute `docs/TODO.md`; die Einzelliste bleibt
 `docs/TODO-SSOT.md`.*
 
 ## 1. Der Auftrag
@@ -73,7 +73,7 @@ Diese Datei ergänzt `docs/plan-produktion.md`; die Einzelliste bleibt
 | **F Waffenmenü** | Sieben Anzeigekategorien mit Farbe/Schimmer, Reihenfolge im Dropdown, Seltenheits- und Drop-Wert sichtbar | `client`, `shared/config/waffenKategorien.js` | E |
 | **G Karten-Einmaligkeit** | Ringpuffer der letzten 500 Kartenschlüssel, Ablehnung mit Neuziehen | `server/persistence.js`, `server/lobby.js` | A2 |
 
-Reihenfolge (höchstens drei Agenten gleichzeitig, wie `plan-produktion.md` §2):
+Reihenfolge (höchstens drei Agenten gleichzeitig, wie im alten `docs/plan-produktion.md` §2, in Git):
 **Welle A:** A1+A2, C, D → **Welle B:** B, E, G → **Welle C:** F und Rest.
 
 ## 5. Zwei Entscheidungen, die ich selbst treffe

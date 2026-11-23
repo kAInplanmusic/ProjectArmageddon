@@ -1,6 +1,6 @@
 # GP-4 Tempo: Waffenfassung 15 (`WAFFEN_TEMPO`) — Messung vorher/nachher
 
-*Stand 2026-11-05. Paket GP-4 aus `docs/plan-produktion.md`; Einzelliste
+*Stand 2026-11-05. Paket GP-4 aus `docs/plan-produktion.md`, in Git; heute `docs/TODO.md`; Einzelliste
 `docs/TODO-SSOT.md` (Zeile GP-4).*
 
 ## 1. Ziel und Vorgehen
@@ -155,7 +155,7 @@ Gelesen:
   Sie sagt nichts über die Trefferquote im echten Gefecht (Bewegung, Wind,
   Gelände, Zielen unter Zeitdruck) — dafür ist `npm run balance:bot` da, nicht
   diese Messung. Ebenso ungemessen bleibt das Gefühl am Bildschirm (Hörabnahme
-  und Playtest bleiben Aufgabe des Auftraggebers, `docs/plan-produktion.md` §4).
+  und Playtest bleiben Aufgabe des Auftraggebers, `docs/TODO.md` Abschnitt 8).
 - **Ausnahme Okkultist:** 70 LP und 2 Treffer nachher — die Klasse ist als
   Glaskanone angelegt (Klassenfassung 3: Leben ×0,7, Schaden ×1,25). Wer die
   3–4-Treffer-Zusage auf sie anwenden will, müsste ihre Lebenspunkte anheben;

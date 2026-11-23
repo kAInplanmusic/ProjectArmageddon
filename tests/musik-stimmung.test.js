@@ -7,7 +7,7 @@
  * gesetzt — die Musik folgte allein dem `hidden` des Menüs. Valhalla und das
  * Ende einer Partie klangen wie der Anfang.
  *
- * ## Die Regel (docs/plan-produktion.md §1)
+ * ## Die Regel (docs/TODO.md Abschnitt 7)
  *
  * `intensiv` bei Valhalla/Mahlstrom, bei den letzten zwei lebenden Figuren oder
  * wenn ein Team ≤ 25 % Leben hat; zurück auf `match`, sobald die Lage sich

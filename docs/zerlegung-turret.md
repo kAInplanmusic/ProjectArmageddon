@@ -60,7 +60,7 @@ winkel, kraft)`) — und reicht sie hinein. Dasselbe Muster wie `shooting.js` (W
 - **Die Abschussgeschwindigkeit** — seit dem 2026-09-27 in EINER privaten Methode
   (`#turretLaunch`), mit zwei Aufrufern; siehe Abschnitt 4.
 - Die vier Namen aus W6 (`#resolveHitscan`, `#launchVector`, `#findMuzzle`, `#playerAt`) —
-  unangetastet (`bgworker-todo.json`, Eintrag W6).
+  unangetastet (`bgworker-todo.json`, Eintrag W6; Datei nur noch in Git).
 
 ---
 

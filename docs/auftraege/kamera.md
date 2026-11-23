@@ -3,7 +3,7 @@
 *Stand: 2026-11-09 · Status: **C1, C2, C4, C5, C6 gebaut und getestet; C3 (Zeitlupe) bewusst nicht in diesem Teil.***
 
 Quelle: `docs/TODO.md`, Zeile KAMERA (MASTERDOTO Backlog Block 4, Fahrplan Nr. 5), Entscheidung des
-Auftraggebers 2026-11-05 (`docs/plan-produktion.md` §1): „Höhepunkte inszenieren."
+Auftraggebers 2026-11-05 (`docs/TODO.md` Abschnitt 7): „Höhepunkte inszenieren."
 
 ## 0. Was gebaut ist
 

@@ -8,7 +8,7 @@
  * dem `hidden` des Menüs. Der spannendste Teil einer Partie — Valhalla, das
  * Ende — klang wie der Anfang.
  *
- * ## Die Regel (Entscheidung 2026-11-05, docs/plan-produktion.md §1)
+ * ## Die Regel (Entscheidung 2026-11-05, docs/TODO.md Abschnitt 7)
  *
  * `intensiv` gilt, solange eine der drei Lagen zutrifft:
  *

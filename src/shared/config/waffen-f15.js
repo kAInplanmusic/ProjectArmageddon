@@ -1,7 +1,7 @@
 /**
  * Waffenfassung 15 (GP-4 Tempo): Schaden je Waffenkategorie.
  *
- * Ziel des Pakets GP-4 (`docs/plan-produktion.md`): Eine Figur soll nach **3 bis 4
+ * Ziel des Pakets GP-4 (altes `docs/plan-produktion.md`, in Git): Eine Figur soll nach **3 bis 4
  * guten Treffern** fallen. Die Lebenspunkte bleiben, wo sie sind (Klassenfassung 3:
  * Nahkampf 130, Fernkampf 100, Okkultist 70) — angehoben wird der Schaden, und zwar
  * als **eigene Datenschicht über dem Katalog**. `config/weapons.js` bleibt
@@ -20,7 +20,7 @@
  *
  * Der Median lag also schon im Band — aber die **langsame Hälfte** lag darüber:
  * Fernkampf brauchte 6,5 Treffer, Nahkampf 5, und die schwächsten Vertreter bis
- * zu 12. Die Zahl „37" aus `docs/plan-produktion.md` stammt aus einer anderen
+ * zu 12. Die Zahl „37" aus dem alten `docs/plan-produktion.md` (in Git) stammt aus einer anderen
  * Messung (200 LP, feste 854 px, `scripts/balance-report.mjs`): Dort erreichen
  * **98 von 112** Waffen die Messdistanz gar nicht und zählen als „ohne Schaden" —
  * die 37 misst also „Schüsse auf eine Entfernung, für die die halbe Waffe nicht

@@ -1,7 +1,7 @@
 # Fortsetzen nach Neuladen (RT-1)
 
 *Stand: 2026-11-05. Umsetzung von `CONTROL.RESUME`; Entscheidung des Auftraggebers:
-„Bauen" (`docs/plan-produktion.md` Abschnitt 1).*
+„Bauen" (`docs/TODO.md` Abschnitt 7).*
 
 ## Das Problem
 

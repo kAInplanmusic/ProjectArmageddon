@@ -4,7 +4,7 @@
  *
  * Liest den IST-Stand live aus den Projektkatalogen (keine Kopien im Skript,
  * keine Partienmessung) und gibt ihn als JSON aus. Grundlage für die
- * Konsistenzprüfung im Plan docs/letzter-halt-plan.md.
+ * Konsistenzprüfung im Plan docs/letzter-halt-plan.md (in Git; offen: docs/TODO.md 2.13).
  *
  * @module letzter-halt-bestand
  */

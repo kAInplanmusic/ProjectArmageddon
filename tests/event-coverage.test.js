@@ -642,7 +642,7 @@ test('Ereignisse mit nur EINEM Zweig sind einzeln belegt', () => {
  * ein `<option>`-Element für Fraktionen, `renderer.js:1207` ein Kommentar über
  * eingebackene Verläufe. Der Wächter blieb grün, weil `:1143` wie ein Beleg
  * aussieht. Das ist die Fehlerklasse „fest verdrahtetes Urteil unter live
- * gemessenen Zahlen" aus `bgworker-todo.json` → `_meta`.
+ * gemessenen Zahlen" aus `bgworker-todo.json` → `_meta` (Datei nur noch in Git).
  *
  * Diese Prüfung öffnet die genannte Datei und verlangt den genannten Bezeichner
  * IN der genannten Zeile: `datei.js:123 (bezeichner)`. Jede Fundstelle braucht

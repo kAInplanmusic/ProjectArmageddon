@@ -14,7 +14,7 @@ import {
 } from '../tools/audit-mcp/lib/stand.mjs';
 
 /*
- * Der Wächter gegen die WERKZEUGFALLE (bgworker-todo.json, O10).
+ * Der Wächter gegen die WERKZEUGFALLE (bgworker-todo.json, O10; Datei nur noch in Git).
  *
  * Belegter Fehler (2026-09-26): Ein langlaufender MCP-Server antwortete nach der
  * Reparatur seiner eigenen Detektor-Datei weiter mit der Welt von VOR der

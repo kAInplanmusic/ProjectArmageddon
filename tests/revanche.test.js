@@ -6,7 +6,7 @@
  * Der Knopf öffnete nur das Menü. Die alte Partie lief weiter: `match` und
  * `mode` blieben stehen, und die Taste R fragte im Menü „Match verlassen?".
  *
- * ## Die Entscheidung (docs/plan-produktion.md §1)
+ * ## Die Entscheidung (docs/TODO.md Abschnitt 7)
  *
  * Echter Neustart auf derselben Karte: Zustand leeren, dann sofort ein neues
  * Match mit dem Seed aus `#seedFuerRevanche`.

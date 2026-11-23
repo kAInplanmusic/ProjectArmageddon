@@ -6,7 +6,7 @@
  * Der Knopf öffnete nur das Menü; die alte Partie lief weiter. `match` und
  * `mode` blieben stehen, und die Taste R fragte danach „Match verlassen?".
  *
- * ## Der Ablauf (docs/plan-produktion.md §1: echter Neustart)
+ * ## Der Ablauf (docs/TODO.md Abschnitt 7: echter Neustart)
  *
  *  1. Seed der eben gespielten Partie lesen — NACH dem Aufräumen ist `match`
  *     weg und der Seed unbekannt.
