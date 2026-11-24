@@ -72,16 +72,17 @@ export const MATCH_RULES = Object.freeze({
    */
   roundLimitBackstop: 300,
   /*
-   * Zugpause (Entscheidung des Auftraggebers, 2026-10-13): Vor jedem Zug steht das
-   * Spiel 3 Sekunden still — Zugzeit läuft nicht, Schießen/Springen sind gesperrt
+   * Zugpause (Entscheidung des Auftraggebers, 2026-10-13: 3 Sekunden; seit 2026-11-24 1,5 Sekunden, TODO 2.8
+   * „Zugtempo“, dem Auftraggeber gemeldet): Vor jedem Zug steht das
+   * Spiel kurz still — Zugzeit läuft nicht, Schießen/Springen sind gesperrt
    * (Zielen bleibt erlaubt). In der Pause zeigt der Client die Wiederholung des
    * letzten Schusses und den Namen des nächsten Spielers. Die Engine selbst kennt
    * die Pause nur als Option (`turnPauseTicks`, Vorgabe 0), damit Tests und
    * Werkzeuge unverändert laufen; Spiel und Server setzen den Wert aus dieser Zahl.
    */
-  turnPauseSeconds: 3,
+  turnPauseSeconds: 1.5, // TODO 2.8: 3 → 1,5 s (gemessen rund 8 s Warten je Zug); steht im Replay-Kopf, alte Aufzeichnungen tragen ihren Wert
   /** Zusätzlich vor der Pause: Wiederholung des letzten Schusses (nur wenn geschossen wurde). */
-  turnReplaySeconds: 2,
+  turnReplaySeconds: 1.5, // TODO 2.8: 2 → 1,5 s
 
   suddenDeath: Object.freeze({
     /*

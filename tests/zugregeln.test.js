@@ -11,7 +11,7 @@ import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, ReplayPlayer } from '../src/engine/replay.js';
 import { BEWEGUNG_GEHEN } from '../src/shared/config/bewegung.js';
-import { ZUGREGELN, ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, ZUGREGELN_STANDARD, normalisiereZugregeln } from '../src/shared/config/zugregeln.js';
+import { ZUGREGELN, ZUGREGELN_ALT, ZUGREGELN_FLOTT, ZUGREGELN_RUECKZUG, ZUGREGELN_STANDARD, normalisiereZugregeln, rueckzugSekundenFuer } from '../src/shared/config/zugregeln.js';
 
 const KONFIG = { seed: 77, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, maxRounds: 99, bewegung: BEWEGUNG_GEHEN };
 const RUECKZUG_TICKS = ZUGREGELN.rueckzugSekunden * 60;
@@ -31,8 +31,10 @@ function schiesse(m) {
 }
 const ereignisse = m => m.consumeEvents();
 
-test('Marke: Standard ist Fassung 2, Unbekanntes fällt auf den Standard, der Motor ohne Angabe bleibt beim Altverhalten', () => {
-  assert.equal(ZUGREGELN_STANDARD, ZUGREGELN_RUECKZUG);
+test('Marke: Standard ist Fassung 3 (TODO 2.8), 2 bleibt gültig, Unbekanntes fällt auf den Standard, der Motor ohne Angabe bleibt beim Altverhalten', () => {
+  assert.equal(ZUGREGELN_STANDARD, ZUGREGELN_FLOTT);
+  assert.equal(normalisiereZugregeln(2), ZUGREGELN_RUECKZUG);
+  assert.equal(normalisiereZugregeln(3), ZUGREGELN_FLOTT);
   assert.equal(normalisiereZugregeln(1), ZUGREGELN_ALT);
   assert.equal(normalisiereZugregeln('x'), ZUGREGELN_STANDARD);
   const alt = new MatchController(KONFIG);
@@ -194,4 +196,21 @@ test('Bot-Partien mit Rückzug terminieren (kein Soft-Lock) und enden mit einem 
     assert.notEqual(b.ausgang, 'offen', `Seed ${seed}: die Partie endet`);
     assert.ok(b.schuesse > 0, `Seed ${seed}: es wird geschossen`);
   }
+});
+
+test('Fassung 3: die Rückzugsfrist dauert 3 statt 5 Sekunden; Fassung 2 bleibt bei 5', () => {
+  assert.equal(rueckzugSekundenFuer(ZUGREGELN_RUECKZUG), 5);
+  assert.equal(rueckzugSekundenFuer(ZUGREGELN_FLOTT), 3);
+  const dauer = zugregeln => {
+    const m = neu({ zugregeln });
+    los(m, 30);
+    const id = schiesse(m);
+    let takte = 0;
+    while (m.activePlayerId === id && takte < 1000) { m.step(); takte += 1; }
+    return takte;
+  };
+  const fuenf = dauer(ZUGREGELN_RUECKZUG);
+  const drei = dauer(ZUGREGELN_FLOTT);
+  assert.ok(Math.abs(fuenf - 5 * 60) <= 3, `Fassung 2: ${fuenf} Takte`);
+  assert.ok(Math.abs(drei - 3 * 60) <= 3, `Fassung 3: ${drei} Takte`);
 });

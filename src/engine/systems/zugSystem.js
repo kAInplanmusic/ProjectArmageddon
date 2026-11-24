@@ -14,7 +14,7 @@
  * @module zugSystem
  */
 
-import { ZUGREGELN } from '../../shared/config/zugregeln.js';
+import { ZUGREGELN, rueckzugSekundenFuer } from '../../shared/config/zugregeln.js';
 import { SIMULATION_HZ } from '../../shared/config/network.js';
 
 export class ZugSystem {
@@ -47,7 +47,7 @@ export class ZugSystem {
     if (!this.#hatGeschossen()) return zeitUm;
     if (this.#rest === null) {
       if (!ruhe) return zeitUm;
-      this.#rest = Math.round(ZUGREGELN.rueckzugSekunden * SIMULATION_HZ);
+      this.#rest = Math.round(rueckzugSekundenFuer(this.#m.zugregeln) * SIMULATION_HZ); // Fassung 3: 3 s statt 5
       this.#leben0 = this.#leben(id);
       this.#m.events.emit('rueckzug', { playerId: id, ms: this.rueckzugMs });
       return false;

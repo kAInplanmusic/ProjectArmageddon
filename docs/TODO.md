@@ -34,7 +34,6 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 2.3 KARTE-QUALITÄT | Durchgangstor steht (Fassung 15: 0 von 500 Menü-Seeds mit Boden hinter zu dünnem Gang, vorher 30; kein Stand am oberen Rand). Offen: runde Karten interessanter (Planet: verzweigte Tunnel, hohler Kern); Rest auf groß 24:9 Seed 7 (Ruinenkammer hinter einem Riss, 176 px, das Tor misst auf halber Auflösung 90); unerreichbar 8 von 500 (vorher 6) | `node scripts/messung-kartenqualitaet.mjs --vergleich=14` |
 | 2.6 QV-6-C/D | C Bodenwirkung: Bremsen steht (Biomregel 9, höchstens etwa 18 % langsamer); offen: Glätte auf Eis (`reibung`, braucht Schwung beim Gehen), Sumpf. D Splitter steht (Biomregel 10: Splitter im Freien verletzen, spröder Stoff bricht eine Stufe weiter; Burg 6,2 Treffer je Partie, Dimensionsriss 2,7, Kristallhöhle 1,3); offen: Kristallarchipel und Kristallwald ohne Wirkung (Oberfläche nicht spröde genug), Hinweiszeile | Fassung mit Marke, Goldwerte |
 | 2.7 MENUE-EINFACH | Ein-Klick-Start steht: „Spielen“ auf dem Startbildschirm würfelt Biom, Kulisse und Fraktionen und startet sofort (E2E), „Anpassen“ öffnet das Menü; Wetterwahl entfernt. Offen: das Menü selbst straffen (Biomwahl und Größe hinter einen Knopf) | Sichtabnahme |
-| 2.8 ZUGTEMPO | Wartezeiten zwischen Zügen messen (Kamerafahrt, Nachlauf, Zugpause) und auf das Nötige kürzen (zuerst nur Client-Timing) | Messung vorher/nachher |
 | 2.9 JUICE | Trefferstopp (wenige Bilder, nur Client), gestaffelte Schadenszahlen, kurze Kill-Kamera, Kettenzähler deutlicher | Sichtabnahme (8) |
 | 2.10 PORTAL-1 | Seltene Portale mit Gegenstück-Pflicht (Waffe oder zwei Nutzer), Ziel taktisch günstig oder Munitionsort: erst spezifizieren, dann bauen | Spezifikation, danach Fassung mit Marke |
 | 2.11 ONBOARDING | 60-Sekunden-Einstieg (Zielen, Kraft, Waffe, Zündzeit Z) als überspringbare Einblendungen in der ersten Partie | E2E Erstkontakt |
@@ -111,6 +110,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 2026-11-11 | Versionsmarken bleiben Pflicht; Materialoptik-Shader gestrichen; „rund“ = 1:1 (Planet, runde Höhle, schwebende Insel), Auflösung bis 33 Mio. px; ungenutzte Bestände als Referenz, nichts löschen; GP-1/GP-2-Entscheidungen 8–25 (umgesetzt in Waffenfassung 21/22); Seil Fassung 3 „wie Worms“; Biome 15–20 freigegeben; Stil: alles Comic |
 | 2026-11-12 | Wurffass entfällt, 150 Waffen bleiben; Wetter immer zufällig; Menü vereinfachen (2.7) |
 | 2026-11-17 | Kein Netlify; Hosting des Web-Zugangs auf Cloudflare |
+| 2026-11-24 | Zugtempo (Agent nach TODO 2.8, gemeldet): Zugpause 3 → 1,5 s (ändert die Entscheidung vom 13.10.), Schusswiederholung online 2 → 1,5 s, Rückzugsfrist 5 → 3 s (Zugregelfassung 3). Gemessen: Warten je Zug 8 → 4,5 s |
 | 2026-11-23 | Registrierung mit E-Mail (eindeutige Namen und Adressen, Anmeldung mit Name oder E-Mail); Web-Zugang mit schwächerem Hash (PBKDF2, 20 000 Runden) statt bezahltem Cloudflare-Tarif |
 
 ## 8. Abnahmen durch den Auftraggeber (maschinell nicht möglich)
