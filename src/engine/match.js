@@ -39,7 +39,7 @@ import { WATER_SCALE } from '../shared/config/match-konstanten.js';
 import { WAFFEN_STANDARD, WAFFEN_FEUERWESEN, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_KLASSE, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
 import { wendeStossAn } from './stoss.js';
-import { GELAENDE_STANDARD, GELAENDE_BIOME, GELAENDE_WEIT, GELAENDE_WEIT_AB_BREITE, loeseGelaende } from '../shared/config/gelaende.js';
+import { GELAENDE_STANDARD, GELAENDE_BIOME, GELAENDE_START, GELAENDE_WEIT, GELAENDE_WEIT_AB_BREITE, loeseGelaende } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_STATUS, normalisiereSchaden } from '../shared/config/schaden.js';
 import { MaliRegeln } from './schadenMali.js';
 import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
@@ -2457,6 +2457,7 @@ export class MatchController {
       width: this.width,
       height: this.height,
       drySpawnX: (idealX, belegt) => trockenerStartX(this, idealX, belegt),
+      startFairness: this.gelaende >= GELAENDE_START, // Geländefassung 16: Plätze fair auf die Teams verteilen
       surfaceYAt: x => this.surfaceYAt(x),
       world: this.#world,
       inventory: this.#inventory,
