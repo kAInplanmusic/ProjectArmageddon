@@ -82,7 +82,7 @@ import { LaufVorhersage } from './laufVorhersage.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
 import { klassifiziereEinschlag, wasserAusLinie } from '../shared/einschlag.js';
-import { zeitlupe as zeitlupeModul } from './zeitlupe.js';
+import { zeitlupe as zeitlupeModul } from './zeitlupe.js'; import { trefferstopp } from './trefferstopp.js';
 import { baueProfilAnzeige, baueErfolgsAnzeige } from './profilanzeige.js';
 import { sichereProfilDatei } from './profilDatei.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
@@ -2991,6 +2991,9 @@ class Game {
     if (delta < 0) delta = 0;
     if (delta > 250) delta = FIXED_TIMESTEP; // Tab war inaktiv: nicht nachholen
     this.input?.update(delta, timestamp); // gehaltenes Zielen, Erneuerung der Gehabsicht
+    // TODO 2.9 Trefferstopp: Zeit steht (Simulation lokal und Darstellung); dieselben Takte laufen danach weiter.
+    trefferstopp.aus = this.kameraEffekte?.zeitlupe === false;
+    if (trefferstopp.aktiv(timestamp)) delta = 0;
     this.accumulator += delta;
 
     let steps = 0;
@@ -3167,6 +3170,7 @@ class Game {
       const zeitlupeEin = this.kameraEffekte?.zeitlupe ?? true;
       const zeitlupeFaktor = zeitlupeModul.faktor(jetzt / 1000, this.kameraEffekte?.zeitlupeDaten ?? { schaden: 0, tote: 0 }, zeitlupeEin);
       if (zeitlupeFaktor < 1) dtSek *= zeitlupeFaktor;
+      if (trefferstopp.aktiv(jetzt)) dtSek = 0; // Trefferstopp: auch die Kamera hält
       this.kameraRegie.setzeReduziert(this.renderer.reducedMotion);
       const kameraAus = this.kameraRegie.schritt(dtSek, this.#kameraEingabe(state, wiederholung, activeWeapon, myTurn));
       // Beben der Tiere (Cookie tobt, Schockwelle, wildes Bellen) kommt als Versatz obendrauf; 0 bei Bewegungsreduktion.

@@ -1,4 +1,5 @@
 import { ALLE_BIOMOBJEKTE } from '../shared/config/bodenobjekte.js';
+import { trefferstopp } from './trefferstopp.js';
 import { kameraEffekte } from './kameraEffekte.js';
 /**
  * Wirkungen der Ereignisse — EINE Zuordnungstabelle für beide Betriebsarten.
@@ -838,6 +839,7 @@ export const EREIGNIS_WIRKUNGEN = {
 
   damage: beide((k, n) => {
     k.renderer?.merkeSchadensart?.(n.entityId, n.damageTypeName, n.isCritical === true);
+    trefferstopp.ausloesen(n.amount, performance.now(), { reduziert: k.renderer?.reducedMotion === true }); // TODO 2.9: Bild kurz anhalten
     // Krit und Selbstschaden haben eigene Klangprofile (Fassung 2); gewöhnliche Treffer klingen wie bisher über ihren Schuss.
     if (n.isCritical === true || n.selfDamage === true) {
       k.sound?.verarbeite({ type: 'damage', schaden: n.amount, kritisch: n.isCritical === true, selbst: n.selfDamage === true, x: n.x, y: n.y });
