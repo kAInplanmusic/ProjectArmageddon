@@ -358,7 +358,13 @@ function knopfAttrappe() {
 
 function domAttrappe() {
   const beben = knopfAttrappe();
-  const kette = { textContent: '', hidden: true };
+  // Kettenanzeige (TODO 2.9): Kinder (Zahl, Glieder), `data-stufe`, Aufsprung-Klasse.
+  const kette = {
+    textContent: '', hidden: true, dataset: {}, kinder: [], klassen: new Set(), offsetWidth: 0,
+    classList: { add: k => kette.klassen.add(k), remove: k => kette.klassen.delete(k) },
+    replaceChildren: (...k) => { kette.kinder = k; kette.textContent = k.map(x => x.textContent).join(''); },
+    ownerDocument: { createElement: () => ({ className: '', textContent: '' }) },
+  };
   const schalter = new Map();
   return {
     beben, kette, schalter,
@@ -426,8 +432,15 @@ test('Bedienung: Kettenanzeige erscheint ab zwei Gliedern und verschwindet beim 
   assert.equal(doc.kette.hidden, true, 'ein Glied zeigt nichts');
   kameraEffekte.ketteGlied('Fass');
   assert.equal(doc.kette.hidden, false);
-  assert.match(doc.kette.textContent, /Kette ×2/);
-  assert.match(doc.kette.textContent, /Mine · Fass/);
+  assert.equal(doc.kette.kinder[0].textContent, '×2', 'große Zahl');
+  assert.match(doc.kette.kinder[1].textContent, /Mine · Fass/);
+  assert.equal(doc.kette.dataset.stufe, 'klein');
+  assert.ok(doc.kette.klassen.has('kette-neu'), 'Aufsprung');
+  kameraEffekte.ketteGlied('Figur');
+  assert.equal(doc.kette.kinder[0].textContent, '×3');
+  assert.equal(doc.kette.dataset.stufe, 'mittel', 'drei Glieder: gold');
+  kameraEffekte.ketteGlied('Figur');
+  assert.equal(doc.kette.dataset.stufe, 'gross', 'ab vier: rot');
   doc.schalter.get('ketten').klick();
   assert.equal(doc.kette.hidden, true, 'abgeschaltet blendet sofort aus');
   bedienung.ende();

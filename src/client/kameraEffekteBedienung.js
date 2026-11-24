@@ -52,6 +52,12 @@ function speicher() {
   }
 }
 
+/** Farbstufe des Kettenzählers für eine Anzahl Glieder (TODO 2.9). */
+export function kettenStufe(anzahl) {
+  if (anzahl >= 4) return 'gross';
+  return anzahl === 3 ? 'mittel' : 'klein';
+}
+
 export class KameraeffekteBedienung {
   #doc;
 
@@ -148,7 +154,8 @@ export class KameraeffekteBedienung {
   }
 
   /**
-   * Die Kettenanzeige: ab zwei Gliedern sichtbar, nach `KETTE_ANZEIGE_MS` weg.
+   * Die Kettenanzeige: ab zwei Gliedern sichtbar, nach `KETTE_ANZEIGE_MS` weg. Stufe (`data-stufe`): 2 = normal, 3 = gold,
+   * ab 4 = rot mit Schein (`kettenStufe`).
    * Ein neuer Schuss (Anzahl 0) blendet sie sofort aus.
    */
   #zeigeKette() {
@@ -160,9 +167,21 @@ export class KameraeffekteBedienung {
       this.#ketteZeit = null;
       return;
     }
-    const texte = kette.glieder.map(g => g === 'Figur' ? 'Figur' : g).join(' · ');
-    this.#kette.textContent = `Kette ×${kette.anzahl} — ${texte}`;
+    // TODO 2.9 „Kettenzähler deutlicher“: große Zahl, Glieder klein daneben, Farbe nach Stufe, Aufsprung bei jedem Glied.
+    const doc = this.#kette.ownerDocument;
+    const zahl = doc.createElement('span');
+    zahl.className = 'kette-zahl';
+    zahl.textContent = `×${kette.anzahl}`;
+    const glieder = doc.createElement('span');
+    glieder.className = 'kette-glieder';
+    glieder.textContent = `Kette — ${kette.glieder.join(' · ')}`;
+    this.#kette.replaceChildren(zahl, glieder);
+    this.#kette.dataset.stufe = kettenStufe(kette.anzahl);
     this.#kette.hidden = false;
+    // Aufsprung neu starten (die Klasse kurz entfernen; das Lesen von offsetWidth erzwingt den Neustart der Animation).
+    this.#kette.classList.remove('kette-neu');
+    void this.#kette.offsetWidth;
+    this.#kette.classList.add('kette-neu');
     if (this.#ketteZeit !== null) clearTimeout(this.#ketteZeit);
     this.#ketteZeit = setTimeout(() => {
       this.#ketteZeit = null;

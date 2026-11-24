@@ -1377,8 +1377,21 @@ select option { background: #14181d; color: var(--ink); }
   overflow: hidden; text-overflow: ellipsis;
 }
 #kamera-kette[hidden] { display: none; }
+/* TODO 2.9: große Zahl, Glieder klein, Farbe nach Stufe (kameraEffekteBedienung.kettenStufe). */
+#kamera-kette { display: flex; align-items: baseline; gap: 10px; }
+#kamera-kette .kette-zahl { font-size: 34px; line-height: 1; color: var(--accent); }
+#kamera-kette .kette-glieder { font-size: 15px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+#kamera-kette[data-stufe="mittel"] { border-color: #ffd23f; }
+#kamera-kette[data-stufe="mittel"] .kette-zahl { color: #ffd23f; font-size: 40px; }
+#kamera-kette[data-stufe="gross"] { border-color: #ff4d3d; box-shadow: 0 0 18px rgba(255, 77, 61, 0.55); }
+#kamera-kette[data-stufe="gross"] .kette-zahl { color: #ff6a4d; font-size: 46px; }
 @media (prefers-reduced-motion: no-preference) {
   #kamera-kette { animation: kamera-kette-rein 0.18s ease-out; }
+  #kamera-kette.kette-neu .kette-zahl { animation: kamera-kette-sprung 0.22s ease-out; }
+}
+@keyframes kamera-kette-sprung {
+  from { transform: scale(1.45); }
+  to { transform: scale(1); }
 }
 @keyframes kamera-kette-rein {
   from { opacity: 0; transform: translateX(-50%) scale(0.92); }
