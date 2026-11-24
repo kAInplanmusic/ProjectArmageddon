@@ -10,6 +10,7 @@
  *
  * @module effektStil
  */
+import { zahlFaktor } from './schadenszahlen.js';
 import { ZAHL_FAMILIE } from '../shared/config/schaden.js';
 import { PAL, hash2 } from './stil.js';
 
@@ -234,11 +235,11 @@ const ZAHL_ART = Object.freeze({
  *
  * @param {{x:number,y:number,text:string,art:string,life:number}} z
  */
-export function zeichneSchadenszahl(ctx, z) {
+export function zeichneSchadenszahl(ctx, z, reduziert = false) {
   const art = ZAHL_ART[z.art] ?? ZAHL_ART.schaden;
   ctx.save();
   ctx.globalAlpha = Math.min(1, z.life * 2.2);
-  ctx.font = `900 ${art.groesse}px "Bebas Neue", Impact, "Arial Black", system-ui, sans-serif`;
+  ctx.font = `900 ${Math.round(art.groesse * zahlFaktor(z, reduziert))}px "Bebas Neue", Impact, "Arial Black", system-ui, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';

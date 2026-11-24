@@ -2153,7 +2153,7 @@ export class Renderer {
     this.#drawEffects();
     this.sheets.zeichne(this.ctx);
     zeichneWetterWelt(this, this.partikelDichte);
-    for (const zahl of this.zahlen) zeichneSchadenszahl(this.ctx, zahl);
+    for (const zahl of this.zahlen) zeichneSchadenszahl(this.ctx, zahl, this.reducedMotion);
     this.#drawHeimdall();
     this.#updateEffects(dt);
     this.updateParticles(dt);
