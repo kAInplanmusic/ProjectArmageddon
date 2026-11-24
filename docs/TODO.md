@@ -34,7 +34,6 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 2.3 KARTE-QUALITÄT | Durchgangstor steht (Fassung 15: 0 von 500 Menü-Seeds mit Boden hinter zu dünnem Gang, vorher 30; kein Stand am oberen Rand). Offen: runde Karten interessanter (Planet: verzweigte Tunnel, hohler Kern); Rest auf groß 24:9 Seed 7 (Ruinenkammer hinter einem Riss, 176 px, das Tor misst auf halber Auflösung 90); unerreichbar 8 von 500 (vorher 6) | `node scripts/messung-kartenqualitaet.mjs --vergleich=14` |
 | 2.6 QV-6-C/D | C Bodenwirkung: Bremsen steht (Biomregel 9, höchstens etwa 18 % langsamer); offen: Glätte auf Eis (`reibung`, braucht Schwung beim Gehen), Sumpf. D Splitter steht (Biomregel 10: Splitter im Freien verletzen, spröder Stoff bricht eine Stufe weiter; Burg 6,2 Treffer je Partie, Dimensionsriss 2,7, Kristallhöhle 1,3); offen: Kristallarchipel und Kristallwald ohne Wirkung (Oberfläche nicht spröde genug), Hinweiszeile | Fassung mit Marke, Goldwerte |
 | 2.7 MENUE-EINFACH | Ein-Klick-Start steht: „Spielen“ auf dem Startbildschirm würfelt Biom, Kulisse und Fraktionen und startet sofort (E2E), „Anpassen“ öffnet das Menü; Wetterwahl entfernt. Offen: das Menü selbst straffen (Biomwahl und Größe hinter einen Knopf) | Sichtabnahme |
-| 2.9 JUICE | Trefferstopp (wenige Bilder, nur Client), gestaffelte Schadenszahlen, kurze Kill-Kamera, Kettenzähler deutlicher | Sichtabnahme (8) |
 | 2.10 PORTAL-1 | Seltene Portale mit Gegenstück-Pflicht (Waffe oder zwei Nutzer), Ziel taktisch günstig oder Munitionsort: erst spezifizieren, dann bauen | Spezifikation, danach Fassung mit Marke |
 | 2.11 ONBOARDING | 60-Sekunden-Einstieg (Zielen, Kraft, Waffe, Zündzeit Z) als überspringbare Einblendungen in der ersten Partie | E2E Erstkontakt |
 | 2.12 DICHTE-RUND | Startplätze zu dicht: Nach der Startfairness (Geländefassung 16) stehen Gegner noch in 11 von 100 1:1-Partien und 7 von 100 kleinen näher als 120 px (alle sechs Plätze auf wenigen hundert Pixeln, keine Teilung hilft); auch kleiner Rest Höhenvorteil auf klein (3 von 100). Mindestabstand beim Spawn oder runde Arten erst ab mittlerer Größe | Messung über Seeds |
@@ -117,7 +116,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 
 Spieltest mit Menschen (QV-4: Wasserlauf, Sturzflut/Dammbruch, Treibsand, Treiben, Strömung, Lesbarkeit der Hinweise, Windpfeil) · Sicht: Figuren
 (Randlicht, Hocke, 8-Bit-pixel, Angst, Tod-Epilog-Sprüche), Waffenoptik im Flug und im Nahkampf (N-09, N-10, N-14,
-N-15, GP-8), Wetter und Hagel, Kameraeffekte, Mine und Fass (MINEN-1/2), Biomobjekte (Druckkessel, Giftblüte, Sporenbovist, Runenstein), Seil am Touch-Gerät, Menü `kolossal`
+N-15, GP-8), Wetter und Hagel, Kameraeffekte, Spielgefühl (Trefferstopp, gestaffelte Schadenszahlen, Kill-Kamera, Kettenzähler), Mine und Fass (MINEN-1/2), Biomobjekte (Druckkessel, Giftblüte, Sporenbovist, Runenstein), Seil am Touch-Gerät, Menü `kolossal`
 am Telefon, Biome 15–20 · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkugel, Mine, Hagel, Titellied.
 
 ## 9. Fragen an den Auftraggeber
