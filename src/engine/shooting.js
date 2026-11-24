@@ -47,6 +47,8 @@
  *
  * @module shooting
  */
+import { PORTAL_REGEL } from '../shared/config/bodenobjekte.js';
+import { beameZumPortal } from './portal.js';
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { getWaffe, WAFFEN_TREFFER, WAFFEN_VORSTRAHL, WAFFEN_SICHT, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STREU, WAFFEN_FEUERWESEN, WAFFEN_ENTSCHEIDUNG } from '../shared/config/waffen-fassung.js';
@@ -913,6 +915,12 @@ function applySelfEffect(quelle, effect, playerId, weapon, schuss = null) {
 
     case EFFECT_KIND.MOVE:
     case EFFECT_KIND.MOUNT: {
+      // Bodenobjektfassung 8 (PORTAL-1): Teleportplattform und Portalkanone sind das Gegenstück zum Kartenportal und beamen dorthin.
+      if (quelle.portal && PORTAL_REGEL.waffen.includes(weapon?.special)) {
+        const sprung = beameZumPortal(quelle.world, playerId, quelle.portal);
+        quelle.events?.emit('portal_sprung', { playerId, von: sprung.von, nach: sprung.nach });
+        return { moved: { dx: sprung.nach.x - sprung.von.x, dy: sprung.nach.y - sprung.von.y }, portal: true };
+      }
       const von = { x: quelle.world.getComponent(playerId, 'Position', 'x') ?? 0, y: quelle.world.getComponent(playerId, 'Position', 'y') ?? 0 };
       const moved = shiftPlayer(quelle, playerId, effect.distance);
       // Waffenfassung 11: Element der Bewegung (Feuerspur, Frostboden, Schock am Ziel), nur wenn sich die Figur bewegt hat.

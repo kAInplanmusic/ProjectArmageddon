@@ -18,9 +18,9 @@ import { SEED_OFFSETS } from '../src/shared/seed.js';
 import { damageTypeId } from '../src/engine/damageTypes.js';
 import { zeichneBiomobjekt } from '../src/client/biomobjektBild.js';
 
-test('Marke: 7 ist der Standard; 5 und 6 bleiben gültig', () => {
+test('Marke: 7 bleibt gültig (Standard 8, Portal); 5 und 6 bleiben gültig', () => {
   assert.equal(BODENOBJEKTE_BIOM_2, 7);
-  assert.equal(BODENOBJEKTE_STANDARD, BODENOBJEKTE_BIOM_2);
+  assert.equal(BODENOBJEKTE_STANDARD, BODENOBJEKTE_BIOM_2 + 1, 'Standard ist 8 (bodenobjekte-portal.test.js)');
   assert.equal(normalisiereBodenobjekte(7), 7);
   assert.equal(normalisiereBodenobjekte(6), BODENOBJEKTE_BREIT);
 });

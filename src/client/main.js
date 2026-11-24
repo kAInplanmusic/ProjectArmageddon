@@ -1149,7 +1149,7 @@ class Game {
     this.endOverlay.hidden = true;
     this.#zeigeAbbruch(true);
     this.running = true;
-    this.hud.log(`Lokales Match — Seed ${this.match.seedManager.baseSeed}`, 'accent'); meldeBiomregel(this.hud, { biom: this.match.sonderbiom, biomregeln: this.match.biomregeln, seed: this.match.seedManager.baseSeed, bodenBremstAnteil: bremsAnteilDerKarte(this.match) }); meldeWasserregel(this.hud, this.match.scenery?.waterId);
+    this.hud.log(`Lokales Match — Seed ${this.match.seedManager.baseSeed}`, 'accent'); meldeBiomregel(this.hud, { biom: this.match.sonderbiom, biomregeln: this.match.biomregeln, seed: this.match.seedManager.baseSeed, bodenBremstAnteil: bremsAnteilDerKarte(this.match) }); meldeWasserregel(this.hud, this.match.scenery?.waterId); if (this.match.getState().portal) this.hud.log('Portal: Auf der Karte liegt ein Portal. Portal-, Hologramm- und Dimensionswaffen beamen dich hin.', 'accent');
     if (!this.animationHandle) this.#loop(performance.now());
     return { ok: true, mode: 'local' };
   }

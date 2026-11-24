@@ -35,6 +35,7 @@ import { Inselfall } from './inselfall.js';
 import { FeuerOptik, faerbeZellen, ZELLFARBE } from './feuerOptik.js';
 import { SheetEffekte, LEUCHT_FARBE } from './effektSheets.js';
 import { strahlArt, schweifArt } from './waffenOptik.js';
+import { zeichnePortal } from './portalBild.js';
 import { MinenAlter, minenZustand, zeichneMinenFuss, minenLampe, SchildAnzeige, zeichneFigurSchild, BereitPuls } from './waffenZustandsOptik.js';
 import { zeichneStrahl, zeichneFamilienSchweif, zeichneMuendungsfeuer } from './waffenOptikZeichnen.js';
 import { planetenBilder } from './planetenKulisse.js';
@@ -2104,6 +2105,7 @@ export class Renderer {
     this.#drawTurrets(state.turrets ?? []);
     this.#drawCrates(state.crates ?? []);
     this.#drawMinen(state.bodenobjekte ?? []);
+    zeichnePortal(this.ctx, state.portal, this.time, this.reducedMotion); // Kartenportal (Bodenobjektfassung 8), ohne Portal nichts
     this.waffenStat.feuerwesen = zeichneFeuerwesen(this.ctx, state.feuerwesen ?? [], { ikone: state.feuerwesen?.length ? holeWaffenIkone(this.waffe('pa_118')) : null, sheets: this.sheets, zeit: performance.now() / 1000, reduziert: this.reducedMotion, pose: this.#feuerwesenPose }); zeichneFeuerwesenZerbersten(this.ctx, this.#feuerwesenBirst, { pose: this.#feuerwesenPose, zeit: performance.now() / 1000 }); // Fassung 20 (`feuerwesenZeichnen.js`)
     this.#drawAimPreview(aimPreview);
     /*

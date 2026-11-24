@@ -37,7 +37,7 @@
 export const EREIGNIS_KATALOG = Object.freeze({
   landed: { klasse: 'anzeige', drossel: 'boden', klang: ['landed'] },
   jumped: { klasse: 'anzeige' },
-  crate_landed: { klasse: 'anzeige', drossel: 'boden', stumm: 'lokaler Zweig hat einen Fall; online übernimmt es die Kistenliste', einzweig: { zweig: 'lokal', entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:1910 (crates) → src/client/renderer.js:2105 (#drawCrates)' } },
+  crate_landed: { klasse: 'anzeige', drossel: 'boden', stumm: 'lokaler Zweig hat einen Fall; online übernimmt es die Kistenliste', einzweig: { zweig: 'lokal', entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:1910 (crates) → src/client/renderer.js:2106 (#drawCrates)' } },
   projectile_impact: { klasse: 'anzeige', anim: ['addFlash'] },
   projectile_expired: { klasse: 'anzeige', stumm: 'ein verfallenes Geschoss ist kein Ereignis für den Spieler, es hat nichts getroffen' },
   projectile_pierced: { klasse: 'anzeige', anim: ['addFlash'] },
@@ -54,6 +54,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   feuer_schmilzt: { klasse: 'anzeige', klang: ['zischen'], anim: ['spawnExplosionParticles'] },
   terrain_quake: { klasse: 'anzeige', anim: ['bebenOptik'] },
   terrain_resisted: { klasse: 'anzeige', anim: ['spawnExplosionParticles'] },
+  portal_sprung: { klasse: 'anzeige', anim: ['addFlash'] }, // Bodenobjektfassung 8: eine Figur wird zum Kartenportal gebeamt
   splitter_treffer: { klasse: 'anzeige', anim: ['addFlash'] }, // Biomregel 10: ein Splitter trifft eine Figur (der Schaden selbst läuft über `damage`)
   hitscan: { klasse: 'anzeige', klang: ['shot', 'damage'] },
   special_effect: { klasse: 'anzeige', klang: ['schild', 'bereit'], anim: ['addFlash'] },

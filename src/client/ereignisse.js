@@ -403,6 +403,11 @@ export const EREIGNIS_WIRKUNGEN = {
   terrain_quake: beide((k, n) => { k.renderer?.bebenOptik(n); }),
   /* Fassung 5: der Einschlag traf unzerstörbaren Stoff (Metall, Grundgestein) und ließ ihn stehen — nur Funken. */
   terrain_resisted: beide((k, n) => { k.renderer?.spawnExplosionParticles?.(n.x, n.y, Math.min(n.radius || 8, 10)); }),
+  portal_sprung: beide((k, n) => { // Bodenobjektfassung 8 (PORTAL-1)
+    k.renderer?.addFlash(n.von?.x ?? 0, n.von?.y ?? 0, 22, { color: '#b06cff' });
+    k.renderer?.addFlash(n.nach?.x ?? 0, n.nach?.y ?? 0, 30, { color: '#d9b8ff' });
+    k.hud?.log('Durchs Portal gebeamt', 'accent');
+  }),
   splitter_treffer: beide((k, n) => { k.renderer?.addFlash(n.x, n.y, 6, { color: '#d8f4ff' }); }), // Biomregel 10: heller Splitterblitz
 
   /*

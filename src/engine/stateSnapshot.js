@@ -236,6 +236,8 @@ export function baueAnsichtszustand(quelle) {
     ...(quelle.feuerwesen ? { feuerwesen: quelle.feuerwesen } : {}),
     // Hagel (Hagelfassung 2) nur, solange eine Lage ansteht/läuft oder ein Korn fliegt: sonst bleibt der Schlüsselsatz gleich.
     ...(quelle.hagel ? { hagel: quelle.hagel } : {}),
+    // Kartenportal (Bodenobjektfassung 8) nur, wenn es eines gibt: Zustände ohne Portal behalten ihren Schlüsselsatz.
+    ...(quelle.portal ? { portal: { x: quelle.portal.x, y: quelle.portal.y } } : {}),
     // Die Kulisse geht als Kennung mit, nicht als volles Objekt: der Client
     // baut sie ohnehin selbst aus dem Seed. Die Kennungen dienen der Anzeige
     // und den Tests.
@@ -338,6 +340,8 @@ export function hashState(state) {
         : {}),
       // Hagel (Hagelfassung 2) nur, solange etwas ansteht, läuft oder fliegt: jeder ältere Hash bleibt gleich.
       ...(state.hagel ? { hagel: [state.hagel.lage, state.hagel.naechstes, state.hagel.koerner] } : {}),
+      // Kartenportal (Bodenobjektfassung 8) nur, wenn es eines gibt: jeder ältere Hash bleibt gleich.
+      ...(state.portal ? { portal: [Math.round(state.portal.x), Math.round(state.portal.y)] } : {}),
     });
 
     let hash = 2166136261;

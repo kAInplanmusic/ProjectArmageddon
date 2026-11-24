@@ -12,6 +12,9 @@
  *     Seed-Zweig `BODENOBJEKTE`.
  *   - `BODENOBJEKTE_ABWURF` (4): wie 3, dazu fallen Fässer wie Kisten vom Himmel (je Runde mit `FAESSER.abwurfChance`, Flugzeit `FAESSER.flugTicks`).
  *   - `BODENOBJEKTE_BREIT` (6): wie 5, dazu wachsen Zahl liegender Minen und Fässer und die Fass-Obergrenze auf Karten über 2560 px Breite (Faktor Breite/2560, höchstens 2,5); bis 2560 px bitgleich zu 5.
+ *   - `BODENOBJEKTE_PORTAL` (8, PORTAL-1, `docs/auftraege/portal.md`): wie 7, dazu in `PORTAL_REGEL.anteil` der Partien ein
+ *     Kartenportal (eigener Seed-Zweig `PORTAL`); die Portal- und Beamwaffen (`PORTAL_REGEL.waffen`) beamen die eigene Figur dorthin, solange es
+ *     eines gibt. Ohne Gegenstück (zu Fuß) wirkt es nicht. Fassung 7 und älter bitgleich.
  *   - `BODENOBJEKTE_BIOM_2` (7, TODO 2.5 QV-6-F): wie 6, dazu Biomobjekte für Fabrik (Druckkessel), Dschungel (Giftblüte), Pilzwald
  *     (Sporenbovist) und Tempelstadt (Runenstein), `BIOMOBJEKTE_2`. Die Fassungen 5 und 6 kennen nur `BIOMOBJEKTE` und bleiben bitgleich.
  *   - `BODENOBJEKTE_FAESSER` (3): wie 2, dazu Fässer (siehe `FAESSER`): liegen von Anfang an auf der Karte, explodieren bei einer
@@ -42,7 +45,16 @@ export const BODENOBJEKTE_ABWURF = 4;
 export const BODENOBJEKTE_BIOM = 5;
 export const BODENOBJEKTE_BREIT = 6;
 export const BODENOBJEKTE_BIOM_2 = 7;
-export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_BIOM_2;
+export const BODENOBJEKTE_PORTAL = 8;
+export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_PORTAL;
+
+/**
+ * Kartenportal (Fassung 8, `docs/auftraege/portal.md`): Anteil der Partien mit Portal, Mindestabstand zu jedem Startplatz (px),
+ * Waffen, die als Gegenstück zum Portal beamen.
+ */
+// Gegenstück: die Beam- und Portalwaffen der Waffenfassung 22 (Portal pa_076, Hologrammportal pa_128, Dimensionssprung pa_087,
+// Dimensionsriss pa_088). Die Teleportplattform (pa_127) ist seit einer früheren Waffenfassung ein Direkttreffer (`direct_hit`).
+export const PORTAL_REGEL = Object.freeze({ anteil: 0.2, minAbstand: 300, waffen: Object.freeze(['portal', 'hologram_portal', 'teleport']) });
 /** Fassung 6: Faktor = Breite / Basis, höchstens `MAX` (wie die Kisten der Geländefassung 10). Bis zur Basis 1, also bitgleich zu Fassung 5. */
 export const BODENOBJEKTE_BREIT_BASIS = 2560;
 export const BODENOBJEKTE_BREIT_MAX = 2.5;
@@ -74,7 +86,7 @@ export function biomobjekteFuer(fassung) {
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereBewegung`); das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBodenobjekte(fassung) {
-  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER || fassung === BODENOBJEKTE_ABWURF || fassung === BODENOBJEKTE_BIOM || fassung === BODENOBJEKTE_BREIT || fassung === BODENOBJEKTE_BIOM_2 ? fassung : BODENOBJEKTE_STANDARD;
+  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER || fassung === BODENOBJEKTE_ABWURF || fassung === BODENOBJEKTE_BIOM || fassung === BODENOBJEKTE_BREIT || fassung === BODENOBJEKTE_BIOM_2 || fassung === BODENOBJEKTE_PORTAL ? fassung : BODENOBJEKTE_STANDARD;
 }
 
 /** Ausgang einer Auslösung. */

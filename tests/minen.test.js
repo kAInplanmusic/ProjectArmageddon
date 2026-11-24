@@ -509,7 +509,7 @@ function baueAbwurfSystem(seed = 1) {
 
 test('Marke 5: Biomobjekte sind Standard, Marken 3 und 4 bleiben gültig', () => {
   assert.equal(BODENOBJEKTE_ABWURF, 4);
-  assert.equal(BODENOBJEKTE_STANDARD, 7, 'Standard ist Fassung 7 (bodenobjekte-fassung-7.test.js)');
+  assert.equal(BODENOBJEKTE_STANDARD, 8, 'Standard ist Fassung 8 (bodenobjekte-portal.test.js)');
   assert.equal(normalisiereBodenobjekte(3), BODENOBJEKTE_FAESSER);
   assert.equal(normalisiereBodenobjekte(4), BODENOBJEKTE_ABWURF);
 });

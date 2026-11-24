@@ -55,11 +55,11 @@ import { GUENTHER_ALT, GUENTHER_AKTIONEN, normalisiereGuenther } from '../shared
 import { COOKIE_ALT, COOKIE_KATER, normalisiereCookie } from '../shared/config/cookie.js';
 import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/config/feuer.js';
 import { BEWEGUNG, BEWEGUNG_ALT, BEWEGUNG_GEHEN, normalisiereBewegung } from '../shared/config/bewegung.js';
-import { BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, BODENOBJEKTE_FAESSER, BODENOBJEKTE_ABWURF, BODENOBJEKTE_BIOM, BODENOBJEKTE_BREIT, biomobjekteFuer, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
+import { BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, BODENOBJEKTE_FAESSER, BODENOBJEKTE_ABWURF, BODENOBJEKTE_BIOM, BODENOBJEKTE_BREIT, BODENOBJEKTE_PORTAL, biomobjekteFuer, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
 import { BodenobjektSystem } from './systems/bodenobjektSystem.js';
 import { MAP_GROESSE_VORGABE, mapSizeFor, normalisiereFormat, normalisiereGroesse, ausrichtungFuerFormat } from './karte.js';
 import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
-import { BewegungSystem } from './systems/bewegungSystem.js';
+import { BewegungSystem } from './systems/bewegungSystem.js'; import { waehlePortal } from './portal.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, WIND_JE_ZUG, MAX_WIND, normalisiereWind } from '../shared/config/wind.js';
 import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer, treibsandFuer, splitterRegelFuer, wasserTeilschritte, wasserSchubFuer, treibenAktiv } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
@@ -440,6 +440,7 @@ export class MatchController {
   #rng;
   #waterBaseY = 0;
   #wasserlauf = 0; // Wasserschritte je Takt (Biomregel Wasserlauf 1, Sturzflut 4)
+  #portal = null; // Kartenportal (Bodenobjektfassung 8, `engine/portal.js`) oder null
   #lastShotBy = null;
 
   constructor({
@@ -944,6 +945,7 @@ export class MatchController {
     });
     this.#world.services.bodenobjekte = this.#bodenobjekte;
     this.#bodenobjekte.setzeLiegende();
+    if (this.bodenobjekte >= BODENOBJEKTE_PORTAL) this.#portal = waehlePortal({ rng: this.#seedManager.getSubRng('PORTAL'), breite: this.width, surfaceYAt: x => this.surfaceYAt(x), waterLevelAt: (x, y) => this.waterLevelAt(x, y), startplaetze: this.#players.map(p => ({ x: this.#world.getComponent(p.entityId, 'Position', 'x') ?? 0, y: this.#world.getComponent(p.entityId, 'Position', 'y') ?? 0 })) });
   }
 
   #spawnRoundLoot() {
@@ -1437,6 +1439,7 @@ export class MatchController {
   #schussQuelle() {
     return {
       seil: this.seilSystem, // Seilfassung 2: Waffen vom Seil (außer Nahkampf), der Schuss löst das Seil
+      portal: this.#portal, // Bodenobjektfassung 8: Ziel der Portalwaffen (null ohne Portal)
       waffenFassung: this.waffen,
       // AERO: Windfassung für Waffenfaktor und Vorhersage (`shooting.js`).
       windFassung: this.windFassung,
@@ -2642,6 +2645,7 @@ export class MatchController {
       seil: this.seilSystem?.snapshot() ?? null, // nur solange ein Seil hängt oder eine Serie läuft
       feuerwesen: this.#feuerwesen?.snapshot() ?? null, // nur solange ein Feuerwesen läuft (Fassung 20)
       hagel: this.#hagel?.snapshot() ?? null, // nur solange eine Hagellage ansteht/läuft oder ein Korn fliegt (Fassung 2)
+      portal: this.#portal, // Kartenportal (Bodenobjektfassung 8) oder null: ohne Portal bleibt der Schlüsselsatz gleich
       // Kartengröße und Ausrichtung (für die Anzeige und die Umrechnung).
       terrainWidth: this.width,
       terrainHeight: this.height,
