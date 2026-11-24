@@ -15,7 +15,7 @@ import { CharacterSystem } from '../src/engine/systems/characterSystem.js';
 import { wasserregelText, meldeBiomregel, meldeWasserregel } from '../src/client/biomregelAnzeige.js';
 
 test('Fassung 4 bleibt gültig; der Standard ist inzwischen neuer (Wasserlauf, 5); Unbekanntes fällt auf den Standard', () => {
-  assert.equal(BIOMREGELN_STANDARD, 8, 'Standard ist der Treibsand (biomregeln-treibsand.test.js)');
+  assert.equal(BIOMREGELN_STANDARD, 9, 'Standard ist die Bodenwirkung (biomregeln-boden.test.js)');
   for (const f of [1, 2, 3, 4, 5, 6]) assert.equal(normalisiereBiomregeln(f), f);
   assert.equal(normalisiereBiomregeln(77), BIOMREGELN_STANDARD);
 });

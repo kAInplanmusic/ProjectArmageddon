@@ -18,6 +18,9 @@ import { PLAYER_HALF_WIDTH, PLAYER_HALF_HEIGHT } from '../../shared/config/playe
 import { BEWEGUNG } from '../../shared/config/bewegung.js';
 import { combatProfile, klassenKennung, istKlassenfassungNeu, ARCHETYPE_IDS } from '../../shared/config/classes.js';
 import { KLASSEN_ALT } from '../../shared/config/klassen-fassung.js';
+import { bodenTempoFaktor } from '../../shared/config/biomregeln.js';
+import { stoffAm } from '../../shared/stoffkarte.js';
+import { stoffById } from '../../shared/config/stoffe.js';
 
 /**
  * Ein Schritt am Boden — reine Funktion (auch für die Vorhersage im Client).
@@ -96,7 +99,17 @@ export class BewegungSystem {
     const spieler = match.players.find(eintrag => eintrag.entityId === playerId);
     const klasse = klassenTempo(spieler?.classId, spieler?.archetypeId, spieler?.sidegradeId, match.klassen);
     const langsam = Math.min(match.statuses.slowOf(playerId), match.mali?.langsamFaktor(playerId) ?? 1);
-    return klasse * langsam;
+    return klasse * langsam * this.#bodenFaktor(playerId);
+  }
+
+  /** Biomregel 9 (Bodenwirkung): Faktor aus dem Stoff direkt unter den Füßen; 1 ohne Regel oder ohne Stoffkarte. */
+  #bodenFaktor(playerId) {
+    const match = this.#match;
+    if (!(match.biomregeln >= 9) || !match.stoffkarte) return 1;
+    const x = match.world.getComponent(playerId, 'Position', 'x') ?? 0;
+    const y = match.world.getComponent(playerId, 'Position', 'y') ?? 0;
+    const stoff = stoffById(stoffAm(match.stoffkarte, x, y + PLAYER_HALF_HEIGHT + 2));
+    return bodenTempoFaktor(match.biomregeln, stoff?.bremst ?? 0);
   }
 
   /**

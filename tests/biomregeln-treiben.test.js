@@ -20,8 +20,8 @@ const dienste = ({ treiben = true, level = 1, fluss = 0.4, fest = false } = {}) 
   terrain: { isSolid: () => fest },
 });
 
-test('Fassungen: 6 bleibt gültig, der Standard (8) enthält das Treiben; 1 bis 5 bleiben gültig', () => {
-  assert.equal(BIOMREGELN_STANDARD, 8, 'Standard ist der Treibsand (biomregeln-treibsand.test.js)');
+test('Fassungen: 6 bleibt gültig, der Standard (9) enthält das Treiben; 1 bis 5 bleiben gültig', () => {
+  assert.equal(BIOMREGELN_STANDARD, 9, 'Standard ist die Bodenwirkung (biomregeln-boden.test.js)');
   for (const f of [1, 2, 3, 4, 5, 6]) assert.equal(normalisiereBiomregeln(f), f);
   assert.equal(treibenAktiv(5), false);
   assert.equal(treibenAktiv(6), true);
