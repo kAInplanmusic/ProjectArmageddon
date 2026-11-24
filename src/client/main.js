@@ -28,7 +28,7 @@ import { KameraRegie } from './kameraRegie.js';
 import { KameraSteuerung } from './kameraSteuerung.js';
 import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
-import { zeigeToast } from './toasts.js';
+import { zeigeToast } from './toasts.js'; import { EinstiegAnzeige, einstiegFaellig } from './einstieg.js';
 import { leseSitzung, websocketUrlFuer } from './konto.js';
 import { kontoEinrichten } from './kontoMenue.js';
 import { bindeReplayBedienung } from './replayBedienung.js';
@@ -1149,6 +1149,7 @@ class Game {
     this.endOverlay.hidden = true;
     this.#zeigeAbbruch(true);
     this.running = true;
+    this.einstieg = einstiegFaellig() ? new EinstiegAnzeige() : null; this.einstiegSchuss = false; this.einstiegZ0 = this.zuendzeit.geschaltet; // TODO 2.11: Führung nur in der ersten Partie
     this.hud.log(`Lokales Match — Seed ${this.match.seedManager.baseSeed}`, 'accent'); meldeBiomregel(this.hud, { biom: this.match.sonderbiom, biomregeln: this.match.biomregeln, seed: this.match.seedManager.baseSeed, bodenBremstAnteil: bremsAnteilDerKarte(this.match) }); meldeWasserregel(this.hud, this.match.scenery?.waterId); if (this.match.getState().portal) this.hud.log('Portal: Auf der Karte liegt ein Portal. Portal-, Hologramm- und Dimensionswaffen beamen dich hin.', 'accent');
     if (!this.animationHandle) this.#loop(performance.now());
     return { ok: true, mode: 'local' };
@@ -2136,6 +2137,7 @@ class Game {
       this.hud.log(`Schuss verweigert: ${result.errors[0] ?? 'unbekannt'}`, 'danger');
     } else {
       this.hud.log(`Schuss abgegeben (${Math.round(power)} Kraft)`, 'accent');
+      this.einstiegSchuss = true; // Einstieg (TODO 2.11): Schritt „Feuern“
     }
     return result;
   }
@@ -3134,6 +3136,7 @@ class Game {
     // Flächenwirkung der gewählten Waffe für die Radius-Vorschau.
     const activeEntity = state.entities.find(entity => entity.entityId === playerId);
     const activeWeapon = activeEntity?.activeWeaponId ? getWaffe(activeEntity.activeWeaponId, this.match?.waffen ?? WAFFEN_STANDARD) : null;
+    if (this.einstieg && this.mode === 'local') this.einstieg.schritt({ jetzt: performance.now(), winkel: this.aim.angle, waffe: activeEntity?.activeWeaponId ?? null, geschossen: this.einstiegSchuss, zuenderwaffe: this.zuendzeit.gilt(activeWeapon, this.match?.waffen ?? WAFFEN_STANDARD), zuendzeitGestellt: this.zuendzeit.geschaltet > this.einstiegZ0 }); // TODO 2.11
     this.zuendzeit.aktualisiere(activeWeapon, this.match?.waffen ?? WAFFEN_STANDARD, [document.getElementById('hud-zuendzeit'), document.getElementById('touch-zuendzeit')]);
 
     /*

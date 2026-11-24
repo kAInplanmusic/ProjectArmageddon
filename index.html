@@ -97,6 +97,12 @@
            Die Texte setzt src/client/kameraEffekteBedienung.js; aria-live meldet sie auch vorlesend. -->
       <div id="kamera-kette" class="kamera-kette" role="status" aria-live="polite" hidden></div>
       <section id="hud" aria-label="Spiel-HUD">
+        <!-- Einstieg (TODO 2.11, src/client/einstieg.js): kurze Führung in der allerersten Partie, überspringbar. -->
+        <div id="einstieg" class="panel" role="status" aria-live="polite" hidden>
+          <span id="einstieg-schritt" class="einstieg-schritt"></span>
+          <span id="einstieg-text" class="einstieg-text"></span>
+          <button id="einstieg-ueberspringen" type="button" class="secondary">Überspringen</button>
+        </div>
         <div id="hud-top">
           <div class="stat panel">
             <span class="label">Runde</span>

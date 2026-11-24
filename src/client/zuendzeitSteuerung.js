@@ -43,7 +43,11 @@ export class ZuendzeitSteuerung {
   }
 
   /** Taste Z / Knopf: 1 → 3 → 5 → 1 und Ansage im Protokoll. */
+  /** Wie oft die Zündzeit umgestellt wurde (Einstieg, TODO 2.11: „Zündzeit gestellt“). */
+  geschaltet = 0;
+
   schalte() {
+    this.geschaltet += 1;
     const { waffe, fassung } = this.#aktiv();
     const neu = this.weiter(waffe, fassung);
     if (neu !== null) this.#log?.(`Zündzeit ${neu} s`);

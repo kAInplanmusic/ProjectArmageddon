@@ -15,9 +15,13 @@ import { test as basis, expect } from '@playwright/test';
 
 /** Schlüssel wie `HOME_KEY` in `src/client/home.js`. */
 export const HOME_SCHLUESSEL = 'pa.home.v1';
+/** Schlüssel wie `SCHLUESSEL` in `src/client/einstieg.js` (TODO 2.11): Die Führung der ersten Partie läge sonst über jedem HUD. */
+export const EINSTIEG_SCHLUESSEL = 'pa.einstieg.v1';
 
 function markiereHomeGesehen(schluessel) {
   try { sessionStorage.setItem(schluessel, '1'); } catch { /* kein Speicher: Startseite bleibt */ }
+  // Einstieg (TODO 2.11) ebenso als gesehen; `einstieg.spec.mjs` nimmt die Markierung per page.addInitScript wieder heraus.
+  try { localStorage.setItem('pa.einstieg.v1', '1'); } catch { /* kein Speicher: keine Führung (einstiegFaellig) */ }
 }
 
 export const test = basis.extend({

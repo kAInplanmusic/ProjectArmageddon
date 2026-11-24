@@ -1530,3 +1530,15 @@ select option { background: #14181d; color: var(--ink); }
   .intro-splash__logo { animation: none; opacity: 1; }
   .intro-splash__balken i { animation: none; width: 100%; }
 }
+
+/* Einstieg (TODO 2.11, src/client/einstieg.js): Führung in der ersten Partie, mittig unter der Kopfzeile, nicht über dem Spielfeld-Zentrum. */
+#einstieg {
+  position: fixed; left: 50%; top: 96px; transform: translateX(-50%); z-index: 17; max-width: min(640px, 92vw);
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--accent); border-radius: 10px;
+  background: rgba(19, 26, 34, 0.92); color: var(--ink); font-size: 16px; line-height: 1.35;
+  pointer-events: auto; /* das HUD lässt Klicks zum Spielfeld durch; der Knopf „Überspringen“ muss sie fangen */
+}
+#einstieg[hidden] { display: none; }
+#einstieg .einstieg-schritt { font-family: var(--font-display); color: var(--accent); white-space: nowrap; }
+#einstieg .einstieg-text { flex: 1; }
+#einstieg button { min-height: 44px; flex: none; }
