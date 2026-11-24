@@ -55,7 +55,7 @@ import { GUENTHER_ALT, GUENTHER_AKTIONEN, normalisiereGuenther } from '../shared
 import { COOKIE_ALT, COOKIE_KATER, normalisiereCookie } from '../shared/config/cookie.js';
 import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/config/feuer.js';
 import { BEWEGUNG, BEWEGUNG_ALT, BEWEGUNG_GEHEN, normalisiereBewegung } from '../shared/config/bewegung.js';
-import { BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, BODENOBJEKTE_FAESSER, BODENOBJEKTE_ABWURF, BODENOBJEKTE_BIOM, BODENOBJEKTE_BREIT, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
+import { BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, BODENOBJEKTE_FAESSER, BODENOBJEKTE_ABWURF, BODENOBJEKTE_BIOM, BODENOBJEKTE_BREIT, biomobjekteFuer, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
 import { BodenobjektSystem } from './systems/bodenobjektSystem.js';
 import { MAP_GROESSE_VORGABE, mapSizeFor, normalisiereFormat, normalisiereGroesse, ausrichtungFuerFormat } from './karte.js';
 import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
@@ -930,6 +930,7 @@ export class MatchController {
       abwurf: this.bodenobjekte >= BODENOBJEKTE_ABWURF,
       breit: this.bodenobjekte >= BODENOBJEKTE_BREIT,
       biom: this.bodenobjekte >= BODENOBJEKTE_BIOM ? this.sonderbiom : null,
+      biomobjekte: biomobjekteFuer(this.bodenobjekte), // Fassung 7: vier weitere Biome
       q: {
         breite: this.width,
         surfaceYAt: x => this.surfaceYAt(x),

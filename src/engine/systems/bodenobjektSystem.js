@@ -24,7 +24,7 @@
  * @module BodenobjektSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { MINEN, FAESSER, BIOMOBJEKTE, BODENOBJEKTE_BREIT_BASIS, BODENOBJEKTE_BREIT_MAX, MINEN_AUSGANG, minenAusgang } from '../../shared/config/bodenobjekte.js';
+import { MINEN, FAESSER, BIOMOBJEKTE, ALLE_BIOMOBJEKTE, BODENOBJEKTE_BREIT_BASIS, BODENOBJEKTE_BREIT_MAX, MINEN_AUSGANG, minenAusgang } from '../../shared/config/bodenobjekte.js';
 import { damageTypeId } from '../damageTypes.js';
 import { wendeExplosionAn } from '../explosion.js';
 import { freierPlatz } from '../turret.js';
@@ -59,12 +59,12 @@ export class BodenobjektSystem {
    * @param {object} optionen.q - Abfragen: `breite`, `surfaceYAt(x)`, `bodenNahe(x, y)`, `waterLevelAt(x, y)`,
    *   `startplaetze()` → [{x, y}] (Mindestabstand zu liegenden Minen)
    */
-  constructor({ rng, world, events, q, faesser = false, abwurf = false, biom = null, breit = false }) {
+  constructor({ rng, world, events, q, faesser = false, abwurf = false, biom = null, breit = false, biomobjekte = BIOMOBJEKTE }) {
     // Bodenobjektfassung 6: auf breiter Karte wachsen Zahl und Obergrenzen der Bodenobjekte mit der Breite (Faktor Breite/2560, 1 bis 2,5);
     // bis 2560 px Breite ist der Faktor 1 und der Zufallsstrom identisch zur Fassung 5.
     this.#faktor = breit ? Math.max(1, Math.min(BODENOBJEKTE_BREIT_MAX, q.breite / BODENOBJEKTE_BREIT_BASIS)) : 1;
     this.#faesser = faesser;
-    this.#biom = Object.hasOwn(BIOMOBJEKTE, biom) ? biom : null;
+    this.#biom = Object.hasOwn(biomobjekte, biom) ? biom : null; // Bodenobjektfassung 7: `biomobjekte` enthält auch BIOMOBJEKTE_2
     this.#abwurf = abwurf;
     this.#rng = rng;
     this.#world = world;
@@ -338,7 +338,7 @@ export class BodenobjektSystem {
   /** Ein Fass explodiert: immer, ohne Zufall; löst Nachbarn über `explosionBei` aus. */
   #sprengeFass(fass) {
     this.#minen.delete(fass.id);
-    const profil = BIOMOBJEKTE[fass.biomobjekt] ?? FAESSER;
+    const profil = ALLE_BIOMOBJEKTE[fass.biomobjekt] ?? FAESSER; // nur gelegt, wenn die Fassung das Objekt kennt
     const damageType = damageTypeId(profil.schadensart);
     const material = wendeExplosionAn(this.#world, {
       x: fass.x, y: fass.y, damage: profil.schaden, blastRadius: profil.radius, knockback: profil.rueckstoss,

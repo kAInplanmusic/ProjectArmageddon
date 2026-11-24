@@ -12,6 +12,8 @@
  *     Seed-Zweig `BODENOBJEKTE`.
  *   - `BODENOBJEKTE_ABWURF` (4): wie 3, dazu fallen Fässer wie Kisten vom Himmel (je Runde mit `FAESSER.abwurfChance`, Flugzeit `FAESSER.flugTicks`).
  *   - `BODENOBJEKTE_BREIT` (6): wie 5, dazu wachsen Zahl liegender Minen und Fässer und die Fass-Obergrenze auf Karten über 2560 px Breite (Faktor Breite/2560, höchstens 2,5); bis 2560 px bitgleich zu 5.
+ *   - `BODENOBJEKTE_BIOM_2` (7, TODO 2.5 QV-6-F): wie 6, dazu Biomobjekte für Fabrik (Druckkessel), Dschungel (Giftblüte), Pilzwald
+ *     (Sporenbovist) und Tempelstadt (Runenstein), `BIOMOBJEKTE_2`. Die Fassungen 5 und 6 kennen nur `BIOMOBJEKTE` und bleiben bitgleich.
  *   - `BODENOBJEKTE_FAESSER` (3): wie 2, dazu Fässer (siehe `FAESSER`): liegen von Anfang an auf der Karte, explodieren bei einer
  *     Explosion in der Nähe (auch einer anderen Mine oder eines Fasses, Kettenreaktion) und lösen dabei Minen mit aus.
  *
@@ -39,7 +41,8 @@ export const BODENOBJEKTE_FAESSER = 3;
 export const BODENOBJEKTE_ABWURF = 4;
 export const BODENOBJEKTE_BIOM = 5;
 export const BODENOBJEKTE_BREIT = 6;
-export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_BREIT;
+export const BODENOBJEKTE_BIOM_2 = 7;
+export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_BIOM_2;
 /** Fassung 6: Faktor = Breite / Basis, höchstens `MAX` (wie die Kisten der Geländefassung 10). Bis zur Basis 1, also bitgleich zu Fassung 5. */
 export const BODENOBJEKTE_BREIT_BASIS = 2560;
 export const BODENOBJEKTE_BREIT_MAX = 2.5;
@@ -49,9 +52,29 @@ export const BIOMOBJEKTE = Object.freeze({
   schrott: { label: 'Kondensatorbank', farbe: '#62747c', licht: '#ffe64c', schaden: 72, radius: 54, rueckstoss: 35, gelaendeSchaden: 16, schadensart: 'electric' },
 });
 
+/**
+ * Fassung 7: vier weitere Biomobjekte, je mit eigenem Charakter (erste Ansätze, nicht balanciert; Maßstab wie oben):
+ * Druckkessel stößt weit weg, Giftblüte vergiftet breit ohne Krater, Sporenbovist schiebt breit und schwach, Runenstein reißt viel Gelände.
+ */
+export const BIOMOBJEKTE_2 = Object.freeze({
+  fabrik: { label: 'Druckkessel', farbe: '#8a8f96', licht: '#ffd27a', schaden: 30, radius: 72, rueckstoss: 320, gelaendeSchaden: 28, schadensart: 'explosive' },
+  dschungel: { label: 'Giftblüte', farbe: '#7c3fa6', licht: '#b6ff5c', schaden: 26, radius: 92, rueckstoss: 30, gelaendeSchaden: 4, schadensart: 'poison' },
+  pilzwald: { label: 'Sporenbovist', farbe: '#c9a36b', licht: '#f4ffd0', schaden: 14, radius: 120, rueckstoss: 180, gelaendeSchaden: 2, schadensart: 'nature' },
+  tempelstadt: { label: 'Runenstein', farbe: '#6d6a8f', licht: '#9ef0ff', schaden: 40, radius: 64, rueckstoss: 80, gelaendeSchaden: 72, schadensart: 'arcane' },
+});
+
+/** Alle Biomobjekte (Anzeige: Bild und Meldung). Welche eine Partie legt, entscheidet `biomobjekteFuer`. */
+export const ALLE_BIOMOBJEKTE = Object.freeze({ ...BIOMOBJEKTE, ...BIOMOBJEKTE_2 });
+
+/** Die Biomobjekte einer Fassung: keine vor 5, die drei alten in 5 und 6, alle ab 7. */
+export function biomobjekteFuer(fassung) {
+  if (fassung >= BODENOBJEKTE_BIOM_2) return ALLE_BIOMOBJEKTE;
+  return fassung >= BODENOBJEKTE_BIOM ? BIOMOBJEKTE : Object.freeze({});
+}
+
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereBewegung`); das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBodenobjekte(fassung) {
-  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER || fassung === BODENOBJEKTE_ABWURF || fassung === BODENOBJEKTE_BIOM || fassung === BODENOBJEKTE_BREIT ? fassung : BODENOBJEKTE_STANDARD;
+  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER || fassung === BODENOBJEKTE_ABWURF || fassung === BODENOBJEKTE_BIOM || fassung === BODENOBJEKTE_BREIT || fassung === BODENOBJEKTE_BIOM_2 ? fassung : BODENOBJEKTE_STANDARD;
 }
 
 /** Ausgang einer Auslösung. */

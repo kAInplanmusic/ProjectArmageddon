@@ -1,4 +1,4 @@
-import { BIOMOBJEKTE } from '../shared/config/bodenobjekte.js';
+import { ALLE_BIOMOBJEKTE } from '../shared/config/bodenobjekte.js';
 import { kameraEffekte } from './kameraEffekte.js';
 /**
  * Wirkungen der Ereignisse — EINE Zuordnungstabelle für beide Betriebsarten.
@@ -798,7 +798,7 @@ export const EREIGNIS_WIRKUNGEN = {
   fass_exploded: beide((k, n) => {
     kameraEffekte.ketteGlied('Fass');
     k.fernzustand?.minen?.()?.delete(n.fassId);
-    k.hud?.log(BIOMOBJEKTE[n.biomobjekt]?.label ? BIOMOBJEKTE[n.biomobjekt].label + ' ausgelöst' : 'Ein Fass explodiert', 'accent');
+    k.hud?.log(ALLE_BIOMOBJEKTE[n.biomobjekt]?.label ? ALLE_BIOMOBJEKTE[n.biomobjekt].label + ' ausgelöst' : 'Ein Fass explodiert', 'accent');
     k.renderer?.addFlash(n.x, n.y, 30, { color: '#ff9a3d' });
   }),
 
