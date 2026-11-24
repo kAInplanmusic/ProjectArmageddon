@@ -39,7 +39,8 @@ let server = null;
 test.beforeAll(async () => { server = await starteTestserver({ port: PORT, repoRoot }); });
 test.afterAll(async () => { await stoppeTestserver(server?.process); });
 
-const FALL = { seed: 3, winkel: 0.95, kraft: 25 };
+// Geländefassung 15 zieht für Seed 3 eine andere Karte (Durchgangstor); der Fall ist mit der Engine neu gesucht.
+const FALL = { seed: 3, winkel: 0.4, kraft: 45 };
 const LOBBY = { teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom', biom: 'klassisch' };
 const MELDUNG = /^(Eine Mine explodiert|Superexplosion!|Blindgänger!)/;
 
