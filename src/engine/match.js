@@ -62,7 +62,7 @@ import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, WIND_JE_ZUG, MAX_WIND, normalisiereWind } from '../shared/config/wind.js';
-import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer, treibsandFuer, wasserTeilschritte, wasserSchubFuer, treibenAktiv } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
+import { BIOMREGELN_ALT, normalisiereBiomregeln, stroemungFuer, verschiebeWind, schwerkraftFuer, wasserWirkungFuer, treibsandFuer, splitterRegelFuer, wasserTeilschritte, wasserSchubFuer, treibenAktiv } from '../shared/config/biomregeln.js'; // Biomregeln (QV-6)
 import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
@@ -813,7 +813,7 @@ export class MatchController {
 
     this.#world.services.terrain = this.#terrain;
     this.#world.services.terrainScale = 1;
-    if (this.zerstoerung >= ZERSTOERUNG_GELAENDE) this.#world.services.zerstoerung = this.#setzung = new Zerstoerung({ terrain: this.#terrain, world: this.#world, events: this.#events, turrets: this.#turrets, fassung: this.zerstoerung, stoffe: this.stoffkarte });
+    if (this.zerstoerung >= ZERSTOERUNG_GELAENDE) this.#world.services.zerstoerung = this.#setzung = new Zerstoerung({ terrain: this.#terrain, world: this.#world, events: this.#events, turrets: this.#turrets, fassung: this.zerstoerung, stoffe: this.stoffkarte, splitterRegel: splitterRegelFuer(this.biomregeln) });
     if (this.zerstoerung >= ZERSTOERUNG_HANG && this.stoffkarte) this.#world.services.stoffkarte = this.stoffkarte;
     if (this.feuer >= FEUER_ENTFACHT && this.stoffkarte && this.#setzung) this.#baueFeuer();
   }

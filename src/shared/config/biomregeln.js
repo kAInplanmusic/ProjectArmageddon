@@ -11,7 +11,9 @@
  *   - `BIOMREGELN_STROEMUNG` (2): Welle 1, Baustein A „Strömung / Windneigung" für Düne, Riff und Tiefsee.
  *   - `BIOMREGELN_SCHWERKRAFT` (3): Welle 1, Baustein B „Schwerkraftfaktor" für Kosmos, Planet, Schwebinseln
  *     und Surreal; enthält A.
- *   - `BIOMREGELN_BODEN` (9, Standard): Bodenwirkung (Welle 3, Baustein C, TODO 2.6): Das Gehtempo hängt am Stoff unter den Füßen
+ *   - `BIOMREGELN_SPLITTER` (10, Standard): Splitter (Welle 3, Baustein D, TODO 2.6): Splitter spröder Stoffe, die ins Freie fliegen,
+ *     verletzen Figuren in der Nähe; Splitter, die spröden Stoff treffen, brechen ihn weiter (eine Stufe). `SPLITTER_REGEL`. Enthält 9.
+ *   - `BIOMREGELN_BODEN` (9): Bodenwirkung (Welle 3, Baustein C, TODO 2.6): Das Gehtempo hängt am Stoff unter den Füßen
  *     (`bremst` der Stoffliste, halb wirksam, `BODENWIRKUNG`). Enthält alles aus 8.
  *   - `BIOMREGELN_TREIBSAND` (8): Treibsand (`quicksand`, TODO 2.2) wirkt: kein Ertrinken, seitlich stark
  *     gebremst, langsames Einsinken; heraus kommt man springend. Enthält alles aus 7.
@@ -51,13 +53,14 @@ export const BIOMREGELN_TREIBEN = 6;
 export const BIOMREGELN_STURZFLUT = 7;
 export const BIOMREGELN_TREIBSAND = 8;
 export const BIOMREGELN_BODEN = 9;
-export const BIOMREGELN_STANDARD = BIOMREGELN_BODEN;
+export const BIOMREGELN_SPLITTER = 10;
+export const BIOMREGELN_STANDARD = BIOMREGELN_SPLITTER;
 
 /** Unbekannte Werte fallen auf den Standard; das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBiomregeln(fassung) {
   return fassung === BIOMREGELN_ALT || fassung === BIOMREGELN_STROEMUNG || fassung === BIOMREGELN_SCHWERKRAFT
     || fassung === BIOMREGELN_WASSER || fassung === BIOMREGELN_WASSERLAUF || fassung === BIOMREGELN_TREIBEN
-    || fassung === BIOMREGELN_STURZFLUT || fassung === BIOMREGELN_TREIBSAND || fassung === BIOMREGELN_BODEN
+    || fassung === BIOMREGELN_STURZFLUT || fassung === BIOMREGELN_TREIBSAND || fassung === BIOMREGELN_BODEN || fassung === BIOMREGELN_SPLITTER
     ? fassung : BIOMREGELN_STANDARD;
 }
 
@@ -310,4 +313,22 @@ export const BODENWIRKUNG = Object.freeze({
 export function bodenTempoFaktor(fassung, bremst) {
   if (!(fassung >= BIOMREGELN_BODEN) || !(bremst > 0)) return 1;
   return Math.max(BODENWIRKUNG.minFaktor, 1 - BODENWIRKUNG.anteil * bremst);
+}
+
+/**
+ * Splitter (ab Fassung 10, Welle 3 Baustein D, TODO 2.6). Messung (Bot-Partien, je 6 Seeds): In Kristallhöhle, Kristallarchipel,
+ * Kristallwald und Dimensionsriss entstanden 0 bis 0,2 Splitterkrater je Partie, in der Burg 9,2. Der Grund: Spröder Stoff splittert
+ * beim Einschlag (in der Kristallhöhle 110 Treffer in 3 Partien), die Splitter (`engine/zerstoerung.js#splitter`) zielen aber neben den
+ * Krater; was ins Freie fliegt, verschwand bisher. Ab Fassung 10 trifft ein Splitter im Freien jede Figur im `trefferRadius` mit
+ * `schaden`; ein Splitter, der spröden Stoff (`bruechig` ab `ketteAb`) trifft, bricht ihn mit `ketteSplitter` weiteren Splittern
+ * (eine Stufe, keine Endlosschleife). Erste Ansätze; die Stärke ist gemessen in `tests/biomregeln-splitter.test.js` beschrieben.
+ */
+export const SPLITTER_REGEL = Object.freeze({
+  schaden: 6, trefferRadius: 16, ketteAb: 3, ketteSplitter: 2,
+  name: 'Splitter', text: 'Spröder Stein und Kristall splittern: Splitter verletzen, wer daneben steht.',
+});
+
+/** Die Splitterregel der Fassung oder `null` (vor 10: Splitter nur als Krater im Gelände). */
+export function splitterRegelFuer(fassung) {
+  return fassung >= BIOMREGELN_SPLITTER ? SPLITTER_REGEL : null;
 }

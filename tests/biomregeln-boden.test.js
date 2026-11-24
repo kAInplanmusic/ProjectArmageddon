@@ -14,9 +14,9 @@ import { stoffById } from '../src/shared/config/stoffe.js';
 import { neuesMatch } from '../scripts/bot-partien.mjs';
 import { wasserregelText } from '../src/client/biomregelAnzeige.js';
 
-test('Marke: 9 ist der Standard, 8 bleibt gültig', () => {
+test('Marke: 9 bleibt gültig (Standard 10), 8 bleibt gültig', () => {
   assert.equal(BIOMREGELN_BODEN, 9);
-  assert.equal(BIOMREGELN_STANDARD, BIOMREGELN_BODEN);
+  assert.equal(BIOMREGELN_STANDARD, BIOMREGELN_BODEN + 1, 'Standard ist 10 (Splitter)');
   assert.equal(normalisiereBiomregeln(9), 9);
   assert.equal(normalisiereBiomregeln(8), BIOMREGELN_TREIBSAND);
 });

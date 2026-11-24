@@ -130,6 +130,8 @@ export function charakterFuerIndex(index) {
 }
 
 /** Richtungen der Splitterstreuung (Bildschirmkoordinaten, y nach unten): vorberechnet, keine Winkelfunktion. */
+/** Biomregel 10: Mindestradius eines Kraters, der splittert (sonst 12). */
+const SPLITTER_AB_RADIUS = 6;
 const SPLITTER_RICHTUNGEN = [
   [1, 0], [0.906, 0.423], [0.643, 0.766], [0.259, 0.966], [-0.259, 0.966],
   [-0.643, 0.766], [-0.906, 0.423], [-1, 0], [0.94, -0.342], [-0.94, -0.342],
@@ -156,6 +158,8 @@ export class Zerstoerung {
   #fassung;
   /** Fassung 4: Nacharbeit gelandeter Inseln, fliegender Schutt, Erdbeben-Aufträge. */
   #bruch;
+  /** Biomregel 10: Splitter verletzen und brechen weiter (`SPLITTER_REGEL`) oder `null`. */
+  #splitterRegel = null;
   /** Fassung 5: Stoffkarte (`shared/stoffkarte.js`) oder `null`. */
   #stoff;
   #stoffAmKrater = 0;
@@ -178,7 +182,8 @@ export class Zerstoerung {
    * @param {Map<number, object>} quelle.turrets - Geschütze des Matches (`x`, `y` werden bewegt)
    * @param {number} [quelle.fassung] - Zerstörungsfassung (`config.zerstoerung`), bestimmt die Suchgrenzen
    */
-  constructor({ terrain, world, events, turrets, fassung = ZERSTOERUNG_GELAENDE, stoffe = null }) {
+  constructor({ terrain, world, events, turrets, fassung = ZERSTOERUNG_GELAENDE, stoffe = null, splitterRegel = null }) {
+    this.#splitterRegel = splitterRegel; // Biomregel 10 (`config/biomregeln.SPLITTER_REGEL`) oder null
     this.#stoff = fassung >= ZERSTOERUNG_STOFF && stoffe ? stoffe : null;
     if (this.#stoff) terrain.setzeSchutz(stoffe);
     this.#hang = fassung >= ZERSTOERUNG_HANG && this.#stoff !== null;
@@ -665,16 +670,19 @@ export class Zerstoerung {
 
   /** Zerstörungscharakter am Einschlag: Splitterstreuung, Erdbeben, Rutschen der Figuren am Rand. */
   #charakter(x, y, radius, art, nebenbrueche = 0) {
-    if (art === 'splitter' && radius >= 12) this.#splitter(x, y, radius, nebenbrueche || null);
-    else if (nebenbrueche > 0 && art === 'sprengung' && radius >= 12) this.#splitter(x, y, radius, nebenbrueche);
+    // Biomregel 10: auch kleine Krater splittern (harter Kristall lässt nur 6 bis 9 px stehen; vorher erst ab 12 px).
+    const ab = this.#splitterRegel ? SPLITTER_AB_RADIUS : 12;
+    if (art === 'splitter' && radius >= ab) this.#splitter(x, y, radius, nebenbrueche || null);
+    else if (nebenbrueche > 0 && art === 'sprengung' && radius >= ab) this.#splitter(x, y, radius, nebenbrueche);
     if (art === 'beben' && (!this.#stoff || bebenWirkt(this.#stoffAmKrater))) this.#startBeben(x, y, radius);
     if (radius >= RUTSCH_MIN_RADIUS) this.#rutschNach(x, y, radius);
     if (this.#hang && art !== 'beben' && radius >= HANG_MIN_RADIUS) this.#startHang(x, y, radius);
   }
 
   /** Nebenlöcher rund um den Hauptkrater: kleine Dellen an Stellen, die wirklich Boden sind. */
-  #splitter(x, y, radius, anzahl = null) {
+  #splitter(x, y, radius, anzahl = null, stufe = 0) {
     const terrain = this.#terrain;
+    const regel = this.#splitterRegel;
     const n = anzahl ?? SPLITTER_MIN + Math.floor(zufall(x, y, radius) * SPLITTER_SPANNE);
     const sr = Math.max(3, Math.round(radius * 0.26));
     for (let i = 0; i < n; i++) {
@@ -682,9 +690,27 @@ export class Zerstoerung {
       const r = SPLITTER_RICHTUNGEN[Math.floor(zufall(i, y, x + 99) * SPLITTER_RICHTUNGEN.length)];
       const sx = Math.round(x + r[0] * d);
       const sy = Math.round(y + r[1] * d);
-      if (sx < 0 || sy < 0 || sx >= this.#breite || sy >= this.#hoehe || !terrain.isSolid(sx, sy)) continue;
+      if (sx < 0 || sy < 0 || sx >= this.#breite || sy >= this.#hoehe) continue;
+      if (!terrain.isSolid(sx, sy)) {
+        if (regel) this.#splitterTrifft(sx, sy, regel); // Biomregel 10: ins Freie geflogen, trifft Figuren
+        continue;
+      }
+      // Biomregel 10, Kette: Stoff am Splitterpunkt vor dem Krater lesen (danach ist er Luft).
+      const kette = regel && stufe === 0 && this.#stoff && stoffById(stoffAm(this.#stoff, sx, sy)).bruechig >= regel.ketteAb;
       terrain.punchCrater(sx, sy, sr, 100);
       this.#events.emit('terrain_destroyed', { x: sx, y: sy, radius: sr, tiefe: 100, art: 'splitter' });
+      if (kette && sr >= 6) this.#splitter(sx, sy, sr * 2, regel.ketteSplitter, 1);
+    }
+  }
+
+  /** Biomregel 10: Ein Splitter im Freien trifft jede lebende Figur im Trefferradius (Reihenfolge nach Entity-ID). */
+  #splitterTrifft(sx, sy, regel) {
+    const schaden = this.#world.getSystem?.('damage');
+    if (!schaden) return;
+    for (const b of this.#figurBoxen().sort((a, c) => a.id - c.id)) {
+      if (Math.hypot(b.x - sx, b.y - sy) > regel.trefferRadius + PLAYER_HALF_HEIGHT) continue;
+      schaden.applyDamage(this.#world, b.id, regel.schaden, null);
+      this.#events.emit('splitter_treffer', { x: sx, y: sy, entityId: b.id, schaden: regel.schaden });
     }
   }
 

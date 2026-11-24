@@ -402,6 +402,7 @@ export const EREIGNIS_WIRKUNGEN = {
   terrain_quake: beide((k, n) => { k.renderer?.bebenOptik(n); }),
   /* Fassung 5: der Einschlag traf unzerstörbaren Stoff (Metall, Grundgestein) und ließ ihn stehen — nur Funken. */
   terrain_resisted: beide((k, n) => { k.renderer?.spawnExplosionParticles?.(n.x, n.y, Math.min(n.radius || 8, 10)); }),
+  splitter_treffer: beide((k, n) => { k.renderer?.addFlash(n.x, n.y, 6, { color: '#d8f4ff' }); }), // Biomregel 10: heller Splitterblitz
 
   /*
    * Explosion.

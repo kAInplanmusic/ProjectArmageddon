@@ -54,6 +54,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   feuer_schmilzt: { klasse: 'anzeige', klang: ['zischen'], anim: ['spawnExplosionParticles'] },
   terrain_quake: { klasse: 'anzeige', anim: ['bebenOptik'] },
   terrain_resisted: { klasse: 'anzeige', anim: ['spawnExplosionParticles'] },
+  splitter_treffer: { klasse: 'anzeige', anim: ['addFlash'] }, // Biomregel 10: ein Splitter trifft eine Figur (der Schaden selbst läuft über `damage`)
   hitscan: { klasse: 'anzeige', klang: ['shot', 'damage'] },
   special_effect: { klasse: 'anzeige', klang: ['schild', 'bereit'], anim: ['addFlash'] },
   fuse_armed: { klasse: 'anzeige', klang: ['ticken'], anim: ['addFlash'] },

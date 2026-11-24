@@ -22,9 +22,9 @@ function rinne() {
   return w;
 }
 
-test('Fassungen: 5 bleibt gültig, der Standard ist neuer (9)', () => {
-  assert.equal(BIOMREGELN_STANDARD, 9);
-  for (const f of [1, 2, 3, 4, 5, 6, 7, 8, 9]) assert.equal(normalisiereBiomregeln(f), f);
+test('Fassungen: 5 bleibt gültig, der Standard ist neuer (10)', () => {
+  assert.equal(BIOMREGELN_STANDARD, 10);
+  for (const f of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) assert.equal(normalisiereBiomregeln(f), f);
   assert.equal(wasserlaufAktiv(BIOMREGELN_WASSER), false);
   assert.equal(wasserlaufAktiv(BIOMREGELN_WASSERLAUF), true);
 });

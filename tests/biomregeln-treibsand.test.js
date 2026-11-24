@@ -15,8 +15,8 @@ import {
 import { WATER_KINDS } from '../src/shared/config/scenery.js';
 import { wasserregelText } from '../src/client/biomregelAnzeige.js';
 
-test('Fassungen: 8 bleibt gültig (Standard 9); 7 behält das alte Verhalten', () => {
-  assert.equal(BIOMREGELN_STANDARD, BIOMREGELN_TREIBSAND + 1, 'Standard ist 9 (Bodenwirkung)');
+test('Fassungen: 8 bleibt gültig (Standard 10); 7 behält das alte Verhalten', () => {
+  assert.equal(BIOMREGELN_STANDARD, BIOMREGELN_TREIBSAND + 2, 'Standard ist 10 (Splitter)');
   assert.equal(normalisiereBiomregeln(8), 8);
   assert.equal(treibsandFuer('quicksand', BIOMREGELN_STURZFLUT), null);
   assert.equal(wasserWirkungFuer('quicksand', BIOMREGELN_STURZFLUT), null, 'Fassung 7: Ertrinken wie Wasser');
