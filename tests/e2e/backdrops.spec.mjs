@@ -410,21 +410,22 @@ for (const breite of [1024, 1600]) {
   });
 }
 
-test('Menü reicht Kartenformat, Größenstufe und Hagel bis in die Partie durch', async ({ page }) => {
+// Die Wetterwahl im Menü entfiel (TODO 2.7, Entscheidung 2026-11-12: Wetter immer zufällig); Hagel ist nicht mehr wählbar.
+test('Menü reicht Kartenformat und Größenstufe bis in die Partie durch; keine Wetterwahl mehr', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   // Größenstufe und Format liegen im eingeklappten Bereich „Erweitert“.
   await page.locator('#cfg-erweitert').evaluate(d => { d.open = true; });
   await page.selectOption('#cfg-kartengroesse', 'kompakt');
   await page.selectOption('#cfg-kartenformat', '9:16');
-  await page.selectOption('#cfg-wetter', 'hagel');
+  await expect(page.locator('#cfg-wetter')).toHaveCount(0);
   await page.fill('#cfg-seed', '4242');
   await page.click('#start-button');
   // Der Matchstart lädt den Match-Code per import() nach: erst warten, bis das Match steht.
   await page.waitForFunction(() => Boolean(window.__PA__.game.match));
   const werte = await page.evaluate(() => {
     const g = window.__PA__.game;
-    return { breite: g.match.width, hoehe: g.match.height, zeit: g.match.turnDurationMs, wetter: g.renderer.stimmung.wetter };
+    return { breite: g.match.width, hoehe: g.match.height, zeit: g.match.turnDurationMs };
   });
-  expect(werte).toEqual({ breite: 1080, hoehe: 1920, zeit: 35000, wetter: 'hagel' });
+  expect(werte).toEqual({ breite: 1080, hoehe: 1920, zeit: 35000 });
 });

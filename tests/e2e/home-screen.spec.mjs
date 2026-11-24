@@ -22,7 +22,7 @@ test.describe('Home-Bildschirm', () => {
     await page.addInitScript(schluessel => sessionStorage.removeItem(schluessel), HOME_SCHLUESSEL);
   });
 
-  test('„Match starten“ verlässt den Home-Bildschirm und zeigt das Menü', async ({ page }) => {
+  test('„Spielen“ startet mit einem Klick eine Partie (TODO 2.7), ohne das Menü', async ({ page }) => {
     const fehler = [];
     page.on('pageerror', e => fehler.push(String(e)));
     await wartePastSplash(page);
@@ -30,17 +30,20 @@ test.describe('Home-Bildschirm', () => {
     await page.locator('#home-start').click();
 
     await expect(page.locator('#home-screen')).toBeHidden();
-    await expect(page.locator('#menu-overlay')).toBeVisible();
+    await page.waitForFunction(() => window.__PA__?.game?.match?.status === 'playing', null, { timeout: 20_000 });
+    await expect(page.locator('#menu-overlay')).toBeHidden();
+    await expect(page.locator('#hud')).toBeVisible();
     expect(fehler).toEqual([]);
   });
 
-  test('„Überrasch mich“ verlässt den Home-Bildschirm und zeigt das Menü', async ({ page }) => {
+  test('„Anpassen“ verlässt den Home-Bildschirm und zeigt das Menü', async ({ page }) => {
     await wartePastSplash(page);
 
-    await page.locator('#home-ueberrasch').click();
+    await page.locator('#home-anpassen').click();
 
     await expect(page.locator('#home-screen')).toBeHidden();
     await expect(page.locator('#menu-overlay')).toBeVisible();
+    expect(await page.evaluate(() => Boolean(window.__PA__?.game?.match))).toBe(false);
   });
 
   test('Taste verlässt den Home-Bildschirm', async ({ page }) => {
@@ -56,7 +59,7 @@ test.describe('Home-Bildschirm', () => {
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
     // Sofort verlassen, noch vor dem Ende des Splash-Timers (1,8 s).
-    await page.evaluate(() => document.getElementById('home-start').click());
+    await page.evaluate(() => document.getElementById('home-anpassen').click());
     await expect(page.locator('#home-screen')).toBeHidden();
 
     await page.waitForTimeout(3000); // Timer des Splash ist abgelaufen
@@ -98,16 +101,16 @@ test.describe('Home-Bildschirm', () => {
     expect(stil.h).toBeGreaterThan(40);
   });
 
-  test('Die Nebenaktion „Überrasch mich“ ist als Zweitknopf formatiert', async ({ page }) => {
+  test('Die Nebenaktion „Anpassen“ ist als Zweitknopf formatiert', async ({ page }) => {
     await wartePastSplash(page);
-    const fs = await page.locator('#home-ueberrasch').evaluate(el => getComputedStyle(el).fontSize);
+    const fs = await page.locator('#home-anpassen').evaluate(el => getComputedStyle(el).fontSize);
     expect(fs).toBe('20px'); // früher wirkte die Regel wegen eines Tippfehlers im Selektor nicht
   });
 
   test('Auf iPhone quer (844x390) liegen beide Knöpfe vollständig im Viewport', async ({ page }) => {
     await page.setViewportSize({ width: 844, height: 390 });
     await wartePastSplash(page);
-    for (const id of ['#home-start', '#home-ueberrasch']) {
+    for (const id of ['#home-start', '#home-anpassen']) {
       const b = await page.locator(id).boundingBox();
       expect(b, id).not.toBeNull();
       expect(b.y, id + ' oben').toBeGreaterThanOrEqual(0);

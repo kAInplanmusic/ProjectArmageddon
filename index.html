@@ -297,7 +297,7 @@
       </section>
 
       <!-- Home-Bildschirm (A6 UI-Rest): Startseite vor dem Menü. Wird beim ersten Laden
-           eingeblendet und beim ersten Klick auf "Match starten" oder "Überrasch mich"
+           eingeblendet und beim ersten Klick auf "Spielen" oder "Anpassen"
            ausgeblendet. -->
       <section id="home-screen" class="overlay" role="region" aria-label="Startbildschirm">
         <div class="overlay-card panel home-card">
@@ -310,8 +310,9 @@
             </p>
           </div>
           <div class="home-aktionen">
-            <button id="home-start" type="button" class="pa-btn pa-btn--primaer pa-btn--fadenkreuz">Match starten</button>
-            <button id="home-ueberrasch" type="button" class="secondary" title="Würfelt Biom, Kulisse und Fraktionen und startet sofort">Überrasch mich</button>
+            <!-- TODO 2.7 (Ein-Klick-Start): „Spielen“ würfelt Biom, Kulisse und Fraktionen und startet sofort; „Anpassen“ öffnet das Menü. -->
+            <button id="home-start" type="button" class="pa-btn pa-btn--primaer pa-btn--fadenkreuz" title="Würfelt Biom, Kulisse und Fraktionen und startet sofort">Spielen</button>
+            <button id="home-anpassen" type="button" class="secondary" title="Biom, Kartengröße, Teams und mehr selbst wählen">Anpassen</button>
           </div>
           <p class="home-hinweis">Drücke eine Taste oder klicke irgendwo, um fortzufahren.</p>
         </div>
@@ -464,21 +465,7 @@
                 <option value="herbst">Herbstgold</option>
               </select>
             </label>
-            <label>Wetter
-              <select id="cfg-wetter">
-                <option value="auto" selected>automatisch (wie die Kulisse)</option>
-                <option value="klar">klar</option>
-                <option value="sonne">Sonne</option>
-                <option value="wind">Wind</option>
-                <option value="regen">Regen</option>
-                <option value="sturm">Sturm</option>
-                <option value="schnee">Schnee</option>
-                <option value="hagel">Hagel</option>
-                <option value="nebel">Nebel</option>
-                <option value="laub">Laubfall</option>
-                <option value="wechselhaft">wechselhaft (Wetter wechselt)</option>
-              </select>
-            </label>
+            <!-- Wetterwahl entfällt (Entscheidung des Auftraggebers 2026-11-12: Wetter immer zufällig, wie die Kulisse). -->
             <label>Kartengröße
               <select id="cfg-kartengroesse">
                 <option value="klein">Klein · 30 s</option>

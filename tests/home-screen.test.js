@@ -27,7 +27,8 @@ test('Der Home-Bildschirm existiert mit allen Elementen', () => {
   // Die Container-Elemente
   assert.ok(html.includes('id="home-screen"'), 'Home-Bildschirm fehlt');
   assert.ok(html.includes('id="home-start"'), 'Start-Knopf fehlt');
-  assert.ok(html.includes('id="home-ueberrasch"'), 'Überrasch-Menü-Knopf fehlt');
+  assert.ok(html.includes('id="home-anpassen"'), 'Anpassen-Knopf fehlt');
+  assert.ok(!html.includes('id="home-ueberrasch"'), 'TODO 2.7: „Überrasch mich“ ist in „Spielen“ aufgegangen');
 });
 
 test('Der Home-Bildschirm hat eine Karte mit Klasse', () => {
@@ -35,8 +36,9 @@ test('Der Home-Bildschirm hat eine Karte mit Klasse', () => {
   assert.ok(html.includes('class="overlay-card panel home-card"'), 'home-card-Klasse fehlt');
 
   // Die Beschriftungen
-  assert.ok(html.includes('id="home-start"') && html.includes('Match starten'), 'Start-Knopf-Beschriftung fehlt');
-  assert.ok(html.includes('id="home-ueberrasch"') && html.includes('Überrasch mich'), 'Überrasch-Knopf-Beschriftung fehlt');
+  // Beschriftung am Knopf selbst prüfen (vorher reichte „Match starten“ irgendwo in der Seite, etwa am Menüknopf).
+  assert.match(html, /<button id="home-start"[^>]*>Spielen<\/button>/, 'Start-Knopf heißt „Spielen“');
+  assert.match(html, /<button id="home-anpassen"[^>]*>Anpassen<\/button>/, 'Anpassen-Knopf');
 });
 
 test('Der Home-Bildschirm hat eine Hinweiszeile', () => {

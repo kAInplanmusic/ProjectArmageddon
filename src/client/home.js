@@ -38,7 +38,7 @@ function verlasseHome() {
 }
 
 /** Initialisiert den Home-Bildschirm. */
-export function starteHome() {
+export function starteHome({ spielen = null } = {}) {
   const home = document.getElementById('home-screen');
   const menu = document.getElementById('menu-overlay');
   if (!home) return false;
@@ -54,17 +54,17 @@ export function starteHome() {
   if (menu) menu.setAttribute('hidden', '');
   home.removeAttribute('hidden');
 
-  // Klick auf "Match starten" oder "Überrasch mich" -> Home verlassen
+  // „Spielen“ startet sofort (TODO 2.7: Ein-Klick-Start), „Anpassen“ zeigt das Menü.
   const startBtn = document.getElementById('home-start');
-  const ueberraschBtn = document.getElementById('home-ueberrasch');
+  const anpassenBtn = document.getElementById('home-anpassen');
 
   const handler = () => {
     verlasseHome();
   };
 
   // Knöpfe verbinden
-  if (startBtn) startBtn.addEventListener('click', handler, { once: true });
-  if (ueberraschBtn) ueberraschBtn.addEventListener('click', handler, { once: true });
+  if (startBtn) startBtn.addEventListener('click', () => { verlasseHome(); spielen?.(); }, { once: true });
+  if (anpassenBtn) anpassenBtn.addEventListener('click', handler, { once: true });
 
   // Jede Taste oder Klick irgendwo verlässt den Home-Bildschirm (nur wenn nicht bereits passiert)
   const tasteHandler = (e) => {

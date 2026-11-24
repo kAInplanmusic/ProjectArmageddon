@@ -197,7 +197,7 @@ class Game {
      * Beide arbeiten nur auf dem DOM, ohne Engine-Eingriff.
      */
     starteIntroSplash();
-    starteHome();
+    starteHome({ spielen: () => { this.ueberraschMich(); this.startFromMenu(); } }); // TODO 2.7: „Spielen“ = Ein-Klick-Start
 
     planetenBilder.setzeUrls(PLANETEN_KULISSE_URLEN);
     this.canvas = document.getElementById('game-canvas');
