@@ -1271,6 +1271,7 @@ export const EREIGNIS_WIRKUNGEN = {
       k.hud?.log(`${victim?.label ?? `Entity ${n.entityId}`} ausgeschaltet`, 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n.entityId) });
       kameraEffekte.todGemeldet({ entityId: n.entityId, ...ortVon(k, n.entityId) }); // TODO 2.9: Kill-Kamera
+      { const o = ortVon(k, n.entityId); k.renderer?.merkeGrab?.(n.entityId, o.x, o.y); } // TODO 2.14: dauerhafter Grabstein
       todEpilog(k, n.entityId);
     },
     online: (k, n) => {
@@ -1280,6 +1281,7 @@ export const EREIGNIS_WIRKUNGEN = {
       k.hud?.log('Eine Einheit wurde ausgeschaltet', 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n?.entityId) });
       kameraEffekte.todGemeldet({ entityId: n?.entityId, ...ortVon(k, n?.entityId) }); // TODO 2.9: Kill-Kamera
+      { const o = ortVon(k, n?.entityId); k.renderer?.merkeGrab?.(n?.entityId, o.x, o.y); } // TODO 2.14: dauerhafter Grabstein
       todEpilog(k, n?.entityId);
     },
   },

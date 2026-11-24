@@ -35,7 +35,7 @@ import { Inselfall } from './inselfall.js';
 import { FeuerOptik, faerbeZellen, ZELLFARBE } from './feuerOptik.js';
 import { SheetEffekte, LEUCHT_FARBE } from './effektSheets.js';
 import { strahlArt, schweifArt } from './waffenOptik.js';
-import { zeichnePortal } from './portalBild.js';
+import { zeichnePortal } from './portalBild.js'; import { GRAB_FUSS, Graeber, zeichneGraeber } from './grabsteinBild.js';
 import { MinenAlter, minenZustand, zeichneMinenFuss, minenLampe, SchildAnzeige, zeichneFigurSchild, BereitPuls } from './waffenZustandsOptik.js';
 import { zeichneStrahl, zeichneFamilienSchweif, zeichneMuendungsfeuer } from './waffenOptikZeichnen.js';
 import { planetenBilder } from './planetenKulisse.js';
@@ -207,6 +207,8 @@ export class Renderer {
     /** Schwebende Schadenszahlen und die Werte des letzten Bildes (siehe `schadenszahlen.js`). */
     this.zahlen = [];
     this.zahlenWerte = new Map();
+    /** Dauerhafte Grabsteine der Partie (TODO 2.14, `grabsteinBild.js`), nur Darstellung. */
+    this.graeber = new Graeber();
     /** Zuletzt gemeldete Schadensart je Figur (für Farbe und Zeichen der Zahl). */
     this.schadensArten = new Map();
     /** Treffer des LETZTEN Bildes — der Klang wird in `main.js` gespielt. */
@@ -516,6 +518,9 @@ export class Renderer {
       if (krit) { z.art = 'kritisch'; z.text = `${z.text}!`; } else if (familie !== 'koerper') { z.art = `schaden-${familie}`; z.text += ZAHL_FAMILIE[familie].symbol; }
     }
   }
+
+  /** Merkt den Todesort einer Figur für einen dauerhaften Grabstein (Fußpunkt). */
+  merkeGrab(entityId, x, y) { return this.graeber.merke(entityId, x, y + GRAB_FUSS); } // Mittelpunkt → Fußpunkt (halbe Figurenhöhe)
 
   /** Merkt einen Einschlag für wenige Bilder, damit das Zucken getroffener Figuren von ihm weg zeigt. */
   merkeEinschlag(x, y) {
@@ -922,6 +927,7 @@ export class Renderer {
     this.letzteWerte = new Map();
     this.zahlen = [];
     this.zahlenWerte = new Map();
+    this.graeber.leeren(); // TODO 2.14: Grabsteine gehören zur Partie
     this.letzteTreffer = [];
     this.narben = [];
     this.rauch = [];
@@ -2102,6 +2108,7 @@ export class Renderer {
      * Geschütze VOR den Kisten zeichnen: Lägen beide übereinander, wäre die
      * Kiste (die man aufheben kann) wichtiger als das Geschütz.
      */
+    zeichneGraeber(this.ctx, this.graeber); // TODO 2.14: Grabsteine hinter allem, was man aufheben oder treffen kann
     this.#drawTurrets(state.turrets ?? []);
     this.#drawCrates(state.crates ?? []);
     this.#drawMinen(state.bodenobjekte ?? []);

@@ -16,6 +16,7 @@
     "check:effects": "node scripts/check-effects.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "check:syntax": "node scripts/check-syntax.mjs",
+    "fundstellen": "node scripts/fundstellen-nachziehen.mjs",
     "paket:stand": "node scripts/paket-stand.mjs",
     "testlauf:erfassen": "node scripts/testlauf-erfassen.mjs",
     "matrix": "node scripts/build-matrix.mjs",

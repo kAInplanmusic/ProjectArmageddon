@@ -37,7 +37,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 2.10 PORTAL-1 | Stufe 1 steht (Bodenobjektfassung 8, Spezifikation `docs/auftraege/portal.md`): in 20 % der Partien ein Kartenportal, erhöht, ≥ 300 px von jedem Start; die Beamwaffen (Portal, Hologrammportal, Dimensionssprung, Dimensionsriss) beamen die eigene Figur hin, zu Fuß wirkt es nicht. Stufe 2 wartet auf Rückmeldung: andere Figur beamen, zwei Enden, Ort an Kiste, eigener Klang | Rückmeldung zu Stufe 1 |
 | 2.12 DICHTE-RUND | Steht weitgehend (Geländefassung 17): runde Arten per Seed erst ab 2880 px, Startplätze mindestens 100 px auseinander; knappster Gegnerabstand jetzt 101 px (vorher 22). Rest: Gegner zwischen 100 und 120 px in 5 von 100 1:1-Partien („mittel“) und 8 von 100 kleinen; gewählte runde Art auf kleiner Karte bleibt eng | Messung `node scripts/messung-kartenqualitaet.mjs` |
 | 2.13 LETZTER-HALT | Gelände-vor-Schaden-Hypothese (Konzept in Git: `docs/letzter-halt-plan.md`): Stufe 2 A/B-Test Materiallesbarkeit (2 Teams, 1 Karte, 5 Wiederholungen, Anteil Geländewege > 60 %), Stufe 3 Bruchvisualisierung und Werkzeugklang, Stufe 4 Gegenmaßnahmen statt universeller Schwachstellen, Stufe 5 Rollen-Biome; offen: Rodentia ohne Heim-Biom | erst nach Spieltest (8) |
-| 2.14 FIGUREN-B-REST | Dauerhafter Grabstein in der Welt; echte Kopf-/Oberkörperrotation (Teilsprites, Renderer-Ebene) | Sichtabnahme |
+| 2.14 FIGUREN-B-REST | Dauerhafter Grabstein steht (nur Client, `grabsteinBild.js`). Offen: echte Kopf-/Oberkörperrotation (Teilsprites, Renderer-Ebene; braucht Bildmaterial) | Sichtabnahme |
 | 2.15 SCHUSS-FAMILIEN | Eigene Schussbewegungen für Fernkampf (Pumpen, Spannen, Aufziehen) und Magie (Nahkampf ist gebaut); sanfte Geschütz-Drehung (Zustand trägt keine Zielrichtung); HUD-Animationen Kill-Feed, Waffenwahl, wenig Munition; Menü-Übergänge | Sichtabnahme |
 | 2.16 ONLINE-KENNZAHLEN | `MatchStats` wird nur lokal gefüttert (UI-6); Asche/Basalt (`karte.ueber`) erreichen spät Beitretende nur über Ereignisse; `crate_landed` online ohne Zweig (UI-7) | Online-E2E mit zwei Browsern |
 | 2.17 EXKL-TURRET | EXKL-1: exklusive Waffen je Charakter (Datenschicht steht, Einbau offen); TURRET-1: zwei Waffen mit Turm-Mechanik klären | Entscheidung festhalten, Test |
@@ -115,7 +115,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 
 Spieltest mit Menschen (QV-4: Wasserlauf, Sturzflut/Dammbruch, Treibsand, Treiben, Strömung, Lesbarkeit der Hinweise, Windpfeil) · Sicht: Figuren
 (Randlicht, Hocke, 8-Bit-pixel, Angst, Tod-Epilog-Sprüche), Waffenoptik im Flug und im Nahkampf (N-09, N-10, N-14,
-N-15, GP-8), Wetter und Hagel, Kameraeffekte, Spielgefühl (Trefferstopp, gestaffelte Schadenszahlen, Kill-Kamera, Kettenzähler), Mine und Fass (MINEN-1/2), Biomobjekte (Druckkessel, Giftblüte, Sporenbovist, Runenstein), Kartenportal (Ring, Sprung), Einstieg der ersten Partie (Texte, Lage), Seil am Touch-Gerät, Menü `kolossal`
+N-15, GP-8), Wetter und Hagel, Kameraeffekte, Spielgefühl (Trefferstopp, gestaffelte Schadenszahlen, Kill-Kamera, Kettenzähler), Mine und Fass (MINEN-1/2), Biomobjekte (Druckkessel, Giftblüte, Sporenbovist, Runenstein), Kartenportal (Ring, Sprung), Einstieg der ersten Partie (Texte, Lage), Grabstein, Seil am Touch-Gerät, Menü `kolossal`
 am Telefon, Biome 15–20 · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkugel, Mine, Hagel, Titellied.
 
 ## 9. Fragen an den Auftraggeber
