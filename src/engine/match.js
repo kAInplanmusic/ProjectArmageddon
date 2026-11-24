@@ -2457,7 +2457,7 @@ export class MatchController {
       width: this.width,
       height: this.height,
       drySpawnX: (idealX, belegt) => trockenerStartX(this, idealX, belegt),
-      startFairness: this.gelaende >= GELAENDE_START, // Geländefassung 16: Plätze fair auf die Teams verteilen
+      startFairness: this.kartentyp === 'autonom' && this.gelaende >= GELAENDE_START, // Geländefassung 16 (wie die übrigen Startregeln nur autonom)
       surfaceYAt: x => this.surfaceYAt(x),
       world: this.#world,
       inventory: this.#inventory,

@@ -12,7 +12,7 @@
  *
  * ## Die Regel
  *
- * Nur bei zwei Teams mit gleich vielen Figuren und höchstens `MAX_PLAETZE` Plätzen (sonst wächst die Zahl der Teilungen zu stark;
+ * Nur auf autonomen Karten (wie alle Startregeln der Geländefassungen, `karteStart.trockenerStartX`) und nur bei zwei Teams mit gleich vielen Figuren und höchstens `MAX_PLAETZE` Plätzen (sonst wächst die Zahl der Teilungen zu stark;
  * dann bleibt alles wie vorher). Gilt die bisherige Verteilung als fair, bleibt sie (die Partie ändert sich nicht). Sonst wird unter
  * allen fairen Teilungen die gewählt, in der sich die Teams entlang der Karte am häufigsten abwechseln (gemischte Fronten statt
  * „links gegen rechts“); gibt es keine faire, die mit den kleinsten Kosten. Gleichstand: die erste in fester Aufzählungsreihenfolge.
