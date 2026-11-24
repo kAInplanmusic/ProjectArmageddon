@@ -16,7 +16,7 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 
 | Bereich | Stand |
 |---|---|
-| Fassungen (Standard neuer Partien) | Gelände 15 (`GELAENDE_DURCHGANG`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 8 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben, Sturzflut, Treibsand), Bodenobjekte 6 |
+| Fassungen (Standard neuer Partien) | Gelände 16 (`GELAENDE_START`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 8 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben, Sturzflut, Treibsand), Bodenobjekte 6 |
 | Zeilenbudgets | `match.js` 2772/2790, `main.js` 3707, `renderer.js` 2218 (`tests/zeilenbudget.test.js`) |
 | CI | grün auf `730f6bb` (2026-11-23, alle vier Browser-Teile, Lint/Tests/Build) |
 | Abhängigkeiten | `npm audit`: 0 Schwachstellen (2026-11-23, vite 8.3.8, eslint 10.15) |
@@ -32,7 +32,6 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 |---|---|---|
 | 2.2 KARTE-WASSER | Seen in Höhlen und auf Inseln, kleine Wasserfälle (Treibsand wirkt seit Biomregel-Fassung 8) | Geländefassung mit Marke; Matchstart-Zeit (QV-7) und `check:erreichbarkeit` bleiben im Rahmen |
 | 2.3 KARTE-QUALITÄT | Durchgangstor steht (Fassung 15: 0 von 500 Menü-Seeds mit Boden hinter zu dünnem Gang, vorher 30; kein Stand am oberen Rand). Offen: runde Karten interessanter (Planet: verzweigte Tunnel, hohler Kern); Rest auf groß 24:9 Seed 7 (Ruinenkammer hinter einem Riss, 176 px, das Tor misst auf halber Auflösung 90); unerreichbar 8 von 500 (vorher 6) | `node scripts/messung-kartenqualitaet.mjs --vergleich=14` |
-| 2.3b SPAWN-FAIRNESS | Startplatzwahl (`engine/karteStart`): Teams mit bis zu 1,6-fachem Abstand zum nächsten Gegner (23 von 500, 1:1: 17 von 100), auf kleinen Karten Gegner unter 120 px (19 von 100) | Messung wie 2.3, Fassung mit Marke |
 | 2.5 QV-6-F | Bodenobjekte nach Biom (schrott, fabrik, dschungel, pilzwald, tempelstadt); Daten in `BODENOBJEKTE_BIOM` | Fassung mit Marke |
 | 2.6 QV-6-C/D | C Bodenwirkung (Eis, Schlacke, Sumpf: Reibung, Gehtempo; höchstes Replay-Risiko), D Splitter/Kettenreaktion (Kristalle, Burg, Dimensionsriss) | Fassung mit Marke, Goldwerte |
 | 2.7 MENUE-EINFACH | Ein-Klick-Start: ein großer „Spielen“-Knopf, Karte/Art/Seed/Wetter zufällig; Biomwahl (20) und Größe hinter einem Knopf; Wetterwahl entfällt | Partie mit ≤ 2 Klicks (E2E) |
@@ -40,7 +39,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 2.9 JUICE | Trefferstopp (wenige Bilder, nur Client), gestaffelte Schadenszahlen, kurze Kill-Kamera, Kettenzähler deutlicher | Sichtabnahme (8) |
 | 2.10 PORTAL-1 | Seltene Portale mit Gegenstück-Pflicht (Waffe oder zwei Nutzer), Ziel taktisch günstig oder Munitionsort: erst spezifizieren, dann bauen | Spezifikation, danach Fassung mit Marke |
 | 2.11 ONBOARDING | 60-Sekunden-Einstieg (Zielen, Kraft, Waffe, Zündzeit Z) als überspringbare Einblendungen in der ersten Partie | E2E Erstkontakt |
-| 2.12 DICHTE-RUND | Auf kleinen runden Karten stehen Gegner 55–110 px entfernt: Mindestabstand beim Spawn oder runde Arten erst ab mittlerer Größe | Messung über Seeds |
+| 2.12 DICHTE-RUND | Startplätze zu dicht: Nach der Startfairness (Geländefassung 16) stehen Gegner noch in 11 von 100 1:1-Partien und 7 von 100 kleinen näher als 120 px (alle sechs Plätze auf wenigen hundert Pixeln, keine Teilung hilft); auch kleiner Rest Höhenvorteil auf klein (3 von 100). Mindestabstand beim Spawn oder runde Arten erst ab mittlerer Größe | Messung über Seeds |
 | 2.13 LETZTER-HALT | Gelände-vor-Schaden-Hypothese (Konzept in Git: `docs/letzter-halt-plan.md`): Stufe 2 A/B-Test Materiallesbarkeit (2 Teams, 1 Karte, 5 Wiederholungen, Anteil Geländewege > 60 %), Stufe 3 Bruchvisualisierung und Werkzeugklang, Stufe 4 Gegenmaßnahmen statt universeller Schwachstellen, Stufe 5 Rollen-Biome; offen: Rodentia ohne Heim-Biom | erst nach Spieltest (8) |
 | 2.14 FIGUREN-B-REST | Dauerhafter Grabstein in der Welt; echte Kopf-/Oberkörperrotation (Teilsprites, Renderer-Ebene) | Sichtabnahme |
 | 2.15 SCHUSS-FAMILIEN | Eigene Schussbewegungen für Fernkampf (Pumpen, Spannen, Aufziehen) und Magie (Nahkampf ist gebaut); sanfte Geschütz-Drehung (Zustand trägt keine Zielrichtung); HUD-Animationen Kill-Feed, Waffenwahl, wenig Munition; Menü-Übergänge | Sichtabnahme |
