@@ -16,7 +16,7 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 
 | Bereich | Stand |
 |---|---|
-| Fassungen (Standard neuer Partien) | Gelände 16 (`GELAENDE_START`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 8 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben, Sturzflut, Treibsand), Bodenobjekte 7 |
+| Fassungen (Standard neuer Partien) | Gelände 16 (`GELAENDE_START`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 9 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben, Sturzflut, Treibsand, Bodenwirkung), Bodenobjekte 7 |
 | Zeilenbudgets | `match.js` 2772/2790, `main.js` 3707, `renderer.js` 2218 (`tests/zeilenbudget.test.js`) |
 | CI | grün auf `730f6bb` (2026-11-23, alle vier Browser-Teile, Lint/Tests/Build) |
 | Abhängigkeiten | `npm audit`: 0 Schwachstellen (2026-11-23, vite 8.3.8, eslint 10.15) |
@@ -32,7 +32,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 |---|---|---|
 | 2.2 KARTE-WASSER | Seen in Höhlen und auf Inseln, kleine Wasserfälle (Treibsand wirkt seit Biomregel-Fassung 8) | Geländefassung mit Marke; Matchstart-Zeit (QV-7) und `check:erreichbarkeit` bleiben im Rahmen |
 | 2.3 KARTE-QUALITÄT | Durchgangstor steht (Fassung 15: 0 von 500 Menü-Seeds mit Boden hinter zu dünnem Gang, vorher 30; kein Stand am oberen Rand). Offen: runde Karten interessanter (Planet: verzweigte Tunnel, hohler Kern); Rest auf groß 24:9 Seed 7 (Ruinenkammer hinter einem Riss, 176 px, das Tor misst auf halber Auflösung 90); unerreichbar 8 von 500 (vorher 6) | `node scripts/messung-kartenqualitaet.mjs --vergleich=14` |
-| 2.6 QV-6-C/D | C Bodenwirkung (Eis, Schlacke, Sumpf: Reibung, Gehtempo; höchstes Replay-Risiko), D Splitter/Kettenreaktion (Kristalle, Burg, Dimensionsriss) | Fassung mit Marke, Goldwerte |
+| 2.6 QV-6-C/D | C Bodenwirkung: Bremsen steht (Biomregel 9, halb wirksam, höchstens etwa 18 % langsamer); offen: Glätte auf Eis (`reibung`, braucht Schwung beim Gehen), Sumpf. D Splitter/Kettenreaktion (Kristalle, Burg, Dimensionsriss) | Fassung mit Marke, Goldwerte |
 | 2.7 MENUE-EINFACH | Ein-Klick-Start: ein großer „Spielen“-Knopf, Karte/Art/Seed/Wetter zufällig; Biomwahl (20) und Größe hinter einem Knopf; Wetterwahl entfällt | Partie mit ≤ 2 Klicks (E2E) |
 | 2.8 ZUGTEMPO | Wartezeiten zwischen Zügen messen (Kamerafahrt, Nachlauf, Zugpause) und auf das Nötige kürzen (zuerst nur Client-Timing) | Messung vorher/nachher |
 | 2.9 JUICE | Trefferstopp (wenige Bilder, nur Client), gestaffelte Schadenszahlen, kurze Kill-Kamera, Kettenzähler deutlicher | Sichtabnahme (8) |

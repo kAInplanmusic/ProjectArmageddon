@@ -11,7 +11,9 @@
  *   - `BIOMREGELN_STROEMUNG` (2): Welle 1, Baustein A „Strömung / Windneigung" für Düne, Riff und Tiefsee.
  *   - `BIOMREGELN_SCHWERKRAFT` (3): Welle 1, Baustein B „Schwerkraftfaktor" für Kosmos, Planet, Schwebinseln
  *     und Surreal; enthält A.
- *   - `BIOMREGELN_TREIBSAND` (8, Standard): Treibsand (`quicksand`, TODO 2.2) wirkt: kein Ertrinken, seitlich stark
+ *   - `BIOMREGELN_BODEN` (9, Standard): Bodenwirkung (Welle 3, Baustein C, TODO 2.6): Das Gehtempo hängt am Stoff unter den Füßen
+ *     (`bremst` der Stoffliste, halb wirksam, `BODENWIRKUNG`). Enthält alles aus 8.
+ *   - `BIOMREGELN_TREIBSAND` (8): Treibsand (`quicksand`, TODO 2.2) wirkt: kein Ertrinken, seitlich stark
  *     gebremst, langsames Einsinken; heraus kommt man springend. Enthält alles aus 7.
  *   - `BIOMREGELN_STURZFLUT` (7): Wasserlauf-Ausbau 2 (TODO 2.1): Wasser fließt viermal so schnell
  *     (`WASSERLAUF_STURZFLUT.teilschritte`), die Strömung schiebt stärker; ein Dammbruch spült Figuren fort oder drückt sie an
@@ -48,13 +50,14 @@ export const BIOMREGELN_WASSERLAUF = 5;
 export const BIOMREGELN_TREIBEN = 6;
 export const BIOMREGELN_STURZFLUT = 7;
 export const BIOMREGELN_TREIBSAND = 8;
-export const BIOMREGELN_STANDARD = BIOMREGELN_TREIBSAND;
+export const BIOMREGELN_BODEN = 9;
+export const BIOMREGELN_STANDARD = BIOMREGELN_BODEN;
 
 /** Unbekannte Werte fallen auf den Standard; das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBiomregeln(fassung) {
   return fassung === BIOMREGELN_ALT || fassung === BIOMREGELN_STROEMUNG || fassung === BIOMREGELN_SCHWERKRAFT
     || fassung === BIOMREGELN_WASSER || fassung === BIOMREGELN_WASSERLAUF || fassung === BIOMREGELN_TREIBEN
-    || fassung === BIOMREGELN_STURZFLUT || fassung === BIOMREGELN_TREIBSAND
+    || fassung === BIOMREGELN_STURZFLUT || fassung === BIOMREGELN_TREIBSAND || fassung === BIOMREGELN_BODEN
     ? fassung : BIOMREGELN_STANDARD;
 }
 
@@ -287,4 +290,24 @@ export function treibweg(services, x, y, faktor) {
   if (dx === 0) return 0;
   if (services.terrain?.isSolid?.(Math.round(x + dx), Math.round(y))) return 0;
   return dx;
+}
+
+/**
+ * Bodenwirkung (ab Fassung 9, Welle 3 Baustein C, TODO 2.6): Die Stoffe tragen seit jeher `bremst` (0 bis 0,6: Feinsand 0,35,
+ * Asche 0,3, Industriemagma 0,6), gelesen hat es der Motor nie. Gemessen (120 Menü-Seeds): Die Oberfläche einer Karte ist je Biom
+ * einheitlich; in 38 % der Partien bremst sie mit 0,2 oder mehr (Eiswüste, Kosmos, Vulkan, Riff, Tiefsee, Alpen, Insel). Voll
+ * wirksam wäre das bis 35 % langsameres Gehen auf der ganzen Karte. Deshalb halb wirksam (`anteil`) und nach unten begrenzt
+ * (`minFaktor`): höchstens etwa 18 % langsamer auf Sand, Schnee und Asche. Erste Ansätze.
+ * Glätte (`reibung` unter 1, Eis) wirkt hier NICHT: Gehen setzt die Position direkt und hat keinen Schwung, der weiterrutschen
+ * könnte (eigener Punkt).
+ */
+export const BODENWIRKUNG = Object.freeze({
+  anteil: 0.5, minFaktor: 0.75,
+  name: 'Bodenwirkung', text: 'Lockerer Boden wie Sand, Schnee und Asche bremst das Gehen.',
+});
+
+/** Faktor auf das Gehtempo für einen Stoff mit `bremst` (0 bis 1); 1 vor Fassung 9. */
+export function bodenTempoFaktor(fassung, bremst) {
+  if (!(fassung >= BIOMREGELN_BODEN) || !(bremst > 0)) return 1;
+  return Math.max(BODENWIRKUNG.minFaktor, 1 - BODENWIRKUNG.anteil * bremst);
 }
