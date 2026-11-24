@@ -10,6 +10,8 @@
  * @module biomregelAnzeige
  */
 import { stroemungFuer, schwerkraftFuer, wasserWirkungFuer, WASSERLAUF, wasserlaufAktiv, TREIBEN, treibenAktiv, BODENWIRKUNG, BIOMREGELN_BODEN } from '../shared/config/biomregeln.js';
+import { stoffAm } from '../shared/stoffkarte.js';
+import { stoffById } from '../shared/config/stoffe.js';
 import { MAX_WIND } from '../shared/config/wind.js';
 
 /** Die Partie, deren Hinweis zuletzt gemeldet wurde (eine Partie je Seite): Quelle für die Vorhersage. */
@@ -48,6 +50,31 @@ export function meldeBiomregel(hud, partie) {
   if (text) hud.log(text, 'accent');
 }
 
+/** Ab diesem Anteil bremsender Oberfläche wird die Bodenwirkung gemeldet (sonst ist sie für die Partie kaum merklich). */
+export const BODEN_MELDEN_AB = 0.25;
+
+/**
+ * Hinweiszeile zur Bodenwirkung (Biomregel 9) oder `null`: nur, wenn die Oberfläche merklich bremst (`partie.bodenBremstAnteil`,
+ * siehe `bremsAnteilDerKarte`). Ohne Angabe (Onlinepartie) keine Zeile; jede Partie mit einer Zeile mehr wäre Rauschen.
+ */
+export function bodenwirkungText(partie) {
+  if (!((partie?.biomregeln ?? 1) >= BIOMREGELN_BODEN) || !(partie?.bodenBremstAnteil >= BODEN_MELDEN_AB)) return null;
+  return `${BODENWIRKUNG.name}: ${BODENWIRKUNG.text}`;
+}
+
+/** Anteil der Oberflächenspalten (jede 8.), deren Stoff bremst; 0 ohne Stoffkarte. */
+export function bremsAnteilDerKarte(match) {
+  if (!match?.stoffkarte || !(match.width > 0)) return 0;
+  let n = 0; let bremst = 0;
+  for (let x = 0; x < match.width; x += 8) {
+    const y = match.surfaceYAt(x);
+    if (!(y > 0)) continue;
+    n += 1;
+    if ((stoffById(stoffAm(match.stoffkarte, x, y + 1))?.bremst ?? 0) > 0) bremst += 1;
+  }
+  return n ? bremst / n : 0;
+}
+
 /**
  * Hinweiszeile zum Gefahrenwasser der Szene oder `null` (normales Wasser, Fassung unter 4).
  * @param {string|null|undefined} wasserId - `scenery.waterId`
@@ -65,5 +92,6 @@ export function meldeWasserregel(hud, wasserId) {
   if (text) hud.log(text, 'accent');
   if (wasserlaufAktiv(aktuellePartie?.biomregeln ?? 1)) hud.log(`${WASSERLAUF.name}: ${WASSERLAUF.text}`, 'accent');
   if (treibenAktiv(aktuellePartie?.biomregeln ?? 1)) hud.log(`${TREIBEN.name}: ${TREIBEN.text}`, 'accent');
-  if ((aktuellePartie?.biomregeln ?? 1) >= BIOMREGELN_BODEN) hud.log(`${BODENWIRKUNG.name}: ${BODENWIRKUNG.text}`, 'accent');
+  const boden = bodenwirkungText(aktuellePartie); // nur bei merklich bremsender Oberfläche (Anteil aus `meldeBiomregel`)
+  if (boden) hud.log(boden, 'accent');
 }

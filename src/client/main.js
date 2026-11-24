@@ -77,7 +77,7 @@ import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { TierHud } from './tierHud.js';
 import { SeilSteuerung } from './seilSteuerung.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
-import { WIND_JE_ZUG } from '../shared/config/wind.js'; import { meldeBiomregel, meldeWasserregel, schwerkraftFaktor } from './biomregelAnzeige.js'; import { HagelAnzeige } from './hagelAnzeige.js'; // Hagel (HAGEL-1)
+import { WIND_JE_ZUG } from '../shared/config/wind.js'; import { meldeBiomregel, meldeWasserregel, schwerkraftFaktor, bremsAnteilDerKarte } from './biomregelAnzeige.js'; import { HagelAnzeige } from './hagelAnzeige.js'; // Hagel (HAGEL-1)
 import { LaufVorhersage } from './laufVorhersage.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
@@ -1149,7 +1149,7 @@ class Game {
     this.endOverlay.hidden = true;
     this.#zeigeAbbruch(true);
     this.running = true;
-    this.hud.log(`Lokales Match — Seed ${this.match.seedManager.baseSeed}`, 'accent'); meldeBiomregel(this.hud, { biom: this.match.sonderbiom, biomregeln: this.match.biomregeln, seed: this.match.seedManager.baseSeed }); meldeWasserregel(this.hud, this.match.scenery?.waterId);
+    this.hud.log(`Lokales Match — Seed ${this.match.seedManager.baseSeed}`, 'accent'); meldeBiomregel(this.hud, { biom: this.match.sonderbiom, biomregeln: this.match.biomregeln, seed: this.match.seedManager.baseSeed, bodenBremstAnteil: bremsAnteilDerKarte(this.match) }); meldeWasserregel(this.hud, this.match.scenery?.waterId);
     if (!this.animationHandle) this.#loop(performance.now());
     return { ok: true, mode: 'local' };
   }

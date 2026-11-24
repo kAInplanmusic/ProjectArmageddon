@@ -63,3 +63,16 @@ test('Match: auf bremsendem Boden geht die Figur in Fassung 9 kürzer, auf feste
   }
   assert.ok(bremsend > 0 && fest > 0, `beide Fälle vorgekommen (${bremsend} bremsend, ${fest} fest)`);
 });
+
+test('Hinweis: nur bei merklich bremsender Oberfläche (ab 25 %), nur ab Fassung 9, online ohne Angabe keiner', async () => {
+  const { bodenwirkungText, bremsAnteilDerKarte, BODEN_MELDEN_AB } = await import('../src/client/biomregelAnzeige.js');
+  assert.equal(BODEN_MELDEN_AB, 0.25);
+  assert.match(bodenwirkungText({ biomregeln: 9, bodenBremstAnteil: 0.99 }) ?? '', /^Bodenwirkung: /);
+  assert.equal(bodenwirkungText({ biomregeln: 9, bodenBremstAnteil: 0.1 }), null);
+  assert.equal(bodenwirkungText({ biomregeln: 8, bodenBremstAnteil: 0.99 }), null);
+  assert.equal(bodenwirkungText({ biomregeln: 9 }), null, 'Onlinepartie ohne Anteil');
+  // Dünen (Feinsand) bremsen auf der ganzen Oberfläche, die Fabrik nicht.
+  const anteil = biom => { const m = neuesMatch(1, 4, { teams: 2, proTeam: 1, extra: { biom } }); if (m.status !== 'playing') m.start(); return bremsAnteilDerKarte(m); };
+  assert.ok(anteil('duenen') > 0.9, `Dünen ${anteil('duenen')}`);
+  assert.ok(anteil('fabrik') < BODEN_MELDEN_AB, `Fabrik ${anteil('fabrik')}`);
+});
