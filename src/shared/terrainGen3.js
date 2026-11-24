@@ -82,7 +82,8 @@ import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
 import { erzeugeKompositionsKarte, erzeugeZonenKarte, fuelleSchaechteKarte, zonenZahl, ZONEN_AB_BREITE } from './terrainKomposition.js';
 import { pruefeErreichbarkeit, findeFlaechen } from './erreichbarkeit.js';
-import { GELAENDE_FORM, GELAENDE_KOMPOSITION, GELAENDE_RUND, GELAENDE_WEIT, KARTENARTEN, KARTENARTEN_RUND } from './config/gelaende.js';
+import { GELAENDE_DURCHGANG, GELAENDE_FORM, GELAENDE_KOMPOSITION, GELAENDE_RUND, GELAENDE_WEIT, KARTENARTEN, KARTENARTEN_RUND } from './config/gelaende.js';
+import { pruefeDurchgaenge } from './kartenTor.js';
 import { baueRundeKarte, pruefeRundeKarte } from './terrainRund.js';
 
 /**
@@ -701,7 +702,8 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
       karte = baueRundeKarte({ rng, width, height, art });
       karte.surface = oberflaechen(karte.bitmap, width, height);
       kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
-      const urteil = pruefeRundeKarte(karte, width, height);
+      let urteil = pruefeRundeKarte(karte, width, height);
+      if (urteil.ok && fassung >= GELAENDE_DURCHGANG) urteil = durchgangsTor(karte.bitmap, width, height);
       if (urteil.ok) break;
       ablehnungen.push(`${karte.art}: ${urteil.grund}`);
       continue;
@@ -714,6 +716,8 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
     let urteil = pruefeBauteilKarte(kennzahlen);
     if (urteil.ok && zonen) urteil = zonenSpielbar(karte.bitmap, width, height, karte.wasserY);
     else if (urteil.ok && !spawnErreichbar(karte.bitmap, width, height, karte.art)) urteil = { ok: false, grund: 'Spawnspalten erreichen einander nicht' };
+    // Fassung 15: kein begehbarer Boden hinter Gängen, die dünner sind als eine Figur (ohne Zufall: bestandene Karten wie in 14).
+    if (urteil.ok && fassung >= GELAENDE_DURCHGANG && height <= width * 1.2) urteil = durchgangsTor(karte.bitmap, width, height); // Hochformat: Spalten ohne Aussage
     if (urteil.ok) break;
     ablehnungen.push(`${karte.art}: ${urteil.grund}`);
     // Fassung 11: Die nächste Ziehung baut nur die Zone neu, in der die Prüfung scheiterte (ohne Ort reihum).
@@ -730,6 +734,22 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
     ...(ok ? {} : { warnung: `Keine spielbare Karte nach 8 Versuchen (zuletzt: ${ablehnungen.at(-1)})` }),
     ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom, fassung),
   };
+}
+
+/**
+ * Geländefassung 15: das Durchgangstor (`kartenTor.pruefeDurchgaenge`) an den Standard-Spawnspalten (sechs, Spalte i·B/7, Figur auf
+ * der obersten festen Stelle). Rein; zieht keinen Zufall.
+ */
+function durchgangsTor(bitmap, width, height) {
+  const starts = [];
+  for (let i = 0; i < 6; i += 1) {
+    const x = Math.round((width * (i + 1)) / 7);
+    let y = 0;
+    while (y < height && !bitmap[y * width + x]) y += 1;
+    if (y < height && y > 12) starts.push({ x, y: y - 11 });
+  }
+  const tor = pruefeDurchgaenge(bitmap, width, height, starts);
+  return tor.ok ? { ok: true } : { ok: false, grund: tor.grund, ort: tor.ort }; // `ort`: Zonenkarten bauen nur die betroffene Zone neu
 }
 
 /**

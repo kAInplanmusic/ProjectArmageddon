@@ -106,12 +106,12 @@ const GOLD = {
   'f9|24:9|weit|3|null': [2624413562, 1397, 'pyramide', 1],
 };
 
-test('Marke: Fassung 14 ist gültig und der Standard; 13 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
+test('Marke: Fassung 14 ist gültig (Standard ist 15, Durchgangstor); 13 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_RUND, 14);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_RUND);
+  assert.equal(GELAENDE_STANDARD, 15);
   assert.equal(normalisiereGelaende(13), GELAENDE_FORM);
   assert.equal(normalisiereGelaende(14), 14);
-  assert.equal(normalisiereGelaende(15), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(16), GELAENDE_STANDARD);
 });
 
 test('Kartenarten: die drei runden erst ab 14; KARTENARTEN bleibt unverändert (der Seed-Zug teilt durch ihre Länge)', () => {

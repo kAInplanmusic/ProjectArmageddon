@@ -73,6 +73,10 @@
  *     Bit wie 13; nur auf 1:1 zieht der Seed ohne Wahl aus vierzehn statt elf Arten (derselbe eine Zug, anderer Teiler). Der Startplatz
  *     (`engine/karteStart`) verteilt die Figuren auf den begehbaren Stand der runden Karte. Fassung 13 und alle älteren bleiben Bit für Bit gleich.
  *
+ *   - `GELAENDE_DURCHGANG` (15, TODO 2.3): Qualitätstor `shared/kartenTor.pruefeDurchgaenge`: Liegt begehbarer Boden von
+ *     `TOR_LAUF_MAX` px oder mehr hinter einem Gang, der dünner ist als eine Figur, zieht der Generator neu (dieselbe Schleife mit
+ *     bis zu acht Versuchen). Das Tor zieht keinen Zufall: Jede Karte, die es beim ersten Versuch besteht, ist Bit für Bit die der
+ *     Fassung 14; nur abgelehnte Seeds bauen anders. Fassung 14 und alle älteren bleiben Bit für Bit gleich. *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
@@ -107,11 +111,13 @@ export const GELAENDE_RAMPE = 12;
 export const GELAENDE_FORM = 13;
 /** Fassung 14: runde Kartenarten (Planet, runde Höhle, schwebende Insel) auf 1:1, Stufe `kolossal`, Startplatz auf dem begehbaren Stand. */
 export const GELAENDE_RUND = 14;
-export const GELAENDE_STANDARD = GELAENDE_RUND;
+/** Fassung 15: Qualitätstor gegen begehbaren Boden hinter zu dünnen Gängen (`shared/kartenTor.js`); bestandene Karten wie in 14. */
+export const GELAENDE_DURCHGANG = 15;
+export const GELAENDE_STANDARD = GELAENDE_DURCHGANG;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE || fassung === GELAENDE_FORM || fassung === GELAENDE_RUND ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE || fassung === GELAENDE_FORM || fassung === GELAENDE_RUND || fassung === GELAENDE_DURCHGANG ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */
