@@ -82,7 +82,7 @@ import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
 import { erzeugeKompositionsKarte, erzeugeZonenKarte, fuelleSchaechteKarte, zonenZahl, ZONEN_AB_BREITE } from './terrainKomposition.js';
 import { pruefeErreichbarkeit, findeFlaechen } from './erreichbarkeit.js';
-import { GELAENDE_DURCHGANG, GELAENDE_FORM, GELAENDE_KOMPOSITION, GELAENDE_RUND, GELAENDE_WEIT, KARTENARTEN, KARTENARTEN_RUND } from './config/gelaende.js';
+import { GELAENDE_ABSTAND, GELAENDE_DURCHGANG, GELAENDE_FORM, RUND_AB_BREITE, GELAENDE_KOMPOSITION, GELAENDE_RUND, GELAENDE_WEIT, KARTENARTEN, KARTENARTEN_RUND } from './config/gelaende.js';
 import { pruefeDurchgaenge } from './kartenTor.js';
 import { baueRundeKarte, pruefeRundeKarte } from './terrainRund.js';
 
@@ -694,7 +694,9 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
   for (; versuch <= 8; versuch += 1) {
     // Fassung 14: eine gewählte runde Art gilt auf jedem Format; auf 1:1 zieht der Seed ohne Wahl aus elf + drei Arten (derselbe eine Zug).
     const rundWahl = fassung >= GELAENDE_RUND && KARTENARTEN_RUND.includes(kartenart) ? kartenart : null;
-    const ziehListe = fassung >= GELAENDE_RUND && width === height ? [...BAUTEIL_ARTEN, ...KARTENARTEN_RUND] : BAUTEIL_ARTEN;
+    // Fassung 17: runde Arten per Seed erst ab RUND_AB_BREITE (darunter ist ihr begehbarer Stand zu schmal für die Startplätze).
+    const rundZiehbar = fassung >= GELAENDE_RUND && width === height && (fassung < GELAENDE_ABSTAND || width >= RUND_AB_BREITE);
+    const ziehListe = rundZiehbar ? [...BAUTEIL_ARTEN, ...KARTENARTEN_RUND] : BAUTEIL_ARTEN;
     const art = rundWahl ?? (height > width * 1.2 ? 'hochkant' : (kartenart ?? ziehListe[Math.floor(rng.next() * ziehListe.length)]));
     const rund = fassung >= GELAENDE_RUND && KARTENARTEN_RUND.includes(art);
     const zonen = !rund && fassung >= GELAENDE_WEIT && width >= ZONEN_AB_BREITE && height <= width * 1.2;

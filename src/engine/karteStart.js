@@ -9,7 +9,7 @@
 
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { WET_LEVEL } from '../shared/config/water.js';
-import { GELAENDE_KOMPOSITION, GELAENDE_KLAR, GELAENDE_OHNE_SCHACHT, GELAENDE_RUND } from '../shared/config/gelaende.js';
+import { GELAENDE_ABSTAND, GELAENDE_KOMPOSITION, GELAENDE_KLAR, GELAENDE_OHNE_SCHACHT, GELAENDE_RUND, START_ABSTAND_MIN } from '../shared/config/gelaende.js';
 import {
   pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner, findeFlaechen,
 } from '../shared/erreichbarkeit.js';
@@ -44,7 +44,10 @@ export function trockenerStartX(m, idealX, belegt = []) {
    */
   const stand = (m.gelaende ?? 0) >= GELAENDE_RUND ? m.kartencharakter?.rund?.stand : null;
   if (Array.isArray(stand) && stand.length === 2 && m.width > 0) idealX = Math.round(stand[0] + (idealX / m.width) * (stand[1] - stand[0]));
-  const frei = x => belegt.every(b => Math.abs(b - x) >= 2 * PLAYER_HALF_WIDTH + 8); // keine Stapelung
+  // Keine Stapelung; ab Geländefassung 17 mindestens START_ABSTAND_MIN (vorher 28 px: Figuren starteten Schulter an Schulter).
+  // Wie alle Startregeln nur autonom; nicht auf runden Karten mit Stand (der ist schmal; dort gilt: auf dem Stand bleiben, Abstand wie bisher).
+  const abstand = m.kartentyp === 'autonom' && (m.gelaende ?? 0) >= GELAENDE_ABSTAND && !Array.isArray(stand) ? START_ABSTAND_MIN : 2 * PLAYER_HALF_WIDTH + 8;
+  const frei = x => belegt.every(b => Math.abs(b - x) >= abstand);
   const trocken = x => {
     if (!frei(x)) return false;
     if (x < PLAYER_HALF_WIDTH + 2 || x > m.width - PLAYER_HALF_WIDTH - 2) return false;

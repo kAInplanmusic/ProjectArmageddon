@@ -81,6 +81,10 @@
  *     verteilt die Engine dieselben Startplätze so auf die Teams, dass keines im Mittel über 150 px höher steht, keines 1,6-mal
  *     weiter vom nächsten Gegner entfernt ist und kein Gegner näher als 120 px steht. Ist die bisherige Verteilung schon fair, bleibt
  *     sie. Karten ändern sich nicht. Fassung 15 und alle älteren bleiben Bit für Bit gleich. *
+ *   - `GELAENDE_ABSTAND` (17, TODO 2.12): Startplätze nicht zu dicht. (1) Ohne ausdrückliche Wahl zieht der Seed die runden Arten erst ab
+ *     `RUND_AB_BREITE` px (1:1 „gross“): Gemessen standen auf 1:1 „mittel“ (1920 px) in 11 von 11 Partien mit Planet oder runder Höhle
+ *     Gegner unter 120 px, weil der begehbare Stand nur rund 600 px breit ist. (2) Startplätze halten `START_ABSTAND_MIN` px Abstand statt
+ *     28 px (kleine Karten: Figuren starteten 22 px auseinander). Fassung 16 und älter bleiben Bit für Bit gleich. *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
@@ -119,11 +123,17 @@ export const GELAENDE_RUND = 14;
 export const GELAENDE_DURCHGANG = 15;
 /** Fassung 16: Startplätze fair auf die zwei Teams verteilt (`engine/startFairness.js`); Karten wie in 15. */
 export const GELAENDE_START = 16;
-export const GELAENDE_STANDARD = GELAENDE_START;
+/** Fassung 17: runde Arten per Seed erst ab `RUND_AB_BREITE`, Startplätze mindestens `START_ABSTAND_MIN` px auseinander. */
+export const GELAENDE_ABSTAND = 17;
+export const GELAENDE_STANDARD = GELAENDE_ABSTAND;
+/** Fassung 17: Ab dieser Kartenbreite zieht der Seed auf 1:1 auch die runden Arten (sonst nur bei ausdrücklicher Wahl). */
+export const RUND_AB_BREITE = 2880;
+/** Fassung 17: Mindestabstand zweier Startplätze (px), wo die Karte es zulässt. */
+export const START_ABSTAND_MIN = 100;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE || fassung === GELAENDE_FORM || fassung === GELAENDE_RUND || fassung === GELAENDE_DURCHGANG || fassung === GELAENDE_START ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE || fassung === GELAENDE_FORM || fassung === GELAENDE_RUND || fassung === GELAENDE_DURCHGANG || fassung === GELAENDE_START || fassung === GELAENDE_ABSTAND ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */
