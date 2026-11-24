@@ -417,6 +417,17 @@ class KameraEffekte {
     return this.#auftraege.merke({ art: 'sturz', entityId, x, y, level: Number(level) });
   }
 
+  /**
+   * Kill-Kamera (TODO 2.9): Meldung aus dem Ereigniszweig `death`. Legt einen kurzen Halt auf dem Todesort ab (wie der
+   * Wasser-Sturz); die Regie holt ihn ab, sobald nichts mehr fliegt.
+   * @param {{entityId:number, x:number, y:number}} p
+   * @returns {boolean} ob ein Auftrag entstanden ist
+   */
+  todGemeldet({ entityId, x, y } = {}) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+    return this.#auftraege.merke({ art: 'tod', entityId, x, y });
+  }
+
   /** Abonnement auf Änderungen; gibt die Abbestellung zurück. */
   abonniere(fn) {
     if (typeof fn !== 'function') return () => {};

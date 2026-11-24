@@ -1265,6 +1265,7 @@ export const EREIGNIS_WIRKUNGEN = {
       const victim = k.match?.players?.find(player => player.entityId === n.entityId);
       k.hud?.log(`${victim?.label ?? `Entity ${n.entityId}`} ausgeschaltet`, 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n.entityId) });
+      kameraEffekte.todGemeldet({ entityId: n.entityId, ...ortVon(k, n.entityId) }); // TODO 2.9: Kill-Kamera
       todEpilog(k, n.entityId);
     },
     online: (k, n) => {
@@ -1273,6 +1274,7 @@ export const EREIGNIS_WIRKUNGEN = {
       kameraEffekte.zeitlupeTot(1);
       k.hud?.log('Eine Einheit wurde ausgeschaltet', 'danger');
       k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n?.entityId) });
+      kameraEffekte.todGemeldet({ entityId: n?.entityId, ...ortVon(k, n?.entityId) }); // TODO 2.9: Kill-Kamera
       todEpilog(k, n?.entityId);
     },
   },

@@ -451,3 +451,35 @@ test('Bedienung: kaputter Speicherinhalt fällt auf Vorgaben zurück', () => {
   zwei.ende();
   frisch();
 });
+
+test('Regie: Kill-Kamera (TODO 2.9) hält kurz und enger auf dem Todesort, hat Vorrang vor einem Sturz und entfällt bei Bewegungsreduktion', async () => {
+  const { TOD } = await import('../src/client/kameraRegie.js');
+  frisch();
+  const auftraege = new KameraAuftraege();
+  const regie = new KameraRegie({ auftraege });
+  let a = null;
+  for (let i = 0; i < 40; i += 1) a = regie.schritt(1 / 60, eingabe());
+  auftraege.merke({ art: 'tod', x: 900, y: 700 });
+  auftraege.merke({ art: 'sturz', x: 1500, y: 800 });
+  a = regie.schritt(1 / 60, eingabe());
+  assert.equal(regie.phase, 'tod', 'der Tod geht vor');
+  let minAbstand = Infinity;
+  for (let i = 0; i < Math.ceil(TOD.halten * 60); i += 1) {
+    a = regie.schritt(1 / 60, eingabe());
+    minAbstand = Math.min(minAbstand, Math.hypot(a.x - 900, a.y - (700 + TOD.unten)));
+  }
+  assert.ok(minAbstand < 40, `Kamera fährt zum Todesort (Abstand ${minAbstand.toFixed(1)})`);
+  for (let i = 0; i < 60; i += 1) a = regie.schritt(1 / 60, eingabe());
+  assert.equal(regie.phase, 'uebersicht');
+
+  const ruhigeAuftraege = new KameraAuftraege();
+  const ruhig = new KameraRegie({ auftraege: ruhigeAuftraege });
+  ruhig.setzeReduziert(true);
+  for (let i = 0; i < 30; i += 1) ruhig.schritt(1 / 60, eingabe());
+  ruhigeAuftraege.merke({ art: 'tod', x: 900, y: 700 });
+  for (let i = 0; i < 30; i += 1) ruhig.schritt(1 / 60, eingabe());
+  assert.notEqual(ruhig.phase, 'tod', 'Bewegungsreduktion: keine Kill-Kamera');
+  assert.equal(ruhigeAuftraege.anzahl, 0, 'der Auftrag wird verbraucht, nicht gestaut');
+  assert.equal(kameraEffekte.todGemeldet({ entityId: 1 }), false, 'ohne Ort kein Auftrag');
+  frisch();
+});

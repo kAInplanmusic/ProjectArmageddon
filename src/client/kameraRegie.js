@@ -61,6 +61,9 @@ export const KNAPP = Object.freeze({ halten: 0.4, zoom: 1.25, sperre: 1.1 });
 /** Wasser-Sturz (KAMERA C4): Haltezeit, Zoomfaktor und Blick unter die Oberfläche (Kartenpixel). */
 export const STURZ = Object.freeze({ halten: 1.3, zoom: 1.4, unten: 30 });
 
+/** Kill-Kamera (TODO 2.9): kurzer, engerer Halt auf dem Todesort, Blick leicht über die Figur. */
+export const TOD = Object.freeze({ halten: 1.0, zoom: 1.6, unten: -10 });
+
 /**
  * Mindestabstand des Vorbeiflugpunkts vom Abschussort (Kartenpixel).
  *
@@ -279,7 +282,7 @@ export class KameraRegie {
       this.#halten += zeit;
       this.#stossZeit += zeit;
       if (this.#halten >= HALTEN) { this.#phase = 'uebersicht'; this.#ziel = null; this.#aufprall = null; this.#zugwechsel = true; }
-    } else if (this.#phase === 'sturz' && this.#sturz) {
+    } else if ((this.#phase === 'sturz' || this.#phase === 'tod') && this.#sturz) {
       this.#sturz.rest -= zeit;
       if (this.#sturz.rest <= 0) { this.#sturz = null; this.#phase = 'uebersicht'; this.#ziel = null; }
     } else if (this.#phase === 'verfolgung') {
@@ -297,7 +300,7 @@ export class KameraRegie {
     // in der Luft, der Halt auf dem Einschlag, ein Vorbeiflug und ein Sturz haben Vorrang; bei
     // Bewegungsreduktion gibt es ihn nicht.
     const tier = !fliegtJetzt && this.#phase !== 'einschlag' && this.#phase !== 'knapp'
-      && this.#phase !== 'sturz' && !this.#reduziert ? (e.tier ?? null) : null;
+      && this.#phase !== 'sturz' && this.#phase !== 'tod' && !this.#reduziert ? (e.tier ?? null) : null;
     if (tier) this.#phase = 'tier';
     else if (this.#phase === 'tier') { this.#phase = 'uebersicht'; this.#ziel = null; this.#zugwechsel = true; }
 
@@ -318,11 +321,15 @@ export class KameraRegie {
      */
     if (!fliegtJetzt && this.#phase !== 'einschlag') {
       for (const auftrag of this.#auftraege.nimm()) {
-        if (auftrag?.art !== 'sturz' || this.#reduziert || !kameraEffekte.wasser) continue;
+        const tod = auftrag?.art === 'tod';
+        if ((auftrag?.art !== 'sturz' && !tod) || this.#reduziert || (!tod && !kameraEffekte.wasser)) continue;
         if (!Number.isFinite(auftrag.x) || !Number.isFinite(auftrag.y)) continue;
-        this.#sturz = { x: auftrag.x, y: auftrag.y, rest: STURZ.halten };
+        // Ein Tod hat Vorrang vor einem gleichzeitigen Sturz (die Figur ist meist dieselbe).
+        if (!tod && this.#phase === 'tod' && this.#sturz) continue;
+        const werte = tod ? TOD : STURZ;
+        this.#sturz = { x: auftrag.x, y: auftrag.y, rest: werte.halten, werte };
         this.#knapp = null;
-        this.#phase = 'sturz';
+        this.#phase = tod ? 'tod' : 'sturz';
         this.#aufprall = null;
         this.#stoss = null;
         this.#zugwechsel = false;
@@ -355,12 +362,13 @@ export class KameraRegie {
         : { x: this.#knapp.x, y: this.#knapp.y };
       ziel = begrenzeAnsicht({ ...mitte, zoom: z }, e.karte, e.schirm, e.rand);
       glaettPos = ZEIT.verfolgung;
-    } else if (this.#phase === 'sturz' && this.#sturz) {
-      // Blick leicht unter die Oberfläche: Dort verschwindet die Figur, und der
-      // Spieler sieht, wohin sie gefallen ist — nicht nur das Wasser obenauf.
+    } else if ((this.#phase === 'sturz' || this.#phase === 'tod') && this.#sturz) {
+      // Sturz: Blick leicht unter die Oberfläche: Dort verschwindet die Figur, und der
+      // Spieler sieht, wohin sie gefallen ist — nicht nur das Wasser obenauf. Tod: enger, leicht über der Figur.
+      const werte = this.#sturz.werte ?? STURZ;
       const z0 = zoomBevorzugt(e.schirm, e.karte, { zoomMax: e.zoomMax });
-      const z = Math.max(ganze, Math.min(e.zoomMax ?? 4, z0 * STURZ.zoom));
-      ziel = begrenzeAnsicht({ x: this.#sturz.x, y: this.#sturz.y + STURZ.unten, zoom: z },
+      const z = Math.max(ganze, Math.min(e.zoomMax ?? 4, z0 * werte.zoom));
+      ziel = begrenzeAnsicht({ x: this.#sturz.x, y: this.#sturz.y + werte.unten, zoom: z },
         e.karte, e.schirm, e.rand);
       glaettPos = ZEIT.einschlag;
     } else if (this.#phase === 'tier' && tier) {
