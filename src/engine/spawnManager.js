@@ -11,6 +11,7 @@
  * @module spawnManager
  */
 
+import { verteileStartplaetze } from './startFairness.js';
 import {
   ARCHETYPE_IDS, combatProfile, istKlassenfassungNeu, klassenIds, klassenKennung,
 } from '../shared/config/classes.js';
@@ -64,6 +65,19 @@ export function erzeugeSpieler(quelle) {
   const eintraege = [];
   const belegteX = [];
 
+  /*
+   * Startplätze zuerst, in derselben Reihenfolge wie bisher (`drySpawnX` sieht die belegten Plätze der Vorgänger). Ab
+   * Geländefassung 16 verteilt `startFairness` sie danach auf die Spieler (`quelle.startFairness`); sonst bekommt Spieler i Platz i.
+   */
+  const plaetze = [];
+  for (let index = 0; index < total; index++) {
+    const startX = quelle.drySpawnX(Math.round(spacing * (index + 1)), belegteX);
+    belegteX.push(startX);
+    const groundY = quelle.surfaceYAt(startX);
+    plaetze.push({ x: startX, y: (groundY > 0 ? groundY : quelle.height * 0.4) - PLAYER_HALF_HEIGHT - 2 });
+  }
+  const platzVon = quelle.startFairness ? verteileStartplaetze(plaetze, quelle.teams) : plaetze.map((_, i) => i);
+
   for (let index = 0; index < total; index++) {
     const teamId = index % quelle.teams;
     /*
@@ -89,7 +103,6 @@ export function erzeugeSpieler(quelle) {
     // zeigte je Klasse immer nur denselben Bogen (die alte Diagonalen-Falle).
     const klassenPlatz = Math.floor(index / 3) % 3;
 
-    const x = Math.round(spacing * (index + 1));
     /*
      * Trockener Startplatz.
      *
@@ -101,10 +114,7 @@ export function erzeugeSpieler(quelle) {
      * auf, weil dort der Wasserspiegel tief genug liegt; die Startposition war
      * also nur zufällig sicher, nicht geprüft.
      */
-    const startX = quelle.drySpawnX(x, belegteX);
-    belegteX.push(startX);
-    const groundY = quelle.surfaceYAt(startX);
-    const y = (groundY > 0 ? groundY : quelle.height * 0.4) - PLAYER_HALF_HEIGHT - 2;
+    const { x: startX, y } = plaetze[platzVon[index]];
 
     const entityId = quelle.world.createEntity();
     /*

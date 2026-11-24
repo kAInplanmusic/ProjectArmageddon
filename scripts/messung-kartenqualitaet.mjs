@@ -12,7 +12,7 @@
  *    Unterschied der mittleren Standhöhe zweier Teams (px), `abstandsVerhaeltnis` = größter / kleinster Mittelwert.
  *  - Erreichbarkeit (`match.erreichbarkeit.ok`) und Matchstart-Zeit (Bau + Start, ms).
  *
- * Nur Messung. Aufruf: node scripts/messung-kartenqualitaet.mjs [--seeds=500] [--format=24:9] [--groesse=mittel] [--json]
+ * Nur Messung. Aufruf: node scripts/messung-kartenqualitaet.mjs [--seeds=500] [--format=24:9] [--groesse=mittel] [--gelaende=15] [--vergleich=14] [--json]
  */
 import { neuesMatch } from './bot-partien.mjs';
 import { PLAYER_HALF_HEIGHT } from '../src/shared/config/player.js';
@@ -149,9 +149,11 @@ export function enge(bitmap, width, height, luft = null) {
 /** Startfairness aus den Figuren `{x, y, teamId}`. */
 export function fairness(figuren) {
   const teams = new Map();
+  let paar = Infinity; // kürzester Abstand zweier gegnerischer Figuren (nicht der Teammittel)
   for (const f of figuren) {
     let d = Infinity;
     for (const g of figuren) if (g.teamId !== f.teamId) d = Math.min(d, Math.hypot(g.x - f.x, g.y - f.y));
+    paar = Math.min(paar, d);
     const t = teams.get(f.teamId) ?? { d: 0, y: 0, n: 0 };
     t.d += d; t.y += f.y; t.n += 1;
     teams.set(f.teamId, t);
@@ -161,7 +163,9 @@ export function fairness(figuren) {
   return {
     hoehenVorteil: Math.round(Math.max(...ys) - Math.min(...ys)),
     abstandsVerhaeltnis: Math.round((Math.max(...ds) / Math.max(1, Math.min(...ds))) * 100) / 100,
-    naechsterMin: Math.round(Math.min(...ds)),
+    // Bis 2026-11-24 hieß das Minimum der Teammittel `naechsterMin` und wurde als „nächster Gegner“ berichtet: zu mild.
+    naechsterMittel: Math.round(Math.min(...ds)),
+    naechsterMin: Math.round(paar),
   };
 }
 
@@ -201,6 +205,7 @@ if (istHaupt) {
   if (arg('format', null)) extra.format = arg('format', null);
   if (arg('groesse', null)) extra.groesse = arg('groesse', null);
   if (arg('vergleich', null)) extra.vergleich = Number(arg('vergleich', null));
+  if (arg('gelaende', null)) extra.gelaende = Number(arg('gelaende', null));
   const zeilen = [];
   for (let seed = 1; seed <= seeds; seed += 1) zeilen.push(miss(seed, extra));
   if (process.argv.includes('--json')) { console.log(JSON.stringify({ extra, zeilen })); process.exit(0); }

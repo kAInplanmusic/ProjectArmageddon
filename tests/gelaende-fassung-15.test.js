@@ -13,9 +13,9 @@ import { GELAENDE_DURCHGANG, GELAENDE_RUND, GELAENDE_STANDARD, normalisiereGelae
 import { pruefeDurchgaenge, TOR_LAUF_MAX } from '../src/shared/kartenTor.js';
 import { neuesMatch } from '../scripts/bot-partien.mjs';
 
-test('Marke: 15 ist der Standard, 14 bleibt gültig', () => {
+test('Marke: 15 ist gültig (Standard 16), 14 bleibt gültig', () => {
   assert.equal(GELAENDE_DURCHGANG, 15);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_DURCHGANG);
+  assert.equal(GELAENDE_STANDARD, GELAENDE_DURCHGANG + 1, 'Standard ist 16 (Startfairness)');
   assert.equal(normalisiereGelaende(15), 15);
   assert.equal(normalisiereGelaende(14), GELAENDE_RUND);
 });
