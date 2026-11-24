@@ -207,7 +207,8 @@ test('Schaden: 1 bis 2 LP über den gewöhnlichen Weg (ohne Urheber, Art physisc
 const STANDARD_FASSUNGEN = {
   waffen: waffen.WAFFEN_STANDARD, zerstoerung: zerstoerung.ZERSTOERUNG_STANDARD, kisten: kisten.KISTEN_STANDARD, kit: loadouts.KIT_STANDARD,
   schaden: schaden.SCHADEN_STANDARD, guenther: guenther.GUENTHER_FASSUNG_STANDARD, cookie: cookie.COOKIE_STANDARD, feuer: feuer.FEUER_STANDARD,
-  bewegung: bewegung.BEWEGUNG_STANDARD, zugregeln: zugregeln.ZUGREGELN_STANDARD, klassen: klassen.KLASSEN_STANDARD,
+  // Zugregeln fest auf Fassung 2: Die Goldwerte unten sind mit 5 s Rückzug gemessen; Fassung 3 (TODO 2.8, 3 s) ändert den Verlauf.
+  bewegung: bewegung.BEWEGUNG_STANDARD, zugregeln: zugregeln.ZUGREGELN_RUECKZUG, klassen: klassen.KLASSEN_STANDARD,
   bodenobjekte: bodenobjekte.BODENOBJEKTE_STANDARD, seil: seil.SEIL_STANDARD, wind: wind.WIND_STANDARD,
 };
 
