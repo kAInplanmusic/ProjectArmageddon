@@ -170,10 +170,18 @@ export function miss(seed, extra = {}) {
   const m = neuesMatch(seed, 4, { teams: 2, proTeam: 3, extra });
   if (m.status !== 'playing') m.start();
   const ms = performance.now() - t0;
+  // Neu gezogen gegenüber einer Vergleichsfassung (`--vergleich=14`): andere Karte = das Tor hat abgelehnt.
+  let neuGezogen = null;
+  if (extra.vergleich) {
+    const v = neuesMatch(seed, 4, { teams: 2, proTeam: 3, extra: { ...extra, gelaende: extra.vergleich } });
+    if (v.status !== 'playing') v.start();
+    neuGezogen = Buffer.compare(Buffer.from(v.bitmap), Buffer.from(m.bitmap)) !== 0;
+  }
+  const obenMin = Math.min(...m.getState().entities.filter(e => e.teamId !== undefined).map(e => e.y));
   const s = m.getState();
   const figuren = s.entities.filter(e => e.teamId !== undefined && e.alive !== false && Number.isFinite(e.x)).map(e => ({ x: e.x, y: e.y, teamId: e.teamId }));
   return {
-    seed, ms: Math.round(ms), width: m.width, height: m.height,
+    seed, ms: Math.round(ms), width: m.width, height: m.height, neuGezogen, obenMin: Math.round(obenMin),
     kartenart: m.kartencharakter?.kartenart ?? null, biom: m.biomId,
     erreichbar: m.erreichbarkeit?.ok ?? null,
     ...(() => {
@@ -192,6 +200,7 @@ if (istHaupt) {
   const extra = {};
   if (arg('format', null)) extra.format = arg('format', null);
   if (arg('groesse', null)) extra.groesse = arg('groesse', null);
+  if (arg('vergleich', null)) extra.vergleich = Number(arg('vergleich', null));
   const zeilen = [];
   for (let seed = 1; seed <= seeds; seed += 1) zeilen.push(miss(seed, extra));
   if (process.argv.includes('--json')) { console.log(JSON.stringify({ extra, zeilen })); process.exit(0); }
@@ -199,7 +208,8 @@ if (istHaupt) {
   const anteil = f => `${zeilen.filter(f).length}/${zeilen.length}`;
   console.log(`Kartenqualität, ${seeds} Seeds, ${JSON.stringify(extra)}`);
   console.log(`Matchstart ms: Median ${q(zeilen.map(z => z.ms), 0.5)}, p95 ${q(zeilen.map(z => z.ms), 0.95)}, max ${Math.max(...zeilen.map(z => z.ms))}`);
-  console.log(`unerreichbar: ${anteil(z => z.erreichbar === false)}`);
+  console.log(`unerreichbar: ${anteil(z => z.erreichbar === false)}; Figur höher als 22 px unter dem Rand: ${anteil(z => z.obenMin < 22)}`);
+  if (extra.vergleich) console.log(`neu gezogen gegenüber Fassung ${extra.vergleich}: ${anteil(z => z.neuGezogen)}`);
   console.log(`Stecken (Decke < ${STECKEN} px) über 1 % des Bodens: ${anteil(z => z.steckenAnteil > 0.01)}; Engpässe ≥ 1: ${anteil(z => z.engpaesse > 0)}`);
   console.log(`Abgeschnittene Fläche ≥ 60 px breit: ${anteil(z => z.abgeschnittenLauf >= 60)}; ≥ 120 px: ${anteil(z => z.abgeschnittenLauf >= 120)}`);
   console.log(`Abgeschnitten (hinter zu dünnem Gang) über 2 %: ${anteil(z => z.abgeschnittenAnteil > 0.02)}; über 5 %: ${anteil(z => z.abgeschnittenAnteil > 0.05)}; p95 ${(q(zeilen.map(z => z.abgeschnittenAnteil), 0.95) * 100).toFixed(1)} %`);

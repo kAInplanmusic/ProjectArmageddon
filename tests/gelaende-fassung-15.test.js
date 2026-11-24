@@ -74,3 +74,20 @@ test('Fund Seed 3: Fassung 14 hat den abgeschnittenen Boden, 15 zieht neu und be
   assert.notEqual(kartenHash(neu), kartenHash(alt));
   assert.equal(pruefeDurchgaenge(neu.bitmap, neu.width, neu.height, starts(neu)).ok, true, 'Fassung 15: ohne Mangel');
 });
+
+test('Rand: Land unter offenem Himmel dicht am oberen Kartenrand wird abgelehnt, Höhlendecke und genug Kopfhöhe nicht', async () => {
+  const { landAmOberenRand } = await import('../src/shared/terrainGen3.js');
+  const w = 400; const h = 200;
+  const mitPlateau = (oben, breite) => {
+    const b = new Uint8Array(w * h);
+    for (let y = 150; y < h; y++) for (let x = 0; x < w; x++) b[y * w + x] = 1;
+    for (let y = oben; y < 150; y++) for (let x = 100; x < 100 + breite; x++) b[y * w + x] = 1;
+    return b;
+  };
+  assert.match(landAmOberenRand(mitPlateau(20, 40), w, h)?.grund ?? '', /oberen Kartenrand/, 'Plateau 20 px unter dem Rand');
+  assert.equal(landAmOberenRand(mitPlateau(20, 10), w, h), null, 'schmale Spitze (10 px) ist kein Stand');
+  assert.equal(landAmOberenRand(mitPlateau(60, 40), w, h), null, '60 px Kopfhöhe reichen');
+  const hoehle = mitPlateau(20, 40);
+  for (let x = 0; x < w; x++) hoehle[x] = 1; // feste Decke (oberste Zeile)
+  assert.equal(landAmOberenRand(hoehle, w, h), null, 'Höhle mit Decke');
+});

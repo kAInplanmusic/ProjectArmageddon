@@ -748,8 +748,32 @@ function durchgangsTor(bitmap, width, height) {
     while (y < height && !bitmap[y * width + x]) y += 1;
     if (y < height && y > 12) starts.push({ x, y: y - 11 });
   }
+  const rand = landAmOberenRand(bitmap, width, height);
+  if (rand) return rand;
   const tor = pruefeDurchgaenge(bitmap, width, height, starts);
   return tor.ok ? { ok: true } : { ok: false, grund: tor.grund, ort: tor.ort }; // `ort`: Zonenkarten bauen nur die betroffene Zone neu
+}
+
+/** Kopfhöhe (px) unter dem oberen Kartenrand, die ein Stand mindestens braucht: Figur 20 px plus Sprungraum. */
+const RAND_KOPF = 40;
+/** So breit (px) muss eine Fläche dicht unter dem Rand sein, um als Stand zu zählen (zwei Figurenbreiten). */
+const RAND_BREITE = 20;
+
+/**
+ * Geländefassung 15: Reicht Land unter offenem Himmel bis dicht an den oberen Kartenrand? Gemessen auf kleinen Karten
+ * (`scripts/messung-kartenqualitaet.mjs`, 1280 × 720, Seeds 17, 48, 100): Die Startplatzwahl setzt Figuren auf den höchsten Stand,
+ * hier also zwischen Gipfel und Rand (y bis −9); dort klemmen sie fest. Höhlen mit fester Decke (oberste Zeile fest) zählen nicht.
+ */
+export function landAmOberenRand(bitmap, width, height) {
+  let lauf = 0;
+  for (let x = 0; x < width; x += 1) {
+    let y = 0;
+    if (!bitmap[x]) while (y < RAND_KOPF && y < height && !bitmap[y * width + x]) y += 1;
+    const knapp = !bitmap[x] && y > 0 && y < RAND_KOPF;
+    lauf = knapp ? lauf + 1 : 0;
+    if (lauf >= RAND_BREITE) return { ok: false, grund: `Land reicht bis ${y} px an den oberen Kartenrand`, ort: x };
+  }
+  return null;
 }
 
 /**
