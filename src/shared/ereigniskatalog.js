@@ -80,7 +80,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   crate_pickup: { klasse: 'zustand', klang: ['kiste'], anim: ['addFlash'] },
   crate_pickup_blocked: { klasse: 'zustand', klang: ['kiste_voll'] },
   damage: { klasse: 'zustand', drossel: 'zustand', stumm: 'Lebensbalken sinkt sichtbar (seit 2026-09-27 gedrosselt: im Snapshot redundant)', anim: ['merkeSchadensart'] },
-  death: { klasse: 'zustand', klang: ['tod'] },
+  death: { klasse: 'zustand', klang: ['tod'], anim: ['merkeGrab'] }, // TODO 2.14: dauerhafter Grabstein am Todesort
   dot_applied: { klasse: 'zustand', stumm: 'Zustandsmarke am Spielernamen' },
   dot_tick: { klasse: 'zustand' },
   malus_abgewehrt: { klasse: 'zustand' },
