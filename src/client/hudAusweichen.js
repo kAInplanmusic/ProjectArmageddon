@@ -140,7 +140,11 @@ export class HudAusweichen {
 
     // Panels gegen die Figuren prüfen (mit dem Schub, der gleich gilt).
     const mitSchub = { ...t, versatzY: ohneSchub.versatzY + schub };
-    const figuren = lebende.map(e => figurRechteck(e, mitSchub, masse));
+    // Gegen die Ziellage UND die jetzige Lage prüfen: Die Kamera erreicht den Zielschub nicht immer (gemessen am
+    // Telefon quer: Ziel 265 px, tatsächlich 32 px), und mit nur der Ziellage blieb eine Figur hinter der Spielerliste
+    // ohne `.hud-weicht` (hud-layout.spec touch844, Seed 5, sichtbar seit dem Touch-Rand der Kamera, TODO 2.1).
+    const jetzt = { ...t, versatzY: ohneSchub.versatzY + kamera.schub };
+    const figuren = lebende.flatMap(e => [figurRechteck(e, mitSchub, masse), figurRechteck(e, jetzt, masse)]);
     const panels = PANEL_IDS.map(id => this.doc.getElementById(id));
     const rechtecke = panels.map(el => this.#rechteck(el, cr) ?? { x: 0, y: 0, b: 0, h: 0 });
     const verdeckt = new Set(ueberdecktVon(rechtecke, figuren));
