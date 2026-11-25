@@ -132,7 +132,7 @@ import {
   neueErfolge as neueErfolgeFuer,
   emblem,
 } from '../shared/achievements.js';
-import { starteLadebild, zeigeSiegerFraktion } from './fraktionsAnzeige.js';
+import { starteLadebild, zeigeSiegerFraktion } from './fraktionsAnzeige.js'; import { kulisseBereit } from './kulissenLaden.js';
 import { sonderwirkungText } from './sonderwirkungText.js';
 
 /** Schlüssel des Profils im lokalen Speicher des Browsers. */
@@ -1122,7 +1122,7 @@ class Game {
     // Platz i gehört zu Team i % teams (Menü-Beschriftung): die erste Figur von Team t ist Platz t.
     const fraktionenJeTeam = fraktionen ? fraktionen.slice(0, teams) : null;
     this.renderer.fraktionJeTeam = loeseFraktionen(fraktionenJeTeam, teams, this.match.seedManager.baseSeed);
-    starteLadebild(document, this.renderer.fraktionJeTeam, ladeBereit); // Ladebild (A11)
+    starteLadebild(document, this.renderer.fraktionJeTeam, Promise.all([ladeBereit, kulisseBereit(this.renderer)])); // Ladebild (A11), auch bis die Kulisse steht
 
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
     // dieser Farbe gezeichnet. In umgekehrter Reihenfolge trüge die frische

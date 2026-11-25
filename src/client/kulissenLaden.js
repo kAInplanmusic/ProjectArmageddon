@@ -98,3 +98,24 @@ function ladeFoto(ziel, backdrop, quellen, onError) {
   };
   bild.src = quellen.shift();
 }
+
+/**
+ * Wartet, bis die Kulisse des Renderers gezeichnet werden kann (oder keine Bildkulisse gesetzt ist),
+ * höchstens `maxMs`. Für das Ladebild: vorher sah man 2 bis 3 Sekunden nur dunkelblauen Himmel
+ * statt des gewählten Bildes (gemessen 2026-11-25, Seeds 222 und 3333).
+ *
+ * @param {{backdrop?:object|null, backdropReady?:boolean, scenery?:object|null}} ziel Renderer
+ * @param {number} [maxMs]
+ * @returns {Promise<boolean>} true, wenn die Kulisse bereit ist (false nach Ablauf der Frist)
+ */
+export function kulisseBereit(ziel, maxMs = 4000) {
+  const t0 = Date.now();
+  return new Promise((fertig) => {
+    const pruefe = () => {
+      if (ziel.scenery || !ziel.backdrop || ziel.backdropReady) return fertig(true);
+      if (Date.now() - t0 >= maxMs) return fertig(false);
+      setTimeout(pruefe, 50);
+    };
+    setTimeout(pruefe, 0);
+  });
+}

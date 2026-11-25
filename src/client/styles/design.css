@@ -1544,3 +1544,14 @@ select option { background: #14181d; color: var(--ink); }
 #einstieg .einstieg-schritt { font-family: var(--font-display); color: var(--accent); white-space: nowrap; }
 #einstieg .einstieg-text { flex: 1; }
 #einstieg button { min-height: 44px; flex: none; }
+
+/*
+ * Protokoll kompakt (Rückmeldung 2026-11-25: zehn Zeilen lagen mitten über dem Spielfeld).
+ * Zu: die drei neuesten Zeilen, schmal über der Waffenleiste. Klick klappt auf (.offen), Hover zeigt es ganz.
+ * Touch-Geräte haben eigene, schon knappe Regeln (oben).
+ */
+@media not (pointer: coarse) {
+  #hud-log { left: 50%; right: auto; width: min(560px, 42%); transform: translateX(-50%); max-height: 58px; bottom: 112px; cursor: pointer; pointer-events: auto; transition: max-height 0.18s ease; }
+  #hud-log:hover, #hud-log.offen { max-height: clamp(70px, 24vh, 260px); }
+}
+@media not (pointer: coarse) and (prefers-reduced-motion: reduce) { #hud-log { transition: none; } }

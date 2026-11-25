@@ -183,10 +183,10 @@ test('Das Protokoll bleibt bei 30 Figuren AUF der Spielfläche — und zeigt meh
   await starteMit(page, 6, 5);
   await expect(page.locator('#roster .roster-item')).toHaveCount(30, { timeout: 20_000 });
 
-  const messung = await page.evaluate(() => {
-    const game = window.__PA__.game;
-    for (let i = 0; i < 30; i += 1) game.hud.log(`Füllzeile ${i}`);
-
+  // Seit 2026-11-25 ist das Protokoll zu nur drei Zeilen hoch (es lag mitten im Spielfeld);
+  // ein Klick klappt es auf. Geprüft wird beides: zu knapp, offen mit voller Kapazität.
+  await page.evaluate(() => { for (let i = 0; i < 30; i += 1) window.__PA__.game.hud.log(`Füllzeile ${i}`); });
+  const miss = () => page.evaluate(() => {
     const stage = document.getElementById('stage').getBoundingClientRect();
     const box = document.getElementById('hud-log').getBoundingClientRect();
     const liste = document.getElementById('log-list');
@@ -208,6 +208,16 @@ test('Das Protokoll bleibt bei 30 Figuren AUF der Spielfläche — und zeigt meh
     };
   });
 
+  const zu = await miss();
+  expect(zu.imStage, 'Das zugeklappte Protokoll liegt auf der Spielfläche').toBe(true);
+  expect(zu.sichtbar, `Zugeklappt sichtbare Zeilen: ${zu.sichtbar}`).toBeGreaterThanOrEqual(2);
+  expect(zu.sichtbar, `Zugeklappt sichtbare Zeilen: ${zu.sichtbar}`).toBeLessThanOrEqual(4);
+
+  await page.locator('#hud-log').click();
+  await expect(page.locator('#hud-log')).toHaveClass(/offen/);
+  await page.mouse.move(5, 5); // Hover aus: gemessen wird der aufgeklappte Zustand selbst
+  await page.waitForTimeout(400);
+  const messung = await miss();
   expect(messung.imStage,
     `Das Protokoll liegt NICHT auf der Spielfläche: top ${messung.boxTop} px, `
     + `Fläche endet bei ${messung.stageBottom} px`).toBe(true);

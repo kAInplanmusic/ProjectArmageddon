@@ -121,7 +121,11 @@ export function zeichneKisten(r, crates) {
     const color = kistenFarbe(crate.rarity);
     const size = KISTE_KANTE;
     r.ctx.save();
-    r.ctx.translate(crate.x, crate.y);
+    // Mit der Figur mitwachsen (gegenstandSkala.js); die Unterkante bleibt auf dem Boden.
+    const g = r.gegenstandSkala?.('kiste') ?? 1;
+    r.ctx.translate(crate.x, crate.y + size / 2);
+    r.ctx.scale(g, g);
+    r.ctx.translate(0, -size / 2);
     r.ctx.fillStyle = 'rgba(0,0,0,0.35)';
     r.ctx.fillRect(-size / 2 + 1, -size / 2 + 2, size, size);
     r.ctx.fillStyle = '#2b3540';

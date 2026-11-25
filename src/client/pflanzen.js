@@ -28,6 +28,17 @@ const FANTASYWALD_PFLANZEN = Object.freeze({
   dichte: 0.8, arten: Object.freeze(['riesenfarn', 'leuchtpilz', 'farn', 'leuchtpilz', 'riesenfarn', 'pilz', 'busch', 'leuchtpilz']),
 });
 
+/**
+ * Größe der Pflanzen neben den Figuren (Anzeige, 2026-11-25).
+ *
+ * FUND (gemessen): Eine Figur steht auf dem Bildschirm etwa 80 Kartenpixel hoch
+ * (`figurSkalaFuer`), Palmen und Tannen waren 34 bis 64 — Bäume reichten der
+ * Figur bis zur Brust. Jetzt sind Bäume mindestens so hoch wie die Figur.
+ */
+export const PFLANZEN_GROESSE = Object.freeze({ palme: 1.8, tanne: 1.8, busch: 1.5, farn: 1.5, gras: 1.25, neu: 1.5 });
+/** Abstand zwischen zwei Pflanzen wächst mit (sonst stünden die großen Formen ineinander). */
+const ABSTAND_FAKTOR = 1.35;
+
 /** Wie dicht wächst es in einem Biom (0 bis 1)? */
 const BEWUCHS = Object.freeze({
   island: 1, forest: 1, fantasy: 0.9, hyperreal: 0.9, deluge: 0.7, open: 0.65, alpine: 0.55,
@@ -68,9 +79,9 @@ export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId, boden = 'g
       if (profil) {
         const wahl = profil.arten[Math.floor(w * profil.arten.length) % profil.arten.length];
         const neu = NEUE_ARTEN[wahl];
-        const hoehe0 = neu ? neu[0] + zufall() * neu[1] : 10 + zufall() * 24;
+        const hoehe0 = (neu ? neu[0] + zufall() * neu[1] : 10 + zufall() * 24) * PFLANZEN_GROESSE.neu;
         liste.push({ art: wahl, x: ix, y: y + 2, h: hoehe0, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 9999) });
-        x += 40 + zufall() * 60 / Math.max(0.35, dichte);
+        x += (40 + zufall() * 60 / Math.max(0.35, dichte)) * ABSTAND_FAKTOR;
         continue;
       }
       let art = !eben ? (w < 0.5 ? 'busch' : 'gras')
@@ -81,9 +92,9 @@ export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId, boden = 'g
       else if ((boden === 'fels' || boden === 'asche') && art === 'palme') art = 'busch';
       const h = art === 'palme' ? 38 + zufall() * 26 : art === 'busch' ? 12 + zufall() * 8
         : art === 'farn' ? 14 + zufall() * 10 : art === 'tanne' ? 34 + zufall() * 28 : 8 + zufall() * 5;
-      liste.push({ art, x: ix, y: y + 2, h, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 9999) });
+      liste.push({ art, x: ix, y: y + 2, h: h * (PFLANZEN_GROESSE[art] ?? 1), spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 9999) });
     }
-    x += 46 + zufall() * 70 / Math.max(0.35, dichte);
+    x += (46 + zufall() * 70 / Math.max(0.35, dichte)) * ABSTAND_FAKTOR;
   }
   return liste;
 }

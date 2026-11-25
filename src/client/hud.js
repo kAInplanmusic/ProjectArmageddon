@@ -215,6 +215,9 @@ export class Hud {
       log: documentRef.getElementById('log-list'),
       connection: documentRef.getElementById('hud-connection'),
     };
+    // Protokoll kompakt (drei Zeilen); ein Klick oder Tipp klappt es auf und wieder zu (Rückmeldung 2026-11-25: es lag mitten im Bild).
+    const panel = documentRef.getElementById('hud-log');
+    panel?.addEventListener?.('click', () => panel.classList.toggle('offen'));
   }
 
   /**

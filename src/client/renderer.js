@@ -1,4 +1,5 @@
 import { zeichneBiomobjekt } from './biomobjektBild.js';
+import { gegenstandSkala } from './gegenstandSkala.js';
 /**
  * Canvas-Renderer für Project Armageddon.
  *
@@ -45,7 +46,7 @@ import { MALI_LEITUNGSMARKE, maskeZuMali, maliMarken, familieVonArt, ZAHL_FAMILI
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import {
   zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneWaffeSprite, handFarbeFuer, zeichneAuraRing, zeichneNamensschild,
-  figurSkalaFuer, FUSS_ABSTAND, SPRITE_HOEHE, HAND_HOEHE,
+  figurSkalaFuer, figurZielPixel, FUSS_ABSTAND, SPRITE_HOEHE, HAND_HOEHE,
 } from './figuren.js';
 import { bereichInKarte } from './sichtbereich.js';
 import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
@@ -1067,6 +1068,7 @@ export class Renderer {
       const farbe = mine.teamId === null || mine.teamId === undefined ? '#7d8590' : TEAM_COLORS[mine.teamId % TEAM_COLORS.length];
       this.ctx.save();
       this.ctx.translate(mine.x, mine.y);
+      const gm = this.gegenstandSkala('mine'); this.ctx.scale(gm, gm);
       zeichneMinenFuss(this.ctx, mz);
       this.ctx.fillStyle = blind ? '#4a4f57' : '#2b3038';
       this.ctx.strokeStyle = farbe;
@@ -1097,6 +1099,7 @@ export class Renderer {
       hoehe = (1 - anteil * anteil) * Math.max(240, fass.y);
     }
     this.ctx.translate(fass.x, fass.y - hoehe);
+    const g = this.gegenstandSkala('fass'); this.ctx.scale(g, g); // Fuß bei y = 0: das Fass wächst nach oben
     this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
     this.ctx.beginPath();
     this.ctx.ellipse(1, 2, 11, 3, 0, 0, Math.PI * 2);
@@ -1126,7 +1129,10 @@ export class Renderer {
     for (const turret of turrets) {
       const farbe = TEAM_COLORS[(turret.teamId ?? 0) % TEAM_COLORS.length];
       this.ctx.save();
-      this.ctx.translate(turret.x, turret.y);
+      this.ctx.translate(turret.x, turret.y + 7);
+      const gg = this.gegenstandSkala('geschuetz');
+      this.ctx.scale(gg, gg);
+      this.ctx.translate(0, -7); // Sockelunterkante bleibt auf dem Boden
 
       // Sockel
       this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
@@ -1159,6 +1165,11 @@ export class Renderer {
   }
 
   /** Auszug nach `rendererOverlays.js` (QV-5). */
+  /** Skala für Gegenstände: wächst mit den Figuren mit (`gegenstandSkala.js`). */
+  gegenstandSkala(art) { return gegenstandSkala(this.#figurSkalaJetzt(), art); }
+  /** Figurskala für Zoom und Bildhöhe (`figurZielPixel`: auf großen Schirmen 12 % der Höhe). */
+  #figurSkalaJetzt() { return figurSkalaFuer((this.kamera?.zoom ?? 1) * this.cssFaktor, figurZielPixel((this.schirmH ?? this.canvas?.height ?? 0) * this.cssFaktor)); }
+
   #drawCrates(crates) {
     zeichneKisten(this, crates);
   }
@@ -1174,7 +1185,7 @@ export class Renderer {
     const jetzt = performance.now() / 1000;
     this.zeichenBild += 1;
     // Sprites werden je Zoom so groß gezeichnet, dass sie auf dem Bildschirm lesbar bleiben (nur Anzeige).
-    this.figurSkala = figurSkalaFuer((this.kamera?.zoom ?? 1) * this.cssFaktor);
+    this.figurSkala = this.#figurSkalaJetzt();
     const S = this.figurSkala;
     this.waffenStat.sprite = 0;
     this.waffenStat.ikone = 0;

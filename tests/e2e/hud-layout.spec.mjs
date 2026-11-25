@@ -81,7 +81,11 @@ for (const f of FORMATE) {
       await einschwingen(page);
       const d = await page.evaluate(() => window.__PA__.sichtbereich());
       // Für den Fall, dass im Seed gerade keine Figur hinter einem Panel steht: erzwingen, das Verhalten ist reine CSS-Klasse.
+      // Das HUD-Ausweichen misst sonst neu und nimmt die Klasse wieder ab, sobald keine Figur mehr
+      // hinter dem Panel steht (seit 2026-11-25 ist das kleine Protokoll selten hinter einer Figur).
+      // Geprüft wird hier die CSS-Wirkung der Klasse, deshalb ruht die Messung.
       await page.evaluate(() => {
+        window.__PA__.game.hudAusweichen.aktualisiere = () => {};
         for (const id of ['hud-left', 'hud-log', 'hud-aim']) document.getElementById(id)?.classList.add('hud-weicht');
       });
       await page.waitForTimeout(400); // Übergang (0,18 s) abwarten

@@ -194,9 +194,26 @@ const SKALA_MAX = 5.4;
  *
  * @param {number} zoom - Bildschirmpixel je Weltpixel
  */
-export function figurSkalaFuer(zoom) {
+export function figurSkalaFuer(zoom, ziel = ZIEL_PIXEL) {
   const z = zoom > 0 ? zoom : 1;
-  return Math.max(SKALA_MIN, Math.min(SKALA_MAX, ZIEL_PIXEL / (z * SPRITE_HOEHE * INHALT_ANTEIL)));
+  const zp = Number.isFinite(ziel) && ziel > 0 ? ziel : ZIEL_PIXEL;
+  return Math.max(SKALA_MIN, Math.min(SKALA_MAX, zp / (z * SPRITE_HOEHE * INHALT_ANTEIL)));
+}
+
+/** Anteil der Bildhöhe, den eine Figur auf großen Bildschirmen einnimmt (Designstudie: etwa 9 bis 12 %). */
+export const FIGUR_HOEHEN_ANTEIL = 0.12;
+const ZIEL_MAX = 150;
+
+/**
+ * Zielhöhe der Figur in CSS-Pixeln für eine Bildhöhe: mindestens `ZIEL_PIXEL` (Telefon), auf
+ * großen Bildschirmen 12 % der Höhe, höchstens 150 px. Vorher galten feste 80 px — auf einem
+ * 1080er Schirm waren das 7 %, die Figuren waren kaum zu erkennen (Rückmeldung 2026-11-25).
+ *
+ * @param {number} cssHoehe - Höhe der Spielfläche in CSS-Pixeln
+ */
+export function figurZielPixel(cssHoehe) {
+  if (!(cssHoehe > 0)) return ZIEL_PIXEL;
+  return Math.max(ZIEL_PIXEL, Math.min(ZIEL_MAX, cssHoehe * FIGUR_HOEHEN_ANTEIL));
 }
 const NEUTRAL = Object.freeze({ dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0, tint: 0, neigung: 0, zug: 0, hpVerz: 1 });
 
