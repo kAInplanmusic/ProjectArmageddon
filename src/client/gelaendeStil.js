@@ -389,7 +389,8 @@ export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 
   const bild = ctx.createImageData(breite, hoehe);
   const d = bild.data;
   for (let i = 0, n = breite * hoehe; i < n; i += 1) if (bitmap[i]) d[i * 4 + 3] = 255;
-  const ergebnis = faerbeGelaende(d, bitmap, breite, hoehe, palette, seed, stoffkarte);
+  // Sonderbiome bringen ihre eigenen Stoffe mit: dort keine Motiv-Textur für den Grundboden.
+  const ergebnis = faerbeGelaende(d, bitmap, breite, hoehe, biom ? { ...palette, erdeTextur: null } : palette, seed, stoffkarte);
   // Biom-Grading der Biome 15 bis 20 (reine Optik, `biomGrading.js`).
   if (biom) gradeBiom(d, bitmap, breite, hoehe, biom, seed);
   // Hohlräume als Räume lesbar machen (LOOK-4 Stufe 3): erst eingeschlossene Luft
@@ -668,7 +669,7 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0, stof
 
   // Reihenfolge (2026-10-27): erst Stoffe, dann Tiefe, dann Saum, Kantenlicht und Kontur — sonst überdeckt die Stofffarbe
   // (bis 94 %) Moos und Kantenlicht, und das Gelände hat innen dieselbe Helligkeit wie am Rand.
-  if (stoffkarte) tinteStoffe(d, bitmap, breite, hoehe, stoffkarte, seed);
+  if (stoffkarte) tinteStoffe(d, bitmap, breite, hoehe, stoffkarte, seed, palette.erdeTextur ?? null);
   dunkleNachTiefe(d, bitmap, breite, hoehe);
   toeneNachPalette(d, bitmap, breite, hoehe, palette);
   const buescheln = malMoos(d, bitmap, breite, hoehe, saum, seed);

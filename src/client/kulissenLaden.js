@@ -1,8 +1,8 @@
 import { paletteFor } from '../shared/config/backdrops.js';
-import { bodenFuerMotiv } from './bodenMotiv.js';
+import { bodenFuerMotiv, texturFuerMotiv } from './bodenMotiv.js';
 
 /** Bodenfarbe der Kulisse plus Bodenart nach ihrem Motiv (`bodenMotiv.js`). */
-const paletteMitBoden = (palette, kulisse) => ({ ...palette, boden: bodenFuerMotiv(kulisse) });
+const paletteMitBoden = (palette, kulisse) => ({ ...palette, boden: bodenFuerMotiv(kulisse), erdeTextur: texturFuerMotiv(kulisse) });
 import { kulissenUrl } from './kulissenUrls.js';
 import { KulissenBildspeicher, waehleKulissenBreite } from './kulissenQuelle.js';
 

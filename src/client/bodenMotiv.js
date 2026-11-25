@@ -40,3 +40,24 @@ export function bodenFuerMotiv(kulisse) {
   const praefix = String(kulisse.key ?? '').split('/')[0];
   return BIOM[praefix === 'stil' ? 'stil' : kulisse.biomeId] ?? BIOM[praefix] ?? null;
 }
+
+/** Textur des Grundbodens je Motiv (Dateien in `assets/stoff-texturen/`); `null` = die übliche Erde. */
+const TEXTUR_REGELN = Object.freeze([
+  ['kohle', /ragnarok|volcano|vulkan|lava|black_hole/],
+  ['regolith', /cosmos|alien|planet|space|nebula/],
+  ['obsidian', /crystal|kristall/],
+  ['basalt', /hoehle|cave|cavern|limestone|basalt|underwater/],
+  ['beton', /urban|noir|street|(?<!elven_)city|harbor|industrial|ruin|war_|trench|neon|rooftop|dam_break|station/],
+]);
+
+/**
+ * @param {{key?:string, biomeId?:string, file?:string}|null} kulisse
+ * @returns {string|null} Texturname für Stoff 0 oder null
+ */
+export function texturFuerMotiv(kulisse) {
+  if (!kulisse) return null;
+  const text = `${kulisse.key ?? ''} ${kulisse.file ?? ''}`.toLowerCase();
+  for (const [name, muster] of TEXTUR_REGELN) if (muster.test(text)) return name;
+  if (String(kulisse.key ?? '').startsWith('stil/')) return null;
+  return { cosmos: 'regolith', caverns: 'basalt', urban: 'beton', noir: 'beton', warren: 'kies' }[kulisse.biomeId] ?? null;
+}

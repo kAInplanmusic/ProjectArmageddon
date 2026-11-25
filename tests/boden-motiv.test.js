@@ -51,3 +51,15 @@ test('Ohne Kulisse entscheidet weiter die Farbe', () => {
   assert.equal(bodenFuerMotiv(null), null);
   assert.equal(bodenArt([250, 250, 255], null), 'schnee');
 });
+
+test('Grundboden-Textur nach Motiv: Stadt Beton, Weltraum Regolith, Höhle Basalt, Kristall Obsidian, Landschaft Erde', async () => {
+  const { texturFuerMotiv } = await import('../src/client/bodenMotiv.js');
+  const k = (biomeId, id) => texturFuerMotiv({ key: `${biomeId}/${id}`, biomeId, id });
+  assert.equal(k('noir', 'rainy_street'), 'beton');
+  assert.equal(k('cosmos', 'alien_world'), 'regolith');
+  assert.equal(k('caverns', 'limestone'), 'basalt');
+  assert.equal(k('caverns', 'crystal'), 'obsidian');
+  assert.equal(k('island', 'volcano'), 'kohle');
+  assert.equal(k('alpine', 'moonlit_peaks'), null);
+  assert.equal(texturFuerMotiv({ key: 'stil/herbstwiese_hell', biomeId: 'forest', file: 'herbstwiese_hell.webp' }), null);
+});

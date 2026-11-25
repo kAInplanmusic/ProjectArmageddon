@@ -129,7 +129,7 @@ function tabelle(laenge, seed, amp) {
  * @param {Uint8Array} bitmap
  * @param {{feld:Uint8Array, spalten:number, zeilen:number}} karte
  */
-export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
+export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0, grundTextur = null) {
   const wy = tabelle(hoehe, seed + 311, 4);
   const wx = tabelle(breite, seed + 312, 4);
   const { spalten, zeilen } = karte;
@@ -172,7 +172,8 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
   for (let i = 0; i < feld.length; i += 1) if (feld[i] < vorhanden.length) vorhanden[feld[i]] = 1;
   for (let id = 0; id < STOFFE.length; id += 1) {
     if (!vorhanden[id]) continue;
-    const t = stoffTextur(STOFF_TEXTUR[STOFFE[id]?.key]);
+    // Grundboden (Stoff 0) nimmt die Textur des Kulissenmotivs, falls gesetzt (`bodenMotiv.js`: Beton, Regolith, Basalt …).
+    const t = stoffTextur(id === 0 && grundTextur ? grundTextur : STOFF_TEXTUR[STOFFE[id]?.key]);
     if (!t) continue;
     texPixel[id] = t.rgba;
     if (t.spiegel) texSpiegel[id] = 1;
