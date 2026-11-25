@@ -40,7 +40,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 2.14 FIGUREN-B-REST | Dauerhafter Grabstein steht (nur Client, `grabsteinBild.js`). Offen: echte Kopf-/Oberkörperrotation (Teilsprites, Renderer-Ebene; braucht Bildmaterial) | Sichtabnahme |
 | 2.15 SCHUSS-FAMILIEN | Eigene Schussbewegungen für Fernkampf (Pumpen, Spannen, Aufziehen) und Magie (Nahkampf ist gebaut); sanfte Geschütz-Drehung (Zustand trägt keine Zielrichtung); HUD-Animationen Kill-Feed, Waffenwahl, wenig Munition; Menü-Übergänge | Sichtabnahme |
 | 2.16 ONLINE-KENNZAHLEN | `MatchStats` wird nur lokal gefüttert (UI-6); Asche/Basalt (`karte.ueber`) erreichen spät Beitretende nur über Ereignisse; `crate_landed` online ohne Zweig (UI-7) | Online-E2E mit zwei Browsern |
-| 2.17 EXKL-TURRET | EXKL-1: exklusive Waffen je Charakter (Datenschicht steht, Einbau offen); TURRET-1: zwei Waffen mit Turm-Mechanik klären | Entscheidung festhalten, Test |
+| 2.17 AUSRUESTUNG-TURRET | Entschieden 2026-11-25 (Abschnitt 7): neue Startausrüstung je Figur statt EXKL-1, und 2 bis 3 vorhandene Waffen bekommen die Turm-Mechanik. Offen vor dem Bau: welche Katalogwaffe das Seil ist (Vorschlag: Enterhaken pa_111) | Kit-Fassung mit Marke, Messung, Test |
 
 ## 3. Balance (immer: messen, dann ändern, Freigabe)
 
@@ -108,6 +108,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 2026-11-11 | Versionsmarken bleiben Pflicht; Materialoptik-Shader gestrichen; „rund“ = 1:1 (Planet, runde Höhle, schwebende Insel), Auflösung bis 33 Mio. px; ungenutzte Bestände als Referenz, nichts löschen; GP-1/GP-2-Entscheidungen 8–25 (umgesetzt in Waffenfassung 21/22); Seil Fassung 3 „wie Worms“; Biome 15–20 freigegeben; Stil: alles Comic |
 | 2026-11-12 | Wurffass entfällt, 150 Waffen bleiben; Wetter immer zufällig; Menü vereinfachen (2.7) |
 | 2026-11-17 | Kein Netlify; Hosting des Web-Zugangs auf Cloudflare |
+| 2026-11-25 | Startausrüstung (ersetzt EXKL-1): jede Figur trägt 5 feste Startwaffen mit unbegrenzter Munition (Auswahl durch den Agenten, gemessen), 2 Gimmicks (Seil 5×, Gleitschirm pa_114 5×; das Seil ist eine der 150 Waffen) und eine Spezialwaffe aus den übrigen 143: legendär 1 Schuss, stark 2, normal 3. Stufen nach Seltenheit (legendary; epic/rare; common/uncommon). Je Fraktion (9 Figuren): 1 legendär, 2 stark, 6 normal. TURRET-1: 2 bis 3 vorhandene, selten genutzte Waffen bekommen die Turm-Mechanik (Waffenfassung mit Marke, gemessen) |
 | 2026-11-24 | Zugtempo (Agent nach TODO 2.8, vom Auftraggeber bestätigt: „make it as you think“): Zugpause 3 → 1,5 s (ändert die Entscheidung vom 13.10.), Schusswiederholung online 2 → 1,5 s, Rückzugsfrist 5 → 3 s (Zugregelfassung 3). Gemessen: Warten je Zug 8 → 4,5 s |
 | 2026-11-23 | Registrierung mit E-Mail (eindeutige Namen und Adressen, Anmeldung mit Name oder E-Mail); Web-Zugang mit schwächerem Hash (PBKDF2, 20 000 Runden) statt bezahltem Cloudflare-Tarif |
 
