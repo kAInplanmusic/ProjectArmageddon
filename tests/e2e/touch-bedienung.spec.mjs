@@ -98,6 +98,20 @@ test.describe('Touch zuerst (TODO 2.1)', () => {
     await expect(page.locator('#hud-kamera kbd')).toBeHidden();
     expect(await page.locator('.zugpause-hinweis .nur-touch').textContent()).toBe('FEUER überspringt');
   });
+
+  test('Die Kamera zählt die Knopfreihen als unteren Rand (Figur am Zug darüber)', async ({ page }) => {
+    await page.goto('/');
+    await page.fill('#cfg-seed', '4');
+    await page.tap('#start-button');
+    await expect(page.locator('#touch-aktionen')).toBeVisible({ timeout: 4000 });
+    await expect.poll(() => page.evaluate(() => {
+      const c = document.getElementById('game-canvas').getBoundingClientRect();
+      const fy = c.height / document.getElementById('game-canvas').height;
+      const oben = Math.min(...['touch-aktionen', 'touch-laufen'].map(id => document.getElementById(id).getBoundingClientRect().top));
+      const unten = window.__PA__.game.kamera.rand.unten * fy; // CSS-Pixel unter der Knopfoberkante
+      return Math.round(unten - (c.bottom - oben));
+    }), { timeout: 5000, message: 'Kamerarand unten reicht bis zur Oberkante der Knopfreihen' }).toBeGreaterThanOrEqual(-1);
+  });
 });
 
 test('Am Desktop bleiben die Tastaturhinweise', async ({ page }) => {

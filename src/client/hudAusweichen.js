@@ -46,6 +46,9 @@ const RAND_SELEKTOREN = [
 /* `touch-aktionen` (seit 2026-11-04, Telefon quer und großes Touch): stehen links über dem Wählrad, also über dem unteren Rand — wie die Laufknöpfe (rechts über FEUER) ein Panel, kein Rand. */
 const PANEL_IDS = ['hud-left', 'hud-log', 'hud-aim', 'touch-laufen', 'touch-aktionen'];
 
+/** Telefon quer mit Touch: dieselbe Bedingung wie die Telefon-Aufteilung in design.css. */
+const TELEFON_TOUCH = '(max-height: 520px) and (pointer: coarse)';
+
 /** Größter Schub nach unten, als Anteil der Fensterhöhe. */
 const SCHUB_MAX_ANTEIL = 0.15;
 
@@ -62,7 +65,7 @@ export class HudAusweichen {
     this.renderer = renderer;
     this.zaehler = 0;
     this.bereich = null;
-    this.letzte = { bereich: null, weicht: [], schub: 0, rand: [], seiten: { links: 0, rechts: 0 } };
+    this.letzte = { bereich: null, weicht: [], schub: 0, rand: [], seiten: { links: 0, rechts: 0 }, touchOben: null };
     this.schmutzig = true;
     this.letzterAktiver = undefined;
     doc.defaultView?.addEventListener('resize', () => this.markiere());
@@ -151,7 +154,18 @@ export class HudAusweichen {
 
     // Protokoll (mittig) und Touch-Knöpfe (kein Seitenpanel) rahmen die Kamera nicht ein; sie weichen nur aus.
     const seiten = seitenRaender(schirm, rechtecke.filter((_, i) => !['hud-log', 'touch-laufen', 'touch-aktionen'].includes(PANEL_IDS[i])));
-    this.letzte = { bereich, weicht, schub, rand: raender, seiten };
+    // Touch zuerst (TODO 2.1): Am Telefon quer liegen die Knopfreihen über der unteren Leiste und decken die Figur am
+    // Zug. Für die KAMERA zählt ihre Oberkante als unterer Rand (nur dort; am Tablet stehen sie in den Ecken).
+    const telefon = this.doc.defaultView?.matchMedia?.(TELEFON_TOUCH)?.matches ?? false;
+    let touchOben = null;
+    if (telefon) {
+      PANEL_IDS.forEach((id, i) => {
+        const r = rechtecke[i];
+        if (!id.startsWith('touch-') || !(r.b > 0) || r.y + r.h / 2 < schirm.h / 2) return;
+        touchOben = Math.min(touchOben ?? Infinity, r.y);
+      });
+    }
+    this.letzte = { bereich, weicht, schub, rand: raender, seiten, touchOben };
   }
 
   /** Vom HUD verdeckte Ränder in Zeichenflächenpixeln (für Kamera und Kameraregie). */
@@ -159,9 +173,11 @@ export class HudAusweichen {
     const b = this.letzte.bereich;
     const h = this.canvas?.height ?? 0;
     if (!b) return { oben: 0, unten: 0, links: 0, rechts: 0 };
-    return {
-      oben: b.y0, unten: Math.max(0, h - b.y1), links: this.letzte.seiten.links, rechts: this.letzte.seiten.rechts,
-    };
+    let unten = Math.max(0, h - b.y1);
+    const t = this.letzte.touchOben;
+    // Nur, wenn darüber genug Bild bleibt (wie `sichererBereich`: mindestens 30 % der Höhe frei).
+    if (t !== null && t !== undefined && t - b.y0 >= h * 0.3) unten = Math.max(unten, h - t);
+    return { oben: b.y0, unten, links: this.letzte.seiten.links, rechts: this.letzte.seiten.rechts };
   }
 
   /**
