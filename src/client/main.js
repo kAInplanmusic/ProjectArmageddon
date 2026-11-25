@@ -126,6 +126,7 @@ async function getReplayPlayer() {
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
 import { MatchStats, PlayerProfile } from '../shared/stats.js';
 import { fuettereOnlineKennzahl } from './onlineKennzahlen.js';
+import { schirmGroesse } from './schirmGroesse.js';
 import {
   kennzahlen as erfolgsKennzahlen,
   neueErfolge as neueErfolgeFuer,
@@ -203,6 +204,9 @@ class Game {
     planetenBilder.setzeUrls(PLANETEN_KULISSE_URLEN);
     this.canvas = document.getElementById('game-canvas');
     this.renderer = new Renderer(this.canvas);
+    // TODO 2.1: Zeichenfläche folgt dem Bildschirm (nicht der Karte); sonst streckt CSS das Bild (`schirmGroesse`).
+    this.#passeSchirmAn();
+    if (typeof ResizeObserver !== 'undefined' && this.canvas) new ResizeObserver(() => this.#passeSchirmAn()).observe(this.canvas);
     this.renderer.sheets.setzeUrls(EFFEKT_SHEET_URLEN);
     // LADEZEIT: Das Menü lädt keine Match-Bilder mehr; Texturen kommen je Karte nach Bedarf, danach färbt der Renderer einmal nach.
     setzeStoffTexturUrls(STOFF_TEXTUR_URLEN);
@@ -2745,6 +2749,7 @@ class Game {
    */
   #applyKartengroesse(breite, hoehe) {
     this.renderer.resize(breite, hoehe);
+    this.#passeSchirmAn();
     this.#setzeKameraGroesse(breite, hoehe);
     this.hudAusweichen?.markiere();
   }
@@ -2764,6 +2769,15 @@ class Game {
    * tatsächliche Fenstergröße könnte er das nicht rechnen, und auf einem
    * großen Fernseher wäre die Figur so klein wie auf dem Laptop.
    */
+  /** Zeichenfläche auf die angezeigte Größe bringen (TODO 2.1, `schirmGroesse.js`) und die Kamera nachführen. */
+  #passeSchirmAn() {
+    const box = this.canvas?.getBoundingClientRect?.();
+    const g = schirmGroesse(box?.width, box?.height, globalThis.devicePixelRatio);
+    if (!g || !this.renderer.setzeSchirm(g.b, g.h)) return;
+    this.kamera?.setzeSchirm(g.b, g.h);
+    this.hudAusweichen?.markiere();
+  }
+
   #setzeKameraGroesse(kartenBreite, kartenHoehe) {
     const schirmBreite = this.canvas?.width ?? this.canvas?.clientWidth ?? 0;
     const schirmHoehe = this.canvas?.height ?? this.canvas?.clientHeight ?? 0;

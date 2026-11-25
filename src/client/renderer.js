@@ -126,6 +126,19 @@ export class Renderer {
     this.waffenFassung = WAFFEN_STANDARD;
     this.width = canvas.width;
     this.height = canvas.height;
+    /**
+     * Bildschirm-Sicht (TODO 2.1, Verzerrung): `width`/`height` sind die KARTE, die Zeichenfläche hat die Größe des
+     * Bildschirms (`setzeSchirm`). Bildschirm-Zeichnungen (Himmel, Wetter vorn, Mahlstrom) bekommen diese Sicht:
+     * dieselben Felder, nur `width`/`height` = Zeichenfläche. Schreiben geht an den Renderer selbst (Zwischenspeicher).
+     */
+    this.schirm = new Proxy(this, {
+      get: (t, k) => {
+        if (k === 'width') return t.schirmB;
+        if (k === 'height') return t.schirmH;
+        return Reflect.get(t, k, t);
+      },
+      set: (t, k, v) => { t[k] = v; return true; },
+    });
     this.terrainLayer = null;
     this.pflanzen = [];
     this.pflanzenSchicht = null;
@@ -366,13 +379,40 @@ export class Renderer {
     }
   }
 
+  /** Größe der Zeichenfläche (Bildschirm) in Gerätepixeln; ohne `setzeSchirm` so groß wie die Karte. */
+  get schirmB() { return this.canvas.width; }
+
+  get schirmH() { return this.canvas.height; }
+
+  /**
+   * Zeichenfläche auf die Bildschirmgröße setzen (TODO 2.1).
+   *
+   * FUND (gemessen 2026-11-25): Die Zeichenfläche war so groß wie die KARTE (24:9, z. B. 4704×1764) und wurde per CSS in
+   * die 16:9-Bühne gestreckt — ein Kreis erschien 108 px breit und 162 px hoch, das ganze Spielbild 1,5-fach senkrecht
+   * gestreckt. Die Kamera kann die Karte selbst einpassen; dazu braucht sie eine Zeichenfläche mit dem Seitenverhältnis
+   * des Bildschirms. Ab dem ersten Aufruf bestimmt nur noch dieser die Zeichenfläche, `resize` nur die Karte.
+   */
+  setzeSchirm(breite, hoehe) {
+    if (!(breite > 0) || !(hoehe > 0)) return false;
+    this.schirmFest = true;
+    if (this.canvas.width === breite && this.canvas.height === hoehe) return false;
+    this.canvas.width = breite;
+    this.canvas.height = hoehe;
+    this.#liesAnzeigefaktor();
+    this.vignetteMass = null;
+    return true;
+  }
+
   resize(breite, hoehe) {
     if (!(breite > 0) || !(hoehe > 0)) return false;
     if (this.width === breite && this.height === hoehe) return false;
     this.width = breite;
     this.height = hoehe;
-    this.canvas.width = breite;
-    this.canvas.height = hoehe;
+    if (!this.schirmFest) {
+      // Ohne Bildschirmgröße (Tests, Werkzeuge): wie bisher kartengroß.
+      this.canvas.width = breite;
+      this.canvas.height = hoehe;
+    }
     this.#liesAnzeigefaktor();
     this.waterLayer.width = Math.ceil(breite / WATER_SCALE);
     this.waterLayer.height = Math.ceil(hoehe / WATER_SCALE);
@@ -608,13 +648,13 @@ export class Renderer {
     // Nur beim Laden sichtbar: Eine leere Spur im Ruhezustand sah aus wie ein schwebender Balken.
     if (anteil === null || anteil === undefined) return;
     const a = Math.max(0, Math.min(1, Number(anteil) || 0));
-    const breite = Math.max(140, Math.min(320, this.width * 0.2));
+    const breite = Math.max(140, Math.min(320, this.schirmB * 0.2));
     const hoehe = 10;
     const spurBreite = breite + 4;
-    const x = Math.round((this.width - spurBreite) / 2);
+    const x = Math.round((this.schirmB - spurBreite) / 2);
     // Etwas unter der Bildmitte: Die Figur am Zug steht im Zentrum, der Balken
     // soll sie nicht verdecken.
-    const y = Math.round(this.height * 0.58);
+    const y = Math.round(this.schirmH * 0.58);
 
     this.ctx.save();
     this.ctx.fillStyle = 'rgba(13, 27, 42, 0.85)';
@@ -1452,8 +1492,8 @@ export class Renderer {
     const t = this.kamera.transformation();
     const k = t.skalierung > 0 ? t.skalierung : 1;
     const v = this.sichtTmp ?? (this.sichtTmp = { x0: 0, x1: 0, y0: 0, y1: 0 });
-    v.x0 = -t.versatzX / k - rand; v.x1 = (this.width - t.versatzX) / k + rand;
-    v.y0 = -t.versatzY / k - rand; v.y1 = (this.height - t.versatzY) / k + rand;
+    v.x0 = -t.versatzX / k - rand; v.x1 = (this.schirmB - t.versatzX) / k + rand;
+    v.y0 = -t.versatzY / k - rand; v.y1 = (this.schirmH - t.versatzY) / k + rand;
     return v;
   }
 
@@ -1958,12 +1998,12 @@ export class Renderer {
       this.omen = null;
       return;
     }
-    zeichneOmen(this.ctx, this.width, this.height, zustand);
+    zeichneOmen(this.ctx, this.schirmB, this.schirmH, zustand);
   }
 
   /** Auszug nach `rendererOverlays.js` (QV-5). */
   #drawMaelstrom(maelstrom) {
-    zeichneMaelstrom(this, maelstrom);
+    zeichneMaelstrom(this.schirm, maelstrom);
   }
 
   /**
@@ -2034,7 +2074,7 @@ export class Renderer {
      */
     this.sieger = state.winnerTeamId ?? null;
     this.rundeFuerKulisse = state.round ?? 1;
-    zeichneHimmel(this);
+    zeichneHimmel(this.schirm);
 
     /*
      * DER KAMERA-RUCK.
@@ -2193,7 +2233,7 @@ export class Renderer {
     this.#drawMaelstrom(state.maelstrom);
     // Das Vorzeichen liegt über der Welt, aber unter der Anzeige.
     this.#drawOmen();
-    zeichneWindPfeil(this.ctx, this.width, state.wind);
+    zeichneWindPfeil(this.ctx, this.schirmB, state.wind);
     this.sichtWind = state.wind; // nur gelesen: Richtung der Wetterteilchen (`wetterZustand.windRichtung`)
     // Die Ladeanzeige liegt ÜBER dem Geschehen: Sie gehört zur Eingabe des
     // Spielers, nicht zur Welt — sie darf nicht hinter einer Figur verschwinden.
@@ -2202,9 +2242,9 @@ export class Renderer {
     // Regen, Schnee, Funken und Glühwürmchen liegen VOR dem Geschehen: sie
     // ziehen zwischen Kamera und Figuren.
     if (this.scenery) {
-      drawAmbient(this.ctx, this.width, this.height, this.scenery, this.time, true, this.partikelDichte);
+      drawAmbient(this.ctx, this.schirmB, this.schirmH, this.scenery, this.time, true, this.partikelDichte);
     }
-    zeichneWetterVorn(this, this.partikelDichte);
+    zeichneWetterVorn(this.schirm, this.partikelDichte);
     this.#drawVignette();
   }
 

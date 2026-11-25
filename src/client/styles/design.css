@@ -1060,7 +1060,7 @@ select option { background: #14181d; color: var(--ink); }
   #touch-aktionen button { min-width: 68px; }
   #touch-laufen button { min-width: 88px; }
   /* Die Figurenliste endet über den Aktionsknöpfen (Bühnenhöhe − Kopfzeile − Knopfblock − Leiste). */
-  #hud-left { max-height: calc(min(56.25vw, 100vh) - 330px); }
+  #hud-left { max-height: calc(100vh - 330px); }
   /* Protokoll über der Beschriftung der gewählten Waffe (die schwebt 8 px über der Leiste). Touch zuerst (TODO 2.1):
      höchstens drei Zeilen — mit zehn Zeilen lag es auf dem iPad mitten im Spielfeld über dem Gelände. */
   #hud-log { bottom: 128px; max-height: 66px !important; line-height: 1.3; }

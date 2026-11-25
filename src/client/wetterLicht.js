@@ -277,11 +277,14 @@ export function zeichneWetterVorn(r, dichte = 1) {
 function sichtAus(r) {
   const k = r.kamera?.transformation?.();
   const skal = k && k.skalierung > 0 ? k.skalierung : 1;
+  // Bildschirmgröße der Zeichenfläche (seit TODO 2.1 nicht mehr gleich der Karte); ohne sie die Karte.
+  const b = r.schirmB ?? r.width;
+  const h = r.schirmH ?? r.height;
   return {
     x0: k ? -k.versatzX / skal : 0,
-    x1: k ? (r.width - k.versatzX) / skal : r.width,
+    x1: k ? (b - k.versatzX) / skal : r.width,
     y0: k ? -k.versatzY / skal : 0,
-    y1: k ? (r.height - k.versatzY) / skal : r.height,
+    y1: k ? (h - k.versatzY) / skal : r.height,
   };
 }
 

@@ -33,6 +33,15 @@ html, body {
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
 }
 
+/*
+ * Touch zuerst (TODO 2.1): Auf Telefon und Tablet füllt die Bühne den ganzen Bildschirm — vorher 16:9 mit schwarzen
+ * Rändern (iPhone links/rechts, iPad oben/unten). Möglich, seit die Zeichenfläche dem Seitenverhältnis ihrer Anzeige
+ * folgt (`schirmGroesse.js`) statt der Karte; die Kamera passt die Karte ein.
+ */
+@media (pointer: coarse) {
+  #stage { width: 100vw; height: 100vh; height: 100dvh; box-shadow: none; }
+}
+
 #guenther-wheel {
   position: absolute;
   inset: 0;
