@@ -276,6 +276,8 @@ export async function messeSzene(doc, seitenText, szene, plan) {
     const q = renderer.terrainSource;
     if (!q) throw new Error('Kein Terrain-Quellbild (renderer.terrainSource)');
     ergebnis.karte = { breite: q.width, hoehe: q.height, pixelMio: runde((q.width * q.height) / 1e6, 2) };
+    // Die Zeichenfläche hat die Form des Bildschirms (nicht der Karte); „Zoom ganze Karte“ hängt an beiden.
+    ergebnis.leinwand = { breite: renderer.schirmB ?? 0, hoehe: renderer.schirmH ?? 0 };
     const g = pa.grafik?.();
     ergebnis.grafik = g ? { wahl: g.wahl ?? null, stufe: g.stufe ?? null } : null;
 

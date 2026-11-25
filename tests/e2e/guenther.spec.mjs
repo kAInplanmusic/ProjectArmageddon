@@ -47,15 +47,19 @@ test('Günther wird gezeichnet, wenn er aktiv ist', async ({ page }) => {
 
     const canvas = document.querySelector('canvas');
     const ctx = canvas.getContext('2d');
-    const links = Math.max(0, Math.round(vorher.x - 40));
-    const oben = Math.max(0, Math.round(vorher.y - 40));
-    const breite = 90;
-    const hoehe = 55;
 
-    // Die Messung liest Kartenpixel: Ohne Kamera zeichnet der Renderer 1:1. Mit der
-    // Kameraführung (Zoom, Ausschnitt um die Figuren) läge das Fenster woanders.
+    // Die Zeichenfläche hat die Form des Bildschirms, nicht die der Karte: Ohne
+    // Kamera fiele Günther oft aus dem Bild. Deshalb richtet der Test die echte
+    // Kamera auf ihn (Zoom 1 = ein Kartenpixel je Leinwandpixel) und rechnet das
+    // Messfenster über ihre Transformation in Leinwandpixel um.
     const kamera = renderer.kamera;
-    renderer.setKamera(null);
+    const alteAnsicht = kamera.ansicht();
+    kamera.setzeAnsicht(vorher.x, vorher.y, 1);
+    const t = kamera.transformation();
+    const breite = Math.round(90 * t.skalierung);
+    const hoehe = Math.round(55 * t.skalierung);
+    const links = Math.max(0, Math.round((vorher.x - 40) * t.skalierung + t.versatzX));
+    const oben = Math.max(0, Math.round((vorher.y - 40) * t.skalierung + t.versatzY));
 
     // Mit Günther zeichnen.
     renderer.render(zustand, { aim: null, water: api.game.water, blastRadius: 0 });
@@ -66,7 +70,7 @@ test('Günther wird gezeichnet, wenn er aktiv ist', async ({ page }) => {
     // baut bei jedem Aufruf ein neues Objekt.
     renderer.render({ ...zustand, guenther: null }, { aim: null, water: api.game.water, blastRadius: 0 });
     const ohneHund = ctx.getImageData(links, oben, breite, hoehe).data;
-    renderer.setKamera(kamera);
+    kamera.setzeAnsicht(alteAnsicht.x, alteAnsicht.y, alteAnsicht.zoom);
 
     let unterschiede = 0;
     for (let i = 0; i < mitHund.length; i += 4) {

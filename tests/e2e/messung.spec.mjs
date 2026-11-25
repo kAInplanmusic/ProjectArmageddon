@@ -68,7 +68,10 @@ test.describe('Messseite', () => {
     expect(nach('gross-klassisch').gradingAufbauMs).toBeNull();
     // Die Zoomstufen kommen an: nah ist näher als die ganze Karte.
     const zoomRiesig = Object.fromEntries(nach('riesig-tiefsee').phasen.map(p => [p.id, p.zoom]));
-    expect(zoomRiesig['zoom-ganz']).toBe(1);
+    // „Ganze Karte“: die Karte passt genau in die Zeichenfläche (die die Form des Bildschirms hat).
+    const lw = nach('riesig-tiefsee').leinwand;
+    expect(lw.breite).toBeGreaterThan(0);
+    expect(zoomRiesig['zoom-ganz']).toBeCloseTo(Math.min(lw.breite / 6272, lw.hoehe / 2352), 2);
     expect(zoomRiesig['zoom-mittel']).toBeGreaterThan(zoomRiesig['zoom-ganz']);
     expect(zoomRiesig['zoom-nah']).toBeGreaterThan(zoomRiesig['zoom-mittel']);
     expect(nach('mittel-tiefsee').phasen.find(p => p.id === 'wasser').wasserZellen).toBeGreaterThan(0);

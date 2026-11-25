@@ -184,10 +184,12 @@ test('Der Renderer zeichnet Günther auch online', async ({ page }) => {
     const festeZeit = echteUhr();
     performance.now = () => festeZeit;
     let mitHund; let ohneHundEins; let ohneHundZwei;
-    // Ohne Kamera zeichnet der Renderer die ganze Karte 1:1 — mit der Kameraführung
-    // (Zoom um die Figuren) kann Günther außerhalb des Ausschnitts stehen.
+    // Die Kameraführung (Zoom um die Figuren) kann Günther außerhalb des Ausschnitts
+    // zeigen, und die Zeichenfläche hat die Form des Bildschirms, nicht die der Karte.
+    // Deshalb richtet der Test die Kamera auf Günther (Zoom 1) und stellt sie danach zurück.
     const kamera = renderer.kamera;
-    renderer.setKamera(null);
+    const alteAnsicht = kamera.ansicht();
+    kamera.setzeAnsicht(zustand.guenther?.x ?? 0, zustand.guenther?.y ?? 0, 1);
     try {
       const uhr = 777;
       mitHund = zeichne(zustand, uhr);
@@ -195,7 +197,7 @@ test('Der Renderer zeichnet Günther auch online', async ({ page }) => {
       ohneHundZwei = zeichne({ ...zustand, guenther: null }, uhr);
     } finally {
       performance.now = echteUhr;
-      renderer.setKamera(kamera);
+      kamera.setzeAnsicht(alteAnsicht.x, alteAnsicht.y, alteAnsicht.zoom);
     }
 
     const unterschied = (a, b) => {

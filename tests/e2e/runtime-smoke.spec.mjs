@@ -42,11 +42,14 @@ test('Startseite lädt Canvas, HUD und Menü', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Match starten' })).toBeVisible();
   await expect(page.locator('#hud-round')).toHaveText('1');
 
-  const canvasSize = await page.locator('#game-canvas').evaluate(canvas => ({
-    width: canvas.width,
-    height: canvas.height,
-  }));
-  expect(canvasSize).toEqual({ width: 1280, height: 720 });
+  // Die Zeichenfläche hat die Form ihres Kastens auf dem Bildschirm (sonst wäre das Bild
+  // verzerrt) und ist mindestens 1920 Pixel breit (schirmGroesse.js).
+  const canvasSize = await page.locator('#game-canvas').evaluate(canvas => {
+    const box = canvas.getBoundingClientRect();
+    return { width: canvas.width, height: canvas.height, boxB: box.width, boxH: box.height };
+  });
+  expect(canvasSize.width).toBeGreaterThanOrEqual(1920);
+  expect(Math.abs(canvasSize.width / canvasSize.height - canvasSize.boxB / canvasSize.boxH)).toBeLessThan(0.01);
   expect(errors).toEqual([]);
 });
 
