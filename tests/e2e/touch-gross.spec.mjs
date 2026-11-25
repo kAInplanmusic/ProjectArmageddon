@@ -91,7 +91,8 @@ for (const [breite, hoehe, mobil, name] of FORMATE) {
       await starte(page, {});
 
       const { aktionen, laufen, bloecke } = await flaechen(page);
-      expect(aktionen.length).toBe(6);
+      // TODO 2.1: ohne Seil sichtbar Sprung ◀ ▶, Abwurf, Seil; Seil ▲/▼ erscheinen erst am Seil (statt der Sprungknöpfe).
+      expect(aktionen.length).toBe(4);
       expect(laufen.length).toBe(4);
       for (const pflicht of ['Kopfzeile', 'Figurenliste', 'Waffenleiste', 'Wählrad', 'FEUER', 'Zielanzeige', 'Protokoll']) {
         expect(bloecke.map(b => b.name), `${pflicht} sichtbar`).toContain(pflicht);

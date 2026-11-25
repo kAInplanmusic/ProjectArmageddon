@@ -161,3 +161,45 @@ test('Seil: im Waffenmenü als Werkzeug wählbar', async ({ page }) => {
   expect(await page.evaluate(() => window.__PA__.game.seilSteuerung.gewaehlt)).toBe(true);
   expect(fehler).toEqual([]);
 });
+
+test.describe('Seil per Touch (TODO 2.1)', () => {
+  test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+
+  test('Knopf Seil, FEUER schießt; ▲/▼ erscheinen nur am Seil, ▲ gehalten holt ein, FEUER löst', async ({ page }) => {
+    const fehler = await oeffne(page);
+    await stelleUnterDecke(page);
+    const tasten = page.locator('#touch-aktionen');
+    await expect(tasten).toBeVisible();
+    await expect(tasten.locator('[data-seil=hoch]')).toBeHidden();
+    await expect(tasten.locator('[data-aktion=sprung-rechts]')).toBeVisible();
+
+    await tasten.locator('[data-aktion=seil]').tap();
+    expect(await page.evaluate(() => window.__PA__.game.seilSteuerung.gewaehlt)).toBe(true);
+    expect(await zieleAufHalt(page), 'Testaufbau: Winkel mit Halt').not.toBeNull();
+    const feuer = page.locator('#hud-fire');
+    const tippeFeuer = () => feuer.tap(); // echter Fingertipp (der Knopf fängt den Zeiger ein)
+    await tippeFeuer();
+    await expect.poll(async () => (await seil(page)).haengt, { timeout: 3000 }).toBe(true);
+
+    // Am Seil: ▲/▼ statt der Sprungknöpfe, die Reihe bleibt eine Reihe.
+    await expect(tasten.locator('[data-seil=hoch]')).toBeVisible();
+    await expect(tasten.locator('[data-seil=runter]')).toBeVisible();
+    await expect(tasten.locator('[data-aktion=sprung-rechts]')).toBeHidden();
+    expect((await tasten.boundingBox()).height).toBeLessThan(60);
+
+    const vorher = (await seil(page)).laenge;
+    const hoch = tasten.locator('[data-seil=hoch]');
+    await hoch.dispatchEvent('pointerdown', { button: 0, pointerId: 12, bubbles: true });
+    await page.waitForTimeout(700);
+    await hoch.dispatchEvent('pointerup', { button: 0, pointerId: 12, bubbles: true });
+    const eingeholt = await seil(page);
+    expect(eingeholt.haengt).toBe(true);
+    expect(eingeholt.laenge, '▲ holt ein').toBeLessThan(vorher - 10);
+
+    await tippeFeuer();
+    await expect.poll(async () => (await seil(page)).haengt, { timeout: 3000 }).toBe(false);
+    await expect(tasten.locator('[data-seil=hoch]')).toBeHidden();
+    await expect(tasten.locator('[data-aktion=sprung-rechts]')).toBeVisible();
+    expect(fehler).toEqual([]);
+  });
+});
