@@ -33,6 +33,7 @@ import {
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
 import { FeuerOptik, faerbeZellen, ZELLFARBE } from './feuerOptik.js';
+import { leseUeberStand } from '../shared/feuerStand.js';
 import { SheetEffekte, LEUCHT_FARBE } from './effektSheets.js';
 import { strahlArt, schweifArt } from './waffenOptik.js';
 import { zeichnePortal } from './portalBild.js'; import { GRAB_FUSS, Graeber, zeichneGraeber } from './grabsteinBild.js';
@@ -1776,6 +1777,20 @@ export class Renderer {
     if (!k.ueber) k.ueber = new Uint8Array(k.feld.length);
     for (const idx of indizes) k.ueber[idx] = stoff + 1;
     faerbeZellen(this.terrainLayer?.getContext('2d'), indizes, k.spalten, ZELLFARBE[stoff]);
+  }
+
+  /**
+   * Überlagerung aus WELCOME oder `terrain_state` (TODO 2.16): Asche und Basalt, die vor dem Beitritt entstanden.
+   * Ungültiges ändert nichts (`leseUeberStand`).
+   * @returns {boolean} true, wenn übernommen
+   */
+  uebernimmUeber(nutzlast) {
+    const k = this.stoffkarte;
+    if (!k?.feld) return false;
+    const liste = leseUeberStand(nutzlast, k.feld.length);
+    if (!liste) return false;
+    for (const { stoff, zellen } of liste) if (ZELLFARBE[stoff]) this.#stoffZellen(zellen, stoff);
+    return true;
   }
 
   #feuerKarte() {

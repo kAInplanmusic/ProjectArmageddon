@@ -17,7 +17,7 @@ mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene D
 | Bereich | Stand |
 |---|---|
 | Fassungen (Standard neuer Partien) | Gelände 17 (`GELAENDE_ABSTAND`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben, Sturzflut, Treibsand, Bodenwirkung, Splitter), Bodenobjekte 8 |
-| Zeilenbudgets | `match.js` 2772/2790, `main.js` 3707, `renderer.js` 2218 (`tests/zeilenbudget.test.js`) |
+| Zeilenbudgets | `match.js` 2772/2790, `main.js` 3729, `renderer.js` 2242 (`tests/zeilenbudget.test.js`) |
 | CI | grün auf `730f6bb` (2026-11-23, alle vier Browser-Teile, Lint/Tests/Build) |
 | Abhängigkeiten | `npm audit`: 0 Schwachstellen (2026-11-23, vite 8.3.8, eslint 10.15) |
 | Spieltest mit Menschen (QV-4) | nicht erfolgt |
@@ -39,7 +39,6 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 2.13 LETZTER-HALT | Gelände-vor-Schaden-Hypothese (Konzept in Git: `docs/letzter-halt-plan.md`): Stufe 2 A/B-Test Materiallesbarkeit (2 Teams, 1 Karte, 5 Wiederholungen, Anteil Geländewege > 60 %), Stufe 3 Bruchvisualisierung und Werkzeugklang, Stufe 4 Gegenmaßnahmen statt universeller Schwachstellen, Stufe 5 Rollen-Biome; offen: Rodentia ohne Heim-Biom | erst nach Spieltest (8) |
 | 2.14 FIGUREN-B-REST | Dauerhafter Grabstein steht (nur Client, `grabsteinBild.js`). Offen: echte Kopf-/Oberkörperrotation (Teilsprites, Renderer-Ebene; braucht Bildmaterial) | Sichtabnahme |
 | 2.15 SCHUSS-FAMILIEN | Eigene Schussbewegungen für Fernkampf (Pumpen, Spannen, Aufziehen) und Magie (Nahkampf ist gebaut); sanfte Geschütz-Drehung (Zustand trägt keine Zielrichtung); HUD-Animationen Kill-Feed, Waffenwahl, wenig Munition; Menü-Übergänge | Sichtabnahme |
-| 2.16 ONLINE-KENNZAHLEN | `MatchStats` wird nur lokal gefüttert (UI-6); Asche/Basalt (`karte.ueber`) erreichen spät Beitretende nur über Ereignisse; `crate_landed` online ohne Zweig (UI-7) | Online-E2E mit zwei Browsern |
 | 2.17 AUSRUESTUNG-TURRET | Entschieden 2026-11-25 (Abschnitt 7): neue Startausrüstung je Figur statt EXKL-1, und 2 bis 3 vorhandene Waffen bekommen die Turm-Mechanik. Offen vor dem Bau: welche Katalogwaffe das Seil ist (Vorschlag: Enterhaken pa_111) | Kit-Fassung mit Marke, Messung, Test |
 
 ## 3. Balance (immer: messen, dann ändern, Freigabe)

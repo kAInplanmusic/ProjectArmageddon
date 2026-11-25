@@ -35,7 +35,7 @@ import { validateCommand, pruefeSeilEingabe } from '../shared/validation.js';
 import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
 import { MATCH_RULES } from '../shared/config/match.js';
 import { stoffHash } from '../shared/stoffkarte.js';
-import { feuerStandNutzlast } from '../shared/feuerStand.js';
+import { feuerStandNutzlast, ueberStandNutzlast } from '../shared/feuerStand.js';
 import { ReplayRecorder } from '../engine/replay.js';
 import { MatchStats } from '../shared/stats.js';
 import { TokenBucket } from './rateLimit.js';
@@ -1461,7 +1461,12 @@ export class LobbySession {
       // Brennende Zellen und ruhende Lava (EREIGNIS-1): Ereignislisten sind gekappt, ein später Beitritt sah sie nie.
       ...(this.match.feuerSystem ? { feuer: feuerStandNutzlast(this.match.feuerSystem.sichtStand()) } : {}),
     };
-    if (mitKratern) stand.craters = terrain.craterLog;
+    if (mitKratern) {
+      stand.craters = terrain.craterLog;
+      // Asche und Basalt (TODO 2.16): Die Nachlieferung baut die Karte neu, die Überlagerung käme sonst nie zurück.
+      const ueber = ueberStandNutzlast(this.match.stoffkarte?.ueber);
+      if (ueber) stand.ueber = ueber;
+    }
     return stand;
   }
 

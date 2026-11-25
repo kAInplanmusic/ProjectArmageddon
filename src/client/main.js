@@ -125,6 +125,7 @@ async function getReplayPlayer() {
 }
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
 import { MatchStats, PlayerProfile } from '../shared/stats.js';
+import { fuettereOnlineKennzahl } from './onlineKennzahlen.js';
 import {
   kennzahlen as erfolgsKennzahlen,
   neueErfolge as neueErfolgeFuer,
@@ -1327,6 +1328,7 @@ class Game {
     this.hud.clearLog();
     this.hud.log('Verbinde mit Server …', 'accent');
     this.mode = 'online';
+    this.stats = null; // TODO 2.16: Online-Kennzahlen beginnen je Partie neu (`#onlineStatistik`)
     // UI-1: Anzeigewerte der VORIGEN Online-Partie verwerfen (Mahlstrom-Einschnitt, geschätzte Zugdauer).
     this.remoteInset = 0;
     this.remoteTurnDurationMs = 0;
@@ -1479,6 +1481,7 @@ class Game {
         this.#wendeKraterAn(payload.craters);
         // Mahlstrom-Einschnitt, der vor dem Beitritt entstanden ist.
         this.#wendeEinschnittAn(payload.inset);
+        this.renderer.uebernimmUeber?.(payload.ueber); // Asche und Basalt vor dem Beitritt (TODO 2.16)
       }
     });
     /*
@@ -1674,6 +1677,7 @@ class Game {
     this.#buildRemoteTerrain(this.remoteTerrainQuelle);
     this.#wendeKraterAn(stand.craters);
     this.#wendeEinschnittAn(stand.inset);
+    this.renderer.uebernimmUeber?.(stand.ueber); // TODO 2.16: der Neubau hätte Asche und Basalt verloren
     this.terrainAbweichungOffen = false;
   }
 
@@ -1949,7 +1953,16 @@ class Game {
    * einmal auseinandergelaufen sind.
    */
   #handleRemoteEvent(message) {
+    this.#onlineStatistik(message); // TODO 2.16 (UI-6): Kennzahlen auch online
     verarbeiteOnline(this.#ereignisKontext(), message);
+  }
+
+  /** Online-Kennzahlen (TODO 2.16, UI-6, `onlineKennzahlen.js`); neue Kennzahlen heißen: noch nicht verbucht. */
+  #onlineStatistik(message) {
+    if (this.mode !== 'online') return;
+    const vorher = this.stats;
+    this.stats = fuettereOnlineKennzahl(vorher, message, this.onlineViewState);
+    if (this.stats && this.stats !== vorher) this.verbucht = false;
   }
 
   /**

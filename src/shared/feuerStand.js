@@ -92,3 +92,63 @@ export function leseFeuerStand(nutzlast, zellenGesamt = Infinity) {
   if (!brennt || !lava) return null;
   return { brennt, lava, voll: nutzlast.voll !== false };
 }
+
+/*
+ * Überlagerung `karte.ueber` für späte Beitritte (TODO 2.16, ONLINE-KENNZAHLEN b)
+ *
+ * Asche (ausgebrannt) und Basalt/Obsidian (erstarrte Lava) stehen nur in `karte.ueber` und kommen online
+ * allein über `feuer_schritt.asche` und `lava_erstarrt`. Wer später beitritt oder neu verbindet, sah sie nie:
+ * sein Gelände zeigte Gras, wo längst Asche lag. Darum tragen WELCOME und `terrain_state` die Überlagerung mit
+ * (nicht `terrain_hash`: die geht alle ~2 s an alle und braucht sie nicht). Kodierung wie oben, je Stoff eine
+ * Abstandsliste; zusammen höchstens `MAX_UEBER_STAND_ZELLEN` Zellen (eine gekappte Lieferung ergänzt nur).
+ */
+
+/** Obergrenze aller Zellen der Überlagerung in einer Lieferung (~40 KB JSON im schlimmsten Fall, nur beim Beitritt). */
+export const MAX_UEBER_STAND_ZELLEN = 16_384;
+
+/**
+ * Nutzlast aus `karte.ueber` (Kennung + 1, 0 = keine); `null`, wenn es keine Überlagerung gibt.
+ * @param {Uint8Array|null|undefined} ueber
+ * @returns {{stoffe: Array<[number, number[]]>, voll: boolean}|null}
+ */
+export function ueberStandNutzlast(ueber) {
+  if (!ueber) return null;
+  const jeStoff = new Map();
+  let gesamt = 0;
+  let voll = true;
+  for (let idx = 0; idx < ueber.length; idx += 1) {
+    if (ueber[idx] === 0) continue;
+    if (gesamt >= MAX_UEBER_STAND_ZELLEN) { voll = false; break; }
+    const stoff = ueber[idx] - 1;
+    if (!jeStoff.has(stoff)) jeStoff.set(stoff, []);
+    jeStoff.get(stoff).push(idx);
+    gesamt += 1;
+  }
+  if (gesamt === 0) return null;
+  return {
+    stoffe: [...jeStoff].sort((a, b) => a[0] - b[0]).map(([stoff, zellen]) => [stoff, packeZellen(zellen, MAX_UEBER_STAND_ZELLEN)]),
+    voll,
+  };
+}
+
+/**
+ * Gegenstück im Client: prüft und entpackt; `null` bei fehlender oder ungültiger Nutzlast (dann ändert sich nichts).
+ * @param {unknown} nutzlast
+ * @param {number} [zellenGesamt]
+ * @returns {Array<{stoff: number, zellen: number[]}>|null}
+ */
+export function leseUeberStand(nutzlast, zellenGesamt = Infinity) {
+  if (!nutzlast || typeof nutzlast !== 'object' || !Array.isArray(nutzlast.stoffe)) return null;
+  const aus = [];
+  let gesamt = 0;
+  for (const eintrag of nutzlast.stoffe) {
+    if (!Array.isArray(eintrag) || eintrag.length !== 2) return null;
+    const [stoff, abstaende] = eintrag;
+    if (!Number.isInteger(stoff) || stoff < 0 || stoff > 254) return null;
+    const zellen = entpackeZellen(abstaende, { max: MAX_UEBER_STAND_ZELLEN - gesamt, zellenGesamt });
+    if (!zellen) return null;
+    gesamt += zellen.length;
+    aus.push({ stoff, zellen });
+  }
+  return aus;
+}

@@ -121,6 +121,10 @@ for (const fall of FAELLE) {
       expect(zaehlen(a.nachrichten, 'explosion')).toBe(1);
       expect(zaehlen(b.nachrichten, 'explosion')).toBe(1);
       expect(zaehlen(b.nachrichten, 'terrain_destroyed')).toBe(zaehlen(a.nachrichten, 'terrain_destroyed'));
+      // TODO 2.16 (UI-6): Online-Kennzahlen. Vorher blieb `game.stats` online leer (Endbildschirm ohne Zahlen).
+      const kennzahl = await schuetze.page.evaluate(() => window.__PA__.matchKennzahlen());
+      expect(kennzahl?.eigener?.schuesse, 'der Schuss steht in den Kennzahlen des Schützen').toBe(1);
+      expect(kennzahl.runden).toBeGreaterThanOrEqual(1);
 
       // Wiedereinstieg von Client B: Vollsnapshot und Nachlieferung dürfen nichts doppelt auslösen.
       const kraterVorher = zaehlen(b.nachrichten, 'terrain_destroyed');

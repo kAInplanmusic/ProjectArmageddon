@@ -49,6 +49,10 @@ import { verbuchePartie, rangliste, bestwerte, ranglistenStand, siegquote, kdVer
  * (`src/server/index.js` und die Tests lesen beide Namen weiter von hier).
  */
 import { LobbySession, kartenFelder } from './lobbySession.js';
+import { ueberStandNutzlast } from '../shared/feuerStand.js';
+
+/** WELCOME-Feld `ueber` nur, wenn es eine Überlagerung gibt (alte Partien ohne Feuer: Nachricht unverändert). */
+const ueberFeld = ueber => { const n = ueberStandNutzlast(ueber); return n ? { ueber: n } : {}; };
 
 export { LobbySession, SNAPSHOT_HZ } from './lobbySession.js';
 
@@ -759,6 +763,8 @@ export class GameServer {
       craters: session.match.terrain?.craterLog ?? [],
       // Mahlstrom-Einschnitt (Spalten je Seite), gleiche Begründung.
       inset: session.match.maelstrom?.inset ?? 0,
+      // Asche und Basalt aus Feuer und Lava (TODO 2.16): stehen nur in der Überlagerung, kein Ereignis bringt sie nach.
+      ...ueberFeld(session.match.stoffkarte?.ueber),
     }));
   }
 
