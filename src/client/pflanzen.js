@@ -39,6 +39,9 @@ export const PFLANZEN_GROESSE = Object.freeze({ palme: 1.8, tanne: 1.8, busch: 1
 /** Abstand zwischen zwei Pflanzen wächst mit (sonst stünden die großen Formen ineinander). */
 const ABSTAND_FAKTOR = 1.35;
 
+/** Biome, in denen Palmen wachsen; sonst wird aus der Palme eine Tanne. */
+const TROPISCH = new Set(['island', 'hyperreal', 'maritime', 'deluge', 'fantasy']);
+
 /** Wie dicht wächst es in einem Biom (0 bis 1)? */
 const BEWUCHS = Object.freeze({
   island: 1, forest: 1, fantasy: 0.9, hyperreal: 0.9, deluge: 0.7, open: 0.65, alpine: 0.55,
@@ -88,6 +91,7 @@ export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId, boden = 'g
         : w < 0.3 ? 'palme' : w < 0.55 ? 'busch' : w < 0.8 ? 'farn' : 'gras';
       // Passend zum Boden: Tannen im Schnee, Dürrgras statt Farn auf Sand, auf nacktem Fels nur Gestrüpp.
       if (boden === 'schnee') art = w < 0.6 ? 'tanne' : w < 0.8 ? 'busch' : 'gras';
+      else if (art === 'palme' && boden !== 'sand' && !TROPISCH.has(biomId)) art = 'tanne'; // Palmen nur in tropischen Bildern (nicht vor einer Kleinstadt)
       else if (boden === 'sand' && art === 'farn') art = 'gras';
       else if ((boden === 'fels' || boden === 'asche') && art === 'palme') art = 'busch';
       const h = art === 'palme' ? 38 + zufall() * 26 : art === 'busch' ? 12 + zufall() * 8
@@ -312,7 +316,7 @@ export function zeichnePflanze(ctx, p, f, surface = null) {
 
 /** Farben der Vordergrundpflanzen, zur Bodenfarbe hin getönt. */
 export function pflanzenFarben(palette) {
-  const boden = bodenArt(palette.surface);
+  const boden = bodenArt(palette.surface, palette.boden);
   // Eigene Töne je Bodenart: blaugrüne Nadeln im Schnee, ausgeblichenes Dürrgras auf Sand, graugrünes Gestrüpp auf Fels.
   if (boden === 'schnee') return { blatt: css([46, 104, 92]), dunkel: css([26, 66, 62]), hell: css([214, 232, 240]), stamm: css(STAMM), kontur: PAL.kontur };
   if (boden === 'sand') return { blatt: css([150, 142, 66]), dunkel: css([104, 98, 44]), hell: css([214, 198, 110]), stamm: css([112, 84, 52]), kontur: PAL.kontur };

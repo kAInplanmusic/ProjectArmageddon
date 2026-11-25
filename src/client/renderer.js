@@ -752,7 +752,7 @@ export class Renderer {
     // Fantasywald: Bewuchs nach Geländebiom (auch auf der Lichtungs-Kulisse, deren Kennung `forest` ist), dazu Nebel und Feenlichter.
     const fantasy = this.gelaendeBiom === FANTASYWALD_BIOM;
     this.fantasyDeko = fantasy ? plaziereFantasyDeko(bitmap, width, height, this.scenery?.seed ?? 0) : null;
-    this.pflanzen = plazierePflanzen(bitmap, width, height, this.scenery?.seed ?? 0, fantasy ? FANTASYWALD_BIOM : (this.scenery?.biomeId ?? null), bodenArt(this.palette.surface));
+    this.pflanzen = plazierePflanzen(bitmap, width, height, this.scenery?.seed ?? 0, fantasy ? FANTASYWALD_BIOM : (this.scenery?.biomeId ?? (this.backdrop?.stil ? (this.palette.boden === 'gras' ? 'forest' : null) : this.backdrop?.biomeId) ?? null), bodenArt(this.palette.surface, this.palette.boden)); // Bewuchs auch bei Bildkulissen (vorher Dichte 0,2)
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -851,7 +851,7 @@ export class Renderer {
 
   /** Stil von Schutt und Staub nach Bodenart der Karte (Gras, Fels, Schnee, Sand, Asche). */
   #materialStil() {
-    return materialStil(bodenArt(this.palette?.surface ?? [96, 138, 92]), this.palette);
+    return materialStil(bodenArt(this.palette?.surface ?? [96, 138, 92], this.palette?.boden), this.palette);
   }
 
   /** Farbe der Erde für Staub und Trümmer: nach Material (Staub der Bodenart, bei Gras das Tiefenbraun der Geländepalette). */
@@ -877,7 +877,7 @@ export class Renderer {
    */
   #charakterSpur(ctx, umriss, x, y, radius, art) {
     const seed = this.scenery?.seed ?? 0;
-    if (art === 'brand') zeichneBrandspur(ctx, umriss, x, y, radius, bodenArt(this.palette?.surface ?? [96, 138, 92]), seed);
+    if (art === 'brand') zeichneBrandspur(ctx, umriss, x, y, radius, bodenArt(this.palette?.surface ?? [96, 138, 92], this.palette?.boden), seed);
     else if (art === 'durchschlag') zeichneBohrwand(ctx, umriss);
     else if (art === 'beben') zeichneBebenRisse(ctx, x, y, radius, seed);
   }

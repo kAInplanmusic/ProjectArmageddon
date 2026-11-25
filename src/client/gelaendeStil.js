@@ -47,7 +47,8 @@ const STEIN_TON = 0.34;
  * @param {number[]} oberflaeche - RGB der Oberfläche
  * @returns {'gras'|'schnee'|'sand'|'fels'|'asche'}
  */
-export function bodenArt(oberflaeche) {
+export function bodenArt(oberflaeche, vorgabe = null) {
+  if (vorgabe) return vorgabe; // Motiv der Kulisse (`bodenMotiv.js`) geht vor der Farbe
   const [r, g, b] = oberflaeche;
   const hell = 0.299 * r + 0.587 * g + 0.114 * b;
   if (hell > 185 && b >= r - 6) return 'schnee';
@@ -432,7 +433,7 @@ function baueTabellen(breite, hoehe, palette, seed) {
   const LAGE_RAND = 48;
   const lagen = tabelle(hoehe + 2 * LAGE_RAND, 27, seed + 208);
   const lagenFein = tabelle(hoehe + 2 * LAGE_RAND, 7, seed + 209);
-  const art = bodenArt(palette.surface);
+  const art = bodenArt(palette.surface, palette.boden);
   const saum = saumFuer(art, palette);
   // Erdschicht unter dem Saum: die Bodenfarbe, abgedunkelt und leicht erdig.
   const erde = mischeRgb(mischeRgb(palette.surface, palette.deep, 0.6), art === 'schnee' ? [96, 110, 128] : [74, 54, 36], 0.4).map(v => v * 0.62);

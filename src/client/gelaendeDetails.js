@@ -138,7 +138,10 @@ function haengend(ctx, art, x, y, s, seed, palette) {
 export function zeichneDetails(ctx, bitmap, breite, hoehe, art, saum, palette, seed = 0) {
   const { oben, unten } = findeKanten(bitmap, breite, hoehe);
   const s = Math.max(0.8, breite / 2560 * 1.6);
-  const felsig = mischeRgb(palette.surface, [150, 148, 150], 0.45);
+  // Steine wachsen nicht mit der Kartengröße mit: auf großen Karten wurden sie zu kopfgroßen grauen Kugeln (bis 50 px).
+  const sStein = Math.min(1.2, s);
+  // Steine in der Bodenfarbe statt grau (Rückmeldung 2026-11-25: „graue Kugeln überall“), und seltener.
+  const felsig = mischeRgb(palette.surface, [150, 148, 150], 0.15);
   const dunkel = mischeRgb(felsig, palette.deep, 0.45);
   const hell = mischeRgb(felsig, [236, 232, 220], 0.28);
   let n = 0;
@@ -148,12 +151,12 @@ export function zeichneDetails(ctx, bitmap, breite, hoehe, art, saum, palette, s
     const w = hash2(k.x, k.y, seed + 201);
     if (w > 0.4) continue; // etwa jede zweite bis dritte Prüfspalte
     if (neigung(bitmap, breite, hoehe, k.x, k.y) > 9) {
-      if (w < 0.07) { stein(ctx, k.x, k.y + 3, (6 + 5 * hash2(k.x, 2, seed + 202)) * s, hell, dunkel); n += 1; } // Brocken am Hang
+      if (w < 0.025) { stein(ctx, k.x, k.y + 3, (6 + 5 * hash2(k.x, 2, seed + 202)) * sStein, hell, dunkel); n += 1; } // Brocken am Hang
       continue;
     }
-    if (w < 0.1) {
-      stein(ctx, k.x, k.y + 2, (3 + 4 * hash2(k.x, 3, seed + 203)) * s, hell, dunkel);
-      if (hash2(k.x, 4, seed + 204) > 0.5) stein(ctx, k.x + 7 * s, k.y + 2, (2 + 2.5 * hash2(k.x, 5, seed + 205)) * s, hell, dunkel);
+    if (w < 0.035) {
+      stein(ctx, k.x, k.y + 2, (3 + 4 * hash2(k.x, 3, seed + 203)) * sStein, hell, dunkel);
+      if (hash2(k.x, 4, seed + 204) > 0.5) stein(ctx, k.x + 7 * sStein, k.y + 2, (2 + 2.5 * hash2(k.x, 5, seed + 205)) * sStein, hell, dunkel);
     } else {
       pflanze(ctx, art, k.x, k.y + 1, s, saum, seed);
     }

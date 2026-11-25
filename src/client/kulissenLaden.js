@@ -1,4 +1,8 @@
 import { paletteFor } from '../shared/config/backdrops.js';
+import { bodenFuerMotiv } from './bodenMotiv.js';
+
+/** Bodenfarbe der Kulisse plus Bodenart nach ihrem Motiv (`bodenMotiv.js`). */
+const paletteMitBoden = (palette, kulisse) => ({ ...palette, boden: bodenFuerMotiv(kulisse) });
 import { kulissenUrl } from './kulissenUrls.js';
 import { KulissenBildspeicher, waehleKulissenBreite } from './kulissenQuelle.js';
 
@@ -26,7 +30,7 @@ export function ladeKulisse(ziel, backdrop, { onError } = {}) {
     ziel.backdrop = backdrop;
     ziel.backdropReady = false;
     ziel.kulissenCache = null;
-    ziel.palette = paletteFor({ key: `${backdrop.biomeId}/${backdrop.id}` });
+    ziel.palette = paletteMitBoden(paletteFor({ key: `${backdrop.biomeId}/${backdrop.id}` }), backdrop);
     // Adresstabelle der Fotos erst jetzt nachladen (`panoramenUrls.js`, nicht im Startbündel).
     import('./panoramenUrls.js').then(({ panoramaUrls, stilUrls }) => {
       if (ziel.backdropKey !== backdrop.key) return;
@@ -43,7 +47,7 @@ export function ladeKulisse(ziel, backdrop, { onError } = {}) {
   ziel.kulissenCache = null;
   // Die Bodenfarbe gilt sofort, nicht erst nach dem Laden des Bildes: sonst
   // zeigte der Boden kurz die vorige Farbe.
-  ziel.palette = paletteFor(backdrop);
+  ziel.palette = paletteMitBoden(paletteFor(backdrop), backdrop);
   // Quellbreite nach sichtbarer Größe, DPR-Deckel und Geräteleistung (A18).
   const sichtbareBreite = ziel.canvas.clientWidth || ziel.width;
   ziel.backdropSichtbar = sichtbareBreite;
@@ -81,7 +85,7 @@ function ladeFoto(ziel, backdrop, quellen, onError) {
   ziel.backdrop = backdrop;
   ziel.backdropReady = false;
   ziel.kulissenCache = null;
-  ziel.palette = paletteFor({ key: `${backdrop.biomeId}/${backdrop.id}` });
+  ziel.palette = paletteMitBoden(paletteFor({ key: `${backdrop.biomeId}/${backdrop.id}` }), backdrop);
   const bild = new Image();
   bild.decoding = 'async';
   bild.onload = () => {
