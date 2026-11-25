@@ -1551,7 +1551,7 @@ select option { background: #14181d; color: var(--ink); }
  * Touch-Geräte haben eigene, schon knappe Regeln (oben).
  */
 @media not (pointer: coarse) {
-  #hud-log { left: 50%; right: auto; width: min(560px, 42%); transform: translateX(-50%); max-height: 58px; bottom: 112px; cursor: pointer; pointer-events: auto; transition: max-height 0.18s ease; }
+  #hud-log { left: 0; right: 0; margin-inline: auto; width: min(560px, 42%); max-height: 58px; bottom: 112px; cursor: pointer; pointer-events: auto; transition: max-height 0.18s ease; }
   #hud-log:hover, #hud-log.offen { max-height: clamp(70px, 24vh, 260px); }
 }
 @media (prefers-reduced-motion: reduce) { #hud-log { transition: none; } }
