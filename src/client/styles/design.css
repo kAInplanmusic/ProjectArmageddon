@@ -1554,4 +1554,4 @@ select option { background: #14181d; color: var(--ink); }
   #hud-log { left: 50%; right: auto; width: min(560px, 42%); transform: translateX(-50%); max-height: 58px; bottom: 112px; cursor: pointer; pointer-events: auto; transition: max-height 0.18s ease; }
   #hud-log:hover, #hud-log.offen { max-height: clamp(70px, 24vh, 260px); }
 }
-@media not (pointer: coarse) and (prefers-reduced-motion: reduce) { #hud-log { transition: none; } }
+@media (prefers-reduced-motion: reduce) { #hud-log { transition: none; } }
