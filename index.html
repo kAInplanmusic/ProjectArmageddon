@@ -64,8 +64,8 @@
         <button type="button" data-aktion="zuendzeit" id="touch-zuendzeit" hidden aria-label="Zündzeit wechseln"></button>
         <!-- Seil (Seilfassung 2): wählen; FEUER schießt und löst, Gehen-Knöpfe schwingen, ▲/▼ gehalten = einholen/ausfahren. -->
         <button type="button" data-aktion="seil" aria-label="Seil wählen (Feuer schießt das Seil, am Seil löst es)">Seil</button>
-        <button type="button" data-seil="hoch" aria-label="Seil einholen (gedrückt halten)">Seil ▲</button>
-        <button type="button" data-seil="runter" aria-label="Seil ausfahren (gedrückt halten)">Seil ▼</button>
+        <button type="button" data-seil="hoch" hidden aria-label="Seil einholen (gedrückt halten)">Seil ▲</button>
+        <button type="button" data-seil="runter" hidden aria-label="Seil ausfahren (gedrückt halten)">Seil ▼</button>
       </div>
       <!-- Touch-Bewegung (rechts, über dem FEUER-Knopf): Laufen links/rechts gehalten und Rückwärtssalto. Eigene Gruppe,
            damit die linke Aktionsleiste schmal bleibt und das Waffenmenü nicht verdeckt. -->
@@ -78,7 +78,7 @@
       <div id="zugpause" role="status" aria-live="polite" aria-atomic="true" hidden>
         <span class="zugpause-titel"></span>
         <span class="zugpause-zahl" aria-hidden="true"></span>
-        <span class="zugpause-hinweis" aria-hidden="true">Leertaste oder Shift überspringt</span>
+        <span class="zugpause-hinweis" aria-hidden="true"><span class="nur-tastatur">Leertaste oder Shift überspringt</span><span class="nur-touch">FEUER überspringt</span></span>
       </div>
       <!-- Tier-Leiste: Cookies Hunger und Miau-Pegel, Günthers Sprechblase (src/client/tierHud.js); nur sichtbar, wenn es etwas zu zeigen gibt. -->
       <div id="tier-hud" aria-hidden="true" hidden>
@@ -261,7 +261,7 @@
           <button type="button" id="hud-zuendzeit" hidden title="Zündzeit wechseln (Z)"></button>
           <!-- Kamera folgt/frei (Taste C); Mausrad zoomt, Ziehen mit mittlerer/rechter Taste verschiebt (src/client/kameraSteuerung.js). -->
           <button type="button" id="hud-kamera" aria-pressed="true" title="Kamera folgt / frei (C)">
-            <span data-kamera-text>Kamera folgt</span> <kbd aria-hidden="true">C</kbd>
+            <span data-kamera-text>Kamera folgt</span> <kbd class="nur-tastatur" aria-hidden="true">C</kbd>
           </button>
         </div>
 

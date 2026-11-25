@@ -78,3 +78,32 @@ test('Nur der ladende Finger schießt, eine unterbrochene Geste bricht ab', asyn
   });
   expect(ergebnis).toEqual({ zeiger: { x: 60, y: 20 }, laedt: true, nachAbbruch: 0, schuesse: 1 });
 });
+
+test.describe('Touch zuerst (TODO 2.1)', () => {
+  test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+
+  test('Eine Knopfreihe: Seil ▲/▼ nur am Seil, keine Tastaturhinweise', async ({ page }) => {
+    await page.goto('/');
+    await page.fill('#cfg-seed', '4');
+    await page.tap('#start-button');
+    const tasten = page.locator('#touch-aktionen');
+    await expect(tasten).toBeVisible({ timeout: 4000 });
+    await expect(tasten.locator('[data-seil]')).toHaveCount(2);
+    for (const knopf of await tasten.locator('[data-seil]').all()) await expect(knopf).toBeHidden();
+    await expect(tasten.locator('[data-aktion=seil]')).toBeVisible();
+    const hoehe = (await tasten.boundingBox()).height;
+    expect(hoehe, 'eine Reihe (46 px Knöpfe)').toBeLessThan(60);
+    // Touch-Texte statt Tasten: Zugpause und Kamera ohne Tastenangabe.
+    await expect(page.locator('.zugpause-hinweis .nur-tastatur')).toBeHidden();
+    await expect(page.locator('#hud-kamera kbd')).toBeHidden();
+    expect(await page.locator('.zugpause-hinweis .nur-touch').textContent()).toBe('FEUER überspringt');
+  });
+});
+
+test('Am Desktop bleiben die Tastaturhinweise', async ({ page }) => {
+  await page.goto('/');
+  await page.fill('#cfg-seed', '4');
+  await page.click('#start-button');
+  await expect(page.locator('#hud-kamera kbd')).toBeVisible({ timeout: 4000 });
+  await expect(page.locator('.zugpause-hinweis .nur-touch')).toBeHidden();
+});

@@ -3110,7 +3110,16 @@ class Game {
      */
     // Touch-Aktionen nur am eigenen Zug im lokalen/Online-Spiel (nicht im Replay, nicht im Menü).
     const touchFeld = document.getElementById('touch-aktionen');
-    if (touchFeld) touchFeld.hidden = !(myTurn && this.mode !== 'replay');
+    if (touchFeld) {
+      touchFeld.hidden = !(myTurn && this.mode !== 'replay');
+      // Touch zuerst (TODO 2.1): Seil ▲/▼ nur am Seil, die Sprungknöpfe nur ohne Seil — eine Reihe statt zwei.
+      const amSeil = !touchFeld.hidden && this.seilSteuerung.haengt();
+      if (touchFeld.dataset.amSeil !== String(amSeil)) {
+        touchFeld.dataset.amSeil = String(amSeil);
+        for (const knopf of touchFeld.querySelectorAll('[data-seil]')) knopf.hidden = !amSeil;
+        for (const knopf of touchFeld.querySelectorAll('[data-aktion^=sprung]')) knopf.hidden = amSeil;
+      }
+    }
     const laufFeld = document.getElementById('touch-laufen');
     if (laufFeld) laufFeld.hidden = !(myTurn && this.mode !== 'replay');
     const laedt = this.input.isCharging;

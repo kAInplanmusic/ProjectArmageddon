@@ -112,7 +112,12 @@ export class Uebersichtskarte {
     canvas.style.cssText = 'pointer-events:auto;cursor:crosshair;border:2px solid #e8eef4;border-radius:4px;background:#10151a;box-shadow:0 4px 14px rgba(0,0,0,.6);touch-action:none;max-width:40vw;';
     const knopf = doc.createElement('button');
     knopf.type = 'button';
-    knopf.textContent = 'Übersicht ausblenden (M)';
+    // Touch (TODO 2.1): Die Tastenangabe „(M)“ nur bei feinem Zeiger (`.nur-tastatur`, basis.css).
+    knopf.append(doc.createTextNode('Übersicht ausblenden'));
+    const taste = doc.createElement('span');
+    taste.className = 'nur-tastatur';
+    taste.textContent = ' (M)';
+    knopf.append(taste);
     knopf.setAttribute('aria-pressed', 'true');
     knopf.style.cssText = 'pointer-events:auto;font:600 12px system-ui,sans-serif;min-height:28px;padding:2px 8px;color:#e8eef4;background:#1d242b;border:1px solid #8aa0b2;border-radius:4px;cursor:pointer;';
     knopf.addEventListener('click', () => this.umschalten());

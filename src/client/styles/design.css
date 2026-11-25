@@ -1011,7 +1011,8 @@ select option { background: #14181d; color: var(--ink); }
  * Geprüft in tests/e2e/querformat-telefon.spec.mjs (echte Rechtecke, elementFromPoint).
  */
 @media (max-height: 520px) and (pointer: coarse) {
-  #touch-aktionen:not([hidden]) { left: 6px; bottom: 70px; gap: 4px; }
+  /* Eine Reihe (TODO 2.1): Sprung ◀ ▶, Abwurf, Seil; am Seil ersetzen Seil ▲/▼ die Sprungknöpfe. */
+  #touch-aktionen:not([hidden]) { left: 6px; bottom: 70px; gap: 4px; grid-template-columns: repeat(4, max-content); }
   #touch-laufen:not([hidden]) { right: 6px; bottom: 70px; gap: 4px; }
   #touch-aktionen button, #touch-laufen button { min-width: 56px; padding: 4px 6px; }
   #hud-left { max-height: calc(100vh - 236px); overflow-y: auto; }
@@ -1060,8 +1061,9 @@ select option { background: #14181d; color: var(--ink); }
   #touch-laufen button { min-width: 88px; }
   /* Die Figurenliste endet über den Aktionsknöpfen (Bühnenhöhe − Kopfzeile − Knopfblock − Leiste). */
   #hud-left { max-height: calc(min(56.25vw, 100vh) - 330px); }
-  /* Protokoll über der Beschriftung der gewählten Waffe (die schwebt 8 px über der Leiste). */
-  #hud-log { bottom: 128px; }
+  /* Protokoll über der Beschriftung der gewählten Waffe (die schwebt 8 px über der Leiste). Touch zuerst (TODO 2.1):
+     höchstens drei Zeilen — mit zehn Zeilen lag es auf dem iPad mitten im Spielfeld über dem Gelände. */
+  #hud-log { bottom: 128px; max-height: 66px !important; line-height: 1.3; }
 }
 
 /* ================================================================ A6: Endrangliste und Podest

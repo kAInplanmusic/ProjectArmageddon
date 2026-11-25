@@ -138,12 +138,16 @@ html, body {
 
 #game-canvas { touch-action: none; }
 
+/* Touch zuerst (TODO 2.1): Tastaturhinweise nur bei feinem Zeiger, Touch-Texte nur bei grobem. */
+@media (pointer: coarse) { .nur-tastatur { display: none !important; } }
+@media not (pointer: coarse) { .nur-touch { display: none !important; } }
+
 /* Touch-Aktionen: nur mit grobem Zeiger sichtbar; große Trefferflächen (≥ 44 px). */
 #touch-aktionen, #touch-laufen { display: none; }
 @media (pointer: coarse) {
   #touch-aktionen:not([hidden]) {
     /*
-     * Zwei Reihen zu drei Knöpfen (Sprung, Abwurf / Seil, ▲, ▼): bleibt links neben dem Protokoll.
+     * Raster zu drei Knöpfen je Reihe (Telefon quer: vier, eine Reihe; design.css). Seil ▲/▼ nur am Seil (TODO 2.1).
      * QA-6: Raster statt umbrechendem Flex. Vorher war die Box volle 230 px breit (max-width plus Umbruch), die
      * Knöpfe nur rund 200 px: Die leere Restfläche lag unsichtbar über dem linken Rand des WAFFEN-Knopfs, und ein
      * Antippen traf je nach Schriftbreite die Leiste statt des Menüs. Jetzt ist die Box so breit wie ihre Knöpfe,
