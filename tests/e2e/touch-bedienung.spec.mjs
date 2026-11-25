@@ -111,6 +111,9 @@ test.describe('Touch zuerst (TODO 2.1)', () => {
       const unten = window.__PA__.game.kamera.rand.unten * fy; // CSS-Pixel unter der Knopfoberkante
       return Math.round(unten - (c.bottom - oben));
     }), { timeout: 5000, message: 'Kamerarand unten reicht bis zur Oberkante der Knopfreihen' }).toBeGreaterThanOrEqual(-1);
+    // Die Zielanzeige (eine Zeile über den Laufknöpfen) ist am Telefon kein rechter Seitenrand: vorher 30 % der Breite.
+    const rechts = await page.evaluate(() => window.__PA__.game.kamera.rand.rechts / document.getElementById('game-canvas').width);
+    expect(rechts, 'rechter Kamerarand am Telefon').toBeLessThan(0.1);
   });
 });
 

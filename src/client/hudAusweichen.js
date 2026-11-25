@@ -156,19 +156,21 @@ export class HudAusweichen {
       if (an) weicht.push(PANEL_IDS[i]);
     });
 
-    // Protokoll (mittig) und Touch-Knöpfe (kein Seitenpanel) rahmen die Kamera nicht ein; sie weichen nur aus.
-    const seiten = seitenRaender(schirm, rechtecke.filter((_, i) => !['hud-log', 'touch-laufen', 'touch-aktionen'].includes(PANEL_IDS[i])));
-    // Touch zuerst (TODO 2.1): Am Telefon quer liegen die Knopfreihen über der unteren Leiste und decken die Figur am
-    // Zug. Für die KAMERA zählt ihre Oberkante als unterer Rand (nur dort; am Tablet stehen sie in den Ecken).
+    // Touch zuerst (TODO 2.1): Am Telefon quer liegen die Knopfreihen und darüber die Zielanzeige (Kraft, Radius, am
+    // Zug) über der unteren Leiste und decken die Figur am Zug. Für die KAMERA zählt ihre Oberkante als unterer Rand
+    // (nur dort; am Tablet stehen die Knöpfe in den Ecken). Die Zielanzeige zählte vorher als rechter Seitenrand und
+    // nahm am iPhone 30 % der Breite (Deckel von `seitenRaender`), obwohl sie nur eine Zeile über den Knöpfen ist.
     const telefon = this.doc.defaultView?.matchMedia?.(TELEFON_TOUCH)?.matches ?? false;
+    const unterKante = telefon ? ['touch-laufen', 'touch-aktionen'] : [];
     let touchOben = null;
-    if (telefon) {
-      PANEL_IDS.forEach((id, i) => {
-        const r = rechtecke[i];
-        if (!id.startsWith('touch-') || !(r.b > 0) || r.y + r.h / 2 < schirm.h / 2) return;
-        touchOben = Math.min(touchOben ?? Infinity, r.y);
-      });
-    }
+    PANEL_IDS.forEach((id, i) => {
+      const r = rechtecke[i];
+      if (!unterKante.includes(id) || !(r.b > 0) || r.y + r.h / 2 < schirm.h / 2) return;
+      touchOben = Math.min(touchOben ?? Infinity, r.y);
+    });
+    // Protokoll (mittig), Touch-Knöpfe und am Telefon die Zielanzeige rahmen die Kamera seitlich nicht ein.
+    const ohneSeite = ['hud-log', 'touch-laufen', 'touch-aktionen', ...(telefon ? ['hud-aim'] : [])];
+    const seiten = seitenRaender(schirm, rechtecke.filter((_, i) => !ohneSeite.includes(PANEL_IDS[i])));
     this.letzte = { bereich, weicht, schub, rand: raender, seiten, touchOben };
   }
 
