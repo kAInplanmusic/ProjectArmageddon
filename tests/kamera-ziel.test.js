@@ -228,3 +228,16 @@ test('Regie: festgehaltener Figurrand wird nach großem Zoomwechsel neu gemessen
   assert.ok(Math.abs(Math.log(a.zoom / b.zoom)) < 0.02, `Zoom wie mit frischem Rand (${a.zoom} gegen ${b.zoom})`);
   assert.ok(Math.abs(a.x - b.x) < 2, `x wie mit frischem Rand (${a.x} gegen ${b.x})`);
 });
+
+test('Ausschnitt: zoomMin (Telefon) hält die Kamera beim Zielen nah, auch mit fernen Gegnern', () => {
+  const grosseKarte = { b: 4704, h: 1764 };
+  const tel = { b: 1920, h: 887 };
+  const telRand = { oben: 120, unten: 300, links: 380, rechts: 160 };
+  const aktiv = { x: 600, y: 900, winkel: 0.2 };
+  const gegner = [{ x: 4300, y: 800 }];
+  const frei = zielAusschnitt({ aktiv, gegner, karte: grosseKarte, schirm: tel, rand: telRand, pad });
+  const nah = zielAusschnitt({ aktiv, gegner, karte: grosseKarte, schirm: tel, rand: telRand, pad, zoomMin: 1.14 });
+  assert.ok(frei.zoom < 1.14, `ohne Untergrenze weit draußen (${frei.zoom})`);
+  assert.ok(nah.zoom >= 1.14 - 1e-9, `mit Untergrenze nah (${nah.zoom})`);
+  assert.ok(nah.zoom <= 4);
+});

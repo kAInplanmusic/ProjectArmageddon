@@ -3084,6 +3084,8 @@ class Game {
         unten: Math.ceil(masse.unten * t.skalierung / 24) * 24,
       },
       zoomMax: ZOOM_GRENZEN.max,
+      // Telefon quer: beim Zielen nie weiter heraus als 0,5 Bildschirmpunkte je Kartenpixel (kameraZiel.zielAusschnitt).
+      zoomMin: globalThis.matchMedia?.('(pointer: coarse) and (max-height: 520px)')?.matches ? 0.5 / (this.renderer.cssFaktor || 1) : 0,
       ansicht: kamera.ansicht(),
       aktivId: state.activePlayerId,
       aktiv: aktiv ? { x: aktiv.x, y: aktiv.y, winkel } : null,

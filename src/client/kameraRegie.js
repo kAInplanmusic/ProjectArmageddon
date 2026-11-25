@@ -336,7 +336,7 @@ export class KameraRegie {
       }
     }
 
-    const optionen = { karte: e.karte, schirm: e.schirm, rand: e.rand, zoomMax: e.zoomMax };
+    const optionen = { karte: e.karte, schirm: e.schirm, rand: e.rand, zoomMax: e.zoomMax, zoomMin: e.zoomMin ?? 0 };
     const ganze = Math.min(e.schirm.b / e.karte.b, e.schirm.h / e.karte.h);
     let ziel = null;
     let glaettPos = ZEIT.zielen;

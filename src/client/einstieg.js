@@ -22,10 +22,11 @@ export const ZUENDZEIT_ZEIGEN_MS = 7000;
 const ZIELEN_AB = 0.15;
 
 export const SCHRITTE = Object.freeze([
-  Object.freeze({ id: 'zielen', text: 'Zielen: W / S oder die Maus bewegt den Winkel.' }),
-  Object.freeze({ id: 'feuern', text: 'Feuern: Leertaste halten lädt die Kraft, Loslassen schießt. Länger halten fliegt weiter.' }),
-  Object.freeze({ id: 'waffe', text: 'Waffe wechseln: Tasten 1 bis 9, oder E öffnet das Waffenmenü.' }),
-  Object.freeze({ id: 'zuendzeit', text: 'Zündzeit: Bei Zünderwaffen stellt Z ein, wann die Ladung hochgeht.' }),
+  // `touch`: derselbe Schritt für Handy und Tablet (Touch zuerst, Entscheidung 2026-11-25); dort gibt es weder Tasten noch Maus.
+  Object.freeze({ id: 'zielen', text: 'Zielen: W / S oder die Maus bewegt den Winkel.', touch: 'Zielen: Finger aufs Spielfeld legen und in die Richtung ziehen.' }),
+  Object.freeze({ id: 'feuern', text: 'Feuern: Leertaste halten lädt die Kraft, Loslassen schießt. Länger halten fliegt weiter.', touch: 'Feuern: Finger oder FEUER halten lädt die Kraft, Loslassen schießt.' }),
+  Object.freeze({ id: 'waffe', text: 'Waffe wechseln: Tasten 1 bis 9, oder E öffnet das Waffenmenü.', touch: 'Waffe wechseln: unten eine Waffe antippen oder WAFFEN öffnen.' }),
+  Object.freeze({ id: 'zuendzeit', text: 'Zündzeit: Bei Zünderwaffen stellt Z ein, wann die Ladung hochgeht.', touch: 'Zündzeit: Bei Zünderwaffen stellt der Zünder-Knopf ein, wann die Ladung hochgeht.' }),
 ]);
 
 export class Einstieg {
@@ -116,7 +117,8 @@ export class EinstiegAnzeige {
       if (this.#feld) this.#feld.hidden = true;
       return;
     }
-    if (this.#text) this.#text.textContent = s.text;
+    const touch = Boolean(globalThis.matchMedia?.('(pointer: coarse)')?.matches);
+    if (this.#text) this.#text.textContent = touch && s.touch ? s.touch : s.text;
     if (this.#zaehler) this.#zaehler.textContent = `${this.#logik.nummer} / ${SCHRITTE.length}`;
     if (this.#feld) { this.#feld.hidden = false; this.#feld.dataset.schritt = s.id; }
   }

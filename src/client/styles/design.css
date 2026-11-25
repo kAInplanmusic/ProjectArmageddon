@@ -1555,3 +1555,15 @@ select option { background: #14181d; color: var(--ink); }
   #hud-log:hover, #hud-log.offen { max-height: clamp(70px, 24vh, 260px); }
 }
 @media (prefers-reduced-motion: reduce) { #hud-log { transition: none; } }
+
+/*
+ * Telefon quer (Rückmeldung 2026-11-25, Bildbefund iPhone): Protokoll und Einstiegshilfe deckten das halbe Spielfeld.
+ * Das Protokoll bleibt für Vorlesehilfen im DOM (Live-Region), ist am Telefon aber nicht mehr zu sehen; die Einstiegshilfe
+ * wird eine schmale Zeile unter der Kopfleiste.
+ */
+@media (max-height: 520px) and (pointer: coarse) {
+  #hud-log { position: absolute !important; width: 1px; height: 1px; max-height: 1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); }
+  #einstieg { top: 50px; max-width: min(460px, 62vw); gap: 8px; padding: 4px 4px 4px 10px; font-size: 12px; line-height: 1.25; }
+  #einstieg .einstieg-schritt { display: none; }
+  #einstieg button { min-height: 36px; padding: 0 10px; font-size: 12px; }
+}

@@ -185,9 +185,11 @@ function figurMitte(mitte, figur, zoom, karte, schirm, rand, pad, innen = 0) {
  * @returns {{x:number,y:number,zoom:number,sicher:boolean}} `sicher`: Figur im sicheren Bereich
  */
 export function zielAusschnitt({
-  aktiv, gegner = [], karte, schirm, rand, pad, zoomMax = ZOOM_GRENZEN.max,
+  aktiv, gegner = [], karte, schirm, rand, pad, zoomMax = ZOOM_GRENZEN.max, zoomMin = 0,
 }) {
-  const ganze = Math.min(schirm.b / karte.b, schirm.h / karte.h);
+  // `zoomMin` (Telefon, Rückmeldung 2026-11-25): Beim Zielen zoomte die Kamera bis 0,2 Bildschirmpunkte je Kartenpixel heraus,
+  // um Ziel und Gegner zwischen Kader und Touch-Knöpfen zu zeigen; die Figuren mussten 5-fach aufgeblasen werden.
+  const ganze = Math.min(Math.max(Math.min(schirm.b / karte.b, schirm.h / karte.h), zoomMin), zoomMax);
   const bevorzugt = zoomBevorzugt(schirm, karte, { zoomMax });
   const reichweite = (schirm.b / bevorzugt) * ZIEL_ANTEIL;
   const winkel = Number.isFinite(aktiv.winkel) ? aktiv.winkel : 0;
