@@ -20,6 +20,27 @@ test.describe('Touch-Aktionen', () => {
     await expect(page.locator('#log-list')).toContainText(/springt/i, { timeout: 3000 });
   });
 
+  test('Abwurf erscheint nur bei abwerfbarer Waffe (begrenzte Munition), nicht bei ∞', async ({ page }) => {
+    await page.goto('/');
+    await page.fill('#cfg-seed', '4');
+    await page.tap('#start-button');
+    const tasten = page.locator('#touch-aktionen');
+    await expect(tasten).toBeVisible({ timeout: 4000 });
+    const waffen = await page.evaluate(() => {
+      const s = window.__PA__.getState();
+      const f = s.entities.find(e => e.entityId === s.activePlayerId);
+      const ids = Object.keys(f.ammo ?? {});
+      return { begrenzt: ids.find(id => typeof f.ammo[id] === 'number' && f.ammo[id] > 0) ?? null, unbegrenzt: ids.find(id => f.ammo[id] === 'unbegrenzt') ?? null };
+    });
+    expect(waffen.begrenzt, 'Testaufbau: eine Waffe mit begrenzter Munition').not.toBeNull();
+    expect(waffen.unbegrenzt, 'Testaufbau: eine Waffe mit ∞').not.toBeNull();
+    const abwurf = tasten.locator('[data-aktion=abwurf]');
+    await page.evaluate(id => window.__PA__.selectWeaponById(id), waffen.unbegrenzt);
+    await expect(abwurf).toBeHidden();
+    await page.evaluate(id => window.__PA__.selectWeaponById(id), waffen.begrenzt);
+    await expect(abwurf).toBeVisible();
+  });
+
   test('Die Gehen-Knöpfe laufen, solange sie gehalten werden, und halten beim Loslassen an', async ({ page }) => {
     await page.goto('/');
     await page.fill('#cfg-seed', '4');

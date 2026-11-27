@@ -3135,6 +3135,12 @@ class Game {
         for (const knopf of touchFeld.querySelectorAll('[data-seil]')) knopf.hidden = !amSeil;
         for (const knopf of touchFeld.querySelectorAll('[data-aktion^=sprung]')) knopf.hidden = amSeil;
       }
+      // Abwurf nur, wenn die gewählte Waffe abwerfbar ist: Waffen mit unbegrenzter Munition lehnt die Engine ab
+      // (inventory.removeWeapon); ein Knopf, der nur „nicht möglich“ meldet, ist am Telefon verschenkter Platz.
+      const figur = state.entities?.find(e => e.entityId === state.activePlayerId);
+      const bestand = figur?.ammo?.[figur?.activeWeaponId];
+      const abwurf = touchFeld.querySelector('[data-aktion=abwurf]');
+      if (abwurf) abwurf.hidden = !(typeof bestand === 'number' && bestand > 0);
     }
     const laufFeld = document.getElementById('touch-laufen');
     if (laufFeld) laufFeld.hidden = !(myTurn && this.mode !== 'replay');
