@@ -449,7 +449,9 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
      * Nummern liefen aus der Reihe (1, 2, 3, 5, 4).
      */
     expect(liste.gruppen.length).toBeGreaterThan(0);
-    expect(liste.gruppen.length).toBeLessThanOrEqual(5);
+    // Seit der Startausrüstung (Kit 5, 8 Waffen) gibt es mehr Unterkategorien als die vier des alten Start-Kits; die
+    // Grenze ist jetzt: nie mehr Gruppen als Waffen (eine Gruppe ohne Waffe wäre ein leerer Kopf).
+    expect(liste.gruppen.length).toBeLessThanOrEqual(liste.zeilen);
     for (const text of liste.gruppen) expect(text.length).toBeGreaterThan(3);
 
     /*

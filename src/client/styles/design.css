@@ -1567,3 +1567,14 @@ select option { background: #14181d; color: var(--ink); }
   #einstieg .einstieg-schritt { display: none; }
   #einstieg button { min-height: 36px; padding: 0 10px; font-size: 12px; }
 }
+
+/*
+ * Startausrüstung (Kit 5, TODO 2.17): 8 Waffen statt 5. Auf mittleren Breiten (Tablet 4:3, 1024 px) reichte die Leiste
+ * mit 60-px-Kacheln in die Zielanzeige (touch-gross 1024×768). Bis 1100 px Breite sind die Kacheln 52 px (Berührfläche ≥ 44 px).
+ */
+@media (max-width: 1100px) and (min-height: 521px) {
+  #weapon-list .weapon-item { width: 52px; height: 52px; }
+  #weapon-list .weapon-item .weapon-icon { width: 36px; height: 36px; }
+  /* Die kleinere Kachel sitzt tiefer in der Leiste: der Name der gewählten Waffe steht darüber, nicht in ihr. */
+  #weapon-list .weapon-item.is-active .weapon-name { bottom: calc(100% + 14px); }
+}
