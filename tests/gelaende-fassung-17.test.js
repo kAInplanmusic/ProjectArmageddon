@@ -13,9 +13,9 @@ import {
 } from '../src/shared/config/gelaende.js';
 import { neuesMatch } from '../scripts/bot-partien.mjs';
 
-test('Marke: 17 ist der Standard, 16 bleibt gültig', () => {
+test('Marke: 17 ist gültig (Standard 18), 16 bleibt gültig', () => {
   assert.equal(GELAENDE_ABSTAND, 17);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_ABSTAND);
+  assert.equal(GELAENDE_STANDARD, GELAENDE_ABSTAND + 1); // seit TODO 4.6 Fassung 18
   assert.equal(normalisiereGelaende(17), 17);
   assert.equal(normalisiereGelaende(16), GELAENDE_START);
   assert.equal(RUND_AB_BREITE, 2880);

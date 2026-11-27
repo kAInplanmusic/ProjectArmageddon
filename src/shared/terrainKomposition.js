@@ -352,12 +352,43 @@ function masse(cx, cy, rx, ryOben, ryUnten, radius, pOben = 2, pUnten = 2) {
   };
 }
 
-/** Zieht Form und Exponenten einer Insel aus dem Seed: Schüssel, Klotz oder Kegel. */
-function inselForm(rng) {
+/** Schiefe Landmasse (Geländefassung 18): wie `masse`, aber linke und rechte Flanke verschieden breit. */
+function masseSchief(cx, cy, rxL, rxR, ryOben, ryUnten, radius, pOben = 2, pUnten = 2) {
+  return (x, y) => {
+    const oben = y < cy;
+    const u = Math.abs(x - cx) / (x < cx ? rxL : rxR);
+    const v = Math.abs(y - cy) / (oben ? ryOben : ryUnten);
+    const e = oben ? pOben : pUnten;
+    return (1 - (u ** e + v ** e) ** (1 / e)) * radius;
+  };
+}
+
+/**
+ * Zieht Form und Exponenten einer Insel aus dem Seed: Schüssel, Klotz oder Kegel.
+ * Ab Geländefassung 18 (`vielfalt`) zusätzlich Tafelberg (flache Krone, senkrechte Wände) und Überhang (Exponent unter 1 unten:
+ * der Sockel zieht sich unter die Krone zurück), dazu eine Schiefe (Breite der linken zur rechten Flanke).
+ * Ohne `vielfalt` genau eine Ziehung wie bisher (bitgleich).
+ */
+function inselForm(rng, vielfalt = false) {
   const w = rng.next();
-  if (w < 0.34) return { pOben: 2, pUnten: 2 }; // Schüssel
-  if (w < 0.68) return { pOben: 3.4, pUnten: 3.2 }; // Klotz mit steilen Wänden
-  return { pOben: 2.6, pUnten: 1.35 }; // Kegel nach unten
+  if (!vielfalt) {
+    if (w < 0.34) return { pOben: 2, pUnten: 2 }; // Schüssel
+    if (w < 0.68) return { pOben: 3.4, pUnten: 3.2 }; // Klotz mit steilen Wänden
+    return { pOben: 2.6, pUnten: 1.35 }; // Kegel nach unten
+  }
+  const schief = 0.7 + rng.next() * 0.6; // linke Flanke 0,7- bis 1,3-mal so breit wie die rechte
+  if (w < 0.2) return { pOben: 2, pUnten: 2, schief }; // Schüssel
+  if (w < 0.4) return { pOben: 3.4, pUnten: 3.2, schief }; // Klotz
+  if (w < 0.6) return { pOben: 2.6, pUnten: 1.35, schief }; // Kegel
+  if (w < 0.8) return { pOben: 7, pUnten: 3, schief, flach: 0.55 }; // Tafelberg: fast senkrechte Wände, niedrige flache Krone
+  return { pOben: 2.4, pUnten: 0.85, schief }; // Überhang: der Sockel wird schmaler als die Krone
+}
+
+/** Landmasse einer Insel mit ihrer Form (Fassung 18: schief, Tafelberg flacher); ohne `schief` wie `masse`. */
+function inselMasse(form, cx, cy, rx, ryOben, ryUnten, radius) {
+  if (!form.schief) return masse(cx, cy, rx, ryOben, ryUnten, radius, form.pOben, form.pUnten);
+  const s = form.schief;
+  return masseSchief(cx, cy, rx * Math.sqrt(s), rx / Math.sqrt(s), ryOben * (form.flach ?? 1), ryUnten, radius, form.pOben, form.pUnten);
 }
 
 /**
@@ -489,7 +520,9 @@ function dichteInsel(maske, rng, B, H, stat) {
   const rauschen = fbm2(rng, B, H, 620, 5);
   const cx = B * zwischen(rng, 0.46, 0.54);
   const cy = H * 0.44;
-  const haupt = masse(cx, cy, B * zwischen(rng, 0.3, 0.36), H * 0.12, H * zwischen(rng, 0.3, 0.38), 430);
+  const haupt = maske.vielfalt
+    ? inselMasse(inselForm(rng, true), cx, cy, B * zwischen(rng, 0.3, 0.36), H * 0.12, H * zwischen(rng, 0.3, 0.38), 430) // Fassung 18
+    : masse(cx, cy, B * zwischen(rng, 0.3, 0.36), H * 0.12, H * zwischen(rng, 0.3, 0.38), 430);
   const kleine = [-1, 1].map((s) => masse(cx + s * B * zwischen(rng, 0.38, 0.45), H * zwischen(rng, 0.5, 0.66), B * 0.1, H * 0.06, H * 0.16, 300));
   // Massiver Fels ohne Wurmtunnel: Die schmalen Gänge im Inneren waren unerreichbar und wirkten wuschig.
   ausDichte(maske, rng, (x, y) => Math.max(haupt(x, y), ...kleine.map((k) => k(x, y))) + rauschen(x, y) * 190);
@@ -514,8 +547,8 @@ function dichteGruppe(maske, rng, B, H, stat, archipel = false) {
     const x = archipel ? zwischen(rng, rx, B - rx) : B * ((teile.length + 0.5) / n) + zwischen(rng, -B * 0.03, B * 0.03);
     const y = H * zwischen(rng, 0.34, archipel ? 0.74 : 0.68);
     if (teile.some((t) => Math.abs(t.x - x) < (t.rx + rx) * 0.9 && Math.abs(t.y - y) < 150)) continue;
-    const form = inselForm(rng);
-    teile.push({ x, y, rx, f: masse(x, y, rx, rx * 0.3, rx * zwischen(rng, 0.45, 0.9), rx * 1.0, form.pOben, form.pUnten) });
+    const form = inselForm(rng, maske.vielfalt);
+    teile.push({ x, y, rx, f: inselMasse(form, x, y, rx, rx * 0.3, rx * zwischen(rng, 0.45, 0.9), rx * 1.0) });
   }
   ausDichte(maske, rng, (x, y) => Math.max(...teile.map((t) => t.f(x, y))) + rauschen(x, y) * 230);
   stat.platten += teile.length;
@@ -829,7 +862,7 @@ function dichteEbenen(maske, rng, B, H, stat) {
       teile.push({ x: Math.max(rx * 0.8, Math.min(B - rx * 0.8, x)), y: y + zwischen(rng, -30, 30), rx, e });
     }
   }
-  const platten = teile.map((t) => { const form = inselForm(rng); return masse(t.x, t.y, t.rx, t.rx * 0.16, t.rx * zwischen(rng, 0.25, 0.4), t.rx * 0.8, form.pOben, form.pUnten); });
+  const platten = teile.map((t) => { const form = inselForm(rng, maske.vielfalt); return inselMasse(form, t.x, t.y, t.rx, t.rx * 0.16, t.rx * zwischen(rng, 0.25, 0.4), t.rx * 0.8); });
   const pfeiler = [];
   for (const t of teile.filter((q) => q.e > 0)) {
     const stuetze = teile.find((q) => q.e === t.e - 1 && Math.abs(q.x - t.x) < q.rx * 0.8);
@@ -1576,6 +1609,7 @@ export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10
   const maske = new Maske(width, height);
   maske.begehbar = fassung >= 8;
   maske.fensterZu = fassung >= 9;
+  maske.vielfalt = fassung >= 18; // Geländefassung 18: mehr Inselumrisse (`inselForm`)
   const stat = neuesStat();
   const wasserY = Math.round(height * ZONEN_WASSER);
   const mitte = Math.floor(n / 2);
@@ -1589,6 +1623,7 @@ export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10
     const sub = new Maske(xb - xa, height);
     sub.begehbar = maske.begehbar;
     sub.fensterZu = maske.fensterZu;
+    sub.vielfalt = maske.vielfalt;
     const eigen = fassung >= 11 ? neuesStat() : stat;
     ZONEN_BAUER[artI](sub, rng, sub.breite, height, eigen);
     return { xa, xb, sub, stat: eigen };
@@ -1688,6 +1723,7 @@ export function erzeugeKompositionsKarte({ rng, width, height, art = null, fassu
   maske.begehbar = fassung >= 8;
   // Geländefassung 9: Ruinenfenster bleiben unter der Krone (kein offener Schacht).
   maske.fensterZu = fassung >= 9;
+  maske.vielfalt = fassung >= 18; // Geländefassung 18: mehr Inselumrisse (`inselForm`)
   const gezogen = KARTENARTEN[Math.floor(rng.next() * (KARTENARTEN.length - 1))];
   const wahl = KARTENARTEN.includes(art) ? art : (height > width * 1.2 ? 'hochkant' : gezogen);
   const stat = neuesStat();

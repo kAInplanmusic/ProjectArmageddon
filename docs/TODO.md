@@ -64,7 +64,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 4.3 N-31 | Übergänge statt harter Kanten: Lippe/Überhang an Oberkanten, Mischzonen, Konturlinien an Materialgrenzen |
 | 4.4 N-32 | Die 15 alten Foto-Texturen im Comic-Stil der übrigen 85 (Auftrag B2 in `docs/auftraege/bildagenten-2026-11-09.md`; Bildbudget vorhanden) |
 | 4.5 N-35-REST | Wasser `foam_lines`/`oil_slick`, dynamische Himmelsfarbe, Stil der Foto-Kulissen (Western, Hyperreal); Hintergründe des Auftraggebers (`uploaded/`, `IMG_*`) einsetzen; Menügruppe Panoramen |
-| 4.6 GELAENDE-1 | Höhlen weniger Tunnelgewirr, Inseln mit verschiedenen Umrissen, Licht an Fackeln und Lava, Nebelschichten |
+| 4.6 GELAENDE-1 | Inselumrisse stehen (Geländefassung 18: schief, Tafelberg, Überhang zusätzlich zu Schüssel/Klotz/Kegel). Befund 2026-11-27 (12 Menükarten, 150 Seeds): jede Karte ist ein großer Landblock bis etwa zwei Drittel der Höhe, Stufenpyramide und Linsenhöhlen-Reihen wiederholen sich, Einzelinsel 3 %, Ebenen 4 %. Offen: Höhlen weniger Tunnelgewirr, Licht an Fackeln und Lava, Nebelschichten |
 | 4.7 BIOM-15-20 | Restmängel: 15 Streifen oben, 16 Facetten gitterartig, 17 Fries klein, 18 Tiefsee-Feinschliff, Fantasywald-Deko; Kristallarchipel-Grading 1,1 s → 0,4 s |
 | 4.8 NAHTEN | Keramik und Metall: sichtbare Brüche, nahtlos neu |
 | 4.9 SPRITES | SPR-4: Emotionsblätter der 8-Bit-pixel-Figuren sind noch die alten; `pixel/00_nullpointer-exception` nur mit Tod-Rolle; Glättung je Fraktion (`imageSmoothingEnabled`) für Pixelkunst; zwei gesperrte Walk-Zellen (`chrome-code-shifter`, `buffer-flow-swarm`) neu; Luchs-Emotionszellen |
