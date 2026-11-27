@@ -2,8 +2,8 @@
  * E2E: Mine im Online-Match mit ZWEI echten Browser-Clients (Akzeptanz §6 in `docs/auftraege/minen-faesser.md`,
  * Muster `online-einschlag.spec`).
  *
- * Neue Partien tragen Bodenobjektfassung 4: Beim Kartenaufbau liegen Minen aus dem Seed. Mit Seed 3 (autonome Karte,
- * Biom `klassisch`) löst der erste Schuss (0,95 rad, Kraft 25) eine liegende Mine aus. Das wird vorab mit der Engine
+ * Neue Partien tragen Bodenobjektfassung 4: Beim Kartenaufbau liegen Minen aus dem Seed. Mit dem Fall `FALL` (autonome Karte,
+ * Biom `klassisch`) löst der erste Schuss eine liegende Mine aus. Das wird vorab mit der Engine
  * nachgerechnet (dieselben Fassungen wie der Server); eine Abweichung ist damit ein klarer Fehler, kein Rätselraten.
  *
  * Belegt:
@@ -27,6 +27,10 @@ import { COOKIE_STANDARD } from '../../src/shared/config/cookie.js';
 import { FEUER_STANDARD } from '../../src/shared/config/feuer.js';
 import { BEWEGUNG_STANDARD } from '../../src/shared/config/bewegung.js';
 import { ZUGREGELN_STANDARD } from '../../src/shared/config/zugregeln.js';
+import { SEIL_STANDARD } from '../../src/shared/config/seil.js';
+import { WIND_STANDARD } from '../../src/shared/config/wind.js';
+import { HAGEL_STANDARD } from '../../src/shared/config/hagel.js';
+import { BIOMREGELN_STANDARD } from '../../src/shared/config/biomregeln.js';
 import {
   starteTestserver, stoppeTestserver, hakeHudLog, hudMeldungen, schneideServernachrichtenMit,
 } from './helfer/online-match.mjs';
@@ -40,7 +44,8 @@ test.beforeAll(async () => { server = await starteTestserver({ port: PORT, repoR
 test.afterAll(async () => { await stoppeTestserver(server?.process); });
 
 // Geländefassung 15 zieht für Seed 3 eine andere Karte (Durchgangstor); der Fall ist mit der Engine neu gesucht.
-const FALL = { seed: 3, winkel: 0.4, kraft: 45 };
+// Geländefassung 18 (Inselumrisse) ändert die Karte von Seed 3 erneut; wieder mit der Engine gesucht (Seed 6, Winkel 0,8, Kraft 60). Die Vorprüfung setzt jetzt alle Fassungen wie der Server (auch Seil, Wind, Hagel, Biomregeln, Zugpause 0).
+const FALL = { seed: 6, winkel: 0.8, kraft: 60 };
 const LOBBY = { teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom', biom: 'klassisch' };
 const MELDUNG = /^(Eine Mine explodiert|Superexplosion!|Blindgänger!)/;
 
@@ -49,6 +54,7 @@ function erwarteteAusloesung({ seed, winkel, kraft }) {
   const m = new MatchController({
     seed, ...LOBBY, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, guenther: GUENTHER_FASSUNG_STANDARD,
     cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD,
+    seil: SEIL_STANDARD, wind: WIND_STANDARD, hagel: HAGEL_STANDARD, biomregeln: BIOMREGELN_STANDARD, turnPauseTicks: 0, turnReplayTicks: 0,
   });
   m.start();
   m.consumeEvents();
