@@ -12,9 +12,9 @@ import { GELAENDE_DURCHGANG, GELAENDE_START, GELAENDE_STANDARD, normalisiereGela
 import { MAX_PLAETZE, startKosten, verteileStartplaetze } from '../src/engine/startFairness.js';
 import { neuesMatch } from '../scripts/bot-partien.mjs';
 
-test('Marke: 16 ist gültig (Standard 18), 15 bleibt gültig', () => {
+test('Marke: 16 ist gültig (Standard 19), 15 bleibt gültig', () => {
   assert.equal(GELAENDE_START, 16);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_START + 2, 'Standard ist 18 (Inselumrisse)');
+  assert.equal(GELAENDE_STANDARD, GELAENDE_START + 3, 'Standard ist 19 (Zonengewichte)');
   assert.equal(normalisiereGelaende(16), 16);
   assert.equal(normalisiereGelaende(15), GELAENDE_DURCHGANG);
 });

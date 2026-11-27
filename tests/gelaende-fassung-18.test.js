@@ -17,9 +17,9 @@ const partie = (seed, extra = {}) => {
 };
 const hash = m => createHash('sha1').update(m.bitmap).digest('hex').slice(0, 12);
 
-test('Marke: 18 ist der Standard, 17 bleibt gültig', () => {
+test('Marke: 18 ist gültig (Standard 19), 17 bleibt gültig', () => {
   assert.equal(GELAENDE_VIELFALT, 18);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_VIELFALT);
+  assert.equal(GELAENDE_STANDARD, GELAENDE_VIELFALT + 1);
   assert.equal(normalisiereGelaende(17), 17);
   assert.equal(normalisiereGelaende(18), 18);
 });

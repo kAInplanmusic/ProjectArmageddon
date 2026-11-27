@@ -951,6 +951,23 @@ const ZONEN_WASSER = 0.86;
 /** Kartenarten, aus denen eine Zone gezogen wird (ohne Planet, „Unmögliches“ und Hochkant: Sonderregeln der Engine). */
 const ZONEN_ARTEN = Object.freeze(['insel', 'inselgruppe', 'ebenen', 'hoehle', 'hoehleInsel', 'schlucht', 'archipel', 'vulkan', 'ruinenstadt', 'pyramide']);
 
+/**
+ * Gewichte der Zonenarten ab Geländefassung 19 (Summe beliebig). Mehr offene Formen mit Luft und Wasser, weniger
+ * geschlossene Massen. Eine Ziehung bleibt EIN `rng.next()` wie bei der Gleichverteilung.
+ */
+const ZONEN_GEWICHT = Object.freeze({
+  insel: 1.6, inselgruppe: 1.4, archipel: 1.4, ebenen: 1.3, schlucht: 1, vulkan: 1, ruinenstadt: 0.8, hoehle: 0.7, hoehleInsel: 0.7, pyramide: 0.5,
+});
+
+/** Zieht eine Art aus `erlaubt` mit einer Zahl `z` in [0, 1): gleichverteilt oder (Fassung 19) nach `ZONEN_GEWICHT`. */
+function zieheZone(erlaubt, z, gewichtet) {
+  if (!gewichtet) return erlaubt[Math.floor(z * erlaubt.length)];
+  const summe = erlaubt.reduce((s, a) => s + (ZONEN_GEWICHT[a] ?? 1), 0);
+  let rest = z * summe;
+  for (const a of erlaubt) { rest -= ZONEN_GEWICHT[a] ?? 1; if (rest < 0) return a; }
+  return erlaubt[erlaubt.length - 1];
+}
+
 /** Zeichnet jede Zonenart in ihre eigene (schmalere) Maske; liefert die Wasserlinie der Art (hier unbenutzt). */
 const ZONEN_BAUER = {
   insel: dichteInsel, inselgruppe: dichteGruppe, ebenen: dichteEbenen, hoehle: dichteHoehle,
@@ -1638,7 +1655,7 @@ export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10
     speicher.naechste = k + 1;
     const erlaubt = ZONEN_ARTEN.filter((a) => a !== zonen[k] && a !== zonen[k - 1] && a !== zonen[k + 1]
       && !(n > 2 && k === 0 && a === zonen[n - 1]) && !(n > 2 && k === n - 1 && a === zonen[0]));
-    zonen[k] = erlaubt[Math.floor(rng.next() * erlaubt.length)];
+    zonen[k] = zieheZone(erlaubt, rng.next(), fassung >= 19);
     speicher.zonen = zonen;
     speicher.maske2[k] = baueZone(k, zonen[k]);
   } else {
@@ -1649,7 +1666,7 @@ export function erzeugeZonenKarte({ rng, width, height, art = null, fassung = 10
       } else {
         // Nie dieselbe Art wie die Nachbarzone (links); die letzte Zone auch nicht wie die erste, solange es Auswahl gibt.
         const erlaubt = ZONEN_ARTEN.filter((a) => a !== zonen[i - 1] && !(i === n - 1 && n > 2 && a === zonen[0]));
-        wahl = erlaubt[Math.floor(rng.next() * erlaubt.length)];
+        wahl = zieheZone(erlaubt, rng.next(), fassung >= 19);
       }
       zonen.push(wahl);
     }

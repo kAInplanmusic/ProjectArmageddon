@@ -131,7 +131,13 @@ export const GELAENDE_ABSTAND = 17;
  * schmaler als die Krone). Fassungen 1 bis 17 bleiben bitgleich.
  */
 export const GELAENDE_VIELFALT = 18;
-export const GELAENDE_STANDARD = GELAENDE_VIELFALT;
+/**
+ * Fassung 19 (TODO 4.6, Befund 2026-11-27: 150 Seeds, Einzelinsel 3 %, Ebenen 4 %, Höhlen 30 %, die Stufenpyramide in jeder
+ * vierten Karte): Die Zonenarten werden gewichtet gezogen statt gleichverteilt — mehr Inseln, Inselgruppen, Archipele und
+ * Ebenen (Luft und Wasser), weniger Höhlen und Pyramiden. Fassungen 1 bis 18 bleiben bitgleich.
+ */
+export const GELAENDE_GEWICHTE = 19;
+export const GELAENDE_STANDARD = GELAENDE_GEWICHTE;
 /** Fassung 17: Ab dieser Kartenbreite zieht der Seed auf 1:1 auch die runden Arten (sonst nur bei ausdrücklicher Wahl). */
 export const RUND_AB_BREITE = 2880;
 /** Fassung 17: Mindestabstand zweier Startplätze (px), wo die Karte es zulässt. */
@@ -139,7 +145,7 @@ export const START_ABSTAND_MIN = 100;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE || fassung === GELAENDE_FORM || fassung === GELAENDE_RUND || fassung === GELAENDE_DURCHGANG || fassung === GELAENDE_START || fassung === GELAENDE_ABSTAND || fassung === GELAENDE_VIELFALT ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT || fassung === GELAENDE_WEIT || fassung === GELAENDE_NAHT || fassung === GELAENDE_RAMPE || fassung === GELAENDE_FORM || fassung === GELAENDE_RUND || fassung === GELAENDE_DURCHGANG || fassung === GELAENDE_START || fassung === GELAENDE_ABSTAND || fassung === GELAENDE_VIELFALT || fassung === GELAENDE_GEWICHTE ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */

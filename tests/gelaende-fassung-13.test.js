@@ -99,7 +99,7 @@ test('Marke: Fassung 13 ist gültig und der Standard, 12 bleibt gültig, Unbekan
   assert.ok(GELAENDE_STANDARD >= GELAENDE_FORM, "seit Fassung 14 ist der Standard höher; Fassung 13 bleibt gültig");
   assert.equal(normalisiereGelaende(12), 12);
   assert.equal(normalisiereGelaende(13), 13);
-  assert.equal(normalisiereGelaende(18), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(99), GELAENDE_STANDARD); // unbekannte Fassung (18 und 19 gibt es seit TODO 4.6)
 });
 
 test('Fassungen 9 bis 12 bleiben bitgleich (Goldwerte vom Stand vor Fassung 13)', () => {
