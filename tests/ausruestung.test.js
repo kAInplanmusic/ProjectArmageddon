@@ -12,7 +12,7 @@ import { WEAPONS, FALLBACK_WEAPON_ID } from '../src/shared/config/weapons.js';
 import { FACTIONS, CHARACTERS } from '../src/shared/config/factions.js';
 import { KIT_AUSRUESTUNG, KIT_STANDARD } from '../src/shared/config/loadouts.js';
 import {
-  FESTE_STARTWAFFEN, GIMMICKS, SPEZIAL_MUNITION, spezialStufe, startAusruestung,
+  FESTE_STARTWAFFEN, GIMMICKS, SPEZIAL_MUNITION, LEGENDAERE_WAFFEN, spezialStufe, startAusruestung,
 } from '../src/shared/config/ausruestung.js';
 import { SPEZIAL_JE_FIGUR } from '../src/shared/config/ausruestung-spezial.js';
 import { loeseFraktionen } from '../src/shared/config/darstellung.js';
@@ -28,10 +28,12 @@ test('Kit 5 ist der Standard; feste Waffen und Gimmicks stehen im Katalog, das S
   assert.equal(waffe('pa_111').displayName, 'Enterhaken');
 });
 
-test('Jede der 81 Figuren hat eine Spezialwaffe; je Fraktion 1 legendär, 2 stark, 6 normal', () => {
+test('Jede der 81 Figuren hat eine Spezialwaffe; je Fraktion 1 legendär, 2 stark, 6 normal; mindestens 10 legendäre', () => {
+  assert.ok(LEGENDAERE_WAFFEN.length >= 10, 'Rückmeldung 2026-11-27: mindestens zehn legendäre');
+  for (const id of LEGENDAERE_WAFFEN) assert.ok(waffe(id), id);
   assert.equal(Object.keys(SPEZIAL_JE_FIGUR).length, CHARACTERS.length);
   const ausgeschlossen = new Set([...FESTE_STARTWAFFEN, ...Object.keys(GIMMICKS)]);
-  const nichtLegendaer = [];
+  const alle = [];
   for (const f of FACTIONS) {
     const zaehler = { legendaer: 0, stark: 0, normal: 0 };
     for (const c of CHARACTERS.filter(x => x.faction === f.id)) {
@@ -40,11 +42,11 @@ test('Jede der 81 Figuren hat eine Spezialwaffe; je Fraktion 1 legendär, 2 star
       assert.ok(!ausgeschlossen.has(id), `${c.id}: keine feste Waffe und kein Gimmick`);
       const stufe = spezialStufe(waffe(id));
       zaehler[stufe] += 1;
-      if (stufe !== 'legendaer') nichtLegendaer.push(id);
+      alle.push(id);
     }
     assert.deepEqual(zaehler, { legendaer: 1, stark: 2, normal: 6 }, f.id);
   }
-  assert.equal(new Set(nichtLegendaer).size, nichtLegendaer.length, 'starke und normale Spezialwaffen kommen nur einmal vor');
+  assert.equal(new Set(alle).size, alle.length, 'jede Spezialwaffe kommt nur einmal vor, auch die legendären');
 });
 
 test('Die Tabelle ist die Ausgabe des Zuordnungsskripts (nicht von Hand verändert)', () => {

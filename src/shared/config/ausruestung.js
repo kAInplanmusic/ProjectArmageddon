@@ -6,6 +6,7 @@
  *    (Granate, Rakete, Direktschuss mit Tunnel, Schläger, Maschinenpistole: das klassische Werkzeug eines Artilleriespiels).
  *  - **2 Gimmicks**: Seil = Enterhaken `pa_111` (5×) und Gleitschirm `pa_114` (5×).
  *  - **1 Spezialwaffe** ihrer Figur (`ausruestung-spezial.js`), Munition nach Stufe: legendär 1, stark 2, normal 3.
+ *    11 legendäre Waffen (`LEGENDAERE_WAFFEN`): jede der 9 Fraktionen hat eine eigene.
  *
  * Die Zuordnung der Spezialwaffen erzeugt `scripts/ausruestung-zuordnen.mjs` als feste Tabelle. Ältere Kit-Fassungen
  * (1 bis 4) lesen diese Datei nicht: alte Aufzeichnungen spielen unverändert (AGENTS.md §2).
@@ -32,14 +33,26 @@ export const GIMMICKS = Object.freeze({ pa_111: 5, pa_114: 5 });
 export const SPEZIAL_MUNITION = Object.freeze({ legendaer: 1, stark: 2, normal: 3 });
 
 /**
- * Stufe einer Waffe für die Spezialmunition (nach `powerTier` des Katalogs).
- * @param {{powerTier?:string}|null} waffe
+ * Die legendären Waffen (Rückmeldung 2026-11-27: „mindestens zehn legendäre“). Der Katalog führte nur 3 als
+ * `legendary`; dazu kommen alle 8 bisher epischen: 11 legendäre, jede Fraktion bekommt eine eigene. Waffenfassung 23
+ * führt sie auch im Spiel als legendär (`config/waffen-f23.js`); die Startausrüstung liest diese feste Liste, damit
+ * ihre Stufen nicht von der Waffenfassung einer Partie abhängen.
+ */
+export const LEGENDAERE_WAFFEN = Object.freeze([
+  'pa_145', 'pa_147', 'pa_150', // Erdspalter, Weltendrache, Kosmischer Kern (schon legendär)
+  'pa_037', 'pa_044', 'pa_065', 'pa_077', 'pa_133', 'pa_144', 'pa_146', 'pa_148', // bisher episch
+]);
+const LEGENDAER = new Set(LEGENDAERE_WAFFEN);
+
+/**
+ * Stufe einer Waffe für die Spezialmunition: legendär (`LEGENDAERE_WAFFEN`), stark (`rare`), normal (`common`/`uncommon`).
+ * @param {{id?:string, powerTier?:string}|null} waffe
  * @returns {'legendaer'|'stark'|'normal'}
  */
 export function spezialStufe(waffe) {
+  if (LEGENDAER.has(waffe?.id)) return 'legendaer';
   const t = waffe?.powerTier;
-  if (t === 'legendary') return 'legendaer';
-  if (t === 'epic' || t === 'rare') return 'stark';
+  if (t === 'legendary' || t === 'epic' || t === 'rare') return 'stark';
   return 'normal';
 }
 

@@ -6,9 +6,8 @@
  *
  * Regeln:
  *  - Kandidaten: die 150 Katalogwaffen ohne die 5 festen Startwaffen und ohne die zwei Gimmicks.
- *  - Je Fraktion (9 Figuren): 1 legendär, 2 stark (epic/rare), 6 normal (common/uncommon), Stufe = `powerTier`.
- *  - Der Katalog hat nur 3 legendäre Waffen: Fraktion i bekommt die legendäre Nummer i mod 3 (je drei Fraktionen teilen sich eine).
- *    Starke und normale Waffen kommen in der ganzen Tabelle höchstens einmal vor.
+ *  - Je Fraktion (9 Figuren): 1 legendär (`LEGENDAERE_WAFFEN`, 11 Stück), 2 stark (rare), 6 normal (common/uncommon).
+ *  - Jede Waffe kommt in der ganzen Tabelle höchstens einmal vor (auch die legendären: jede Fraktion hat ihre eigene).
  *  - Passung: Stichwörter aus Name und Beschreibung der Superwaffe einer Figur gegen Name und Beschreibung der Waffe,
  *    dazu die Rolle (Nahkampf → melee; Fernkampf → ranged/heavy_ranged/tech; Magie → magic/elemental/ultimate).
  *  - Gierig je Fraktion in fester Reihenfolge, Gleichstand nach Katalogindex: deterministisch.
@@ -45,11 +44,10 @@ function passung(figur, waffe) {
   return gemeinsam * 3 + (ROLLE_KATEGORIE[figur.role]?.[waffe.category] ?? 0);
 }
 
-const legendaer = kandidaten.filter(w => spezialStufe(w) === 'legendaer');
 const vergeben = new Set();
 const tabelle = {};
 
-FACTIONS.forEach((fraktion, fi) => {
+FACTIONS.forEach((fraktion) => {
   const figuren = CHARACTERS.filter(c => c.faction === fraktion.id);
   const frei = new Set(figuren.map(c => c.id));
   const nimm = (stufe, anzahl, pool) => {
@@ -58,7 +56,7 @@ FACTIONS.forEach((fraktion, fi) => {
       for (const c of figuren) {
         if (!frei.has(c.id)) continue;
         for (const w of pool) {
-          if (spezialStufe(w) !== stufe || (stufe !== 'legendaer' && vergeben.has(w.id))) continue;
+          if (spezialStufe(w) !== stufe || vergeben.has(w.id)) continue;
           const p = passung(c, w);
           if (!best || p > best.p || (p === best.p && w.index < best.w.index)) best = { c, w, p };
         }
@@ -66,10 +64,10 @@ FACTIONS.forEach((fraktion, fi) => {
       if (!best) throw new Error(`${fraktion.id}: keine ${stufe}-Waffe mehr frei`);
       tabelle[best.c.id] = best.w.id;
       frei.delete(best.c.id);
-      if (stufe !== 'legendaer') vergeben.add(best.w.id);
+      vergeben.add(best.w.id);
     }
   };
-  nimm('legendaer', 1, [legendaer[fi % legendaer.length]]);
+  nimm('legendaer', 1, kandidaten);
   nimm('stark', 2, kandidaten);
   nimm('normal', 6, kandidaten);
 });
