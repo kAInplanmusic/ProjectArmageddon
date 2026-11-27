@@ -232,7 +232,7 @@ html, body {
   inset: 0;
   pointer-events: none;
   display: grid;
-  grid-template-columns: minmax(210px, 22%) 1fr minmax(210px, 22%);
+  grid-template-columns: minmax(210px, 22%) minmax(0, 1fr) minmax(210px, 22%);
   grid-template-rows: auto 1fr auto;
   gap: 10px;
   padding: 12px;
@@ -564,7 +564,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
  * Protokoll nur zwei Zeilen, Waffenliste ohne Beschriftungsgruppen-Rand.
  */
 @media (max-height: 520px) {
-  #hud { padding: 6px; gap: 6px; grid-template-columns: minmax(96px, 16%) 1fr minmax(170px, 26%); }
+  #hud { padding: 6px; gap: 6px; grid-template-columns: minmax(96px, 16%) minmax(0, 1fr) minmax(170px, 26%); }
   #hud-top { gap: 6px; }
   .stat { padding: 3px 8px; min-width: 52px; }
   .stat .value { font-size: 14px; }

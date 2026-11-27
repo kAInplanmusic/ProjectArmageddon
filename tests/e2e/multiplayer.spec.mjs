@@ -415,14 +415,17 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
       if (zeilen.length === 0) return false;
       return zeilen.every(zeile => {
         const bild = zeile.querySelector('img.weapon-icon');
+        // Jede Zeile nennt Kennzahl und Munition („… · 3“ / „… · ∞“). Selbstwirkungen (Seil, Gleitschirm der
+        // Startausrüstung, Kit 5) nennen statt „DMG“ ihre Wirkung (hud.js, W09); Angriffe zeigen „DMG“ (unten geprüft).
         return (zeile.querySelector('.weapon-name')?.textContent ?? '').trim().length > 0
-          && (zeile.textContent ?? '').includes('DMG')
+          && (zeile.textContent ?? '').includes('·')
           && bild !== null && bild.complete && bild.naturalWidth > 0;
       });
     }, null, { timeout: 25_000 });
 
     const liste = await page.evaluate(() => ({
       zeilen: document.querySelectorAll('#weapon-list .weapon-item').length,
+      mitSchaden: [...document.querySelectorAll('#weapon-list .weapon-item')].filter(z => z.textContent.includes('DMG')).length,
       aktiv: document.querySelectorAll('#weapon-list .weapon-item.is-active').length,
       gruppen: [...document.querySelectorAll('#weapon-list .weapon-group')]
         .map(gruppe => gruppe.textContent.trim()),
@@ -430,9 +433,10 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
         .map(el => Number((el.getAttribute('aria-label') ?? '').split('.')[0])),
     }));
 
-    // Start-Kit + Klassenwaffe (Klassenfassung 3, 19c1902, 2026-11-05): Reserve + zwei Common-Waffen
-    // + eine knappe Flächenwaffe + die Kür der Klasse = 5 Zeilen. Vorher 4 (Test war seitdem veraltet).
-    expect(liste.zeilen).toBe(5);
+    // Startausrüstung (Kit 5, TODO 2.17): 5 feste Waffen, Seil, Gleitschirm und die Spezialwaffe der Figur = 8 Zeilen
+    // (7 bei klassischer Darstellung ohne Figur). Vorher Start-Kit + Klassenwaffe = 5.
+    expect([7, 8]).toContain(liste.zeilen);
+    expect(liste.mitSchaden).toBeGreaterThanOrEqual(5); // die fünf festen Startwaffen sind Angriffe
     // Genau eine Waffe ist als aktiv markiert.
     expect(liste.aktiv).toBe(1);
     /*
@@ -474,8 +478,8 @@ test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) =>
       lobbyId: await page.evaluate(() => window.__PA__.game.lobbyId),
     });
     // Start-Kit (Fassung 3): zwei Common-Waffen, eine Flächenwaffe plus Reserve.
-    // 5 Zeilen: Start-Kit + Klassenwaffe (Klassenfassung 3), siehe den Test oben.
-    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(5, { timeout: 20_000 });
+    // 8 Zeilen: Startausrüstung (Kit 5), siehe den Test oben.
+    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(8, { timeout: 20_000 });
 
     // Bei fremdem Zug darf kein Wechsel gesendet werden, und die Meldung muss
     // im Protokoll erscheinen statt stillschweigend zu scheitern.

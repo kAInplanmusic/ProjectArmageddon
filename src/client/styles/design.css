@@ -261,7 +261,7 @@ label { font-size: 15px; letter-spacing: 0.08em; color: var(--muted); }
 
 /* ======================================================= HUD: untere Leiste (Entwurf) */
 /* Raster: Zeile 3 = Winkelregler | Waffenleiste | FEUER. */
-#hud { grid-template-columns: minmax(170px, 22%) 1fr minmax(170px, 22%); gap: 8px; }
+#hud { grid-template-columns: minmax(170px, 22%) minmax(0, 1fr) minmax(170px, 22%); gap: 8px; }
 
 #hud-dial {
   grid-column: 1; grid-row: 3; justify-self: start; align-self: end;
