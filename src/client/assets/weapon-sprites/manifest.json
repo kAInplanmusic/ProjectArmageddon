@@ -13,21 +13,23 @@
    "symbol": "Zeichen oder Anwendungsobjekt am eigenen Träger (Elixier, Schriftrolle, Schild-Aura, Sanduhr, Werkzeug); kein gerichtetes Handgerät."
   },
   "zaehlung": {
-   "hand": 110,
+   "hand": 107,
    "ruecken": 3,
-   "aufstell": 11,
+   "aufstell": 14,
    "beschwoerung": 5,
    "symbol": 21
   },
   "wirkpfade": {
-   "projektil": 92,
-   "strahl": 22,
-   "selbst": 36
+   "projektil": 90,
+   "strahl": 21,
+   "selbst": 39
   },
   "geschossbilder": 100,
-  "projektilpfade": 92,
+  "projektilpfade": 90,
   "bilderOhnePfad": [
    "pa_032",
+   "pa_043",
+   "pa_060",
    "pa_076",
    "pa_105",
    "pa_124",
@@ -3598,8 +3600,8 @@
     "y": 768,
     "w": 32,
     "h": 32,
-    "eigenerPfad": true,
-    "verwendung": "geschoss"
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#eba26a",
    "korrektur": true,
@@ -3624,8 +3626,9 @@
     "w": 128,
     "h": 128
    },
-   "rolle": "hand",
-   "wirkpfad": "projektil"
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Kampfgeschütz (Waffenfassung 23): wird aufgestellt und feuert zwei Runden selbst, schwer."
   },
   "pa_044": {
    "id": "pa_044",
@@ -4992,8 +4995,8 @@
     "y": 768,
     "w": 32,
     "h": 32,
-    "eigenerPfad": true,
-    "verwendung": "geschoss"
+    "eigenerPfad": false,
+    "verwendung": "begleitbild"
    },
    "flashColor": "#eb5e36",
    "korrektur": true,
@@ -5018,8 +5021,9 @@
     "w": 128,
     "h": 128
    },
-   "rolle": "hand",
-   "wirkpfad": "projektil"
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Gatlingkanone (Waffenfassung 23): wird aufgestellt und feuert fünf Runden selbst, leicht."
   },
   "pa_061": {
    "id": "pa_061",
@@ -10048,8 +10052,9 @@
     "w": 128,
     "h": 128
    },
-   "rolle": "hand",
-   "wirkpfad": "strahl"
+   "rolle": "aufstell",
+   "wirkpfad": "selbst",
+   "rollenHinweis": "Tesla-Turm (Waffenfassung 23): wird aufgestellt und feuert vier Runden selbst, schwach, aber oft."
   },
   "pa_130": {
    "id": "pa_130",

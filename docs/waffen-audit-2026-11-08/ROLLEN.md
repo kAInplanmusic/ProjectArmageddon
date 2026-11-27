@@ -27,26 +27,28 @@ Geschossbild gehört zum Turm, nicht zur Hand.
 
 | Rolle | Bedeutung | Anzahl |
 |---|---|---|
-| Hand | Wird in der Hand geführt oder geworfen; das Handbild ist bei Wurfwaffen zugleich das Flugbild. | 110 |
+| Hand | Wird in der Hand geführt oder geworfen; das Handbild ist bei Wurfwaffen zugleich das Flugbild. | 107 |
 | Rücken | Wird am Körper getragen (Rucksack, Düsenantrieb, Gleitschirm), nicht in der Faust. | 3 |
-| Aufstellobjekt | Wird als Objekt in die Welt gesetzt und wirkt dort weiter (Mine, Geschütz, Bunker, Kiste, Statue, Boot, Portal, Baum, Netz). | 11 |
+| Aufstellobjekt | Wird als Objekt in die Welt gesetzt und wirkt dort weiter (Mine, Geschütz, Bunker, Kiste, Statue, Boot, Portal, Baum, Netz). | 14 |
 | Beschwörung | Ruft ein Wesen herbei, das selbst handelt (Astralkrieger, Astralross, Feuerdämon, Feuerwesen, Windkrieger). | 5 |
 | Symbol | Zeichen oder Anwendungsobjekt am eigenen Träger (Elixier, Schriftrolle, Schild-Aura, Sanduhr, Werkzeug); kein gerichtetes Handgerät. | 21 |
 | **Summe** | | **150** |
 
-Wirkpfade: **92 Projektil**, **22 Strahl**,
-**36 Selbst/Welt**.
+Wirkpfade: **90 Projektil**, **21 Strahl**,
+**39 Selbst/Welt** (seit Waffenfassung 23: Kampfgeschütz, Gatlingkanone und Tesla-Turm stellen ein Geschütz auf).
 
 ## 100 Geschossbilder sind nicht 100 Projektilpfade
 
 Der Sprite-Generator legt eine Geschosszelle an, sobald `delivery` gleich
 `projectile` ist — dazu kommen seit Fassung 21/22 die Zellen von Mine, Luftangriff, Meteorregen und Höllenkanone: **100** Waffen. Wirklich ein
-Geschoss mit Flugbahn starten aber **92**. Bei den
-acht übrigen Waffen wirkt die Waffe zuerst auf den Anwender oder stellt etwas
+Geschoss mit Flugbahn starten aber **90**. Bei den
+zehn übrigen Waffen wirkt die Waffe zuerst auf den Anwender oder stellt etwas
 auf; ihre Zelle ist Begleitmaterial und im Manifest als
 `projectile.eigenerPfad: false`, `verwendung: "begleitbild"` markiert:
 
 - `pa_032` Raketenrucksack — Rücken, Selbst/Welt
+- `pa_043` Kampfgeschütz (seit Waffenfassung 23) — Aufstellobjekt, Selbst/Welt
+- `pa_060` Gatlingkanone (seit Waffenfassung 23) — Aufstellobjekt, Selbst/Welt
 - `pa_076` Portal (früher Portalring) — Aufstellobjekt, Selbst/Welt
 - `pa_105` Frostrolle — Symbol, Selbst/Welt
 - `pa_124` Wachgeschütz — Aufstellobjekt, Selbst/Welt
@@ -135,7 +137,7 @@ Handbild.
 | pa_040 | Maschinenpistole | ranged | Hand | Projektil |  |
 | pa_041 | Salvengeber | heavy_ranged | Hand | Projektil |  |
 | pa_042 | Feuerwerkssalve | heavy_ranged | Hand | Projektil |  |
-| pa_043 | Kampfgeschütz | heavy_ranged | Hand | Projektil |  |
+| pa_043 | Kampfgeschütz | heavy_ranged | Aufstellobjekt | Selbst/Welt | Kampfgeschütz (Waffenfassung 23): wird aufgestellt und feuert zwei Runden selbst, schwer. |
 | pa_044 | Phönixschlag | heavy_ranged | Hand | Projektil |  |
 | pa_045 | Raketensalve | heavy_ranged | Hand | Projektil |  |
 | pa_046 | Splittergranate | heavy_ranged | Hand | Projektil |  |
@@ -152,7 +154,7 @@ Handbild.
 | pa_057 | Revolver | heavy_ranged | Hand | Projektil |  |
 | pa_058 | Kampfbogen | heavy_ranged | Hand | Projektil |  |
 | pa_059 | Armbrust | heavy_ranged | Hand | Projektil |  |
-| pa_060 | Gatlingkanone | heavy_ranged | Hand | Projektil |  |
+| pa_060 | Gatlingkanone | heavy_ranged | Aufstellobjekt | Selbst/Welt | Gatlingkanone (Waffenfassung 23): wird aufgestellt und feuert fünf Runden selbst, leicht. |
 | pa_061 | Feuerdämon | elemental | Beschwörung | Projektil | Feuerdämon: beschworenes Wesen; es fliegt selbst als Projektil (Rolle Beschwörung, Wirkpfad Projektil). |
 | pa_062 | Flammenwerfer | elemental | Hand | Projektil |  |
 | pa_063 | Wasserwerfer | elemental | Hand | Projektil |  |
@@ -221,7 +223,7 @@ Handbild.
 | pa_126 | Bunker | tech | Aufstellobjekt | Selbst/Welt | Bunker: wird aufgestellt und mindert Schaden. |
 | pa_127 | Mine | tech | Aufstellobjekt | Projektil | Mine: wird abgelegt oder (Waffenfassung 22) im Bogen geworfen; sie fliegt als Geschoss, bleibt beim Aufprall liegen und ist sofort scharf. |
 | pa_128 | Hologrammportal | tech | Aufstellobjekt | Selbst/Welt | Hologrammportal: aufgestelltes Tor; der Anwender springt hindurch. |
-| pa_129 | Tesla-Turm | tech | Hand | Strahl |  |
+| pa_129 | Tesla-Turm | tech | Aufstellobjekt | Selbst/Welt | Tesla-Turm (Waffenfassung 23): wird aufgestellt und feuert vier Runden selbst, schwach, aber oft. |
 | pa_130 | Tarnnetz | tech | Aufstellobjekt | Selbst/Welt | Tarnnetz: wird über die Stellung gelegt und mindert Schaden. |
 | pa_131 | Schlauchboot | tech | Aufstellobjekt | Selbst/Welt | Schlauchboot: wird als Wasserfahrzeug eingesetzt, nicht gehalten. |
 | pa_132 | Alte Dame | tech | Hand | Strahl |  |

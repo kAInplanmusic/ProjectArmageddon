@@ -1,13 +1,13 @@
 {
   "ticket": "BAL-12",
   "titel": "Reale Treffer- und Kollisionsmatrix",
-  "sourceCommit": "eba2b330cce2c3871126837f2d0831c3466810da",
+  "sourceCommit": "7246c7c75f7303744f75283743a33d334e425d92",
   "versions": {
-    "waffen": 22,
+    "waffen": 23,
     "klassen": 3,
     "schaden": 2,
     "wind": 2,
-    "bodenobjekte": 6,
+    "bodenobjekte": 8,
     "kisten": 0
   },
   "seed": 31337,
@@ -2251,55 +2251,45 @@
     {
       "id": "pa_043",
       "name": "Kampfgeschütz",
-      "art": "angriff",
+      "art": "selbst",
       "category": "heavy_ranged",
-      "delivery": "projectile",
-      "strikeStyle": "self",
-      "rollenDistanz": 600,
-      "reichweite": 1081,
-      "rollenDistanzErreicht": true,
+      "kind": "turret",
+      "rollenDistanz": null,
       "probe": {
-        "distance": 600,
-        "angle": 0.32,
-        "angleAnzeige": 0.32,
-        "power": 100,
-        "route": "projektil",
-        "spawn": {
-          "x": 400,
-          "y": 95,
-          "blastRadius": 0,
-          "trefferRadius": 24,
-          "homing": 0,
-          "fuseTicks": 0
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "turret",
+        "projectileId": null,
+        "nutzen": {
+          "art": "geschuetz",
+          "wert": 2,
+          "turretId": 1
         },
-        "ticks": 36,
-        "kollision": {
-          "art": "projectile_impact",
-          "x": 984.076,
-          "y": 83.055,
-          "target": 2
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
         },
-        "schaden": {
-          "ereignisse": 65,
-          "zielVerlust": 65,
-          "selbstVerlust": 0,
-          "zielLP": {
-            "vorher": 1000,
-            "nachher": 935
-          }
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
         },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
         "ereignisArten": [
           "shot",
-          "projectile_spawn",
-          "terrain_destroyed",
-          "damage",
-          "explosion",
-          "projectile_impact"
+          "turret_deployed",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
         ],
         "quelle": "fire+step",
         "kontrollierteExplosion": false
-      },
-      "versuche": 1
+      }
     },
     {
       "id": "pa_044",
@@ -3163,55 +3153,45 @@
     {
       "id": "pa_060",
       "name": "Gatlingkanone",
-      "art": "angriff",
+      "art": "selbst",
       "category": "heavy_ranged",
-      "delivery": "projectile",
-      "strikeStyle": "self",
-      "rollenDistanz": 600,
-      "reichweite": 1319,
-      "rollenDistanzErreicht": true,
+      "kind": "turret",
+      "rollenDistanz": null,
       "probe": {
-        "distance": 600,
-        "angle": 0.24,
-        "angleAnzeige": 0.24,
-        "power": 100,
-        "route": "projektil",
-        "spawn": {
-          "x": 400,
-          "y": 95,
-          "blastRadius": 0,
-          "trefferRadius": 24,
-          "homing": 0,
-          "fuseTicks": 0
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "turret",
+        "projectileId": null,
+        "nutzen": {
+          "art": "geschuetz",
+          "wert": 5,
+          "turretId": 1
         },
-        "ticks": 30,
-        "kollision": {
-          "art": "projectile_impact",
-          "x": 980.543,
-          "y": 86.978,
-          "target": 2
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
         },
-        "schaden": {
-          "ereignisse": 44,
-          "zielVerlust": 44,
-          "selbstVerlust": 0,
-          "zielLP": {
-            "vorher": 1000,
-            "nachher": 956
-          }
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
         },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
         "ereignisArten": [
           "shot",
-          "projectile_spawn",
-          "terrain_destroyed",
-          "damage",
-          "explosion",
-          "projectile_impact"
+          "turret_deployed",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
         ],
         "quelle": "fire+step",
         "kontrollierteExplosion": false
-      },
-      "versuche": 1
+      }
     },
     {
       "id": "pa_061",
@@ -6344,45 +6324,45 @@
     {
       "id": "pa_129",
       "name": "Tesla-Turm",
-      "art": "angriff",
+      "art": "selbst",
       "category": "tech",
-      "delivery": "hitscan",
-      "strikeStyle": "self",
-      "rollenDistanz": 250,
-      "reichweite": 853,
-      "rollenDistanzErreicht": true,
+      "kind": "turret",
+      "rollenDistanz": null,
       "probe": {
-        "distance": 250,
-        "angle": 0,
-        "angleAnzeige": 0,
-        "power": 100,
-        "route": "strahl",
-        "spawn": null,
-        "ticks": 0,
-        "kollision": {
-          "art": "hitscan",
-          "x": 643,
-          "y": 95,
-          "target": 2
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "turret",
+        "projectileId": null,
+        "nutzen": {
+          "art": "geschuetz",
+          "wert": 4,
+          "turretId": 1
         },
-        "schaden": {
-          "ereignisse": 48,
-          "zielVerlust": 48,
-          "selbstVerlust": 0,
-          "zielLP": {
-            "vorher": 1000,
-            "nachher": 952
-          }
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
         },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
         "ereignisArten": [
           "shot",
-          "damage",
-          "hitscan"
+          "turret_deployed",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
         ],
         "quelle": "fire+step",
         "kontrollierteExplosion": false
-      },
-      "versuche": 1
+      }
     },
     {
       "id": "pa_130",
@@ -7395,10 +7375,10 @@
   ],
   "summary": {
     "waffen": 150,
-    "angriff": 114,
-    "selbst": 36,
-    "angriffMitKollision": 114,
-    "angriffMitSchaden": 113,
+    "angriff": 111,
+    "selbst": 39,
+    "angriffMitKollision": 111,
+    "angriffMitSchaden": 110,
     "angriffNurKollision": [
       {
         "id": "pa_127",
@@ -7407,8 +7387,8 @@
         "begruendung": "Wurfmine (Fassung 22): Aufprall belegt, danach liegt eine Mine, kein Schaden beim Aufprall"
       }
     ],
-    "selbstMitNutzen": 36,
-    "rollenDistanzErreicht": 101
+    "selbstMitNutzen": 39,
+    "rollenDistanzErreicht": 98
   },
   "kontrollfall": {
     "schaden": 40,
@@ -7451,7 +7431,7 @@
         "hoehe": 121
       },
       "abgelehnt": true,
-      "grund": "Tesla-Turm verlangt freie Sicht zum Ziel — die Sichtlinie ist versperrt",
+      "grund": "Arkanhammer verlangt freie Sicht zum Ziel — die Sichtlinie ist versperrt",
       "schaden": 0
     },
     "randtreffer": {
@@ -7459,7 +7439,7 @@
       "zielX": 2520,
       "ok": true,
       "trefferX": 2513,
-      "schaden": 48
+      "schaden": 68
     },
     "zielsuche": {
       "homing": 70,

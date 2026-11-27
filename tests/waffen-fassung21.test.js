@@ -57,11 +57,11 @@ function lauf(m, takte = 600) {
 }
 
 test('Fassung 21 ist Standard; 20 und älter bleiben wählbar', () => {
-  assert.equal(WAFFEN_STANDARD, F21 + 1); // Fassung 22 ist seit 2026-11-12 der Standard
+  assert.equal(WAFFEN_STANDARD, F21 + 2); // Fassung 23 (Geschütze, TODO 2.17b) ist der Standard
   assert.equal(F21, F20 + 1);
   assert.equal(normalisiereWaffen(21), 21);
   assert.equal(normalisiereWaffen(20), 20);
-  assert.equal(normalisiereWaffen(99), F21 + 1);
+  assert.equal(normalisiereWaffen(99), F21 + 2);
 });
 
 test('Fassung 20 bleibt bitgleich: ein Schuss jeder der 150 Waffen (Gold)', () => {

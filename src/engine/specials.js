@@ -389,11 +389,12 @@ export function buildEffect(weapon) {
        * das so viel Schaden macht wie ein Volltreffer, wäre ein zweiter Schuss
        * gratis in jeder Runde. Der Faktor 0,6 hält es darunter.
        */
+      // Waffenfassung 23 (TURRET-1): `wirkung.turns` und `wirkung.damageFactor` je Geschützwaffe; ohne Angabe die alten Werte.
       return {
         kind: base.kind,
-        damage: Math.max(1, Math.round((weapon.damage || 0) * (base.damageFactor ?? SPECIAL_DEFAULTS.turretDamage))),
+        damage: Math.max(1, Math.round((weapon.damage || 0) * (w?.damageFactor ?? base.damageFactor ?? SPECIAL_DEFAULTS.turretDamage))),
         range: Math.round((weapon.maxRange || 420) * SPECIAL_DEFAULTS.turretRange),
-        turns: SPECIAL_DEFAULTS.turretTurns,
+        turns: w?.turns ?? SPECIAL_DEFAULTS.turretTurns,
       };
 
     case EFFECT_KIND.DAMAGE_BOOST:

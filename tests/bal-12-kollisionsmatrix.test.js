@@ -10,7 +10,7 @@
  * Test des aktuellen Codes.
  *
  * Zusaetzlich festgehalten:
- *  - 114 Angriffswaffen, 36 Selbstwirkungen — die Aufteilung kommt aus dem Motor
+ *  - 111 Angriffswaffen, 39 Selbstwirkungen — die Aufteilung kommt aus dem Motor
  *    (`buildEffect`/`SELF_TARGET_KINDS`), nicht aus einer Namensliste.
  *  - Ein kontrollierter `wendeExplosionAn`-Aufruf erzeugt Schaden, aber KEIN
  *    Kollisionsereignis; er darf keinen Beleg ersetzen.
@@ -38,16 +38,16 @@ const nach = id => matrix.waffen.find(w => w.id === id);
 
 const nah = (a, b, eps = 1e-6) => Math.abs(a - b) <= eps;
 
-test('BAL-12: Matrix deckt 150 Waffen, 114 Angriff und 36 Selbstwirkung ab', () => {
+test('BAL-12: Matrix deckt 150 Waffen, 111 Angriff und 39 Selbstwirkung ab', () => {
   assert.equal(matrix.ticket, 'BAL-12');
   assert.equal(matrix.seed, SEED);
   assert.equal(matrix.versions.waffen, WAFFEN_STANDARD);
   assert.equal(matrix.versions.klassen, KLASSEN_STANDARD);
   assert.equal(matrix.summary.waffen, 150);
-  assert.equal(matrix.summary.angriff, 114);
-  assert.equal(matrix.summary.selbst, 36);
-  assert.equal(matrix.summary.angriffMitKollision, 114);
-  assert.equal(matrix.summary.selbstMitNutzen, 36);
+  assert.equal(matrix.summary.angriff, 111);
+  assert.equal(matrix.summary.selbst, 39);
+  assert.equal(matrix.summary.angriffMitKollision, 111);
+  assert.equal(matrix.summary.selbstMitNutzen, 39);
 
   // Dieselben IDs in derselben Reihenfolge wie der Katalog — keine Lücke, kein Doppel.
   assert.deepEqual(matrix.waffen.map(w => w.id), WEAPONS.map(w => w.id));
@@ -64,13 +64,13 @@ test('BAL-12: die Aufteilung Angriff/Selbst kommt aus dem Motor', () => {
     assert.equal(eintrag.art, istSelbst ? 'selbst' : 'angriff', `${eintrag.id}: Art weicht vom Motor ab`);
     if (istSelbst) selbst += 1; else angriff += 1;
   }
-  assert.equal(angriff, 114);
-  assert.equal(selbst, 36);
+  assert.equal(angriff, 111);
+  assert.equal(selbst, 39);
 });
 
 test('BAL-12: jede Angriffswaffe trifft ihr Ziel in einem erneuten echten Schuss', () => {
   const angriffe = matrix.waffen.filter(w => w.art === 'angriff');
-  assert.equal(angriffe.length, 114);
+  assert.equal(angriffe.length, 111);
   for (const eintrag of angriffe) {
     const probe = eintrag.probe;
     assert.ok(probe, `${eintrag.id}: Beleg fehlt`);
@@ -116,7 +116,7 @@ test('BAL-12: die drei alten Nulltreffer haben ein Steilfeuer-Szenario', () => {
 
 test('BAL-12: jede Selbstwirkung hat einen erneuten positiven Nutzwert, kein Geschoss', () => {
   const selbst = matrix.waffen.filter(w => w.art === 'selbst');
-  assert.equal(selbst.length, 36);
+  assert.equal(selbst.length, 39);
   for (const eintrag of selbst) {
     assert.ok(eintrag.probe?.nutzen, `${eintrag.id}: Nutzwert fehlt im Beleg`);
     const neu = selbstProbe(getWaffe(eintrag.id));
@@ -157,8 +157,9 @@ test('BAL-12: Rollenentfernung ist dokumentiert und für den Beleg nachvollziehb
    * Neu erzeugt 2026-11-10 für Fassung 18: Die Zahl stieg von 101 auf 103 schon auf
    * `main` vor BAL-05 (Gegenlauf auf `cce5e4b`, gleiches Ergebnis) — der Beleg war seit
    * späteren Engine-Änderungen nicht neu erzeugt worden.
-   * Neu erzeugt 2026-11-12 für Fassung 21: 100, Fassung 22: 101 (Handgranate, Funkenkugel, Anflug-Geschosse). */
-  assert.equal(matrix.summary.rollenDistanzErreicht, 101);
+   * Neu erzeugt 2026-11-12 für Fassung 21: 100, Fassung 22: 101 (Handgranate, Funkenkugel, Anflug-Geschosse),
+   * Fassung 23: 98 (Kampfgeschütz, Gatlingkanone und Tesla-Turm stellen Geschütze auf, TODO 2.17b). */
+  assert.equal(matrix.summary.rollenDistanzErreicht, 98);
 });
 
 test('BAL-12: Zwei-Ziele-, Wand-, Rand- und Zielsuche-Szenario sind echt belegt', () => {

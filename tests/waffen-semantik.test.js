@@ -298,7 +298,8 @@ test('W15: Reichweitenprüfung trennt Flug, Hitscan und Selbstwirkung über den 
     else if (waffe.delivery === 'laeufer') zaehlung.laeufer += 1; // Waffenfassung 20: Feuerwesen läuft, zerbirst bei Berührung
     else if (waffe.delivery === 'projectile') zaehlung.flug += 1;
   }
-  assert.deepEqual(zaehlung, { flug: 92, hitscan: 21, laeufer: 1, selbst: 36 },
+  // Waffenfassung 23 (TODO 2.17b): Kampfgeschütz und Gatlingkanone (vorher Flug) und Tesla-Turm (vorher Strahl) sind Selbstwirkungen.
+  assert.deepEqual(zaehlung, { flug: 90, hitscan: 20, laeufer: 1, selbst: 39 },
     'Aufteilung Flug/Hitscan/Selbstwirkung weicht vom gemessenen Erstaktionspfad ab');
 
   // Genau diese sechs (seit Fassung 21 ohne die Funkenkugel pa_079) galten im alten Werkzeug fälschlich als 0-Reichweite.

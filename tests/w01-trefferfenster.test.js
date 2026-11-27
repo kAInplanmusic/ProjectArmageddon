@@ -25,7 +25,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { MatchController } from '../src/engine/match.js';
-import { getWaffe, WAFFEN_KLASSE, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER } from '../src/shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_KLASSE, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER, WAFFEN_WURF } from '../src/shared/config/waffen-fassung.js';
+
+/** Seit Waffenfassung 23 Geschütze statt Geschosse (`config/waffen-f23.js`). */
+const GESCHUETZ_SEIT_23 = new Set(['pa_043', 'pa_060']);
 
 /** Die 33 im Audit W01 belegten IDs (Katalogradius 0, im Motor aber 24). */
 const BETROFFENE_IDS = Object.freeze([
@@ -83,10 +86,10 @@ function schiessen(match, schuetze, weaponId, winkel = 0, kraft = 100) {
   return { schuss, ereignisse };
 }
 
-test('Waffenfassung 21 ist Standard; 20 bis 19 bis 15 bleiben gültig und bitgleich', () => {
+test('Waffenfassung 23 ist Standard; 20 bis 19 bis 15 bleiben gültig und bitgleich', () => {
   assert.equal(WAFFEN_TREFFER, 16);
   assert.equal(WAFFEN_KLASSE, 17);
-  assert.equal(WAFFEN_STANDARD, 22); // Fassung 21 (Entscheidungen 2026-11-11)
+  assert.equal(WAFFEN_STANDARD, 23); // seit TODO 2.17b Fassung 23 (Geschütze)
   assert.equal(WAFFEN_TEMPO, 15);
 });
 
@@ -97,11 +100,14 @@ test('Die 33 betroffenen IDs spawnen mit Radius 0 und getrenntem Trefferfenster'
   for (const id of BETROFFENE_IDS) {
     // Handgranate: seit Fassung 21 mit echtem Radius (Entscheidung 13); ihr Altverhalten belegt der Fassung-20-Test.
     if (id === 'pa_047') continue;
+    // Kampfgeschütz und Gatlingkanone stellen seit Fassung 23 ein Geschütz auf (TODO 2.17b) und verschießen kein
+    // Geschoss mehr; ihr Trefferfenster gilt weiter in Fassung 22 und wird dort geprüft.
+    const fassung = GESCHUETZ_SEIT_23.has(id) ? WAFFEN_WURF : WAFFEN_STANDARD;
     // Vorbedingung: Der Katalog weist für diese Waffe keinen Flächenradius aus.
-    const waffe = getWaffe(id, WAFFEN_STANDARD);
+    const waffe = getWaffe(id, fassung);
     if (waffe.blastRadius !== 0) abweichungen.push(`${id}: Katalogradius ${waffe.blastRadius}`);
 
-    const { match, schuetze } = neuerMatch();
+    const { match, schuetze } = neuerMatch(fassung);
     match.inventory.register(schuetze, [id]);
     match.inventory.selectWeapon(schuetze, id);
     const schuss = match.fire(schuetze, 1.0, 100, id);

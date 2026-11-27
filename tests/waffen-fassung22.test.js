@@ -31,11 +31,11 @@ function wurf(waffen, winkel, kraft, seed) {
 }
 
 test('Fassung 22 ist Standard; 21 und älter bleiben wählbar', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_WURF);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_WURF + 1); // seit TODO 2.17b Fassung 23
   assert.equal(WAFFEN_WURF, WAFFEN_ENTSCHEIDUNG + 1);
   assert.equal(normalisiereWaffen(22), 22);
   assert.equal(normalisiereWaffen(21), 21);
-  assert.equal(normalisiereWaffen(99), WAFFEN_WURF);
+  assert.equal(normalisiereWaffen(99), WAFFEN_STANDARD);
 });
 
 test('Die Schicht f22 ändert nur die Mine; Fassung 21 sieht sie nicht', () => {

@@ -26,7 +26,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { MatchController, MAP_WIDTH } from '../src/engine/match.js';
-import { getWaffe, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER } from '../src/shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STANDARD, WAFFEN_TEMPO, WAFFEN_TREFFER, WAFFEN_WURF } from '../src/shared/config/waffen-fassung.js';
 import { CLASS_IDS, CLASS_DEFINITIONS } from '../src/shared/config/classes.js';
 import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 
@@ -208,8 +208,9 @@ test('BAL-02: das Schild fängt genau einmal, der Rest trifft das Leben', () => 
 
 // ------------------------------------------------------ Mehrfachwirkung
 
+// Den Kettenblitz führt der Tesla-Turm bis Waffenfassung 22; ab 23 stellt er ein Geschütz auf (TODO 2.17b).
 test('BAL-02: die Mehrfachwirkung (Kettenblitz) rechnet den Klassenfaktor einmal', () => {
-  const roh = getWaffe(KETTE, WAFFEN_STANDARD).damage;
+  const roh = getWaffe(KETTE, WAFFEN_WURF).damage;
   const abfall = 0.6; // `buildEffect(pa_129).falloff`
 
   for (const [klasse, primaer, sprung] of [
@@ -217,7 +218,7 @@ test('BAL-02: die Mehrfachwirkung (Kettenblitz) rechnet den Klassenfaktor einmal
     ['fernkampf', 48, 28.8],
     ['okkultist', 60, 36],
   ]) {
-    const [erster, zweiter] = kettenSchuss(klasse);
+    const [erster, zweiter] = kettenSchuss(klasse, WAFFEN_WURF);
     assert.equal(erster, primaer, `${klasse}: Ersttreffer`);
     assert.equal(zweiter, sprung, `${klasse}: ein Sprung mit Abfall ${abfall}`);
     assert.equal(erster, roh * faktoren[klasse], `${klasse}: Klassenfaktor einmal am Anfang`);
@@ -266,7 +267,7 @@ test('BAL-02: Fassung 16 und 15 bleiben bitgleich — dreimal 46, gleicher Zusta
 test('BAL-02: Fassung 17 folgt auf 16, der Standard enthält sie, und sie ändert nur den Strahlschaden', () => {
   assert.equal(WAFFEN_KLASSE, WAFFEN_TREFFER + 1);
   // Seit Fassung 18 (BAL-05), 19 (BAL-16) und 20 (Feuerwesen) ist 17 nicht mehr die jüngste; keine ändert den Strahl.
-  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB + 4);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB + 5); // seit TODO 2.17b Fassung 23
   assert.equal(WAFFEN_NACHSCHUB, WAFFEN_KLASSE + 1);
   assert.equal(schuss(STRAHL, 'nahkampf').schaden, 34.5,
     'erst ab Fassung 17 gilt der Klassenfaktor im Strahl — der Test oben belegt Fassung 16 davor');

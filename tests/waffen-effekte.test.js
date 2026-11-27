@@ -13,8 +13,9 @@ import { MatchController } from '../src/engine/match.js';
 import { buildEffect, EFFECT_KIND, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
 import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
+import { WAFFEN_WURF } from '../src/shared/config/waffen-fassung.js';
 
-function neuesMatch(spieler = 2) {
+function neuesMatch(spieler = 2, waffen = undefined) {
   /*
    * Der Schütze ist ausdrücklich Fernkämpfer (Klassenfaktor 1,0, BAL-02): Seit
    * Waffenfassung 17 gilt der Klassenfaktor auch für Strahlwaffen. Diese Tests
@@ -23,6 +24,7 @@ function neuesMatch(spieler = 2) {
    */
   const match = new MatchController({
     seed: 4242, teams: spieler, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, schaden: 1,
+    ...(waffen ? { waffen } : {}),
     klassen: KLASSEN_STANDARD,
     loadouts: Array.from({ length: spieler }, () => ({ classId: 'fernkampf' })),
   });
@@ -88,8 +90,9 @@ test('Astralross: trägt den Schützen weit und setzt ihn aufs Gelände', () => 
   assert.ok(Math.abs(nachher - vorher) > 60, 'weiter als ein gewöhnlicher Sprung');
 });
 
+// Kettenblitz des Tesla-Turms bis Waffenfassung 22; ab 23 stellt er ein Geschütz auf (waffen-fassung23.test.js).
 test('Tesla-Turm: Blitz springt auf die zwei nächsten Gegner, Schaden fällt, Verbündete bleiben verschont', () => {
-  const match = neuesMatch(4);
+  const match = neuesMatch(4, WAFFEN_WURF);
   const [a, b, c, d] = match.getState().entities.map(e => e.entityId);
   stelle(match, [200, 320, 440, 1500], 680);
   const vorher = [a, b, c, d].map(id => leben(match, id));
@@ -105,13 +108,13 @@ test('Tesla-Turm: Blitz springt auf die zwei nächsten Gegner, Schaden fällt, V
 
 test('Tesla-Turm: ohne Treffer kein Sprung; gleiche Lage, gleicher Zustandshash', () => {
   const lauf = () => {
-    const match = neuesMatch(3);
+    const match = neuesMatch(3, WAFFEN_WURF);
     stelle(match, [200, 330, 450], 680);
     schiesse(match, 'pa_129', 0, 60);
     return match.stateHash();
   };
   assert.equal(lauf(), lauf());
-  const match = neuesMatch(3);
+  const match = neuesMatch(3, WAFFEN_WURF);
   const ids = match.getState().entities.map(e => e.entityId);
   stelle(match, [200, 330, 450], 680);
   schiesse(match, 'pa_129', Math.PI / 2, 60);

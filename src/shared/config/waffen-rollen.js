@@ -133,7 +133,7 @@ const TABELLE = Object.freeze({
   // heavy_ranged — Gewehre, Granaten, Wurfklingen
   pa_041: ['hand', 'projektil'],
   pa_042: ['hand', 'projektil'],
-  pa_043: ['hand', 'projektil'],
+  pa_043: ['aufstell', 'selbst'], // Waffenfassung 23: stellt ein Geschütz auf
   pa_044: ['hand', 'projektil'],
   pa_045: ['hand', 'projektil'],
   pa_046: ['hand', 'projektil'],
@@ -150,7 +150,7 @@ const TABELLE = Object.freeze({
   pa_057: ['hand', 'projektil'],
   pa_058: ['hand', 'projektil'],
   pa_059: ['hand', 'projektil'],
-  pa_060: ['hand', 'projektil'],
+  pa_060: ['aufstell', 'selbst'], // Waffenfassung 23: stellt ein Geschütz auf
 
   // elemental — gerichtete Elemente; Portale werden aufgestellt, der Dämon beschworen
   pa_061: ['beschwoerung', 'projektil'],
@@ -227,7 +227,7 @@ const TABELLE = Object.freeze({
   pa_126: ['aufstell', 'selbst'],
   pa_127: ['aufstell', 'projektil'],
   pa_128: ['aufstell', 'selbst'],
-  pa_129: ['hand', 'strahl'],
+  pa_129: ['aufstell', 'selbst'], // Waffenfassung 23: stellt ein Geschütz auf
   pa_130: ['aufstell', 'selbst'],
   pa_131: ['aufstell', 'selbst'],
   pa_132: ['hand', 'strahl'],
@@ -287,6 +287,9 @@ export const SPEZIALFAELLE = Object.freeze({
   pa_148: 'Feuerschild: Aura um den Anwender, kein aufgestelltes Objekt und kein Geschoss.',
   pa_105: 'Frostrolle: Schriftrolle (Symbol) für einen zufälligen Schutzzauberspruch; das Zauberbild ist kein abgefeuertes Geschoss.',
   pa_124: 'Wachgeschütz: wird aufgestellt und feuert selbst; das Geschossbild gehört zum Turm, nicht zur Hand.',
+  pa_129: 'Tesla-Turm (Waffenfassung 23): wird aufgestellt und feuert vier Runden selbst, schwach, aber oft.',
+  pa_043: 'Kampfgeschütz (Waffenfassung 23): wird aufgestellt und feuert zwei Runden selbst, schwer.',
+  pa_060: 'Gatlingkanone (Waffenfassung 23): wird aufgestellt und feuert fünf Runden selbst, leicht.',
   pa_149: 'Goldene Reliktkugel: Relikt wirkt auf den Anwender; kein abgefeuertes Geschoss.',
   pa_119: 'Munitionskiste: wird abgestellt und füllt Munition auf.',
   pa_125: 'Nachschubkiste: Abwurf, wird in der Welt abgesetzt.',

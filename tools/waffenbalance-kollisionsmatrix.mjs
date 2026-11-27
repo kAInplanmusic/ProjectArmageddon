@@ -216,13 +216,13 @@ ergebnis.szenarien = szenarien();
 fs.mkdirSync(ZIEL, { recursive: true });
 fs.writeFileSync(path.join(ZIEL, 'kollisionsmatrix.json'), JSON.stringify(ergebnis, null, 2) + '\n');
 
-/* Vertrag: 150 Waffen, 114 Angriff, 36 Selbst — und jeder Nachweis vollständig. */
+/* Vertrag: 150 Waffen, 111 Angriff, 39 Selbst (seit Waffenfassung 23: drei Geschütze, TODO 2.17b) — und jeder Nachweis vollständig. */
 if (!NUR) {
   assert.equal(ergebnis.summary.waffen, 150);
-  assert.equal(ergebnis.summary.angriff, 114);
-  assert.equal(ergebnis.summary.selbst, 36);
-  assert.equal(ergebnis.summary.angriffMitKollision, 114, 'nicht jede Angriffswaffe hat eine Kollision');
-  assert.equal(ergebnis.summary.selbstMitNutzen, 36, 'nicht jede Selbstwirkung hat einen Nutzwert');
+  assert.equal(ergebnis.summary.angriff, 111);
+  assert.equal(ergebnis.summary.selbst, 39);
+  assert.equal(ergebnis.summary.angriffMitKollision, 111, 'nicht jede Angriffswaffe hat eine Kollision');
+  assert.equal(ergebnis.summary.selbstMitNutzen, 39, 'nicht jede Selbstwirkung hat einen Nutzwert');
   for (const w of angriff) {
     assert.ok(w.probe?.kollision, `${w.id}: Kollision fehlt`);
     assert.equal(w.probe.kontrollierteExplosion, false, `${w.id}: Explosionsaufruf statt Kollision`);
@@ -231,12 +231,12 @@ if (!NUR) {
   assert.equal(ergebnis.kontrollfall.kollisionsEreignisse, 0,
     'Der kontrollierte Explosionsaufruf darf kein Kollisionsereignis erzeugen');
 }
-console.log(`\nFertig: ${ergebnis.summary.waffen} Waffen, ${ergebnis.summary.angriffMitKollision}/114 Kollisionen, `
-  + `${ergebnis.summary.angriffMitSchaden}/114 mit Schaden, ${ergebnis.summary.selbstMitNutzen}/36 Selbstwirkungen mit Nutzen.`);
+console.log(`\nFertig: ${ergebnis.summary.waffen} Waffen, ${ergebnis.summary.angriffMitKollision}/111 Kollisionen, `
+  + `${ergebnis.summary.angriffMitSchaden}/111 mit Schaden, ${ergebnis.summary.selbstMitNutzen}/39 Selbstwirkungen mit Nutzen.`);
 console.log(`Kontrollfall: wendeExplosionAn richtet ${ergebnis.kontrollfall.schaden} Schaden an, `
   + `meldet aber ${ergebnis.kontrollfall.kollisionsEreignisse} Kollisionsereignisse.`);
 if (!NUR) {
-  console.log(`Rollenentfernung erreicht: ${ergebnis.summary.rollenDistanzErreicht}/114`
+  console.log(`Rollenentfernung erreicht: ${ergebnis.summary.rollenDistanzErreicht}/111`
     + (ergebnis.summary.angriffNurKollision.length ? `; nur Kollision: ${ergebnis.summary.angriffNurKollision.map(w => w.id).join(', ')}` : ''));
 }
 
@@ -279,16 +279,17 @@ function szenarien() {
   };
   ergebnisse.zweiZiele = { durchschlag: zweiZiele('pa_055'), normal: zweiZiele('pa_040') };
 
-  /* Wanddeckung: eine Sichtlinienwaffe wird durch eine echte Wand gesperrt. */
+  /* Wanddeckung: eine Sichtlinienwaffe wird durch eine echte Wand gesperrt. Seit Waffenfassung 23 der Arkanhammer `pa_138`
+     (der Tesla-Turm `pa_129`, bis dahin hier im Einsatz, stellt seitdem ein Geschütz auf und braucht keine Sicht mehr). */
   {
-    const { m, shooter, target } = pruefstand('pa_129', { distance: 500 });
+    const { m, shooter, target } = pruefstand('pa_138', { distance: 500 });
     for (const [id, x] of [[shooter, 400], [target, 900]]) {
       m.world.setComponent(id, 'Position', 'x', x);
       m.world.setComponent(id, 'Position', 'y', 100);
     }
     for (let x = 648; x <= 652; x += 1) for (let y = 40; y <= 160; y += 1) m.terrain.setPixel(x, y, true);
     m.consumeEvents();
-    const r = m.fire(shooter, 0, 100, 'pa_129');
+    const r = m.fire(shooter, 0, 100, 'pa_138');
     ergebnisse.wanddeckung = {
       wand: { x: 650, y: 40, breite: 5, hoehe: 121 },
       abgelehnt: r.ok === false,
@@ -298,9 +299,9 @@ function szenarien() {
     assert.equal(ergebnisse.wanddeckung.abgelehnt, true, 'Wanddeckung: Schuss wurde nicht gesperrt');
   }
 
-  /* Randtreffer: Ziel kurz vor dem rechten Kartenrand, Strahl trifft. */
+  /* Randtreffer: Ziel kurz vor dem rechten Kartenrand, Strahl trifft (Arkanhammer, siehe Wanddeckung). */
   {
-    const { m, shooter, target } = pruefstand('pa_129', { distance: 360 });
+    const { m, shooter, target } = pruefstand('pa_138', { distance: 360 });
     const breite = m.terrain.width;
     for (const [id, x] of [[shooter, breite - 400], [target, breite - 40]]) {
       m.world.setComponent(id, 'Position', 'x', x);
@@ -309,7 +310,7 @@ function szenarien() {
     m.world.setComponent(target, 'Health', 'max', ZIEL_LP);
     m.world.setComponent(target, 'Health', 'current', ZIEL_LP);
     m.consumeEvents();
-    const r = m.fire(shooter, 0, 100, 'pa_129');
+    const r = m.fire(shooter, 0, 100, 'pa_138');
     const ereignisse = [...m.consumeEvents()];
     const treffer = ereignisse.find(e => e.type === 'hitscan' && e.payload.target === target);
     ergebnisse.randtreffer = {

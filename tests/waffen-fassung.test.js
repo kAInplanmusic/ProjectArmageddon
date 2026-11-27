@@ -155,7 +155,7 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, 22); // Fassung 21 (Entscheidungen 2026-11-11) // Waffenfassung 20 (Feuerwesen läuft und zerbirst); 19 (BAL-16 Streuung der Schrotflinte); 18 (BAL-05 Nachschub füllt sich nie selbst); 17 (BAL-02 Klassenfaktor im Strahl), 16 (W01-Trefferfenster), 15 (GP-4 Tempo), 14 (AERO-Windfaktor), 13 bis 10 bleiben gültig und bitgleich
+  assert.equal(WAFFEN_STANDARD, 23); // seit TODO 2.17b Fassung 23 (Geschütze); 22 Wurfmine, 21 Entscheidungen 2026-11-11 // Waffenfassung 20 (Feuerwesen läuft und zerbirst); 19 (BAL-16 Streuung der Schrotflinte); 18 (BAL-05 Nachschub füllt sich nie selbst); 17 (BAL-02 Klassenfaktor im Strahl), 16 (W01-Trefferfenster), 15 (GP-4 Tempo), 14 (AERO-Windfaktor), 13 bis 10 bleiben gültig und bitgleich
   assert.equal(WAFFEN_SPREIZUNG, 10);
   assert.equal(WAFFEN_VORSTRAHL, 9);
   assert.equal(WAFFEN_FEINTUNING, 8);
@@ -173,7 +173,8 @@ test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf de
   assert.equal(normalisiereWaffen(19), WAFFEN_STREU);
   assert.equal(normalisiereWaffen(20), WAFFEN_FEUERWESEN);
   assert.equal(normalisiereWaffen(21), WAFFEN_ENTSCHEIDUNG);
-  assert.equal(normalisiereWaffen(22), WAFFEN_STANDARD);
+  assert.equal(normalisiereWaffen(22), 22);
+  assert.equal(normalisiereWaffen(23), WAFFEN_STANDARD);
   assert.equal(normalisiereWaffen(7), WAFFEN_ZUENDERPLUS);
   assert.equal(normalisiereWaffen(8), WAFFEN_FEINTUNING);
   assert.equal(normalisiereWaffen(9), WAFFEN_VORSTRAHL);
@@ -185,7 +186,8 @@ test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf de
   assert.equal(normalisiereWaffen(15), WAFFEN_TEMPO);
   assert.equal(normalisiereWaffen(16), WAFFEN_TREFFER);
   assert.equal(normalisiereWaffen(17), WAFFEN_KLASSE, 'Fassung 17 bleibt gültig (alte Replays)');
-  assert.equal(normalisiereWaffen(23), WAFFEN_STANDARD, 'unbekannte künftige Fassung fällt auf den Standard');
+  assert.equal(normalisiereWaffen(23), 23);
+  assert.equal(normalisiereWaffen(24), WAFFEN_STANDARD, 'unbekannte künftige Fassung fällt auf den Standard');
 });
 
 /** SHA-256 des Katalogs in Fassung 3 (gemessen am Stand 09664fe, vor Fassung 4). */
@@ -474,7 +476,7 @@ test('Fassung 14 bleibt bitgleich: Katalog in Fassung 14 = Stand vor Fassung 15 
 });
 
 test('Fassung 15 (WAFFEN_TEMPO) holt die langsamen Kategorien ins Zielband; Standard ist 21', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB + 4);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_NACHSCHUB + 5); // seit TODO 2.17b Fassung 23
   assert.equal(WAFFEN_NACHSCHUB, WAFFEN_KLASSE + 1);
   assert.equal(WAFFEN_KLASSE, WAFFEN_TREFFER + 1);
   assert.equal(WAFFEN_TREFFER, WAFFEN_TEMPO + 1);
