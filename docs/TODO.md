@@ -34,7 +34,7 @@ sind aber keine Listen.
 
 | Bereich | Stand |
 |---|---|
-| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`, sobald gemergt, sonst 17), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
+| Fassungen (Standard neuer Partien) | Gelände 18 (`GELAENDE_VIELFALT`; Fassung 19 liegt auf einem offenen Branch, Abschnitt 10), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
 | Zeilenbudgets | `src/engine/match.js` ≤ 2790 Zeilen (`tests/zeilenbudget.test.js`) |
 | Tests | `npm test` 2026-11-27: 3215 grün, 0 rot |
 | Spieltest mit Menschen (QV-4) | nicht erfolgt |
@@ -69,12 +69,13 @@ Nichts offen.
 - **Abnahme:** `node scripts/messung-kartenqualitaet.mjs --vergleich=<alte Fassung>`.
 
 ### 2.4 GELAENDE-1 (TODO 4.6, Rückmeldung „Landschaft langweilig“)
-- **Steht:** Fassung 18 (Inseln mit Tafelberg, Überhang, Schiefe), Fassung 19 (Zonenarten gewichtet: weniger Höhlen
-  und Pyramiden, mehr Inseln und Ebenen).
+- **Steht:** Fassung 18 (Inseln mit Tafelberg, Überhang, Schiefe), in `main`.
+- **Fertig gebaut, noch nicht in `main`:** Fassung 19 (Zonenarten gewichtet: weniger Höhlen und Pyramiden, mehr
+  Inseln und Ebenen) auf `integration/zonen-gewichte`; vor dem Merge vier E2E-Specs anpassen (Abschnitt 10).
 - **Offen, als Nächstes:** **Landhöhe variieren.** Befund: Jede Karte ist ein großer Landblock bis etwa zwei Drittel
   der Höhe. **Wo:** `src/shared/terrainKomposition.js`, dort wo die Grundhöhe je Zone gesetzt wird (Suche nach der
   Stelle, an der die Zonen-Masken zusammengesetzt werden; `masseSchief`/`inselMasse` aus Fassung 18 als Muster).
-  **Wie:** Geländefassung 20: je Zone eine Höhe aus dem Seed ziehen (z. B. 35–75 % der Kartenhöhe, mit einem
+  **Wie:** Geländefassung 20 (nach dem Merge von 19, sonst als 19 neu nummerieren): je Zone eine Höhe aus dem Seed ziehen (z. B. 35–75 % der Kartenhöhe, mit einem
   `rng.next()` je Zone), dazu tiefe Täler zwischen Zonen. Prüfen mit dem Übersichtsbild
   (Skript im Muster von `scripts/messung-kartenqualitaet.mjs`) und `check:erreichbarkeit`.
 - **Offen danach:** Höhlen mit weniger Tunnelgewirr (größere Kammern, weniger Gänge, Höhlenbau in
@@ -210,7 +211,7 @@ am Telefon, Biome 15–20 · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkug
 
 ## 10. Branches
 
-Ziel: nur `main`. Stand 2026-11-28: Jeder Branch auf GitHub ist entweder vollständig in `main` enthalten oder sein
+Ziel: nur `main`. Stand 2026-11-28: Bis auf `integration/zonen-gewichte` (unten, OFFEN) ist jeder Branch auf GitHub entweder vollständig in `main` enthalten oder sein
 Inhalt steckt in anderer Form in `main` (geprüft mit `git cherry` und je Änderung im Code). Gelöscht wird über den
 Workflow **„Branches aufräumen“** (`.github/workflows/branch-aufraeumen.yml`; Listen `.github/branch-loeschliste.txt`
 für vollständig enthaltene, `.github/branch-verworfen.txt` für geprüfte, überholte), weil das direkte Löschen per
@@ -221,6 +222,7 @@ für vollständig enthaltene, `.github/branch-verworfen.txt` für geprüfte, üb
 | `claude/e2e-await-timeout` | Überholt: Home-Bypass (`tests/e2e/helfer/test-basis.mjs`), `await startMatch` (`messlauf.js`), Dezimalkomma (`kartenWahl.js`), Fraktionsanzeige und Texturendung (`main.js`) stehen in `main` |
 | `claude/regelkontrolle-skript` | Übernommen: `scripts/regel-kontrolle.mjs`, `npm run balance:regelkontrolle` |
 | `claude/repo-aufraeumen-reddit` | Übernommen: `docs/werbung/reddit-post.md`; Probe-Workflow `bildvergleich-probe.yml` entfernt |
+| **`integration/zonen-gewichte` (OFFEN)** | Geländefassung 19 (gewichtete Zonen, Code und Unit-Tests fertig, `npm test` grün, Online-Mine-Test grün, `seil.spec` schon angepasst in `a5aebce`). CI-Lauf 823 rot nur in E2E-Specs, deren **Testaufbau** an der Karte von Fassung 18 hängt (kein Spielfehler). Zu tun, je Spec: Ursache lokal mit `npx playwright test tests/e2e/<spec> --trace off --retries=0` zeigen, dann den **Aufbau** robust machen (Figur wie `stelleUnterDecke` in `tests/e2e/seil.spec.mjs` an eine passende Stelle setzen oder Seed neu wählen), **nie** die Prüfung abschwächen: (1) `tests/e2e/gehen.spec.mjs:87` „Rück springt höher als Enter“, gemessen 0 px (vermutlich Decke/Wand über der Startfigur: Figur auf freie Fläche mit ≥ 200 px Luft darüber setzen); (2) `tests/e2e/feuerwesen.spec.mjs:10` „der Gnom stand im Zustand“, erwartet > 10, gemessen 4 (der Gnom läuft gegen eine Wand: Startplatz mit freier Strecke wählen); (3) `tests/e2e/waffen-animation.spec.mjs:102` und `:143` (Rückstoß/Mündungsblitz; Ursache noch nicht angesehen); (4) Teil 2 von Lauf 823 lief beim Eintrag noch: Ergebnis in GitHub Actions nachsehen. Danach `git rebase main`, CI grün, `npm run paket:stand`, Fast-Forward nach `main`; Stand in Abschnitt 0 auf Gelände 19 setzen |
 | `experiment/boden-hell` | Verworfen: Auftraggeber wählte am 2026-11-27 den Mittelweg (in `main`) |
 | `claude/qv6-*`, `claude/wasserlauf-ausbau`, `claude/balance-rollen-2026-11-18`, `integration/splitter`, `integration/menue-einfach`, `paket/startfairness` | Inhalt gleichwertig in `main` (rebasiert gemergt) |
 | alle übrigen `integration/*`, `paket/*`, `claude/*` | Vollständig in `main` |
