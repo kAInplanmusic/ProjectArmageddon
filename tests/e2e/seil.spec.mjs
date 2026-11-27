@@ -56,7 +56,9 @@ async function stelleUnterDecke(page) {
         for (let dy = 1; dy <= 40 && frei; dy += 1) for (const dx of [-10, 0, 10]) if (fest(x + dx, y - dy)) frei = false;
         if (!frei) continue;
         let decke = -1;
-        for (let dy = 1; dy <= 400; dy += 1) if (fest(x, y - dy)) { decke = dy; break; }
+        // Nur Gelände innerhalb der Karte zählt als Decke: Außerhalb meldet `isSolid` fest, am Kartenrand findet das
+        // Seil aber keinen Halt (Geländefassung 19 legte die erste Fundstelle so, dass die „Decke“ der obere Rand war).
+        for (let dy = 1; dy <= 400 && y - dy >= 0; dy += 1) if (fest(x, y - dy)) { decke = dy; break; }
         if (decke < 190) continue; // höher als ein Sprung (~120 px), sonst prallt die Figur an die Decke
         if (decke < 0) continue;
         let offen = true; // keine Wand dicht daneben, damit die Figur schwingen kann
