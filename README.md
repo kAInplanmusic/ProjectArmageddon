@@ -13,7 +13,7 @@ am Rechner, allein am Gerät oder online gegeneinander.
 | **Geräte** | Handy und iPad zuerst (Touch-Bedienung), Tastatur und Maus ebenso; nur Querformat |
 | **Mehrspieler** | Am selben Gerät oder online über einen Server (Lobby-ID teilen, beitreten). Es gibt keine Computergegner: jedes Team spielt ein Mensch |
 | **Welten** | 20 Biome, darunter Vulkan, Kristallhöhlen, Dschungel, Eiswüste, Korallenriff, Asteroidenfeld, Planet und Tiefsee. Manche ändern die Regeln: Strömung, geringe Schwerkraft, fließendes oder giftiges Wasser |
-| **Karten** | Jede Karte entsteht aus einer Zahl (Seed): Inseln, Höhlen, Schluchten, Ruinen, runde Planeten. Fünf Größen, mehrere Formate |
+| **Karten** | Jede Karte entsteht aus einer Zahl (Seed): Inseln, Höhlen, Schluchten, Ruinen, runde Planeten. Größen von „klein“ bis „kolossal“, mehrere Formate (quer, 1:1, breit) |
 | **Fraktionen** | 9 Fraktionen mit je 9 Figuren (81 Figuren) |
 | **Waffen** | 150 Waffen. Jede Figur startet mit 5 festen Waffen ohne Munitionsgrenze, Seil und Gleitschirm und einer eigenen Spezialwaffe. 11 Waffen sind legendär, jede Fraktion hat eine. Weitere Waffen kommen aus Kisten |
 | **Besonderes** | Elemente wirken aufeinander (Feuer, Eis, Gift, Lava, Wasser), aufstellbare Geschütze, ein Kartenportal, Günther und Cookie als Störenfriede, Mahlstrom zum Partieende |
