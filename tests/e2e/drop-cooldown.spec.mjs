@@ -25,8 +25,26 @@ async function boot(page, { seed = 20260911 } = {}) {
   }, { timeout: 10_000 });
 }
 
+/**
+ * Wählt eine abwerfbare Waffe (begrenzte Munition). Seit der Startausrüstung (Kit 5, TODO 2.17) ist die erste aktive
+ * Waffe eine der festen Startwaffen mit unbegrenzter Munition, und die lässt sich nicht abwerfen.
+ */
+async function waehleAbwerfbar(page) {
+  const id = await page.evaluate(() => {
+    const api = window.__PA__;
+    const match = api.getMatch();
+    const spieler = match.activePlayerId;
+    const ziel = match.inventory.getWeapons(spieler).find(w => Number.isFinite(match.inventory.getAmmo(spieler, w)));
+    if (ziel) api.selectWeaponById(ziel);
+    return ziel ?? null;
+  });
+  expect(id, 'Testaufbau: eine abwerfbare Waffe ist vorhanden').not.toBeNull();
+  return id;
+}
+
 test('Abwerfen per Taste legt eine Kiste ab und entfernt die Waffe', async ({ page }) => {
   await boot(page, { seed: 4242 });
+  await waehleAbwerfbar(page);
 
   const vorher = await page.evaluate(() => {
     const api = window.__PA__;
@@ -77,7 +95,9 @@ test('Die abgeworfene Waffe fliegt und landet aufhebbar', async ({ page }) => {
     const px = match.world.getComponent(spieler, 'Position', 'x');
     const py = match.world.getComponent(spieler, 'Position', 'y');
 
-    const abwurf = api.game.dropWeapon(0);
+    // Die erste abwerfbare Anzeigeposition (die festen Startwaffen mit unbegrenzter Munition lehnt der Motor ab, Kit 5).
+    let abwurf = null;
+    for (let position = 0; position < 12 && !abwurf?.ok; position += 1) abwurf = api.game.dropWeapon(position);
     if (!abwurf?.ok) return { ok: false, fehler: abwurf?.errors };
 
     // Der Wurf muss eine Geschwindigkeit haben — sonst wäre es ein Ablegen.

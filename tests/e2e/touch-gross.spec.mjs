@@ -58,6 +58,12 @@ async function starte(page, optionen) {
     api.setAutoLoop(false);
     await api.startMatch({ seed: 4711, kartentyp: 'autonom', ...o });
     api.setAutoLoop(false);
+    // Eine abwerfbare Waffe wählen, damit alle vier Aktionsknöpfe (mit Abwurf) im Bild stehen; die erste Startwaffe
+    // hat seit Kit 5 unbegrenzte Munition, dann ist der Abwurf-Knopf zu Recht ausgeblendet.
+    const match = api.getMatch();
+    const spieler = match.activePlayerId;
+    const abwerfbar = match.inventory.getWeapons(spieler).find(w => Number.isFinite(match.inventory.getAmmo(spieler, w)));
+    if (abwerfbar) api.selectWeaponById(abwerfbar);
   }, optionen);
   await expect(page.locator('#touch-laufen')).toBeVisible();
   await expect(page.locator('#touch-aktionen')).toBeVisible();
