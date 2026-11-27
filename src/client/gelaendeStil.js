@@ -32,7 +32,19 @@ const KONTUR = hexRgb(PAL.kontur);
 const MOOS_LIMETTE = hexRgb(PAL.limette);
 /** Kleine Palette der Steintöne: Blaugrau, Braungrau, Olivgrau, Schiefer. */
 // Dunkler als zuerst (Entwurf: dunkles Olivbraun/Blaugrau): Faktor 0,78 auf die Grundtöne.
-const TOENE = [[56, 68, 88], [92, 76, 60], [74, 82, 52], [84, 80, 74], [64, 72, 84]].map(c => c.map(v => Math.round(v * 0.78)));
+const TOENE_FELS = [[56, 68, 88], [92, 76, 60], [74, 82, 52], [84, 80, 74], [64, 72, 84]].map(c => c.map(v => Math.round(v * 0.965)));
+/**
+ * Steintöne je Bodenart (Rückmeldung 2026-11-25 „Landschaft langweilig“): Vorher trug jede Karte dieselben fünf Grautöne,
+ * die Kulisse färbte nur zu einem Drittel ein. Jetzt hat der Geländekörper das Gestein seines Bodens: unter Wiese Erde und
+ * Olivfels, unter Sand Sandstein, unter Schnee kalter Blaufels, unter Asche warmer Basalt. Fels behält die alten Töne.
+ */
+// Mittelweg (Entscheidung 2026-11-27): halb so hell wie der Versuch, deshalb die Töne × 0,84.
+const TOENE_JE_BODEN = Object.freeze(Object.fromEntries(Object.entries({
+  gras: [[112, 90, 64], [96, 80, 58], [92, 98, 62], [120, 100, 70], [84, 74, 56]],
+  sand: [[176, 140, 94], [160, 124, 84], [188, 156, 110], [150, 116, 80], [170, 138, 100]],
+  schnee: [[118, 132, 158], [104, 118, 144], [138, 150, 172], [96, 108, 132], [128, 140, 162]],
+  asche: [[70, 58, 54], [56, 48, 48], [78, 64, 58], [50, 42, 44], [84, 68, 60]],
+}).map(([art, toene]) => [art, toene.map(c => c.map(v => Math.round(v * 0.84)))])));
 const MOOS_STEIN = [52, 104, 30];
 /** Anteil der Bodenfarbe (Oberfläche/Tiefe) an den Steintönen: jede Karte bekommt ihr eigenes Gestein. */
 const STEIN_TON = 0.34;
@@ -109,6 +121,7 @@ function baueSteine(breite, hoehe, seed, palette) {
     inv2: new Float32Array(n * 16), inv3: new Float32Array(n * 36),
   };
   const tint = mischeRgb(palette.surface, palette.deep, 0.5);
+  const TOENE = TOENE_JE_BODEN[bodenArt(palette.surface, palette.boden)] ?? TOENE_FELS;
   for (let j = 0; j < ny; j += 1) {
     for (let i = 0; i < nx; i += 1) {
       const gi = i - 2;
@@ -413,7 +426,7 @@ let tabellenCache = null;
 
 /** Alles, was nur von Seed, Kartengröße und Palette abhängt (nicht von der Maske). Wird nie verändert. */
 function baueTabellen(breite, hoehe, palette, seed) {
-  const schluessel = `${breite}x${hoehe}:${seed}:${palette.surface}:${palette.deep}`;
+  const schluessel = `${breite}x${hoehe}:${seed}:${palette.surface}:${palette.deep}:${palette.boden ?? ''}`;
   if (tabellenCache?.schluessel === schluessel) return tabellenCache.tabellen;
   const S = baueSteine(breite, hoehe, seed, palette);
   const { nx, ny, p1x, p1y, w1, n2, p2x, p2y, n3, p3x, p3y, lcx, lcy, lsz, lr, lg, lb, lflag, lang, inv2, inv3 } = S;
@@ -683,7 +696,7 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0, stof
  * Am Rand bleibt die Farbe unberührt, ab etwa 130 px Tiefe sind es noch 42 %. Das gibt Masse und Düsternis,
  * ohne die Maske anzufassen.
  */
-export function dunkleNachTiefe(d, bitmap, breite, hoehe, tiefe = 130, rest = 0.42) {
+export function dunkleNachTiefe(d, bitmap, breite, hoehe, tiefe = 130, rest = 0.57) {
   const n = breite * hoehe;
   const abst = new Uint8Array(n);
   const kappe = 200;

@@ -110,6 +110,7 @@ Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit un
 | 2026-11-17 | Kein Netlify; Hosting des Web-Zugangs auf Cloudflare |
 | 2026-11-25 | Startausrüstung (ersetzt EXKL-1): jede Figur trägt 5 feste Startwaffen mit unbegrenzter Munition (Auswahl durch den Agenten, gemessen), 2 Gimmicks (Seil 5×, Gleitschirm pa_114 5×; das Seil ist eine der 150 Waffen) und eine Spezialwaffe aus den übrigen 143: legendär 1 Schuss, stark 2, normal 3. Stufen nach Seltenheit (legendary; epic/rare; common/uncommon). Je Fraktion (9 Figuren): 1 legendär, 2 stark, 6 normal. TURRET-1: 2 bis 3 vorhandene, selten genutzte Waffen bekommen die Turm-Mechanik (Waffenfassung mit Marke, gemessen) |
 | 2026-11-25 | Das Seil (Ninjaseil) ist der Enterhaken pa_111. Bedienung: Handy und iPad zuerst, Tastatur an zweiter Stelle |
+| 2026-11-27 | Mindestens zehn legendäre Waffen: 11 (die 3 legendären und die 8 bisher epischen), jede Fraktion eine eigene. Gelände: Mittelweg zwischen „düsterer“ (2026-10-27) und hell — Tiefe halb so dunkel, Gestein je Bodenart |
 | 2026-11-24 | Zugtempo (Agent nach TODO 2.8, vom Auftraggeber bestätigt: „make it as you think“): Zugpause 3 → 1,5 s (ändert die Entscheidung vom 13.10.), Schusswiederholung online 2 → 1,5 s, Rückzugsfrist 5 → 3 s (Zugregelfassung 3). Gemessen: Warten je Zug 8 → 4,5 s |
 | 2026-11-23 | Registrierung mit E-Mail (eindeutige Namen und Adressen, Anmeldung mit Name oder E-Mail); Web-Zugang mit schwächerem Hash (PBKDF2, 20 000 Runden) statt bezahltem Cloudflare-Tarif |
 
