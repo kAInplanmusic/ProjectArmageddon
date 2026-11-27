@@ -4,3 +4,16 @@ bild/b5-waffen-anim-versuch
 wip/stand-2026-10-05
 plan/letzter-halt
 arbeit/e2e-triage
+claude/e2e-await-timeout
+claude/regelkontrolle-skript
+claude/repo-aufraeumen-reddit
+experiment/boden-hell
+claude/qv6-wasser-stroemung
+claude/qv6-welle1-schwerkraft
+claude/qv6-welle1-stroemung-schwerkraft
+claude/qv6-welle2-gefahrenwasser
+claude/wasserlauf-ausbau
+claude/balance-rollen-2026-11-18
+integration/splitter
+integration/menue-einfach
+paket/startfairness

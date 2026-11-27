@@ -1,11 +1,30 @@
-# AAB-Regeln: Arsenalwert-System
-## SSOT (Single Source of Truth)
+# SSOT — die eine maßgebliche Quelle
 
-Dieses Dokument bildet das zentrale Referenzsystem für alle AAB-Regeln (Arsenalwert-System) im Projekt ProjectArmageddon.
+**SSOT** heißt „Single Source of Truth“: Für jedes Thema gibt es genau **eine** Stelle, die verbindlich ist. Steht
+woanders (in einem Bericht, einem alten Plan, einem Kommentar) etwas anderes, gilt die hier genannte Quelle, und die
+andere Stelle ist veraltet. Diese Datei fasst die früheren SSOT-Dokumente zusammen: die AAB-Regeln (vorher
+`docs/AAB-SSOT.md`, unten in Teil B) und den Verweis auf die Biom-Quelle (`docs/biome-ssot.md`, Teil C).
 
----
+## Teil A: Welche Quelle gilt wofür
 
-## Regel-Übersicht
+| Thema | Verbindliche Quelle | Hinweis |
+|---|---|---|
+| Offene Arbeit, Pläne, Entscheidungen des Auftraggebers | `docs/TODO.md` | Die einzige Aufgabenliste; andere Listen gibt es nicht mehr |
+| Arbeitsregeln (Prüfen, Mergen, Kosten) | `AGENTS.md` | Nur der Auftraggeber ändert sie |
+| Waffen: Werte, Namen, Seltenheit | `src/shared/config/weapons.js` (Katalog) und `src/shared/config/waffen-fassung.js` mit `waffen-f*.js` (Werte je Fassung) | `project_armageddon_weapon_index.csv` ist die Liste für Menschen |
+| Startausrüstung, legendäre Waffen | `src/shared/config/ausruestung.js`, `ausruestung-spezial.js` (erzeugt von `scripts/ausruestung-zuordnen.mjs`) | |
+| Fraktionen und Figuren | `src/shared/config/factions.js` | |
+| Biome: Inhalte (Materialien, Objekte, Auslöser) | `docs/biome-ssot.md` | `docs/biome/*.md` wird daraus erzeugt (`node scripts/biome-dateien.mjs`) |
+| Biome im Spiel, Biomregeln | `src/shared/config/biome-*.js`, `biomregeln.js` | |
+| Gelände und Kartenbau | `src/shared/config/gelaende.js` (Fassungen), `src/shared/terrainKomposition.js` | |
+| Regelfassungen (welche Regeln neue Partien nutzen) | je Thema `*_STANDARD` in `src/shared/config/*.js` | Tests prüfen, dass der Standard die neueste Fassung ist |
+| Testzahlen | `docs/testlauf.json` | Wird von `npm run testlauf:erfassen` geschrieben, nie von Hand |
+| Server-Betrieb und Kosten | `docs/betrieb-INSTANZ.md` | Ohne Eintrag dort wird nichts gemietet (`AGENTS.md` §5, §7) |
+| Arsenalwert (AAB) | Teil B unten, Code `src/engine/aab.js` | |
+
+## Teil B: AAB-Regeln (Arsenalwert-System)
+
+### Regel-Übersicht
 
 | Ticket | Name | Status |
 |--------|------|--------|
@@ -21,22 +40,22 @@ Dieses Dokument bildet das zentrale Referenzsystem für alle AAB-Regeln (Arsenal
 
 ---
 
-## AAB-01: Arsenalwert
+### AAB-01: Arsenalwert
 
-### Definition
+#### Definition
 Der Arsenalwert ist der Summenwert aller Waffen im Inventar, berechnet aus den PowerScore-Werten in der Waffenkategorie.
 
-### Formel
+#### Formel
 ```
 Arsenalwert = Σ(powerScore(waffe) für alle Waffen im Inventar)
 ```
 
-### Implementierung
+#### Implementierung
 - **Datei**: `src/engine/aab.js`
 - **Funktion**: `arsenwert(weaponId)`, `computeArsenalwert(weaponIds, className)`
 - **SSOT**: `powerScore` Feld in `src/shared/config/weapons.js`
 
-### PowerScore-Referenz
+#### PowerScore-Referenz
 | Tier | Min. Score | Farbe |
 |------|-----------|-------|
 | legendary | 190 | #8a2be2 |
@@ -47,45 +66,45 @@ Arsenalwert = Σ(powerScore(waffe) für alle Waffen im Inventar)
 
 ---
 
-## AAB-04: Kampfwert
+### AAB-04: Kampfwert
 
-### Definition
+#### Definition
 Der Kampfwert misst die situationelle Handlungsfähigkeit eines Spielers an einem Zug.
 
-### Formel
+#### Formel
 ```
 Kampfwert = (Arsenalwert × Munitionsgewicht) + EffektBonus
 ```
 
-### Komponenten
+#### Komponenten
 - **Arsenalwert (60%)**: Basiswert der Waffen
 - **Munitionsgewicht**: Verhältnis kampfähiger Waffen (Munition > 0)
 - **Effekt-Bonus**: Heilung (+5), Schutz (+10%), Versetzen (+10)
 
-### Implementierung
+#### Implementierung
 - **Datei**: `src/engine/aab.js`
 - **Funktion**: `computeKampfwert(inventar, zustaende, className)`
 
 ---
 
-## AAB-05: Waffenhistorie
+### AAB-05: Waffenhistorie
 
-### Definition
+#### Definition
 Eine Ringpuffer-Historie der letzten 3 Waffen-Interaktionen pro Spieler.
 
-### Ereignis-Typen
+#### Ereignis-Typen
 - `erhalten`: Neue Waffe ins Inventar
 - `verloren`: Waffe wurde verworfen
 - `verbraucht`: Munition leer am Ende des Zuges
 - `geschossen`: Waffe wurde benutzt (geplant)
 
-### Historienwert
+#### Historienwert
 ```
 Historienwert = Σ( wartWert × Gewicht für Ereignis )
 ```
 Gewicht: `erhalten` = 1.0, `verbraucht` = 0.8
 
-### Implementierung
+#### Implementierung
 - **Datei**: `src/engine/aab.js`
 - **Klasse**: `WaffenHistorie`
 - **Singleton**: `WAFFEN_HISTORIE`
@@ -94,47 +113,47 @@ Gewicht: `erhalten` = 1.0, `verbraucht` = 0.8
 
 ---
 
-## AAB-06: Hybrid-Formel
+### AAB-06: Hybrid-Formel
 
-### Definition
+#### Definition
 Ein kombinierter Wert, der alle drei Bereiche gewichtet.
 
-### Formel
+#### Formel
 ```
 Hybrid-Wert = (Arsenalwert × 0.60) + (Kampfwert × 0.25) + (Historienwert × 0.15)
 ```
 
-### Implementierung
+#### Implementierung
 - **Datei**: `src/engine/aab.js`
 - **Funktion**: `computeHybridWert(inventar, zustaende, className, playerId)`
 
 ---
 
-## AAB-07: Fairnessziel
+### AAB-07: Fairnessziel
 
-### Definition
+#### Definition
 Die Balancezwänge zwischen Spielern soll innerhalb von ±20% liegen.
 
-### Formel
+#### Formel
 ```
 Abweichung = max|Wert - Mittelwert| / Mittelwert
 IstFair = Abweichung ≤ 0.20
 ```
 
-### Ausgleichsempfehlung
+#### Ausgleichsempfehlung
 ```
 EmpfohlenerAusgleich = max(0, Mittelwert × 0.25 - min(Werte))
 ```
 
-### Implementierung
+#### Implementierung
 - **Datei**: `src/engine/aab.js`
 - **Funktion**: `bewerteFairness(kampfwerte)`, `istUnterversorgt(kampfwert, alleKampfwerte)`
 
 ---
 
-## API-Referenz
+### API-Referenz
 
-### Engine-Index (`src/engine/index.js`)
+#### Engine-Index (`src/engine/index.js`)
 ```javascript
 export {
   arsenalwert,
@@ -148,7 +167,7 @@ export {
 }
 ```
 
-### Inventar (`src/engine/inventory.js`)
+#### Inventar (`src/engine/inventory.js`)
 ```javascript
 PlayerInventory
   .getArsenalwert(playerId)
@@ -159,7 +178,7 @@ PlayerInventory
 
 ---
 
-## Waffenkatalog
+### Waffenkatalog
 
 - **Quelle**: `src/shared/config/weapons.js`
 - **Anzahl**: 150 Waffen
@@ -168,7 +187,7 @@ PlayerInventory
 
 ---
 
-## Test-Status
+### Test-Status
 
 ```
 npm test: 3072 Tests, 0 Fehler ✓
@@ -176,10 +195,15 @@ npm test: 3072 Tests, 0 Fehler ✓
 
 ---
 
-## Historie
+### Historie
 
 | Datum | Änderung |
 |-------|----------|
 | 2026-11-16 | AAB-01 bis AAB-07 initial implementiert |
 | 2026-11-16 | `inventory.js` um `computeHybridWert` erweitert |
 | 2026-11-16 | `index.js` für alle AAB-Exporte konfiguriert |
+
+## Teil C: Biome
+
+Die Inhalte aller 20 Biome stehen in [`docs/biome-ssot.md`](biome-ssot.md). Die Datei bleibt eigenständig, weil
+`scripts/biome-dateien.mjs` sie einliest und daraus `docs/biome/` erzeugt.

@@ -1,7 +1,7 @@
 # MASTERDOTO — stillgelegt
 
 Diese Datei ist **keine Arbeitsliste** mehr. Die einzige offene Liste steht in
-[`docs/TODO.md`](docs/TODO.md); die alte Historie steht unverändert in Git
+[`docs/TODO.md`](docs/TODO.md), welche Quelle verbindlich ist in [`docs/SSOT.md`](docs/SSOT.md); die alte Historie steht unverändert in Git
 (`git log -- MASTERDOTO.md`).
 
 Nur die von `check:docs` geprüften Kennzahlen bleiben als Kompatibilitätsvermerk:

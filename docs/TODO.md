@@ -1,102 +1,181 @@
 # ProjectArmageddon — die einzige Aufgabenliste
 
-Stand: 2026-11-23, `main` nach `d3f6f4c`. **Dies ist die einzige Arbeits- und Planliste.** Sie ersetzt die
-alte `docs/TODO.md`, `docs/plan-produktion.md`, `docs/letzter-halt-plan.md`, die Übergaben
-`docs/UEBERGABE-2026-11-12.md`, `docs/UEBERGABE-2026-11-18.md`, `docs/auftraege/UEBERGABE-2026-11-10.md`,
-`docs/TODO-report.json` und `bgworker-todo.json`. Deren Inhalt steht in Git (`git log --all -- <Datei>`).
+Stand: 2026-11-28. **Dies ist die einzige Arbeits- und Planliste.** Alle früheren Listen sind hier eingeflossen
+(`MASTERDOTO.md`, `docs/p0-balance-offen.md`, `docs/plan-produktion.md`, `docs/letzter-halt-plan.md`, die Übergaben
+`docs/UEBERGABE-*.md`, `docs/TODO-report.json`, `bgworker-todo.json`, die Arbeitsliste des Agenten). Ihr alter Inhalt
+steht in Git (`git log --all -- <Datei>`). Was welche Datei enthält: `README.md`; welche Quelle verbindlich ist:
+`docs/SSOT.md`.
 
-Regeln für diese Liste: Neue Punkte nur hier. Erledigtes wird gelöscht (Beleg im Commit). Nichts als erledigt
-führen, was nicht nachweisbar lief. Bild und Klang sind maschinell nicht abnehmbar: Sie stehen in Abschnitt 8,
-bis der Auftraggeber sie abgenommen hat. Arbeitsregeln: `AGENTS.md` (Versionsmarken, Prüfen, Pakete einzeln
-mergen, nichts mieten). Fachliche Aufträge und Spezifikationen bleiben eigene Dokumente
-(`docs/auftraege/*.md`, `docs/deploy-plan.md` als Betriebsanleitung, Berichte unter `docs/`), sind aber
-**keine** Listen: Was davon offen ist, steht hier.
+**Regeln für diese Liste:** Neue Punkte nur hier. Erledigtes wird gelöscht (der Beleg steht im Commit). Nichts als
+erledigt führen, was nicht nachweisbar lief. Bild und Klang kann keine Maschine abnehmen: sie stehen in Abschnitt 8,
+bis der Auftraggeber sie abgenommen hat. Fachliche Spezifikationen bleiben eigene Dokumente (`docs/auftraege/*.md`),
+sind aber keine Listen.
+
+## A. So wird jeder Punkt umgesetzt (für alle gleich)
+
+1. **Zweig anlegen:** `git checkout main && git pull --rebase && git checkout -b integration/<kurzname>`.
+2. **Regel ändert den Spielablauf?** Dann neue **Fassung**: In der passenden Datei unter `src/shared/config/`
+   (z. B. `gelaende.js`, `waffen-fassung.js`, `biomregeln.js`, `loadouts.js`) eine neue Konstante anlegen
+   (`GELAENDE_XY = 20`), den `*_STANDARD` darauf setzen und im Code nur `if (fassung >= GELAENDE_XY)` verzweigen.
+   Alte Fassungen müssen bitgleich bleiben (alte Replays, `AGENTS.md` §2). Kein `Math.random`/`Date.now` in
+   `src/engine` und `src/shared`; Zufall nur über die Seed-Unter-RNGs.
+3. **Test schreiben:** `tests/<thema>.test.js` (Node-Test). Er prüft: neue Fassung wirkt, alte Fassung unverändert,
+   Standard ist die neueste. Die Tests „Standard ist die neueste“ in den anderen Testdateien (suchen mit
+   `grep -rn "_STANDARD" tests | grep neueste`) auf die neue Zahl setzen; Goldwerte alter Tests auf die alte Fassung
+   festnageln (`kit: 4`, `gelaende: 18` …), nie löschen oder abschwächen.
+4. **Prüfen:** `npm test` (alles grün), `npm run checks`, `npm run check:docs`, betroffene E2E
+   (`npx playwright test tests/e2e/<spec> --trace off`). Erzeugte PNGs unter `docs/vergleich-alternativspiele-*`
+   danach mit `git checkout -- docs/vergleich-alternativspiele-2026-10-19/` zurücksetzen.
+5. **Mergen:** `git pull --rebase origin main`, `npm run paket:stand`, pushen, CI (Lint, Tests, vier E2E-Teile)
+   abwarten. Nur bei grüner CI `git checkout main && git merge --ff-only integration/<kurzname> && git push`.
+6. **Diese Liste pflegen:** Erledigtes löschen, Rest genau beschreiben.
 
 ## 0. Stand
 
 | Bereich | Stand |
 |---|---|
-| Fassungen (Standard neuer Partien) | Gelände 17 (`GELAENDE_ABSTAND`), Waffen 22 (`WAFFEN_WURF`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10 (Strömung, Schwerkraft, Gefahrenwasser, Wasserlauf, Treiben, Sturzflut, Treibsand, Bodenwirkung, Splitter), Bodenobjekte 8 |
-| Zeilenbudgets | `match.js` 2772/2790, `main.js` 3760, `renderer.js` 2293 (`tests/zeilenbudget.test.js`) |
-| CI | grün auf `730f6bb` (2026-11-23, alle vier Browser-Teile, Lint/Tests/Build) |
-| Abhängigkeiten | `npm audit`: 0 Schwachstellen (2026-11-23, vite 8.3.8, eslint 10.15) |
+| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`, sobald gemergt, sonst 17), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
+| Zeilenbudgets | `src/engine/match.js` ≤ 2790 Zeilen (`tests/zeilenbudget.test.js`) |
+| Tests | `npm test` 2026-11-27: 3215 grün, 0 rot |
 | Spieltest mit Menschen (QV-4) | nicht erfolgt |
 
 ## 1. Sofort: Fehler und rote Prüfungen
 
-Nichts offen (2026-11-23: CI grün, `visuell.spec` grün, MERGE-4/6/10, Audit und Syntax-Tor erledigt).
+Nichts offen.
 
-## 2. Spiel: nächste Bauschritte (Reihenfolge)
+## 2. Spiel: nächste Bauschritte (in dieser Reihenfolge)
 
-| ID | Arbeit | Abnahme / Hinweis |
-|---|---|---|
-| 2.2 KARTE-WASSER | Seen in Höhlen und auf Inseln, kleine Wasserfälle (Treibsand wirkt seit Biomregel-Fassung 8) | Geländefassung mit Marke; Matchstart-Zeit (QV-7) und `check:erreichbarkeit` bleiben im Rahmen |
-| 2.3 KARTE-QUALITÄT | Durchgangstor steht (Fassung 15: 0 von 500 Menü-Seeds mit Boden hinter zu dünnem Gang, vorher 30; kein Stand am oberen Rand). Offen: runde Karten interessanter (Planet: verzweigte Tunnel, hohler Kern); Rest auf groß 24:9 Seed 7 (Ruinenkammer hinter einem Riss, 176 px, das Tor misst auf halber Auflösung 90); unerreichbar 8 von 500 (vorher 6) | `node scripts/messung-kartenqualitaet.mjs --vergleich=14` |
-| 2.6 QV-6-C/D | C Bodenwirkung: Bremsen steht (Biomregel 9, höchstens etwa 18 % langsamer); offen: Glätte auf Eis (`reibung`, braucht Schwung beim Gehen), Sumpf. D Splitter steht (Biomregel 10: Splitter im Freien verletzen, spröder Stoff bricht eine Stufe weiter; Burg 6,2 Treffer je Partie, Dimensionsriss 2,7, Kristallhöhle 1,3); offen: Kristallarchipel und Kristallwald ohne Wirkung (Oberfläche nicht spröde genug), Hinweiszeile | Fassung mit Marke, Goldwerte |
-| 2.7 MENUE-EINFACH | Ein-Klick-Start steht: „Spielen“ auf dem Startbildschirm würfelt Biom, Kulisse und Fraktionen und startet sofort (E2E), „Anpassen“ öffnet das Menü; Wetterwahl entfernt. Offen: das Menü selbst straffen (Biomwahl und Größe hinter einen Knopf) | Sichtabnahme |
-| 2.10 PORTAL-1 | Stufe 1 steht (Bodenobjektfassung 8, Spezifikation `docs/auftraege/portal.md`): in 20 % der Partien ein Kartenportal, erhöht, ≥ 300 px von jedem Start; die Beamwaffen (Portal, Hologrammportal, Dimensionssprung, Dimensionsriss) beamen die eigene Figur hin, zu Fuß wirkt es nicht. Stufe 2 wartet auf Rückmeldung: andere Figur beamen, zwei Enden, Ort an Kiste, eigener Klang | Rückmeldung zu Stufe 1 |
-| 2.12 DICHTE-RUND | Steht weitgehend (Geländefassung 17): runde Arten per Seed erst ab 2880 px, Startplätze mindestens 100 px auseinander; knappster Gegnerabstand jetzt 101 px (vorher 22). Rest: Gegner zwischen 100 und 120 px in 5 von 100 1:1-Partien („mittel“) und 8 von 100 kleinen; gewählte runde Art auf kleiner Karte bleibt eng | Messung `node scripts/messung-kartenqualitaet.mjs` |
-| 2.13 LETZTER-HALT | Gelände-vor-Schaden-Hypothese (Konzept in Git: `docs/letzter-halt-plan.md`): Stufe 2 A/B-Test Materiallesbarkeit (2 Teams, 1 Karte, 5 Wiederholungen, Anteil Geländewege > 60 %), Stufe 3 Bruchvisualisierung und Werkzeugklang, Stufe 4 Gegenmaßnahmen statt universeller Schwachstellen, Stufe 5 Rollen-Biome; offen: Rodentia ohne Heim-Biom | erst nach Spieltest (8) |
-| 2.14 FIGUREN-B-REST | Dauerhafter Grabstein steht (nur Client, `grabsteinBild.js`). Offen: echte Kopf-/Oberkörperrotation (Teilsprites, Renderer-Ebene; braucht Bildmaterial) | Sichtabnahme |
-| 2.15 SCHUSS-FAMILIEN | Eigene Schussbewegungen für Fernkampf (Pumpen, Spannen, Aufziehen) und Magie (Nahkampf ist gebaut); sanfte Geschütz-Drehung (Zustand trägt keine Zielrichtung); HUD-Animationen Kill-Feed, Waffenwahl, wenig Munition; Menü-Übergänge | Sichtabnahme |
-| 2.1 TOUCH-ZUERST | Vorrang vor allem anderen (Entscheidung 2026-11-25). Schritt 1 steht: Seil ▲/▼ nur am Seil (statt der Sprungknöpfe), Telefon quer eine Aktionsreihe statt zwei, Touch-Texte statt Tastaturhinweisen („FEUER überspringt“, ohne „(M)“/„C“), Protokoll am iPad höchstens drei Zeilen; Seil per Touch erstmals im E2E. Schritte 2/3: die Kamera hält die Figur am Zug über der Knopfreihe. Schritt 4: Bild unverzerrt (die Zeichenfläche folgt dem Bildschirm, nicht der Karte; vorher war alles 1,5× zu hoch) und auf Touch-Geräten ohne schwarze Ränder. Schritt 5 (Rückmeldung 2026-11-25): Figuren 12 % der Bildhöhe, Gegenstände und Bäume wachsen mit, Protokoll kompakt (Telefon: nur Vorlesehilfe), Kamera am Telefon beim Zielen nah, Einstieg mit Touch-Texten, Boden nach Kulissenmotiv. Abwurf-Knopf nur bei abwerfbarer Waffe. Figur am Zug frei sichtbar: nachgemessen 0 von 16 Fällen verdeckt (iPhone 14 quer und 844×390, Seeds 1–8; gegen Knopfreihen, Kader und Kopfleiste; vorher 2 von 16). Offen: Sichtabnahme am echten Gerät | E2E iPhone und iPad (frei sichtbare Figur), Sichtabnahme am echten Gerät |
-| 2.17 AUSRUESTUNG-TURRET | Entschieden 2026-11-25 (Abschnitt 7): neue Startausrüstung je Figur statt EXKL-1, und 2 bis 3 vorhandene Waffen bekommen die Turm-Mechanik. Das Seil ist der Enterhaken pa_111. **2.17a steht (Kit-Fassung 5, Standard):** 5 feste Startwaffen unbegrenzt (Minirakete, Kaktusbombe, Bohrkanone, Baseballschläger, Maschinenpistole), Enterhaken und Gleitschirm je 5×, Spezialwaffe je Figur (`scripts/ausruestung-zuordnen.mjs`; 11 legendäre Waffen nach Rückmeldung 2026-11-27 „mindestens zehn“: die 3 bisher legendären und die 8 bisher epischen, jede Fraktion hat eine eigene); Fraktion und Figur löst der Motor auf (Zustand, Replay-Kopf, online). Bot-Messung 24 Seeds 2×2: Kit 4 6,1 min/10 Runden, Kit 5 6,6 min/12 Runden, alle vor Valhalla entschieden. **2.17b steht (Waffenfassung 23, Standard):** Tesla-Turm, Kampfgeschütz und Gatlingkanone stellen ein Geschütz auf (4×/2×/5× Runden, schwach/schwer/leicht); gewählt, weil ihr Name ein Geschütz verspricht und ihre Wirkung andere Waffen doppelte; Tesla-Turm und Gatling kommen nur aus Kisten, das Kampfgeschütz ist zudem Spezialwaffe von Goemon. Messung je Geschütz (Seeds 1–12): Wachgeschütz 1,9 Schüsse/12 Schaden, Tesla 2,9/18, Kampfgeschütz 1,0/12, Gatling 3,8/19 | Kit-Fassung mit Marke, Messung, Test | Kit-Fassung mit Marke, Messung, Test |
+### 2.1 TOUCH-ZUERST (Vorrang vor allem anderen, Entscheidung 2026-11-25)
+- **Steht:** Seilknöpfe nur am Seil, eine Aktionsreihe am Telefon, Touch-Texte, Kamera hält die Figur über der
+  Knopfreihe, unverzerrtes Bild ohne schwarze Ränder, Figuren 12 % der Bildhöhe, Gegenstände wachsen mit, kompaktes
+  Protokoll, Abwurf-Knopf nur bei abwerfbarer Waffe, Figur am Zug in 0 von 16 Messfällen verdeckt.
+- **Offen:** nur die Sichtabnahme am echten Gerät (Abschnitt 8).
+
+### 2.2 KARTE-WASSER: Seen in Höhlen und auf Inseln, kleine Wasserfälle
+- **Wo:** `src/shared/terrainKomposition.js` (Zonen bauen; dort entstehen Höhlen und Inseln),
+  Wasser-Startfeld in `src/engine/waterField.js`, Fassung in `src/shared/config/gelaende.js`.
+- **Wie:** Neue Geländefassung. In Höhlenzonen (Funktion für Höhlen in `terrainKomposition.js`) den tiefsten Hohlraum
+  suchen und bis zu einer Höhe mit Wasser füllen; auf Inseln eine Mulde in der Krone ausheben und füllen. Wasserfall =
+  schmale Wasserspalte an einer Kante, die ins Becken darunter läuft (Wasserlauf aus Biomregel 5 lässt es fließen).
+- **Abnahme:** Test mit festem Seed (Wasserzellen > 0 in Höhle), `node scripts/check-erreichbarkeit.mjs` ohne neue
+  unerreichbare Figur, Matchstartzeit nicht schlechter.
+
+### 2.3 KARTE-QUALITÄT
+- **Offen:** runde Karten interessanter (Planet: verzweigte Tunnel, hohler Kern) in `src/shared/terrainPlanet.js` und
+  `terrainRund.js`; Rest auf groß 24:9 Seed 7 (Ruinenkammer hinter einem Riss von 176 px; das Durchgangstor
+  `src/shared/kartenTor.js` misst auf halber Auflösung nur 90 px); unerreichbare Figuren 8 von 500.
+- **Wie:** Tor auf voller Auflösung messen oder Schwelle anpassen (neue Geländefassung); Planet: Tunnel als
+  Verzweigung vom Kern aus graben.
+- **Abnahme:** `node scripts/messung-kartenqualitaet.mjs --vergleich=<alte Fassung>`.
+
+### 2.4 GELAENDE-1 (TODO 4.6, Rückmeldung „Landschaft langweilig“)
+- **Steht:** Fassung 18 (Inseln mit Tafelberg, Überhang, Schiefe), Fassung 19 (Zonenarten gewichtet: weniger Höhlen
+  und Pyramiden, mehr Inseln und Ebenen).
+- **Offen, als Nächstes:** **Landhöhe variieren.** Befund: Jede Karte ist ein großer Landblock bis etwa zwei Drittel
+  der Höhe. **Wo:** `src/shared/terrainKomposition.js`, dort wo die Grundhöhe je Zone gesetzt wird (Suche nach der
+  Stelle, an der die Zonen-Masken zusammengesetzt werden; `masseSchief`/`inselMasse` aus Fassung 18 als Muster).
+  **Wie:** Geländefassung 20: je Zone eine Höhe aus dem Seed ziehen (z. B. 35–75 % der Kartenhöhe, mit einem
+  `rng.next()` je Zone), dazu tiefe Täler zwischen Zonen. Prüfen mit dem Übersichtsbild
+  (Skript im Muster von `scripts/messung-kartenqualitaet.mjs`) und `check:erreichbarkeit`.
+- **Offen danach:** Höhlen mit weniger Tunnelgewirr (größere Kammern, weniger Gänge, Höhlenbau in
+  `terrainKomposition.js`/`terrainGen3.js`); Licht an Fackeln und Lava (nur Client: `src/client/kulissenLicht.js`,
+  `renderer.js`, ein weiches radiales Licht über dem Gelände); Nebelschichten (Client: halbtransparente Bänder in
+  `renderer.js` zwischen Kulisse und Gelände).
+- **Achtung beim Ändern der Karte:** `tests/e2e/online-mine.spec.mjs` hängt an einer Karte (Seed, Winkel, Kraft).
+  Ändert sich die Karte, den Fall mit der Engine neu suchen (gleiche Fassungen wie der Server, Muster im Test).
+
+### 2.5 QV-6-C/D (Bodenwirkung, Splitter)
+- **Offen:** Glätte auf Eis (`reibung`, die Figur braucht Schwung beim Gehen) und Sumpf (langsamer, einsinken);
+  Splitter wirken in Kristallarchipel und Kristallwald nicht (Oberfläche nicht spröde genug); eine Hinweiszeile.
+- **Wo:** Biomregeln `src/shared/config/biomregeln.js` (neue Fassung 11), Bewegung `src/engine/physics/`, Stoffe
+  `src/shared/config/stoffe.js` (Sprödigkeit), Hinweis `src/client/biomregelAnzeige.js`.
+- **Abnahme:** Fassung mit Marke, Goldwerte, `npm run balance:regelkontrolle -- --von=10 --bis=11`.
+
+### 2.6 MENUE-EINFACH
+- **Offen:** Das Menü selbst straffen: Biomwahl und Kartengröße hinter einen Knopf „Mehr“.
+- **Wo:** `src/client/kartenWahlMenue.js`, `menueFelder.js`, Stil in `src/client/styles/`. E2E: Menü-Specs
+  (`grep -l "Anpassen" tests/e2e`).
+
+### 2.7 PORTAL-2 (wartet auf Rückmeldung zu Stufe 1)
+- Stufe 1 steht (Spezifikation `docs/auftraege/portal.md`). Stufe 2: andere Figur beamen, zwei Enden, Ort an Kiste,
+  eigener Klang. **Wo:** `src/engine/portal.js`, `src/client/portalBild.js`, Bodenobjektfassung 9.
+
+### 2.8 DICHTE-RUND (Rest)
+- Gegner zwischen 100 und 120 px in 5 von 100 1:1-Partien („mittel“) und 8 von 100 kleinen; gewählte runde Art auf
+  kleiner Karte bleibt eng. **Wo:** `src/engine/startFairness.js`, `spawnManager.js`. **Abnahme:**
+  `node scripts/messung-kartenqualitaet.mjs`.
+
+### 2.9 LETZTER-HALT (erst nach dem Spieltest, Abschnitt 8)
+- Konzept in Git (`git show 109e87e^:docs/letzter-halt-plan.md`).
+  Stufe 2 A/B-Test Materiallesbarkeit (2 Teams, 1 Karte, 5 Wiederholungen, Anteil Geländewege > 60 %), Stufe 3
+  Bruchbild und Werkzeugklang, Stufe 4 Gegenmaßnahmen, Stufe 5 Rollen-Biome; Rodentia ohne Heim-Biom.
+
+### 2.10 FIGUREN-B-REST
+- Echte Kopf-/Oberkörperdrehung (Teilsprites). **Wo:** `src/client/figurAnimation.js`, `figurSheets.js`. Braucht
+  neues Bildmaterial (Bildbudget, Frage an den Auftraggeber, Abschnitt 9).
+
+### 2.11 SCHUSS-FAMILIEN
+- Eigene Schussbewegungen für Fernkampf (Pumpen, Spannen, Aufziehen) und Magie (Nahkampf ist gebaut); sanfte
+  Geschützdrehung (der Zustand trägt keine Zielrichtung: in `src/engine/turret.js` und `stateSnapshot.js` ergänzen,
+  Drahtformat mit Marke); HUD-Animationen Kill-Feed, Waffenwahl, wenig Munition; Menü-Übergänge.
+  **Wo:** `src/client/figurAnimation.js`, `waffenAnimation.js`, `hud.js`.
 
 ## 3. Balance (immer: messen, dann ändern, Freigabe)
 
-| ID | Arbeit |
-|---|---|
-| 3.1 BIOM-WERTE | Schwerkraft 0,6–0,85, surreal 0,7–1,3, Strömung 0,5/0,35/0,5, Gefahrenwasser sind erste Ansätze; Sturzflut (Schub 1,5, 4 Teilschritte) ist nur in einer Rinne gemessen (`node scripts/messung-wasserlauf.mjs`), auf echten Karten noch nicht: `npm run balance:biome`, `node scripts/balance-rollen.mjs --stufe=standard` |
-| 3.2 ROLLEN | BAL-14 Feinbalancing je Rolle mit festen Seeds; Okkultist-Vorsprung 69 % (36 Partien je Rolle, Intervall beachten) |
-| 3.3 NAHKAMPF | Nahkampf-Reichweite erreicht den Startabstand mit 0 von 100 Projektilwaffen: Wurfweiten angleichen (Marke) oder Startabstände je Klasse mischen |
-| 3.4 BAL-1 | maxRange-Anzeige, Scout-Bewertung (N-21: Beweglichkeit ohne Netto-Vorteil), Wurfweiten-Deckel |
-| 3.5 BAL-15/17 | Browser-, Touch- und Bewegungsabnahme der Waffen (24/64/128 px, Kontrast, links/rechts); Abdeckung Karten × Fraktionen × Partien staffeln, nichts aus Stichproben behaupten |
-| 3.6 HAGEL | Schaden je Partie messen (Lagenanteil 20 %, 50 % gezielte Körner), ggf. senken |
-| 3.7 TIERE | N-51: Balance-Nachmessung (Code und Tests stehen) |
-| 3.8 MESSGRENZE | N-17 Messleiter feiner; N-48 Flake-Risiko der Balance-Tests |
+| ID | Arbeit | Wo / Wie |
+|---|---|---|
+| 3.1 BIOM-WERTE | Schwerkraft 0,6–0,85, surreal 0,7–1,3, Strömung 0,5/0,35/0,5, Gefahrenwasser sind erste Ansätze; Sturzflut nur in einer Rinne gemessen | `npm run balance:biome`, `node scripts/messung-wasserlauf.mjs`, `node scripts/balance-rollen.mjs --stufe=standard`; Werte in `src/shared/config/biomregeln.js` (neue Fassung) |
+| 3.2 ROLLEN (BAL-14) | Feinbalancing je Rolle statt globaler Faktoren; Okkultist-Vorsprung 69 % (36 Partien je Rolle) | 1. Kennzahlen je Rolle (`src/shared/config/waffen-rollen.js`), 2. identische Seeds vorher/nachher, 3. echte LP 130/100/70, 4. Anpassung je Rolle in neuer Waffenfassung (`waffen-f24.js`) |
+| 3.3 NAHKAMPF | Nahkampf erreicht den Startabstand mit 0 von 100 Projektilwaffen | Wurfweiten angleichen (Waffenfassung) oder Startabstände je Klasse mischen (`startFairness.js`) |
+| 3.4 BAL-1 | maxRange-Anzeige „Reichweite bei neutralem Profil“ (Faktor 0,37) im Waffenmenü; Scout-Bewertung (Beweglichkeit ohne Netto-Vorteil); 6 Klasse/Archetyp-Kombinationen messen (`npm run balance:classes`); `ARCHETYPE_LAUNCH_BASE = 1,2` normalisieren (verschiebt etwa 8 %); Wurfweiten-Deckel (465 Kombinationen) | Anzeige: `src/client/waffenMenue.js` mit `src/shared/reichweite.js`; Rest Balance-Skripte unter `scripts/` |
+| 3.5 BAL-15/17 | Abnahme der Waffen in Browser und Touch (Symbole 24/64/128 px, Kontrast, Zielen links/rechts, Bewegung); Abdeckung Karten × Fraktionen × Partien staffeln, nichts aus Stichproben behaupten | E2E unter `tests/e2e/waffen-*.spec.mjs`; Abdeckungsmatrix als Bericht unter `docs/` |
+| 3.6 HAGEL | Schaden je Partie messen (Lagenanteil 20 %, 50 % gezielte Körner), ggf. senken | `src/engine/hagel.js`, Fassung in `src/shared/config/hagel.js` |
+| 3.7 TIERE | N-51: Balance-Nachmessung (Code und Tests stehen) | `src/engine/tierWirkung.js`, `npm run balance:biome` |
+| 3.8 MESSGRENZE | N-17 Messleiter feiner; N-48 Flake-Risiko der Balance-Tests | `docs/balance-messgrenze.md`, Balance-Tests unter `tests/balance-*.test.js` |
+| 3.9 AUSRÜSTUNG | Kit 5 und Geschütze nach dem Spieltest nachmessen (Bot-Messung: Kit 5 6,6 min/12 Runden) | `node scripts/bot-partien.mjs`; Zuordnung neu mit `node scripts/ausruestung-zuordnen.mjs` |
 
 ## 4. Grafik und Optik
 
-| ID | Arbeit |
-|---|---|
-| 4.1 GRAFIKSTUFE-1 | `flaechenBudgetMio` im Renderer durchsetzen; Figuren immer in voller Bildschirmauflösung (Auftraggeber: Figuren bei `kolossal` „krätzig“); Ultra besser |
-| 4.2 KACHELUNG | Gelände-Canvas in Kacheln ≤ 4 Mio. px: hebt die iOS-Sperre für `kolossal` auf, senkt Speicher; Verhalten von iOS-Gästen in einer `kolossal`-Lobby klären |
-| 4.3 N-31 | Übergänge statt harter Kanten: Lippe/Überhang an Oberkanten, Mischzonen, Konturlinien an Materialgrenzen |
-| 4.4 N-32 | Die 15 alten Foto-Texturen im Comic-Stil der übrigen 85 (Auftrag B2 in `docs/auftraege/bildagenten-2026-11-09.md`; Bildbudget vorhanden) |
-| 4.5 N-35-REST | Wasser `foam_lines`/`oil_slick`, dynamische Himmelsfarbe, Stil der Foto-Kulissen (Western, Hyperreal); Hintergründe des Auftraggebers (`uploaded/`, `IMG_*`) einsetzen; Menügruppe Panoramen |
-| 4.6 GELAENDE-1 | Inselumrisse stehen (Geländefassung 18: schief, Tafelberg, Überhang zusätzlich zu Schüssel/Klotz/Kegel). Befund 2026-11-27 (12 Menükarten, 150 Seeds): jede Karte ist ein großer Landblock bis etwa zwei Drittel der Höhe, Stufenpyramide und Linsenhöhlen-Reihen wiederholen sich, Einzelinsel 3 %, Ebenen 4 %. Offen: Höhlen weniger Tunnelgewirr, Licht an Fackeln und Lava, Nebelschichten |
-| 4.7 BIOM-15-20 | Restmängel: 15 Streifen oben, 16 Facetten gitterartig, 17 Fries klein, 18 Tiefsee-Feinschliff, Fantasywald-Deko; Kristallarchipel-Grading 1,1 s → 0,4 s |
-| 4.8 NAHTEN | Keramik und Metall: sichtbare Brüche, nahtlos neu |
-| 4.9 SPRITES | SPR-4: Emotionsblätter der 8-Bit-pixel-Figuren sind noch die alten; `pixel/00_nullpointer-exception` nur mit Tod-Rolle; Glättung je Fraktion (`imageSmoothingEnabled`) für Pixelkunst; zwei gesperrte Walk-Zellen (`chrome-code-shifter`, `buffer-flow-swarm`) neu; Luchs-Emotionszellen |
-| 4.10 LOOK-3 | Prüfbild mit gefüllter Lava gegen `ref-3-vulkanschmiede-hud` |
-| 4.11 BESTÄNDE | ASSETS-1/N-34: ungenutzte Texturen (gras, lava-glut, lava-risse, hecke-kontrast), Normalmap, Intro-Video, 73 ungenutzte Stoffe, isometrische Biom-Objekte: als Referenz kennzeichnen, nichts löschen (Entscheidung 2026-11-11) |
+| ID | Arbeit | Wo |
+|---|---|---|
+| 4.1 GRAFIKSTUFE-1 | `flaechenBudgetMio` im Renderer durchsetzen; Figuren immer in voller Bildschirmauflösung (bei `kolossal` „krätzig“); Ultra besser | `src/client/grafikStufe.js`, `renderer.js` |
+| 4.2 KACHELUNG | Gelände-Canvas in Kacheln ≤ 4 Mio. px (hebt die iOS-Sperre für `kolossal` auf); iOS-Gäste in einer `kolossal`-Lobby klären | `renderer.js`, `src/engine/kartenWahl.js` (Sperre) |
+| 4.3 N-31 | Übergänge statt harter Kanten: Lippe/Überhang an Oberkanten, Mischzonen, Konturlinien an Materialgrenzen | `src/client/gelaendeStil.js`, `gelaendeDetails.js` |
+| 4.4 N-32 | Die 15 alten Foto-Texturen im Comic-Stil der übrigen 85 (Auftrag B2 in `docs/auftraege/bildagenten-2026-11-09.md`; Bildbudget) | `src/client/assets/material-texturen/` |
+| 4.5 HINTERGRÜNDE | Hintergründe des Auftraggebers (`uploaded/`, `IMG_*`) einsetzen; Wasser `foam_lines`/`oil_slick`; dynamische Himmelsfarbe; Stil der Foto-Kulissen; Menügruppe Panoramen | `src/client/kulissenQuelle.js`, `kulissenUrls.js`, `panoramen.js`, `bodenMotiv.js` (Boden nach Motiv) |
+| 4.6 BIOM-15-20 | 15 Streifen oben, 16 Facetten gitterartig, 17 Fries klein, 18 Tiefsee-Feinschliff, Fantasywald-Deko; Kristallarchipel-Grading 1,1 s → 0,4 s | `src/client/sonderKulissen.js`, `biomGrading.js`, `fantasywaldDeko.js` |
+| 4.7 NAHTEN | Keramik und Metall: sichtbare Brüche, nahtlos neu | `src/client/stoffTexturen.js`, Texturen |
+| 4.8 SPRITES | Emotionsblätter der 8-Bit-Figuren; `pixel/00_nullpointer-exception` nur mit Tod-Rolle; Glättung je Fraktion für Pixelkunst (einfache Glättung war ohne sichtbare Wirkung, 2026-11-27); zwei gesperrte Walk-Zellen (`chrome-code-shifter`, `buffer-flow-swarm`); Luchs-Emotionszellen | `src/client/figurSheets.js`, `scripts/sprites-erzeugen/` |
+| 4.9 LOOK-3 | Prüfbild mit gefüllter Lava gegen `ref-3-vulkanschmiede-hud` | `tests/e2e/visuell.spec.mjs` |
+| 4.10 BESTÄNDE | Ungenutzte Texturen, Normalmap, Intro-Video, 73 ungenutzte Stoffe, isometrische Biom-Objekte: als Referenz kennzeichnen, nichts löschen (Entscheidung 2026-11-11) | `docs/n34-ungenutzte-bestaende.md` |
+| 4.11 FIGUREN-NEU | Rückmeldung 2026-11-25 „Figuren sehen schlecht aus“: neue Figurenbilder und Geländetexturen brauchen Bildbudget | wartet auf Freigabe (Abschnitt 9) |
 
 ## 5. Technik und Qualität
 
-| ID | Arbeit |
-|---|---|
-| 5.1 N-43 | Wasser-Ereignisse (`damage`, `entity_in_water`, `drowning`) gebündelt statt je Takt (42 KB/s, gemessen −94 %), Drahtformat mit Marke |
-| 5.2 OPT-1/OPT-7 | Bundle: Menü zuerst, Engine, Renderer und Waffenkatalog erst beim Matchstart; Geländegenerator nachladen; `dist` 117 MiB (OPT-2): größte Posten messen |
-| 5.3 OPT-3 | `npm test` dauert 13–25 min: langsame Dateien in einen eigenen Lauf trennen (`test:unit` schnell) |
-| 5.4 ENG-12 | `renderer.js` ist in `node --test` nicht ladbar (`import.meta.glob`): Logik in eigene Module oder Vitest |
-| 5.5 QA-5 | Bild-Allokationen im Renderer (ImageData Wasser, Gradients je Geschoss, `parseCss` je Bild, `.find` je Entität, kein Partikeldeckel) messen und senken |
-| 5.6 KLEIN | N-46 (`integrateStep`-Duplikat in `match.js`), ENG-6 (LootSystem je Takt, Query-Allokation), ENG-7 (Sortieren bei Registrierung), TER-2 (`pruefeSpielbarkeit` „zu nadelig“), TER-3 (Doku-/Ordnungspunkte I–L) |
-| 5.7 SKALIERUNG | TG-RANG/N-47: 4K in `MAP_SIZES` mit Kamera, Strukturtests statt Wertetests; Snapshot-Strides sparen |
-| 5.8 E2E-VOLLLAUF | Volle E2E-Suite (CI, vier Teile) nach jedem größeren Merge; QA-1/QA-3 (Black-Box auf Produktionsbau) |
-| 5.9 G1 | Spielgefühl messen: Eingabe bis Bild, lokal und online mit Latenz |
-| 5.10 ÜBERSETZUNG | (später) Englisch per Einstellung; zuerst alle Texte in eine Tabelle ziehen |
+| ID | Arbeit | Wo |
+|---|---|---|
+| 5.1 N-43 | Wasser-Ereignisse (`damage`, `entity_in_water`, `drowning`) bündeln statt je Takt (42 KB/s, gemessen −94 %), Drahtformat mit Marke | `src/shared/protocol.js`, `src/server/lobbySession.js` |
+| 5.2 OPT-1/2/7 | Bundle: Menü zuerst, Engine/Renderer/Katalog erst beim Matchstart; Geländegenerator nachladen; `dist` 117 MiB: größte Posten messen | `vite.config.mjs`, `src/client/main.js` (dynamische Importe) |
+| 5.3 OPT-3 | `npm test` dauert 13–25 min: langsame Dateien in einen eigenen Lauf trennen | `package.json` (`test:unit`), `scripts/` |
+| 5.4 ENG-12 | `renderer.js` in `node --test` nicht ladbar (`import.meta.glob`): Logik in eigene Module | `src/client/rendererLogik.js` als Muster |
+| 5.5 QA-5 | Bild-Allokationen im Renderer messen und senken (ImageData Wasser, Gradients je Geschoss, `parseCss`, `.find` je Entität, Partikeldeckel) | `renderer.js`, `effects.js` |
+| 5.6 KLEIN | N-46 `integrateStep`-Duplikat in `match.js`; ENG-6 LootSystem je Takt; ENG-7 Sortieren bei Registrierung; TER-2 `pruefeSpielbarkeit` „zu nadelig“; TER-3 Doku-/Ordnungspunkte I–L | `src/engine/` |
+| 5.7 SKALIERUNG | 4K in `MAP_SIZES` mit Kamera, Strukturtests statt Wertetests; Snapshot-Strides sparen | `src/engine/karte.js` (`MAP_SIZES`), `src/engine/stateSnapshot.js` |
+| 5.8 E2E-VOLLLAUF | Volle E2E-Suite (CI, vier Teile) nach jedem größeren Merge; QA-1/QA-3 Black-Box auf dem Produktionsbau | `.github/workflows/ci.yml` |
+| 5.9 G1 | Spielgefühl messen: Eingabe bis Bild, lokal und online mit Latenz | `scripts/browser-perf.mjs` |
+| 5.10 ÜBERSETZUNG | (später) Englisch per Einstellung; zuerst alle Texte in eine Tabelle ziehen | `src/client/` |
+| 5.11 TESTZAHLEN | Der Block in `README.md`/`MASTERDOTO.md` nennt noch den Lauf vom 2026-11-12. Nach einem vollen Lauf: `npm run testlauf:erfassen`, dann `npm run check:docs -- --schreiben` | `docs/testlauf.json` |
 
 ## 6. Konten, Web-Zugang, Betrieb
 
 | ID | Arbeit |
 |---|---|
-| 6.1 WWW-1 | Cloudflare (kein Netlify): Einstieg gebaut und getestet (Pages Function, D1, `_headers`, `_routes.json`). Offen beim Auftraggeber: Projekt anlegen, D1 und Bindung `DB`, `nodejs_compat`, Secrets, DNS und Zertifikat für www, alte Netlify-Seite `proarmgame` und Netlify-DNS abschalten. Hashes der Umgebung als `pbkdf2$20000$` neu erzeugen. Erste Abnahme prüft: Rechenzeit der Passwortprüfung im kostenlosen Tarif, Dauer des Not-aus-Aufrufs (`docs/zugang-www.md`) |
-| 6.2 KONTO-2/3 | Profil (Foto, Biografie, angepinnte Einheit) und Scoreboard-Oberfläche aus der Nutzerdatenbank; Kennzahlen Sprünge, Selbsttreffer, Schaden je Einheit und Waffe im Spiel erfassen und melden |
-| 6.3 ABBILD | Hetzner-Abbild auffrischen (Spielserver mit Spieltoken-Prüfung) |
-| 6.4 KNOTEN | Auf einem echten Knoten (Auftraggeber mietet, AGENTS.md §5): Firewall `deploy/firewall.nft`, Zertifikat, systemd-Units und Idle-Timer, Marker `ist-gemietet`, Belege S1–S3 und 5/6 in `docs/betrieb-INSTANZ.md`, `systemctl list-timers` als Nachweis |
-| 6.5 PERSIST-1 | Eine JSON-Datei ohne Sperre: bewusst bis zur zweiten Serverinstanz |
+| 6.1 WWW-1 | Cloudflare (kein Netlify): Einstieg gebaut und getestet (`functions/`, D1, `_headers`, `_routes.json`). Offen beim Auftraggeber: Projekt anlegen, D1 und Bindung `DB`, `nodejs_compat`, Secrets, DNS und Zertifikat für www, alte Netlify-Seite `proarmgame` und Netlify-DNS abschalten. Hashes der Umgebung als `pbkdf2$20000$` neu erzeugen. Erste Abnahme: Rechenzeit der Passwortprüfung im kostenlosen Tarif, Dauer des Not-aus-Aufrufs (`docs/zugang-www.md`) |
+| 6.2 KONTO-2/3 | Profil (Foto, Biografie, angepinnte Einheit) und Scoreboard aus der Nutzerdatenbank (`src/server/konto.js`, `src/client/kontoMenue.js`); Kennzahlen Sprünge, Selbsttreffer, Schaden je Einheit und Waffe erfassen (`src/shared/stats.js`) |
+| 6.3 ABBILD | Hetzner-Abbild auffrischen (Spielserver mit Spieltoken-Prüfung), `deploy/` |
+| 6.4 KNOTEN | Nur wenn der Auftraggeber mietet (`AGENTS.md` §5/§7): Firewall `deploy/firewall.nft`, Zertifikat, systemd-Units und Idle-Timer, Marker `ist-gemietet`, Belege in `docs/betrieb-INSTANZ.md`, `systemctl list-timers` als Nachweis |
+| 6.5 PERSIST-1 | Eine JSON-Datei ohne Sperre (`src/server/persistence.js`): bewusst so bis zur zweiten Serverinstanz |
 | 6.6 Z579 | Messung `messung.html` auf iPhone und Asus-Laptop (Auftraggeber), danach Grafikstufen-Grenzen festlegen |
-| 6.7 BRANCHES | 26 Remote-Branches: über den Workflow „Branches aufräumen“ die vollständig enthaltenen löschen |
 
 ## 7. Entscheidungen des Auftraggebers (gelten)
 
@@ -123,4 +202,29 @@ am Telefon, Biome 15–20 · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkug
 
 ## 9. Fragen an den Auftraggeber
 
-Keine offen (E-Mail und Hash am 2026-11-23 entschieden, Abschnitt 7).
+| Frage | Warum |
+|---|---|
+| Darf neues Bildmaterial (Figuren, Geländetexturen, Teilsprites für 2.10) aus dem Bildbudget (+10 €) erzeugt werden? | Rückmeldung „Figuren sehen schlecht aus“; Glättung und Farbänderung allein brachten keine sichtbare Besserung (gemessen 2026-11-27) |
+| Rückmeldung zu Portal Stufe 1 (2.7) | Stufe 2 wartet darauf |
+
+## 10. Branches
+
+Ziel: nur `main`. Stand 2026-11-28: Jeder Branch auf GitHub ist entweder vollständig in `main` enthalten oder sein
+Inhalt steckt in anderer Form in `main` (geprüft mit `git cherry` und je Änderung im Code). Gelöscht wird über den
+Workflow **„Branches aufräumen“** (`.github/workflows/branch-aufraeumen.yml`; Listen `.github/branch-loeschliste.txt`
+für vollständig enthaltene, `.github/branch-verworfen.txt` für geprüfte, überholte), weil das direkte Löschen per
+`git push --delete` aus der Agentenumgebung abbricht.
+
+| Branch | Befund |
+|---|---|
+| `claude/e2e-await-timeout` | Überholt: Home-Bypass (`tests/e2e/helfer/test-basis.mjs`), `await startMatch` (`messlauf.js`), Dezimalkomma (`kartenWahl.js`), Fraktionsanzeige und Texturendung (`main.js`) stehen in `main` |
+| `claude/regelkontrolle-skript` | Übernommen: `scripts/regel-kontrolle.mjs`, `npm run balance:regelkontrolle` |
+| `claude/repo-aufraeumen-reddit` | Übernommen: `docs/werbung/reddit-post.md`; Probe-Workflow `bildvergleich-probe.yml` entfernt |
+| `experiment/boden-hell` | Verworfen: Auftraggeber wählte am 2026-11-27 den Mittelweg (in `main`) |
+| `claude/qv6-*`, `claude/wasserlauf-ausbau`, `claude/balance-rollen-2026-11-18`, `integration/splitter`, `integration/menue-einfach`, `paket/startfairness` | Inhalt gleichwertig in `main` (rebasiert gemergt) |
+| alle übrigen `integration/*`, `paket/*`, `claude/*` | Vollständig in `main` |
+
+Falls nach dem Lauf noch ein Branch übrig ist: `git fetch --prune`, dann für ihn `git cherry origin/main origin/<branch>`;
+Zeilen mit `+` sind Änderungen, die in `main` fehlen. Jede einzeln prüfen (steht sie in anderer Form schon in `main`?),
+übernehmen oder hier als verworfen mit Grund eintragen, danach den Branch in `branch-verworfen.txt` eintragen und den
+Workflow mit `verworfene: true`, `dry_run: false` starten.
