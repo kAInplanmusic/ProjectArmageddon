@@ -165,6 +165,7 @@ Nichts offen.
 | 5.9 G1 | Spielgefühl messen: Eingabe bis Bild, lokal und online mit Latenz | `scripts/browser-perf.mjs` |
 | 5.10 ÜBERSETZUNG | (später) Englisch per Einstellung; zuerst alle Texte in eine Tabelle ziehen | `src/client/` |
 | 5.11 TESTZAHLEN | Der Block in `README.md`/`MASTERDOTO.md` nennt noch den Lauf vom 2026-11-12. Nach einem vollen Lauf: `npm run testlauf:erfassen`, dann `npm run check:docs -- --schreiben` | `docs/testlauf.json` |
+| 5.12 DETERMINISMUS-SAFARI | Review 2026-11-28: Der Kartenbau (`src/shared/terrainKomposition.js`, `masse`/`masseSchief`, Exponenten 0,85 bis 7) rechnet mit `**` und gebrochenen Exponenten; `Math.pow` ist zwischen JS-Engines (V8 am Server, JavaScriptCore in Safari) nicht bitgleich garantiert. Der Client baut die Karte aus dem Seed nach und vergleicht mit `terrain_hash` (`src/client/terrainPreview.js`). Prüfen: Online-Partie auf echtem iPhone/iPad, Protokoll auf Hash-Abweichung ansehen; bei Abweichung die Karte vom Server übernehmen statt nachbauen oder ganzzahlige/tabellierte Potenzen (neue Geländefassung) | `src/client/terrainPreview.js`, `src/shared/terrainKomposition.js` |
 
 ## 6. Konten, Web-Zugang, Betrieb
 
