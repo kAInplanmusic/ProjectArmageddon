@@ -30,6 +30,8 @@ import { getWaffe, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STANDARD, WAFFEN_TEMP
 import { CLASS_IDS, CLASS_DEFINITIONS } from '../src/shared/config/classes.js';
 import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 const STRAHL = 'pa_083'; // Goldene Hand: Hitscan, 46 Schaden, keine Fläche
 const PROJEKTIL = 'pa_022'; // Plasmawerfer: Projektil, keine Fläche, gerade Bahn
 const KETTE = 'pa_129'; // Tesla-Turm: Hitscan mit Kettenblitz (2 Sprünge, Abfall 0,6)
@@ -57,7 +59,7 @@ function findClearLine(match, distance, { margin = 40, step = 4 } = {}) {
 function schuss(weaponId, klasse, {
   waffen = WAFFEN_STANDARD, distanz = 80, buff = 0, armor = 0, shield = 0,
 } = {}) {
-  const match = new MatchController({
+  const match = new MatchController({ kit: 4,
     seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000,
     waffen, klassen: KLASSEN_STANDARD,
     loadouts: [{ classId: klasse }, { classId: klasse }],
@@ -103,7 +105,7 @@ function schuss(weaponId, klasse, {
 
 /** Drei Figuren in einer Linie; liefert den Schaden je Figur (Ersttreffer, Sprung 1). */
 function kettenSchuss(klasse, waffen = WAFFEN_STANDARD) {
-  const match = new MatchController({
+  const match = new MatchController({ kit: 4,
     seed: 4242, teams: 3, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000,
     waffen, klassen: KLASSEN_STANDARD,
     loadouts: Array.from({ length: 3 }, () => ({ classId: klasse })),
@@ -238,7 +240,7 @@ test('BAL-02: Fassung 16 und 15 bleiben bitgleich — dreimal 46, gleicher Zusta
         `Fassung ${waffen} (${klasse}): der Strahl bleibt beim Katalogschaden`);
     }
 
-    const match = new MatchController({
+    const match = new MatchController({ kit: 4,
       seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5,
       waffen, klassen: KLASSEN_STANDARD,
     });

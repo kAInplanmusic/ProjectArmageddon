@@ -49,7 +49,7 @@ export class PlayerInventory {
   }
 
   /** Legt einen Spieler mit Startlastout an. */
-  register(playerId, weaponIds = [], { ammoPerWeapon = null, ammoCaps = null } = {}) {
+  register(playerId, weaponIds = [], { ammoPerWeapon = null, ammoCaps = null, munition = null, aktivVorgabe = null } = {}) {
     const ammo = new Map();
     // Reservewaffe mit unbegrenzter Munition: verhindert, dass ein Match
     // stehenbleibt, sobald alle Ladungen verbraucht sind.
@@ -57,6 +57,12 @@ export class PlayerInventory {
     for (const id of weaponIds) {
       const weapon = getWeapon(id);
       if (!weapon) continue;
+      // Kit-Fassung 5 (`config/ausruestung.js`): feste Munition je Waffe, Infinity = unbegrenzt (nicht abwerfbar).
+      if (munition && id in munition) {
+        ammo.set(id, munition[id]);
+        if (!Number.isFinite(munition[id])) unlimited.add(id);
+        continue;
+      }
       if (this.#munition && ammoPerWeapon === null) {
         // Fassung 11: die Startwaffen tragen ihre Klasse; die Standard-Startwaffen sind unendlich, die Flächenwaffe des Kits begrenzt.
         const klasse = this.fundMunition(id);
@@ -79,7 +85,7 @@ export class PlayerInventory {
     // fehl, die für den Spieler keinen Sinn ergibt. Sie bleibt verfügbar und
     // rückt nur dann nach, wenn sonst nichts mehr da ist.
     const waehlbar = [...ammo.keys()].filter(id => !unlimited.has(id));
-    const aktiv = waehlbar[0] ?? [...ammo.keys()][0] ?? null;
+    const aktiv = (aktivVorgabe && ammo.has(aktivVorgabe) ? aktivVorgabe : null) ?? waehlbar[0] ?? [...ammo.keys()][0] ?? null;
     // Die gewählte Waffe nach vorne, damit die Reihenfolge zur Anzeige passt.
     const reihenfolge = aktiv === null
       ? [...ammo.keys()]

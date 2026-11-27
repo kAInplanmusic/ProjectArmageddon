@@ -510,7 +510,7 @@ export class MatchController {
      */
     loadouts = null,
     /** Ausrüstungsfassung: `KIT_STARTER` (Reserve + 2 Common, Standard) oder `KIT_KLASSE` (Altverhalten, nur für alte Replays). */
-    kit = KIT_STANDARD,
+    kit = KIT_STANDARD, fraktionen = null,
     /** Zerstörungsfassung (`config/zerstoerung.js`): 3 = Standard (große Schollen fallen), 2 = raue Krater + Nachrutschen bis 6000 Zellen, 1 = Altverhalten. */
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
@@ -564,6 +564,7 @@ export class MatchController {
     /** Loadout-Wahl je Spielerplatz — Kopie, wie bei den Sidegrades. */
     this.loadouts = Array.isArray(loadouts) ? [...loadouts] : [];
     this.kit = normalisiereKit(kit);
+    this.fraktionen = Array.isArray(fraktionen) ? fraktionen.slice(0, teams) : null; // Wahl je Team (nur Kit-Fassung 5 liest sie)
     this.zerstoerung = normalisiereZerstoerung(zerstoerung);
     this.waffen = normalisiereWaffen(waffen);
     this.#inventory.setzeMunition(this.waffen >= WAFFEN_MUNITION); // Munitionsklassen ab Waffenfassung 11 (`config/munition.js`)
@@ -2467,7 +2468,7 @@ export class MatchController {
       inventory: this.#inventory,
       sidegrades: this.sidegrades,
       loadouts: this.loadouts,
-      kit: this.kit, seed: this.#seedManager.baseSeed,
+      kit: this.kit, seed: this.#seedManager.baseSeed, fraktionen: this.fraktionen, // Fraktion je Team (Kit-Fassung 5)
       baseHealth: this.baseHealth,
       klassen: this.klassen,
       resolveLoadout,

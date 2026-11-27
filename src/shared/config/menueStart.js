@@ -26,6 +26,7 @@ import { SEIL_STANDARD } from './seil.js';
 import { WIND_STANDARD } from './wind.js';
 import { HAGEL_STANDARD } from './hagel.js';
 import { BIOMREGELN_STANDARD } from './biomregeln.js';
+import { KIT_AUSRUESTUNG } from './loadouts.js';
 
 export const MENUE_KARTENTYP = 'autonom';
 
@@ -42,4 +43,5 @@ export const MENUE_FASSUNGEN = Object.freeze({
   wind: WIND_STANDARD,
   hagel: HAGEL_STANDARD,
   biomregeln: BIOMREGELN_STANDARD,
+  kit: KIT_AUSRUESTUNG, // Startausrüstung je Figur (TODO 2.17)
 });

@@ -21,7 +21,7 @@ import {
   WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_ZUENDERPLUS, WAFFEN_FEINTUNING, WAFFEN_VORSTRAHL, WAFFEN_SPREIZUNG, WAFFEN_WIND, WAFFEN_TEMPO, WAFFEN_TREFFER, WAFFEN_KLASSE, WAFFEN_NACHSCHUB, WAFFEN_STREU, WAFFEN_FEUERWESEN, WAFFEN_ENTSCHEIDUNG, WAFFEN_F7_WERTE, WAFFEN_F8_WERTE, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, WAFFEN_F3_WERTE, normalisiereWaffen, getWaffe,
 } from '../src/shared/config/waffen-fassung.js';
 import {
-  KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, getStartWaffen, normalisiereKit, getStartMunition,
+  KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, KIT_AUSRUESTUNG, getStartWaffen, normalisiereKit, getStartMunition,
 } from '../src/shared/config/loadouts.js';
 import { KISTEN_ALT } from '../src/shared/config/kisten.js';
 import { WIND_ALT } from '../src/shared/config/wind.js';
@@ -34,6 +34,8 @@ import {
   messeWaffe, findeAusreisser, klassenGesundheit, ENTFERNUNGEN, STUFEN, ZU_SCHWACH, ZU_STARK,
 } from '../scripts/waffen-balance.mjs';
 import { spiele } from '../scripts/bot-partien.mjs';
+
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
 
 /**
  * SHA-256 über den Katalog mit sortierten Schlüsseln (gemessen an 573a2c6).
@@ -348,7 +350,7 @@ test('Altkopf-Aufzeichnung mit Schüssen: Wiedergabe gleicht der Live-Partie in 
 });
 
 test('Start-Kit Fassung 4: zwei verschiedene schadenmachende Würfe statt wirkungsloser Strahlwaffe', () => {
-  assert.equal(KIT_STANDARD, KIT_SCHARF);
+  assert.equal(KIT_STANDARD, KIT_AUSRUESTUNG, 'seit TODO 2.17 starten neue Partien mit der Startausrüstung');
   assert.equal(normalisiereKit(4), KIT_SCHARF);
   let strahlSelbstwirkung = 0;
   for (let seed = 1; seed <= 200; seed++) {

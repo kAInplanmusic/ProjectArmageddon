@@ -36,6 +36,8 @@ import { BACKDROPS_NEU, getBackdropNeu, PALETTEN_NEU, STIMMUNGEN_NEU } from '../
 import { paletteFor, ALL_BACKDROPS } from '../src/shared/config/backdrops.js';
 import { SONDER_KULISSEN, sonderKulisseFuer } from '../src/client/sonderKulissen.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 const NEU = ['schlackeschmiede', 'kristallarchipel', 'tempelstadt', 'tiefsee', 'dimensionsriss', 'kristallwald'];
 const BASIS = Object.keys(STOFF).length;
 const wurzel = resolve(import.meta.dirname, '..');
@@ -149,7 +151,7 @@ test('Materialmix je Biom nach dem Manifest (Deck, Kern, Leitadern) und alle sec
 for (const id of NEU) {
   test(`${id}: spielbar (Spawn erreichbar, Stoffkarte mit Biom-Materialien, Server = Client) und deterministisch`, () => {
     for (const seed of [11, 4242]) {
-      const mk = () => new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom: id, maxRounds: 2, gelaende: GELAENDE_BIOME_20, zerstoerung: 5 });
+      const mk = () => new MatchController({ kit: 4, seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom: id, maxRounds: 2, gelaende: GELAENDE_BIOME_20, zerstoerung: 5 });
       const m = mk();
       m.start();
       assert.equal(m.gelaende, GELAENDE_BIOME_20);
@@ -192,7 +194,7 @@ test('Ohne Wahl zieht Fassung 7 über viele Seeds jedes der sechs Biome und baut
   }
   assert.equal(gezogen.size, 6);
   for (const [id, seed] of gezogen) {
-    const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', maxRounds: 2, gelaende: GELAENDE_BIOME_20, zerstoerung: 5 });
+    const m = new MatchController({ kit: 4, seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', maxRounds: 2, gelaende: GELAENDE_BIOME_20, zerstoerung: 5 });
     m.start();
     assert.equal(m.sonderbiom, id, `Seed ${seed}`);
     assert.ok(m.erreichbarkeit?.ok, `${id}/${seed}: ${m.erreichbarkeit?.grund}`);
@@ -264,7 +266,7 @@ const GOLD_ALT = [
 test('Alte Karten: Fassungen 1 bis 6 liefern denselben Zustands- und Stoffhash wie vor Fassung 7 (inkl. von selbst gezogener Sonderbiome)', () => {
   assert.equal(GOLD_ALT.length, 27);
   for (const [g, seed, biom, sonder, hash, stoff] of GOLD_ALT) {
-    const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom, maxRounds: 2, gelaende: g, zerstoerung: 5 });
+    const m = new MatchController({ kit: 4, seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom, maxRounds: 2, gelaende: g, zerstoerung: 5 });
     m.start();
     for (let i = 0; i < 240; i += 1) { m.step(); m.consumeEvents(); }
     const kennung = `Fassung ${g}, Seed ${seed}, Biom ${biom}`;
@@ -278,7 +280,7 @@ test('Alte Karten: Fassungen 1 bis 6 liefern denselben Zustands- und Stoffhash w
 /** Spielt live, zeichnet auf, spielt die Aufzeichnung ab (Seed 4242, 2x2, hills, 2400 Ticks). */
 function aufzeichnenUndAbspielen(extra) {
   const kopf = { seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 };
-  const live = new MatchController({ ...kopf, ...extra });
+  const live = new MatchController({ kit: 4, ...kopf, ...extra });
   live.start();
   const rec = new ReplayRecorder({ ...kopf, ...extra, turnDurationMs: live.turnDurationMs, kit: live.kit, schaden: live.schaden, zerstoerung: live.zerstoerung, waffen: live.waffen, kisten: live.kisten });
   let schuesse = 0;

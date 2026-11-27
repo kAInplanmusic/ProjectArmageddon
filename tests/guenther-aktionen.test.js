@@ -23,6 +23,8 @@ import {
 import { COOKIE_ALT, COOKIE_KATER } from '../src/shared/config/cookie.js';
 import { encodeSnapshot, decodeSnapshot } from '../src/shared/protocol.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 /** Eine winzige Welt: Spieler mit Position und Leben. */
 function welt(spieler) {
   const daten = new Map(spieler.map(s => [s.id, { x: s.x, y: s.y }]));
@@ -83,17 +85,17 @@ test('Fassungen: neue Partien bekommen Fassung 4, 3 bleibt Fassung 3, fehlend od
   assert.equal(normalisiereGuenther(2), GUENTHER_AKTIONEN);
   assert.equal(normalisiereGuenther(undefined), GUENTHER_ALT);
   assert.equal(normalisiereGuenther(7), GUENTHER_ALT);
-  const ohne = new MatchController({ seed: 3, teams: 2, playersPerTeam: 1, preset: 'open' });
+  const ohne = new MatchController({ kit: 4, seed: 3, teams: 2, playersPerTeam: 1, preset: 'open' });
   assert.equal(ohne.guenther, GUENTHER_ALT, 'ohne Angabe spielt ein Match wie vorher');
   assert.equal(ohne.cookie, COOKIE_ALT);
-  assert.equal(new ReplayRecorder({ seed: 3 }).config.guenther, GUENTHER_ALT);
+  assert.equal(new ReplayRecorder({ kit: 4, seed: 3 }).config.guenther, GUENTHER_ALT);
 });
 
 test('Fassung 1 ist bit-identisch zum Stand vor der Erweiterung (Goldwerte)', () => {
   // Gemessen mit dem Stand VOR der Erweiterung (main 1f1fd54), Katalogfassung 3 festgehalten (`waffen: 3`): Zustandshash, Hash des Günther-Zustands, Ereigniszahl.
   const gold = [[11, '50235139', 3746098622, 265], [4242, '7bc6f78c', 2535208100, 266]];
   for (const [seed, hash, gHash, ereignisse] of gold) {
-    const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1_000_000, maxRounds: 999, valhallaRound: 999, guenther: GUENTHER_ALT, cookie: COOKIE_ALT, waffen: 3, kisten: KISTEN_OFT });
+    const m = new MatchController({ kit: 4, seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1_000_000, maxRounds: 999, valhallaRound: 999, guenther: GUENTHER_ALT, cookie: COOKIE_ALT, waffen: 3, kisten: KISTEN_OFT });
     m.start();
     let schuesse = 0;
     let ev = 0;
@@ -130,7 +132,7 @@ test('Replay-Kopf: Altdatei ohne `guenther`/`cookie` = Fassung 1, neue Aufzeichn
   assert.equal(match.cookie, COOKIE_ALT);
   assert.equal('cookie' in match.getState(), false);
 
-  const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, guenther: GUENTHER_AKTIONEN, cookie: COOKIE_KATER });
+  const neu = new ReplayRecorder({ kit: 4, seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, guenther: GUENTHER_AKTIONEN, cookie: COOKIE_KATER });
   assert.equal(neu.toJSON().config.guenther, GUENTHER_AKTIONEN);
   assert.equal(neu.toJSON().config.cookie, COOKIE_KATER);
   neu.finalize(300);
@@ -143,8 +145,8 @@ test('Replay-Kopf: Altdatei ohne `guenther`/`cookie` = Fassung 1, neue Aufzeichn
 test('Wiedergabe gleicht der Live-Partie (Fassung 2) und bleibt bei Altkopf gleich', () => {
   for (const fassung of [GUENTHER_ALT, GUENTHER_AKTIONEN]) {
     const optionen = { seed: 31, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, guenther: fassung, cookie: fassung };
-    const live = new MatchController(optionen);
-    const aufnahme = new ReplayRecorder(optionen);
+    const live = new MatchController({ kit: 4, ...optionen });
+    const aufnahme = new ReplayRecorder({ kit: 4, ...optionen });
     live.start();
     for (let tick = 0; tick < 2400; tick++) { live.step(); live.consumeEvents(); }
     aufnahme.finalize(live.world.tickCount);
@@ -342,7 +344,7 @@ test('Die Aktionen verschieben den Zufallsstrom der Fassung 1 nicht (Auftrittspl
 });
 
 test('Partie in Fassung 2: Günther zeigt Posen, die Aktionen laufen durch den Motor', () => {
-  const m = new MatchController({ seed: 7, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, guenther: GUENTHER_AKTIONEN, cookie: COOKIE_KATER });
+  const m = new MatchController({ kit: 4, seed: 7, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, guenther: GUENTHER_AKTIONEN, cookie: COOKIE_KATER });
   m.start();
   const arten = new Set();
   const posen = new Set();

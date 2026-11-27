@@ -25,12 +25,14 @@ import {
   KLASSEN_ALT, KLASSEN_SCOUT, KLASSEN_NEU, KLASSEN_STANDARD, normalisiereKlassen, klassenWerte,
 } from '../src/shared/config/klassen-fassung.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 const GOLD_F1 = 'b8bfca73';
 const GOLD_F3 = 'fca0dcaf';
 const KOPF = { seed: 4242, teams: 2, playersPerTeam: 3, preset: 'hills', turnDurationMs: 1_000_000, maxRounds: 99 };
 
 function spiele(extra = {}) {
-  const m = new MatchController({ ...KOPF, waffen: 10, kisten: 3, ...extra }); // Goldwert gilt für Waffenfassung 10 und Kistenfassung 3 (Fassung 11 ändert Inventar und Kisten)
+  const m = new MatchController({ kit: 4, ...KOPF, waffen: 10, kisten: 3, ...extra }); // Goldwert gilt für Waffenfassung 10 und Kistenfassung 3 (Fassung 11 ändert Inventar und Kisten)
   m.start();
   for (let i = 0; i < 3; i += 1) {
     m.fire(m.activePlayerId, Math.PI / 4 + i * 0.1, 30);
@@ -52,7 +54,7 @@ test('Marke: Standard ist Fassung 3, 1/2/3 sind gültig, Unbekanntes fällt auf 
    * Der Motor ohne Option bleibt Fassung 1: Eine Aufzeichnung OHNE `klassen` im
    * Kopf stammt aus der Zeit davor und muss bitgleich bleiben (GOLD_F1).
    */
-  assert.equal(new MatchController(KOPF).klassen, KLASSEN_ALT);
+  assert.equal(new MatchController({ kit: 4, ...KOPF }).klassen, KLASSEN_ALT);
 });
 
 test('Fassung 3: drei Klassen, keine Archetypen, gleiche Summe der wirksamen Faktoren', () => {
@@ -169,10 +171,10 @@ test('Spiel: Fassung 1 ist bitgleich zum Stand vor der Änderung, Fassung 2 spie
 });
 
 test('Replay-Kopf: Altdatei ohne Feld = 1, neue Aufzeichnung trägt die gewählte Fassung, Rückspiel übernimmt sie', () => {
-  const rec = new ReplayRecorder({ ...KOPF, klassen: KLASSEN_SCOUT });
+  const rec = new ReplayRecorder({ kit: 4, ...KOPF, klassen: KLASSEN_SCOUT });
   assert.equal(rec.toJSON().config.klassen, KLASSEN_SCOUT);
-  assert.equal(new ReplayRecorder({ ...KOPF, klassen: KLASSEN_NEU }).toJSON().config.klassen, KLASSEN_NEU);
-  assert.equal(new ReplayRecorder(KOPF).toJSON().config.klassen, KLASSEN_ALT);
+  assert.equal(new ReplayRecorder({ kit: 4, ...KOPF, klassen: KLASSEN_NEU }).toJSON().config.klassen, KLASSEN_NEU);
+  assert.equal(new ReplayRecorder({ kit: 4, ...KOPF }).toJSON().config.klassen, KLASSEN_ALT);
   const dok = JSON.parse(JSON.stringify(rec.toJSON()));
   delete dok.config.klassen;
   const geladen = ReplayRecorder.fromJSON(dok);
@@ -183,9 +185,9 @@ test('Replay-Kopf: Altdatei ohne Feld = 1, neue Aufzeichnung trägt die gewählt
 
 test('Aufzeichnung mit Fassung 3 spielt exakt nach', () => {
   const kopf = { ...KOPF, klassen: KLASSEN_NEU };
-  const m = new MatchController(kopf);
+  const m = new MatchController({ kit: 4, ...kopf });
   m.start();
-  const rec = new ReplayRecorder(kopf);
+  const rec = new ReplayRecorder({ kit: 4, ...kopf });
   const schuss = { tick: m.world.tickCount, playerId: m.activePlayerId, angle: Math.PI / 4, power: 30, weaponId: null };
   assert.equal(m.fire(schuss.playerId, schuss.angle, schuss.power).ok, true);
   rec.recordInput(schuss);

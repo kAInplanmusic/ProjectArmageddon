@@ -10,6 +10,8 @@ import { legeKiste, waehleWaffeNachStufe, CRATE_TYPES, weaponIdFromIndex } from 
 import { KISTEN_ALT, KISTEN_OFT, KISTEN_WAFFEN, KISTEN_MUNITION, KISTEN_STANDARD, KISTEN_STUFEN_GEWICHT, KISTEN_MUNITION_STUFE, normalisiereKisten } from '../src/shared/config/kisten.js';
 import { WEAPONS, WEAPONS_BY_ID, hasSpecialEffect } from '../src/shared/config/weapons.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 function welt() {
   const kisten = [];
   return { kisten, createEntity: () => kisten.push({}) - 1, addComponent: (id, n, w) => { if (n === 'Crate') kisten[id] = w; } };
@@ -64,7 +66,7 @@ test('Fassung 3 im Match: Rundenkisten enthalten Waffen; Fassung 2 im Match nich
   const zaehle = kisten => {
     let n = 0;
     for (let seed = 1; seed <= 40; seed += 1) {
-      const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1e6, kisten });
+      const m = new MatchController({ kit: 4, seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1e6, kisten });
       m.start();
       n += m.getState().crates.filter(c => c.crateType === CRATE_TYPES.weapon).length;
     }
@@ -78,7 +80,7 @@ test('Altköpfe bitgleich: Zustands-Hash nach 4000 Schritten, Fassung 1 und 2 (G
   const gold = { 1: ['9ac2e336', 'c55fa9df', 'ac3f29fa'], 2: ['bc7c33c3', '68e15549', 'f3a90fee'] };
   for (const kisten of [KISTEN_ALT, KISTEN_OFT]) {
     gold[kisten].forEach((erwartet, i) => {
-      const m = new MatchController({ seed: i + 1, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 2000, kisten, maxRounds: 6, waffen: 10 }); // Goldwerte: Waffenfassung 10 (Fassung 11 ändert das Inventar)
+      const m = new MatchController({ kit: 4, seed: i + 1, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 2000, kisten, maxRounds: 6, waffen: 10 }); // Goldwerte: Waffenfassung 10 (Fassung 11 ändert das Inventar)
       m.start();
       for (let n = 0; n < 4000 && m.getState().status === 'playing'; n += 1) m.step();
       assert.equal(m.stateHash(), erwartet, `Fassung ${kisten}, Seed ${i + 1}`);

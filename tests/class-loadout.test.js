@@ -17,6 +17,8 @@ import { waffeVorAuslese } from '../src/shared/config/waffen-fassung.js';
 import { KIT_KLASSE } from '../src/shared/config/loadouts.js';
 import { EFFECT_KIND, SPECIAL_EFFECTS } from '../src/engine/specials.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 /**
  * Klassenabhängige Startloadouts.
  *
@@ -227,7 +229,7 @@ test('Fassung 3: Startwaffen richten sich nach der Klasse', () => {
    * Jede Figur führt die klassenprägende Waffe; das neutrale Starter-Kit bleibt
    * als Grundausstattung daneben.
    */
-  const match = new MatchController({
+  const match = new MatchController({ kit: 4,
     seed: 9002, teams: 3, playersPerTeam: 3, klassen: KLASSEN_STANDARD,
   });
   match.start();
@@ -262,7 +264,7 @@ test('Ein Match mit einer Klasse läuft über viele Züge ohne Munitionsnot', ()
    * endet. Erst dann ist der nächste Schuss ein regulärer Schuss des nächsten
    * Spielers.
    */
-  const match = new MatchController({ seed: 12, teams: 2, playersPerTeam: 1, maxRounds: 5 });
+  const match = new MatchController({ kit: 4, seed: 12, teams: 2, playersPerTeam: 1, maxRounds: 5 });
   match.start();
 
   for (let schuss = 0; schuss < 8; schuss++) {

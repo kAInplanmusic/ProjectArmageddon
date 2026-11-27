@@ -9,6 +9,8 @@ import {
   decodeSnapshot,
 } from '../src/shared/protocol.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
+import { FESTE_STARTWAFFEN, GIMMICKS } from '../src/shared/config/ausruestung.js';
+import { SPEZIAL_JE_FIGUR } from '../src/shared/config/ausruestung-spezial.js';
 
 /**
  * Anti-Cheat: Was der Server NICHT vom Client glaubt.
@@ -251,7 +253,10 @@ test('Der Client kann keine Waffe auswählen, die er nicht hat', { timeout: 25_0
     const wsUrl = url.replace('http', 'ws') + '/ws';
     const { a, entityA } = await zweiSpieler(wsUrl, url);
 
-    const fremde = WEAPONS[0].id;
+    // Eine Waffe, die keine Figur führen kann: nicht in der festen Startausrüstung, kein Gimmick, keine Spezialwaffe
+    // (Kit-Fassung 5; vorher war es schlicht die erste Katalogwaffe, die jetzt jede Figur trägt).
+    const belegt = new Set([...FESTE_STARTWAFFEN, ...Object.keys(GIMMICKS), ...Object.values(SPEZIAL_JE_FIGUR)]);
+    const fremde = WEAPONS.find(w => !belegt.has(w.id)).id;
     a.drainErrors();
     /*
      * Der Name ist `SELECT_WEAPON`, nicht `WEAPON_SELECT`. Mit dem falschen Namen

@@ -22,6 +22,8 @@ import { stoffByKey } from '../src/shared/config/stoffe.js';
 import { WET_LEVEL } from '../src/shared/config/water.js';
 import { WAFFEN_WIND } from '../src/shared/config/waffen-fassung.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 test('Marke: Fassung 8 ist gültig, 7 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_KLAR, 8);
   // Seit Fassung 9 (`gelaende-fassung-9.test.js`, kein Start im Schacht) ist der Standard höher; Fassung 8 bleibt gültig.
@@ -51,7 +53,7 @@ test('Rezepte der Fassung 8: ein Leitstoff, genau eine Kontrastader, Kristall un
 });
 
 const START = (seed, biom, teams, ppt, gelaende) => {
-  const m = new MatchController({ seed, teams, playersPerTeam: ppt, kartentyp: 'autonom', biom, maxRounds: 2, gelaende, zerstoerung: 5 });
+  const m = new MatchController({ kit: 4, seed, teams, playersPerTeam: ppt, kartentyp: 'autonom', biom, maxRounds: 2, gelaende, zerstoerung: 5 });
   m.start();
   return m;
 };
@@ -131,7 +133,7 @@ test('check:biome: Die Ruinenstadt (Seed 1224883 Schlackeschmiede, 951031 Pilzwa
 
 function aufzeichnenUndAbspielen(extra) {
   const kopf = { seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 };
-  const live = new MatchController({ ...kopf, ...extra });
+  const live = new MatchController({ kit: 4, ...kopf, ...extra });
   live.start();
   const rec = new ReplayRecorder({ ...kopf, ...extra, turnDurationMs: live.turnDurationMs, kit: live.kit, schaden: live.schaden, zerstoerung: live.zerstoerung, waffen: live.waffen, kisten: live.kisten });
   let schuesse = 0;

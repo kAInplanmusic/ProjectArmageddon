@@ -19,6 +19,8 @@ import { pruefeSeilEingabe } from '../src/shared/validation.js';
 import { LobbyManager } from '../src/server/lobby.js';
 import { LobbySession } from '../src/server/gameServer.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 // ------------------------------------------------------------------ Hilfen
 
 /** Künstliches Gelände: Decke y < 50, Boden ab y = 700, optional ein Block. */
@@ -92,8 +94,8 @@ test('Versionsmarke: 1 = kein Seil, 2 = Ninja Rope, 3 = festgelegte Werte (Stand
   assert.equal(normalisiereSeil(SEIL_FEIN), SEIL_FEIN);
   assert.equal(normalisiereSeil(SEIL_ALT), SEIL_ALT);
   assert.equal(normalisiereSeil(7), SEIL_STANDARD);
-  assert.equal(new MatchController({ seed: 1 }).seilSystem, null, 'ohne Marke kein Seil');
-  assert.ok(new MatchController({ seed: 1, seil: SEIL_NINJA }).seilSystem);
+  assert.equal(new MatchController({ kit: 4, seed: 1 }).seilSystem, null, 'ohne Marke kein Seil');
+  assert.ok(new MatchController({ kit: 4, seed: 1, seil: SEIL_NINJA }).seilSystem);
 });
 
 test('Länge je Stufe: eine Decke in 400 px erreicht Stufe 5 (465), nicht Stufe 1 (297)', () => {
@@ -233,9 +235,9 @@ const KOPF = { seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills', turnDur
 
 /** Spielt eine feste Seilfolge und zeichnet sie auf. */
 function seilPartie(seil = SEIL_STANDARD) {
-  const m = new MatchController({ ...KOPF, seil });
+  const m = new MatchController({ kit: 4, ...KOPF, seil });
   m.start();
-  const rec = new ReplayRecorder({ ...KOPF, seil });
+  const rec = new ReplayRecorder({ kit: 4, ...KOPF, seil });
   const id = m.activePlayerId;
   const eingabe = e => {
     const r = m.seilSystem.eingabe(id, e);
@@ -274,7 +276,7 @@ test('Aufzeichnung: Seilschuss, Schwung, Lösen spielen exakt nach; die Marke st
 
 test('Ohne Marke bitgleich: Fassung 1, 2 und 3 ohne Seilbenutzung haben dieselben Hashes', () => {
   const lauf = seil => {
-    const m = new MatchController({ ...KOPF, seil });
+    const m = new MatchController({ kit: 4, ...KOPF, seil });
     m.start();
     const hashes = [];
     for (let t = 0; t < 900; t += 1) {
@@ -289,7 +291,7 @@ test('Ohne Marke bitgleich: Fassung 1, 2 und 3 ohne Seilbenutzung haben dieselbe
 });
 
 test('Altaufzeichnung ohne Marke: lädt als Fassung 1, Seileingaben laufen ins Leere', () => {
-  const rec = new ReplayRecorder({ seed: 5, teams: 2, playersPerTeam: 1, preset: 'open' });
+  const rec = new ReplayRecorder({ kit: 4, seed: 5, teams: 2, playersPerTeam: 1, preset: 'open' });
   const dok = rec.toJSON();
   delete dok.config.seil;
   dok.entries.push({ tick: 3, playerId: 1, kind: 'seil', aktion: 'schuss', winkel: 1 });
@@ -344,7 +346,7 @@ test('Server: lehnt ungültige und fremde Seil-Nachrichten ab, nimmt gültige an
 });
 
 test('Waffe vom Seil: ein Schuss löst das Seil, der Zug läuft weiter wie nach jedem Schuss', () => {
-  const m = new MatchController({ ...KOPF, seil: SEIL_STANDARD });
+  const m = new MatchController({ kit: 4, ...KOPF, seil: SEIL_STANDARD });
   m.start();
   los(m, 5);
   const id = m.activePlayerId;
@@ -361,7 +363,7 @@ test('Waffe vom Seil: ein Schuss löst das Seil, der Zug läuft weiter wie nach 
 
 /** Die feste Seilfolge aus `seilPartie`, aber mit den Zustandshashes nach jedem Schwungwechsel (Goldwerte). */
 function hashFolge(seil) {
-  const m = new MatchController({ ...KOPF, seil });
+  const m = new MatchController({ kit: 4, ...KOPF, seil });
   m.start();
   const id = m.activePlayerId;
   los(m, 10);
@@ -409,7 +411,7 @@ test('Fassung 3: festgelegte Werte, Rest wie Fassung 2, Standard neuer Partien',
   for (const k of ['laengen', 'schuesse', 'maxTempo', 'bodenReibung', 'maxKnicke', 'haltedauer', 'winkelMax', 'verboteneKategorien']) {
     assert.deepEqual(SEIL_FASSUNG_3[k], SEIL_FASSUNG_2[k], `unverändert: ${k}`);
   }
-  assert.equal(new MatchController({ seed: 1 }).seil, SEIL_ALT, 'ohne Angabe im Kopf: kein Seil (alte Dateien); der Server/Client übergibt SEIL_STANDARD');
+  assert.equal(new MatchController({ kit: 4, seed: 1 }).seil, SEIL_ALT, 'ohne Angabe im Kopf: kein Seil (alte Dateien); der Server/Client übergibt SEIL_STANDARD');
   assert.equal(Object.isFrozen(SEIL_FASSUNG_2) && Object.isFrozen(SEIL_FASSUNG_3), true);
 });
 

@@ -27,10 +27,12 @@ import {
   MAX_WIND, WIND_ALT, WIND_FAKTOR_MAX, WIND_JE_ZUG, WIND_STANDARD, normalisiereWind, windSegmente,
 } from '../src/shared/config/wind.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 const KOPF = { seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1_000_000, maxRounds: 50 };
 
 function match(extra = {}) {
-  const m = new MatchController({ ...KOPF, ...extra });
+  const m = new MatchController({ kit: 4, ...KOPF, ...extra });
   m.start();
   return m;
 }
@@ -175,12 +177,12 @@ test('Der Motor schreibt den Windfaktor der Waffe ins Geschoss (Fassung 2)', () 
 
 test('Replay-Kopf: neu trägt die Fassung des Matches, alter Kopf ohne Feld ist Fassung 1 und läuft bitgleich', () => {
   // Ohne Angabe: Recorder und Motor stehen beide auf dem Altstand (kein stiller Unterschied).
-  assert.equal(new ReplayRecorder({ seed: 99 }).toJSON().config.wind, WIND_ALT);
-  assert.equal(new ReplayRecorder({ seed: 99, wind: WIND_JE_ZUG }).toJSON().config.wind, WIND_JE_ZUG);
+  assert.equal(new ReplayRecorder({ kit: 4, seed: 99 }).toJSON().config.wind, WIND_ALT);
+  assert.equal(new ReplayRecorder({ kit: 4, seed: 99, wind: WIND_JE_ZUG }).toJSON().config.wind, WIND_JE_ZUG);
 
   // Fassung 2: Rundlauf Live → Aufzeichnung → Wiedergabe.
   const live = match({ wind: WIND_JE_ZUG });
-  const rec = new ReplayRecorder({ ...KOPF, wind: live.windFassung });
+  const rec = new ReplayRecorder({ kit: 4, ...KOPF, wind: live.windFassung });
   for (let tick = 0; tick < 600; tick += 1) {
     if (tick === 60) {
       const schuss = { playerId: live.activePlayerId, angle: 0.8, power: 55 };
@@ -196,7 +198,7 @@ test('Replay-Kopf: neu trägt die Fassung des Matches, alter Kopf ohne Feld ist 
 
   // Fassung 1 ohne Feld im Kopf: gleiche Partie, gleicher Hash.
   const alt = match({ wind: WIND_ALT });
-  const altRec = new ReplayRecorder({ ...KOPF });
+  const altRec = new ReplayRecorder({ kit: 4, ...KOPF });
   for (let tick = 0; tick < 600; tick += 1) {
     if (tick === 60) {
       const schuss = { playerId: alt.activePlayerId, angle: 0.8, power: 55 };

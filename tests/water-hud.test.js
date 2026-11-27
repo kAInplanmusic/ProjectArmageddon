@@ -22,6 +22,8 @@ import {
   HEADER_SIZE,
 } from '../src/shared/protocol.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 /**
  * Wasser im HUD: Ertrinken und Wasserverdrängung sichtbar machen.
  *
@@ -88,7 +90,7 @@ test('Das CharacterSystem benutzt dieselben Schwellen', () => {
 });
 
 test('Eine untergetauchte Figur verliert Leben — und meldet sich fortlaufend', () => {
-  const match = new MatchController({ seed: 4711, teams: 2, playersPerTeam: 1 });
+  const match = new MatchController({ kit: 4, seed: 4711, teams: 2, playersPerTeam: 1 });
   match.start();
 
   const spieler = match.getState().entities[0];
@@ -137,7 +139,7 @@ test('Eine untergetauchte Figur verliert Leben — und meldet sich fortlaufend',
 });
 
 test('getState liefert den Wasserstand und die Zustandsentscheidung dazu', () => {
-  const match = new MatchController({ seed: 88, teams: 2, playersPerTeam: 2 });
+  const match = new MatchController({ kit: 4, seed: 88, teams: 2, playersPerTeam: 2 });
   match.start();
 
   // Ohne Wasser: alle trocken.
@@ -161,7 +163,7 @@ test('getState liefert den Wasserstand und die Zustandsentscheidung dazu', () =>
 test('Wasserverdrängung hebt den Pegel und wird sichtbar', () => {
   // Das ist der Fall, den die Anzeige zeigen soll: Die Figur bewegt sich nicht,
   // der Pegel steigt trotzdem — eine Explosion im Wasser verdrängt es.
-  const match = new MatchController({ seed: 2024, teams: 2, playersPerTeam: 1 });
+  const match = new MatchController({ kit: 4, seed: 2024, teams: 2, playersPerTeam: 1 });
   match.start();
 
   const spieler = match.getState().entities[0];
@@ -188,7 +190,7 @@ test('Ein abgeworfener Vorrat landet nicht im Wasser', () => {
    * auch dann grün, wenn die Kiste überhaupt nie landete.
    */
   const wuerfe = (fluten) => {
-    const match = new MatchController({ seed: 31, teams: 2, playersPerTeam: 1 });
+    const match = new MatchController({ kit: 4, seed: 31, teams: 2, playersPerTeam: 1 });
     match.start();
     const spieler = match.getState().entities[0];
     if (fluten) match.water.fillRectangle(0, 0, match.water.width - 1, match.water.height - 1, 1);
@@ -226,7 +228,7 @@ test('Eine gelandete Kiste bleibt liegen (kein Durchsinken)', () => {
    *
    * Diese Prüfung hält fest, dass eine Landung eine Landung ist.
    */
-  const match = new MatchController({ seed: 31, teams: 2, playersPerTeam: 1 });
+  const match = new MatchController({ kit: 4, seed: 31, teams: 2, playersPerTeam: 1 });
   match.start();
 
   // Die Rundenkiste steht von Anfang an auf festem Grund.
@@ -337,7 +339,7 @@ test('Die Delta-Basis führt den Wasserstand', () => {
 });
 
 test('Ein volles Match kommt mit Wasser durch den Draht', () => {
-  const match = new MatchController({ seed: 555, teams: 2, playersPerTeam: 2 });
+  const match = new MatchController({ kit: 4, seed: 555, teams: 2, playersPerTeam: 2 });
   match.start();
   const spieler = match.getState().entities[1];
   match.setWaterLevelAt(spieler.x, spieler.y, 0.8);

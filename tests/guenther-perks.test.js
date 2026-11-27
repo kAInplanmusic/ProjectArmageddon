@@ -25,9 +25,11 @@ import {
   GUENTHER_WHEEL, normalisiereGuenther,
 } from '../src/shared/config/guenther.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 /** Neues Match der Fassung 4 (Günther und Cookie). */
 function match4(options = {}) {
-  const m = new MatchController({
+  const m = new MatchController({ kit: 4,
     seed: 11, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 30000,
     guenther: GUENTHER_PERKS_FASSUNG, cookie: 4, ...options,
   });
@@ -136,13 +138,13 @@ test('Fassungen: Standard ist 4, 3 bleibt 3, Unbekanntes bleibt 1', () => {
   assert.equal(normalisiereGuenther(GUENTHER_FEINSCHLIFF), GUENTHER_FEINSCHLIFF);
   assert.equal(normalisiereGuenther(undefined), 1);
   assert.equal(normalisiereGuenther(9), 1);
-  const kopf = new ReplayRecorder({ seed: 5, guenther: GUENTHER_FASSUNG_STANDARD }).toJSON().config;
+  const kopf = new ReplayRecorder({ kit: 4, seed: 5, guenther: GUENTHER_FASSUNG_STANDARD }).toJSON().config;
   assert.equal(kopf.guenther, 4, 'Replay-Kopf trägt die Fassung');
 });
 
 test('Altreplays der Fassung 3 laufen bitgleich (Goldwerte vor der Erweiterung gemessen)', () => {
   const lauf = seed => {
-    const m = new MatchController({
+    const m = new MatchController({ kit: 4,
       seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1_000_000,
       turnPauseTicks: 0, valhallaRound: 999, guenther: GUENTHER_FEINSCHLIFF, cookie: 3,
       waffen: 10, kisten: 3,
@@ -166,7 +168,7 @@ test('Altreplays der Fassung 3 laufen bitgleich (Goldwerte vor der Erweiterung g
 
 test('Fassung 4 ist deterministisch (gleicher Seed, gleicher Endhash)', () => {
   const lauf = (guenther, cookie, seed) => {
-    const m = new MatchController({
+    const m = new MatchController({ kit: 4,
       seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1_000_000,
       turnPauseTicks: 0, valhallaRound: 999, guenther, cookie,
     });
@@ -180,7 +182,7 @@ test('Fassung 4 ist deterministisch (gleicher Seed, gleicher Endhash)', () => {
   // Die Fassung ist im Replay-Kopf unterscheidbar; der Verlauf selbst ändert
   // sich erst bei einer Begegnung (Perk) oder Berührung (Malus) — das prüfen
   // die Wirkungstests oben am Motor.
-  assert.equal(new ReplayRecorder({ seed: 7, guenther: GUENTHER_PERKS_FASSUNG }).toJSON().config.guenther, 4);
+  assert.equal(new ReplayRecorder({ kit: 4, seed: 7, guenther: GUENTHER_PERKS_FASSUNG }).toJSON().config.guenther, 4);
 });
 
 test('Jeder der 30 Perks wirkt im Motor', () => {

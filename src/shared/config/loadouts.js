@@ -102,12 +102,17 @@ export const KIT_KLASSE = 1;
 export const KIT_STARTER = 2;
 export const KIT_FLAECHE = 3;
 export const KIT_SCHARF = 4;
-/** Fassung, mit der neue Partien starten. */
-export const KIT_STANDARD = KIT_SCHARF;
+/**
+ * Fassung 5 (TODO 2.17, Entscheidung 2026-11-25): feste Startausrüstung je Figur (`config/ausruestung.js`) —
+ * 5 Startwaffen mit unbegrenzter Munition, Seil und Gleitschirm je 5×, eine Spezialwaffe der Figur.
+ */
+export const KIT_AUSRUESTUNG = 5;
+/** Fassung, mit der neue Partien starten (die neueste; alte Aufzeichnungen tragen ihre Fassung im Kopf). */
+export const KIT_STANDARD = KIT_AUSRUESTUNG;
 
 /** Ist `kit` eine bekannte Fassung? Alles andere fällt auf den Standard. */
 export function normalisiereKit(kit) {
-  return kit === KIT_KLASSE || kit === KIT_STARTER || kit === KIT_FLAECHE || kit === KIT_SCHARF ? kit : KIT_STANDARD;
+  return kit === KIT_KLASSE || kit === KIT_STARTER || kit === KIT_FLAECHE || kit === KIT_SCHARF || kit === KIT_AUSRUESTUNG ? kit : KIT_STANDARD;
 }
 
 /** Kleiner Ganzzahl-Mischer (reiner Hash, KEIN Zufallsstrom): gleiche Eingabe, gleiche Zahl. */

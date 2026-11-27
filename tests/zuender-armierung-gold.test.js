@@ -10,6 +10,8 @@ import test from 'node:test';
 
 import { MatchController } from '../src/engine/match.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 const GOLD_ALT = {
   '1:pa_047': ['fc5fac54', '1092.368', '909.418'], '1:pa_144': ['9575c088', '1100.806', '966.733'],
   '1:pa_052': ['a20d90dc', '1092.368', '909.418'], '1:pa_046': ['2c2a2a19', '1095.181', '928.523'],
@@ -22,7 +24,7 @@ const GOLD_ALT = {
 test('Fassung 1, 4 und 5 treffen die Goldwerte des Stands vor Fassung 6 bitgleich', () => {
   for (const [schluessel, [hash, x, y]] of Object.entries(GOLD_ALT)) {
     const [fassung, id] = schluessel.split(':');
-    const match = new MatchController({
+    const match = new MatchController({ kit: 4,
       seed: 777, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000, waffen: Number(fassung),
     });
     match.start();

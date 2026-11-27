@@ -35,9 +35,11 @@ import assert from 'node:assert/strict';
 
 import { MatchController } from '../src/engine/match.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 /** Baut ein Match und lässt es eine Weile laufen. */
 function matchAmLaufen({ seed = 4242, ticks = 100, spieler = 2 } = {}) {
-  const m = new MatchController({
+  const m = new MatchController({ kit: 4,
     seed, teams: 2, playersPerTeam: spieler, preset: 'open', turnDurationMs: 1_000_000,
   });
   m.start();

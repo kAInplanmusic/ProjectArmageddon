@@ -3,12 +3,14 @@ import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
 import { surfaceY } from '../src/shared/terrainGen.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 /**
  * Der Spaltencache in `surfaceYAt` (Audit 2026-10-09: Tick-Spitzen von 25–38 ms
  * durch die Geschütz-Zielsuche) darf NICHTS am Ergebnis ändern.
  */
 test('surfaceYAt liefert für jede Spalte dasselbe wie die direkte Suche', () => {
-  const match = new MatchController({ seed: 1337, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  const match = new MatchController({ kit: 4, seed: 1337, teams: 2, playersPerTeam: 1, preset: 'hills' });
   match.start();
   const { bitmap, width, height } = match;
   for (let x = -3; x < width + 3; x += 7) {
@@ -22,7 +24,7 @@ test('surfaceYAt liefert für jede Spalte dasselbe wie die direkte Suche', () =>
 });
 
 test('Nach einem Krater liefert surfaceYAt den echten Boden — nicht den der unzerstörten Karte', () => {
-  const match = new MatchController({ seed: 1337, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  const match = new MatchController({ kit: 4, seed: 1337, teams: 2, playersPerTeam: 1, preset: 'hills' });
   match.start();
   const vorher = match.surfaceYAt(500);
   match.terrain.punchCrater(500, vorher, 40);
@@ -36,7 +38,7 @@ test('Nach einem Krater liefert surfaceYAt den echten Boden — nicht den der un
 });
 
 test('Eine Kiste, die über einem Krater landet, steht auf dem echten Boden und schwebt nicht', () => {
-  const neu = () => { const m = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills' }); m.start(); return m; };
+  const neu = () => { const m = new MatchController({ kit: 4, seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills' }); m.start(); return m; };
   const lauf = vorher => {
     const m = neu();
     const id = m.activePlayerId;

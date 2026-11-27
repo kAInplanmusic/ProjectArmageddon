@@ -20,7 +20,7 @@
 import { MatchController } from './match.js';
 import { MATCH_RULES, ZUGZEIT_FASSUNG } from '../shared/config/match.js';
 import { getTurnDurationForPlayerCount } from './systems/turnSystem.js';
-import { KIT_STANDARD, KIT_KLASSE, normalisiereKit } from '../shared/config/loadouts.js';
+import { KIT_STANDARD, KIT_KLASSE, KIT_AUSRUESTUNG, normalisiereKit } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_ALT, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { WAFFEN_STANDARD, WAFFEN_ALT, normalisiereWaffen } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, KISTEN_ALT, normalisiereKisten } from '../shared/config/kisten.js';
@@ -77,7 +77,7 @@ export class ReplayRecorder {
   constructor({
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
     maxRounds = MATCH_RULES.roundLimitBackstop, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
-    kartentyp = null, orientation = 'landscape', format = null, groesse = 'mittel', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
+    kartentyp = null, orientation = 'landscape', format = null, groesse = 'mittel', kit = KIT_STANDARD, fraktionen = null, zerstoerung = ZERSTOERUNG_STANDARD,
     /** Zugzeitfassung im Kopf: fehlt sie in einer Datei, ist sie 1 (Spielerzahl-Regel, `fromJSON`). */
     zugzeitFassung = ZUGZEIT_FASSUNG,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
@@ -105,6 +105,8 @@ export class ReplayRecorder {
        * anderes Match. Das Feld fehlt also nur in Altdateien, nie in neuen.
        */
       kit: normalisiereKit(kit),
+      // Kit-Fassung 5: die Fraktionswahl je Team bestimmt die Figuren und damit die Spezialwaffen.
+      ...(normalisiereKit(kit) >= KIT_AUSRUESTUNG && Array.isArray(fraktionen) ? { fraktionen: fraktionen.slice(0, teams) } : {}),
       /*
        * Zerstörungsfassung (raue Krater, Nachrutschen; Umbau 2026-10-14). Wie `kit`:
        * Neue Aufzeichnungen tragen IMMER `zerstoerung`, eine Datei OHNE das Feld ist
@@ -462,6 +464,7 @@ export class ReplayPlayer {
       preset: config.preset,
       maxRounds: config.maxRounds,
       kit: config.kit,
+      fraktionen: config.fraktionen ?? null,
       zerstoerung: config.zerstoerung,
       waffen: config.waffen,
       kisten: config.kisten,

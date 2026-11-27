@@ -37,6 +37,7 @@ import { MATCH_RULES } from '../shared/config/match.js';
 import { stoffHash } from '../shared/stoffkarte.js';
 import { feuerStandNutzlast, ueberStandNutzlast } from '../shared/feuerStand.js';
 import { ReplayRecorder } from '../engine/replay.js';
+import { KIT_AUSRUESTUNG } from '../shared/config/loadouts.js';
 import { MatchStats } from '../shared/stats.js';
 import { TokenBucket } from './rateLimit.js';
 import { serializeLobby } from './persistence.js';
@@ -160,8 +161,9 @@ export class LobbySession {
       sidegrades: Array.isArray(lobby.sidegrades) ? lobby.sidegrades : null,
       // Klassenwahl je Platz — wie die Sidegrades Teil der Konfiguration.
       loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts : null,
-      // Ausrüstung: Standard = Start-Kit; eine alte Sicherung bringt ihre Fassung mit (`undefined` = Standard).
-      kit,
+      // Ausrüstung: neue Partien Kit-Fassung 5 (feste Startausrüstung, TODO 2.17); eine alte Sicherung bringt ihre Fassung mit.
+      kit: kit ?? KIT_AUSRUESTUNG,
+      fraktionen: Array.isArray(lobby.fraktionen) ? lobby.fraktionen : null,
       zerstoerung,
       waffen,
       kisten,
@@ -240,6 +242,7 @@ export class LobbySession {
       // Wiedergabe die Standardzuteilung statt der gewählten Profile.
       loadouts: this.match.loadouts,
       kit: this.match.kit,
+      fraktionen: this.match.fraktionen, // Kit-Fassung 5: bestimmt Figuren und Spezialwaffen
       zerstoerung: this.match.zerstoerung,
       waffen: this.match.waffen,
       kisten: this.match.kisten,
@@ -1278,9 +1281,11 @@ export class LobbySession {
        */
       const spieler = this.match.players.find(entry => entry.entityId === seat.entityId);
       // Fraktion je Platz (figureIndex) für die Anzeige.
-      const fraktionId = (Array.isArray(this.lobby.fraktionen) && seat.figureIndex !== null && seat.figureIndex !== undefined)
+      // Kit-Fassung 5: die Fraktion löst der MOTOR auf (sie bestimmt Figur und Spezialwaffe); `klassisch` heißt dort null.
+      const ausMotor = spieler && 'fraktionId' in spieler ? (spieler.fraktionId ?? 'klassisch') : undefined;
+      const fraktionId = ausMotor ?? ((Array.isArray(this.lobby.fraktionen) && seat.figureIndex !== null && seat.figureIndex !== undefined)
         ? this.lobby.fraktionen[seat.figureIndex] ?? null
-        : null;
+        : null);
       table[seat.entityId] = {
         inventory: [...entry.weapons],
         ammo,

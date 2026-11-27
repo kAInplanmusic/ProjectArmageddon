@@ -19,13 +19,16 @@ import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { WEAPONS, FALLBACK_WEAPON_ID, pickWeaponForRarity } from '../src/shared/config/weapons.js';
 import {
-  KIT_KLASSE, KIT_STARTER, KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, STARTER_FLAECHE_MUNITION,
+  KIT_KLASSE, KIT_STARTER, KIT_FLAECHE, KIT_STANDARD, KIT_AUSRUESTUNG, STARTER_FLAECHE_MUNITION,
   getClassLoadout, getStartWaffen, getStarterFlaeche, normalisiereKit,
 } from '../src/shared/config/loadouts.js';
+import { startAusruestung } from '../src/shared/config/ausruestung.js';
 import { RARITY_WEIGHTS } from '../src/engine/systems/lootSystem.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import { MAX_WEAPONS } from '../src/engine/inventory.js';
 import { waffeVorAuslese } from '../src/shared/config/waffen-fassung.js';
+
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
 
 /**
  * Die Waffe, wie die Start-Kits sie lesen: Katalogwerte VOR der Auslese vom 2026-10-28 (Stufe, Schaden,
@@ -43,7 +46,7 @@ const OHNE_HANDLER = [
 function neuesMatch(extra = {}) {
   // Sturm ausser Reichweite: Hier werden Kits und Waffen gemessen, nicht der
   // Mahlstrom (seit 2026-10-25 rundenbasiert, ab Runde 8).
-  const match = new MatchController({
+  const match = new MatchController({ kit: 4,
     seed: 20261014, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, valhallaRound: 999, waffen: 10, ...extra, // Kit-Messungen der Fassungen 3 und 4: Waffenfassung 10 (in Fassung 11 sind Startwaffen unendlich, siehe munition.test.js)
   });
   match.start();
@@ -84,7 +87,7 @@ function feuereAlle() {
 }
 
 test('Start (Fassung 3, alt): Reserve + zwei Common voll geladen + eine knappe Uncommon-Flächenwaffe', () => {
-  assert.equal(KIT_STANDARD, KIT_SCHARF);
+  assert.equal(KIT_STANDARD, KIT_AUSRUESTUNG, 'seit TODO 2.17 starten neue Partien mit der Startausrüstung');
   const match = neuesMatch({ playersPerTeam: 2, kit: KIT_FLAECHE });
   assert.equal(match.kit, KIT_FLAECHE);
   for (const spieler of match.getState().entities) {
@@ -229,5 +232,7 @@ test('Neue Aufzeichnung trägt `kit` im Kopf und spielt als Start-Kit zurück', 
   const geladen = ReplayRecorder.fromJSON(recorder.serialize());
   const { match } = playReplay(geladen);
   assert.equal(match.kit, KIT_STANDARD);
-  assert.equal(match.inventory.getWeapons(match.getState().entities[0].entityId).length, 4);
+  // Startausrüstung (Kit 5): 5 feste Waffen, Seil, Gleitschirm und die Spezialwaffe der Figur.
+  const figur = match.getState().entities[0];
+  assert.deepEqual(match.inventory.getWeapons(figur.entityId).slice().sort(), startAusruestung(figur.charakterId).waffen.slice().sort());
 });

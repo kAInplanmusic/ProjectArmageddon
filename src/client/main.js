@@ -1110,6 +1110,7 @@ class Game {
     const { MatchController: MatchControllerDyn } = await import('../engine/match.js');
     this.match = new MatchControllerDyn({
       seed, teams, playersPerTeam, preset, kartentyp, format: mapFormat, groesse: mapSize, sidegrades, loadouts, biom, kartenart,
+      fraktionen: fraktionen ? fraktionen.slice(0, teams) : null, // Kit-Fassung 5: Figuren und Spezialwaffen
       ...MENUE_FASSUNGEN, // neue Partien: alle Regelfassungen auf Standard (`config/menueStart.js`)
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,

@@ -23,6 +23,8 @@ import {
   GELAENDE_KLAR, GELAENDE_OHNE_SCHACHT, GELAENDE_STANDARD, normalisiereGelaende,
 } from '../src/shared/config/gelaende.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 test('Marke: Fassung 9 ist gültig (und nicht mehr der Standard seit 10), 8 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_OHNE_SCHACHT, 9);
   assert.ok(GELAENDE_STANDARD >= GELAENDE_OHNE_SCHACHT);
@@ -33,7 +35,7 @@ test('Marke: Fassung 9 ist gültig (und nicht mehr der Standard seit 10), 8 blei
 });
 
 const START = (seed, biom, teams, ppt, gelaende) => {
-  const m = new MatchController({ seed, teams, playersPerTeam: ppt, kartentyp: 'autonom', biom, maxRounds: 2, gelaende, zerstoerung: 5 });
+  const m = new MatchController({ kit: 4, seed, teams, playersPerTeam: ppt, kartentyp: 'autonom', biom, maxRounds: 2, gelaende, zerstoerung: 5 });
   m.start();
   m.consumeEvents();
   return m;
@@ -113,7 +115,7 @@ const GOLD_8 = [
 
 test('Fassung 8 bleibt Bit für Bit gleich (Goldwerte von vor Fassung 9)', () => {
   for (const [seed, biom, teams, ppt, hash, stoff, ok] of GOLD_8) {
-    const m = new MatchController({ seed, teams, playersPerTeam: ppt, kartentyp: 'autonom', biom, maxRounds: 2, gelaende: GELAENDE_KLAR, zerstoerung: 5 });
+    const m = new MatchController({ kit: 4, seed, teams, playersPerTeam: ppt, kartentyp: 'autonom', biom, maxRounds: 2, gelaende: GELAENDE_KLAR, zerstoerung: 5 });
     m.start();
     for (let i = 0; i < 240; i += 1) { m.step(); m.consumeEvents(); }
     const name = `${seed} ${biom} ${teams}x${ppt}`;
@@ -125,7 +127,7 @@ test('Fassung 8 bleibt Bit für Bit gleich (Goldwerte von vor Fassung 9)', () =>
 
 function aufzeichnenUndAbspielen(extra) {
   const kopf = { seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 };
-  const live = new MatchController({ ...kopf, ...extra });
+  const live = new MatchController({ kit: 4, ...kopf, ...extra });
   live.start();
   const rec = new ReplayRecorder({ ...kopf, ...extra, turnDurationMs: live.turnDurationMs, kit: live.kit, schaden: live.schaden, zerstoerung: live.zerstoerung, waffen: live.waffen, kisten: live.kisten });
   let schuesse = 0;

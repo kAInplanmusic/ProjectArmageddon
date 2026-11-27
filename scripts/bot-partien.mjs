@@ -90,8 +90,9 @@ export function neuesMatch(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, waffe
   // Zugzeit hängt seit 2026-11-05 an der Kartenstufe, nicht an der Spielerzahl (hier: Vorgabe mittel).
   const zugSek = getTurnDurationForSize('mittel') / 1000;
   return new MatchController({
-    seed, teams, playersPerTeam: proTeam, preset: 'hills', kartentyp: MENUE_KARTENTYP, kit, waffen,
-    turnDurationMs: zugSek * 1000, turnPauseTicks: 0, ...MENUE_FASSUNGEN, ...(ZUGREGELN ? { zugregeln: ZUGREGELN, bewegung: 2 } : {}), ...extra,
+    seed, teams, playersPerTeam: proTeam, preset: 'hills', kartentyp: MENUE_KARTENTYP, waffen,
+    // `kit` NACH den Menüfassungen: die enthalten seit TODO 2.17 ebenfalls `kit` und überschrieben sonst `--kit`.
+    turnDurationMs: zugSek * 1000, turnPauseTicks: 0, ...MENUE_FASSUNGEN, kit, ...(ZUGREGELN ? { zugregeln: ZUGREGELN, bewegung: 2 } : {}), ...extra,
   });
 }
 

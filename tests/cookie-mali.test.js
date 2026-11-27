@@ -25,8 +25,10 @@ import {
   COOKIE_HUNGER, normalisiereCookie, cookieMali,
 } from '../src/shared/config/cookie.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 function match4(options = {}) {
-  const m = new MatchController({
+  const m = new MatchController({ kit: 4,
     seed: 11, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 30000,
     guenther: 4, cookie: COOKIE_MALI_FASSUNG, ...options,
   });
@@ -139,7 +141,7 @@ test('Fassungen: Standard ist 4, 3 bleibt 3, Unbekanntes bleibt 1', () => {
   assert.equal(normalisiereCookie(COOKIE_FEINSCHLIFF), COOKIE_FEINSCHLIFF);
   assert.equal(normalisiereCookie(COOKIE_KATER), COOKIE_KATER);
   assert.equal(normalisiereCookie(undefined), 1);
-  const kopf = new ReplayRecorder({ seed: 5, cookie: COOKIE_STANDARD }).toJSON().config;
+  const kopf = new ReplayRecorder({ kit: 4, seed: 5, cookie: COOKIE_STANDARD }).toJSON().config;
   assert.equal(kopf.cookie, 4, 'Replay-Kopf trägt die Fassung');
 });
 

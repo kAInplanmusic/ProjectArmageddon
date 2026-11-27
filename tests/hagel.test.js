@@ -42,6 +42,8 @@ import * as wind from '../src/shared/config/wind.js';
 import { zeichneHagelKoerner } from '../src/client/hagelAnzeige.js';
 import { starteServer, erstelleLobby, trittBei } from './helfer/server-testclient.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 // ---------------------------------------------------------------------------------------------------------------
 // Attrappe: ein Motor-Ersatz, an dem das System allein läuft (Gelände, Figuren und Schadensweg sind frei wählbar)
 // ---------------------------------------------------------------------------------------------------------------
@@ -205,7 +207,7 @@ test('Schaden: 1 bis 2 LP über den gewöhnlichen Weg (ohne Urheber, Art physisc
 // ---------------------------------------------------------------------------------------------------------------
 
 const STANDARD_FASSUNGEN = {
-  waffen: waffen.WAFFEN_STANDARD, zerstoerung: zerstoerung.ZERSTOERUNG_STANDARD, kisten: kisten.KISTEN_STANDARD, kit: loadouts.KIT_STANDARD,
+  waffen: waffen.WAFFEN_STANDARD, zerstoerung: zerstoerung.ZERSTOERUNG_STANDARD, kisten: kisten.KISTEN_STANDARD, kit: loadouts.KIT_SCHARF, // Goldwerte mit dem Start-Kit vor TODO 2.17 gemessen
   schaden: schaden.SCHADEN_STANDARD, guenther: guenther.GUENTHER_FASSUNG_STANDARD, cookie: cookie.COOKIE_STANDARD, feuer: feuer.FEUER_STANDARD,
   // Zugregeln fest auf Fassung 2: Die Goldwerte unten sind mit 5 s Rückzug gemessen; Fassung 3 (TODO 2.8, 3 s) ändert den Verlauf.
   bewegung: bewegung.BEWEGUNG_STANDARD, zugregeln: zugregeln.ZUGREGELN_RUECKZUG, klassen: klassen.KLASSEN_STANDARD,
@@ -214,7 +216,7 @@ const STANDARD_FASSUNGEN = {
 
 /** Spielt `takte` Takte mit gleichmäßigen Schüssen; liefert Endhash, Hagel-Ereignisse und Lebenspunkte. */
 function spiele(seed, extra = {}, takte = 30000) {
-  const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 50, turnDurationMs: 1e9, ...STANDARD_FASSUNGEN, ...extra });
+  const m = new MatchController({ kit: 4, seed, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 50, turnDurationMs: 1e9, ...STANDARD_FASSUNGEN, ...extra });
   m.start();
   const hagel = [];
   let schuesse = 0;
@@ -259,18 +261,18 @@ test('Fassung 2 im Motor: deterministisch, ändert den Hash genau dann, wenn Hag
   const g = spiele(4242, { hagel: HAGEL_KOERNER }, 23000);
   assert.equal(g.hagel.find(e => e.typ === 'hail_start')?.tick, 22925);
   // Körner sind keine Geschosse: sie halten das Zugende nicht auf.
-  const gerade = new MatchController({ seed: 4242, ...STANDARD_FASSUNGEN, hagel: HAGEL_KOERNER, turnDurationMs: 1e9, maxRounds: 50 });
+  const gerade = new MatchController({ kit: 4, seed: 4242, ...STANDARD_FASSUNGEN, hagel: HAGEL_KOERNER, turnDurationMs: 1e9, maxRounds: 50 });
   gerade.start();
   for (let t = 0; t < 23100; t += 1) gerade.step();
   assert.equal(gerade.activeProjectileCount, 0);
   assert.ok(gerade.getState().hagel, 'der Ansichtszustand trägt die Lage, solange sie läuft');
-  assert.equal(new MatchController({ seed: 1, ...STANDARD_FASSUNGEN, hagel: HAGEL_ALT }).getState().hagel, undefined);
+  assert.equal(new MatchController({ kit: 4, seed: 1, ...STANDARD_FASSUNGEN, hagel: HAGEL_ALT }).getState().hagel, undefined);
 });
 
 test('Fassung 2 im Motor: ein Hagelkorn lässt nie unter 1 LP fallen; der Schaden läuft als gewöhnliches damage-Ereignis ohne Urheber', () => {
   let geprueft = 0;
   for (const seed of [1, 3, 4242]) {
-    const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 50, turnDurationMs: 1e9, ...STANDARD_FASSUNGEN, hagel: HAGEL_KOERNER });
+    const m = new MatchController({ kit: 4, seed, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 50, turnDurationMs: 1e9, ...STANDARD_FASSUNGEN, hagel: HAGEL_KOERNER });
     m.start();
     let letztes = null;
     for (let t = 0; t < 36000; t += 1) {
@@ -291,9 +293,9 @@ test('Fassung 2 im Motor: ein Hagelkorn lässt nie unter 1 LP fallen; der Schade
 
 test('Replay: der Kopf trägt die Fassung, die Wiedergabe endet im Live-Hash; ein alter Kopf ohne Feld ist Fassung 1', () => {
   const kopf = { seed: 1, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 50 };
-  const live = new MatchController({ ...kopf, turnDurationMs: 1e9, hagel: HAGEL_KOERNER });
+  const live = new MatchController({ kit: 4, ...kopf, turnDurationMs: 1e9, hagel: HAGEL_KOERNER });
   live.start();
-  const rec = new ReplayRecorder({ ...kopf, turnDurationMs: 1e9, hagel: live.hagel });
+  const rec = new ReplayRecorder({ kit: 4, ...kopf, turnDurationMs: 1e9, hagel: live.hagel });
   for (let t = 0; t < 26000; t += 1) {
     if (live.activeProjectileCount === 0 && t % 150 === 0) {
       const id = live.activePlayerId;
@@ -326,7 +328,7 @@ test('Draht: Hagelereignisse sind Zustandsarten mit Katalogeintrag und Wirkung; 
     assert.equal(typeof EREIGNIS_WIRKUNGEN[art]?.online, 'function', `${art} online`);
   }
   // Während der Hagel fällt, ist der Snapshot auf dem Draht genauso groß wie ohne.
-  const m = new MatchController({ seed: 4242, ...STANDARD_FASSUNGEN, hagel: HAGEL_KOERNER, turnDurationMs: 1e9, maxRounds: 50 });
+  const m = new MatchController({ kit: 4, seed: 4242, ...STANDARD_FASSUNGEN, hagel: HAGEL_KOERNER, turnDurationMs: 1e9, maxRounds: 50 });
   m.start();
   for (let t = 0; t < 23200; t += 1) m.step();
   const zustand = m.getState();

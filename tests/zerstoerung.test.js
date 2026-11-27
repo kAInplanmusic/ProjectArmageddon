@@ -19,6 +19,8 @@ import {
 import { kraterUmriss } from '../src/client/zerstoerungOptik.js';
 import { PLAYER_HALF_HEIGHT } from '../src/shared/config/player.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 /**
  * Zerstörung ab Fassung 2: raue Krater, Nachrutschen freischwebender Geländeinseln,
  * fallende Objekte. Die Altfassung (Kopf OHNE `zerstoerung`) bleibt Bit für Bit
@@ -86,7 +88,7 @@ test('Der Umriss der Anzeige liegt auf dem Rand der Kollisionsmaske', () => {
 /* ------------------------------------------------------------ Versionsmarke */
 
 function lauf(optionen, ticks = 5000) {
-  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', ...optionen });
+  const match = new MatchController({ kit: 4, seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', ...optionen });
   match.start();
   let schuesse = 0;
   const arten = {};
@@ -194,18 +196,18 @@ test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die
   assert.equal(match.zerstoerung, ZERSTOERUNG_ALT);
   assert.equal(match.setzung, null);
 
-  const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
+  const neu = new ReplayRecorder({ kit: 4, seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
   assert.equal(neu.toJSON().config.zerstoerung, ZERSTOERUNG_STANDARD);
   assert.equal(ZERSTOERUNG_STANDARD, 7);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
   assert.equal(playReplay(zurueck).match.zerstoerung, ZERSTOERUNG_STANDARD);
-  const drei = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: ZERSTOERUNG_SCHOLLEN });
+  const drei = new ReplayRecorder({ kit: 4, seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: ZERSTOERUNG_SCHOLLEN });
   drei.finalize(300);
   assert.equal(playReplay(ReplayRecorder.fromJSON(drei.serialize())).match.zerstoerung, ZERSTOERUNG_SCHOLLEN);
 
   // Eine Aufzeichnung der Zwischenzeit (Fassung 2) behält ihre Fassung und damit ihre Grenzen.
-  const zwei = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: ZERSTOERUNG_GELAENDE });
+  const zwei = new ReplayRecorder({ kit: 4, seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: ZERSTOERUNG_GELAENDE });
   zwei.finalize(300);
   assert.equal(playReplay(ReplayRecorder.fromJSON(zwei.serialize())).match.zerstoerung, ZERSTOERUNG_GELAENDE);
 
@@ -216,7 +218,7 @@ test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die
 
 test('Replay mit Schüssen: Altkopf und neuer Kopf geben jeweils den Live-Lauf exakt wieder', () => {
   for (const fassung of [ZERSTOERUNG_ALT, ZERSTOERUNG_GELAENDE, ZERSTOERUNG_SCHOLLEN]) {
-    const live = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: fassung });
+    const live = new MatchController({ kit: 4, seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: fassung });
     live.start();
     const rec = new ReplayRecorder({
       seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, turnDurationMs: live.turnDurationMs,
@@ -292,7 +294,7 @@ function zaehleFeste(maske) {
 }
 
 function inselLauf() {
-  const match = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  const match = new MatchController({ kit: 4, seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills' });
   match.start();
   const aufbau = baueBrett(match);
   const w = match.world;
@@ -366,7 +368,7 @@ test('Terrain-Hash: Solange Inseln fallen, vergleicht der Client nicht', () => {
 });
 
 test('Krater im Flug der Insel verändern das Ergebnis nicht gegenüber dem Log (Client bleibt gleich)', () => {
-  const match = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  const match = new MatchController({ kit: 4, seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills' });
   match.start();
   const aufbau = baueBrett(match);
   match.setzung.krater(aufbau.px, aufbau.boden - 45, 14, 100);
@@ -578,7 +580,7 @@ test('Lose Objekte: Geschütz und Kiste fallen mit, wenn ihnen der Boden fehlt, 
 });
 
 test('Im Match: eine liegende Kiste fällt in den Krater unter ihr und bleibt liegen', () => {
-  const match = new MatchController({ seed: 31, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  const match = new MatchController({ kit: 4, seed: 31, teams: 2, playersPerTeam: 1, preset: 'hills' });
   match.start();
   const kiste = match.getState().crates[0];
   if (!kiste) return; // Dieser Seed hat eine Rundenkiste (siehe water-hud.test.js); sonst gibt es nichts zu prüfen.
@@ -609,7 +611,7 @@ function gold3() {
   z.krater(360, 150, 18, 115);
   for (let i = 0; i < 200; i++) z.schritt();
   // (b) Im Match: Brett über der Figur, Pfeiler gekappt.
-  const match = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills', zerstoerung: ZERSTOERUNG_SCHOLLEN, kisten: KISTEN_OFT, waffen: 10 }); // Goldwerte gelten für Waffenfassung 10 (Fassung 11 ändert das Inventar und damit den Hash)
+  const match = new MatchController({ kit: 4, seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills', zerstoerung: ZERSTOERUNG_SCHOLLEN, kisten: KISTEN_OFT, waffen: 10 }); // Goldwerte gelten für Waffenfassung 10 (Fassung 11 ändert das Inventar und damit den Hash)
   match.start();
   const aufbau = baueBrett(match);
   match.setzung.krater(aufbau.px, aufbau.boden - 45, 14, 100);

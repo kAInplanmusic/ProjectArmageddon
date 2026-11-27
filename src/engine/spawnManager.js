@@ -16,8 +16,10 @@ import {
   ARCHETYPE_IDS, combatProfile, istKlassenfassungNeu, klassenIds, klassenKennung,
 } from '../shared/config/classes.js';
 import {
-  getStartWaffen, getStartWaffenMitKlasse, getStartMunition, KIT_STANDARD,
+  getStartWaffen, getStartWaffenMitKlasse, getStartMunition, KIT_STANDARD, KIT_AUSRUESTUNG,
 } from '../shared/config/loadouts.js';
+import { startAusruestung, FESTE_STARTWAFFEN } from '../shared/config/ausruestung.js';
+import { loeseFraktionen, charakterFuer } from '../shared/config/darstellung.js';
 import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
 
 /**
@@ -62,6 +64,8 @@ export function erzeugeSpieler(quelle) {
   // der Klasse. Vorher startete jede Klasse mit demselben neutralen Loadout —
   // die Klasse veränderte nur Werte, nicht die Mittel.
   const kit = quelle.kit ?? KIT_STANDARD;
+  // Kit-Fassung 5: Fraktion je Team wie in der Anzeige (`loeseFraktionen`, Schlüssel = Match-Seed), daraus die Figur je Spieler.
+  const fraktionJeTeam = kit >= KIT_AUSRUESTUNG ? loeseFraktionen(quelle.fraktionen, quelle.teams, quelle.seed) : null;
   const eintraege = [];
   const belegteX = [];
 
@@ -149,10 +153,18 @@ export function erzeugeSpieler(quelle) {
     // Common-Waffen aus Seed und Platz, Fassung 3 dazu eine schwache Flächenwaffe — klassenunabhängig.
     // Klassenfassung 3 legt zusätzlich die klassenprägende Waffe dazu (Nahkampf/Fernkampf/Okkultist).
     // `register` legt die Reserve dazu.
-    const startWaffen = neu
-      ? getStartWaffenMitKlasse(klasse, kit, { seed: quelle.seed, platz: index })
-      : getStartWaffen(klasse, kit, { seed: quelle.seed, platz: index });
-    quelle.inventory.register(entityId, startWaffen, { ammoCaps: getStartMunition(kit, startWaffen) });
+    const fraktionId = fraktionJeTeam ? fraktionJeTeam[teamId] ?? null : null;
+    const figur = fraktionId ? charakterFuer(fraktionId, classId, neu ? klassenPlatz : archetypeId, quelle.klassen) : null;
+    if (fraktionJeTeam) {
+      // Kit-Fassung 5 (TODO 2.17): feste Startwaffen, Seil und Gleitschirm, Spezialwaffe der Figur; aktiv ist die erste feste Waffe.
+      const ausruestung = startAusruestung(figur?.id ?? null);
+      quelle.inventory.register(entityId, ausruestung.waffen, { munition: ausruestung.munition, aktivVorgabe: FESTE_STARTWAFFEN[0] });
+    } else {
+      const startWaffen = neu
+        ? getStartWaffenMitKlasse(klasse, kit, { seed: quelle.seed, platz: index })
+        : getStartWaffen(klasse, kit, { seed: quelle.seed, platz: index });
+      quelle.inventory.register(entityId, startWaffen, { ammoCaps: getStartMunition(kit, startWaffen) });
+    }
 
     eintraege.push({
       entityId,
@@ -179,6 +191,8 @@ export function erzeugeSpieler(quelle) {
        * `#registerSystems`), und dann liegt unter derselben ID eine Kiste.
        */
       alive: true,
+      // Kit-Fassung 5: Fraktion und Figur gehören zum Zustand (Spezialwaffe), die Anzeige liest sie von hier.
+      ...(fraktionJeTeam ? { fraktionId, charakterId: figur?.id ?? null } : {}),
     });
   }
 

@@ -11,6 +11,8 @@ import {
 import { PlayerInventory, MAX_WEAPONS } from '../src/engine/inventory.js';
 import { CRATE_TYPES } from '../src/engine/systems/lootSystem.js';
 
+// Kit 4 ausdrücklich: Die Goldwerte dieser Datei sind mit dem Start-Kit vor der Startausrüstung (Kit 5, TODO 2.17) gemessen.
+
 /**
  * Abwurfmechanik.
  *
@@ -93,7 +95,7 @@ test('Eine nicht geführte Waffe lässt sich nicht abwerfen', () => {
 // ---------------------------------------------------------------------- Abwurf
 
 test('Abwerfen legt eine aufhebbare Kiste in der Nähe ab', () => {
-  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 4242, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
   match.start();
   const spieler = match.activePlayerId;
 
@@ -134,7 +136,7 @@ test('Die abgeworfene Waffe LANDET außerhalb des Aufhebe-Radius', () => {
   // geschleudert, liegt also erst nach dem Flug. Wäre sie zu nah am Werfer,
   // würde er seine eigene Waffe sofort wieder einsammeln — die Handlung wäre
   // wirkungslos.
-  const match = new MatchController({ seed: 99, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
+  const match = new MatchController({ kit: 4, seed: 99, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
   match.start();
   match.consumeEvents();
   const spieler = match.activePlayerId;
@@ -193,7 +195,7 @@ test('Die Kiste landet auf festem Boden innerhalb der Karte', () => {
    * die ID trug inzwischen eine andere Kiste. Beides gehört zum selben Fund:
    * Eine Kiste ist nach der Landung keine verlässliche Adresse mehr.
    */
-  const match = new MatchController({ seed: 313, teams: 2, playersPerTeam: 2, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 313, teams: 2, playersPerTeam: 2, turnDurationMs: 100_000 });
   match.start();
 
   let geprueft = 0;
@@ -237,7 +239,7 @@ test('Die Kiste landet auf festem Boden innerhalb der Karte', () => {
 
 test('Die Munition reist mit der abgeworfenen Waffe', () => {
   // Abwerfen und Aufheben darf kein Munitionstrick sein.
-  const match = new MatchController({ seed: 5150, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 5150, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
   match.start();
   const spieler = match.activePlayerId;
 
@@ -257,7 +259,7 @@ test('Die Munition reist mit der abgeworfenen Waffe', () => {
 });
 
 test('Aufheben einer abgeworfenen Waffe stellt genau den Vorrat wieder her', () => {
-  const match = new MatchController({ seed: 777, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 777, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
   match.start();
   const spieler = match.activePlayerId;
 
@@ -278,7 +280,7 @@ test('Aufheben einer abgeworfenen Waffe stellt genau den Vorrat wieder her', () 
 });
 
 test('Eine Abwurfkiste meldet sich als Ereignis', () => {
-  const match = new MatchController({ seed: 2024, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 2024, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
   match.start();
   match.consumeEvents();
 
@@ -296,7 +298,7 @@ test('Eine Abwurfkiste meldet sich als Ereignis', () => {
 
 test('Abwerfen setzt die Nachladezeit der Waffe zurück', () => {
   // Die Pause gehört zur Waffe in der Hand; liegt sie am Boden, ist sie weg.
-  const match = new MatchController({ seed: 606, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 606, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
   match.start();
   const spieler = match.activePlayerId;
 
@@ -313,7 +315,7 @@ test('Abwerfen setzt die Nachladezeit der Waffe zurück', () => {
 test('Abwerfen ist deterministisch', () => {
   // Zwei identische Matches müssen dieselbe Landestelle ergeben.
   const lauf = () => {
-    const match = new MatchController({ seed: 4711, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+    const match = new MatchController({ kit: 4, seed: 4711, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
     match.start();
     const spieler = match.activePlayerId;
     const waffe = WEAPONS.find(w => w.damage > 0 && w.maxAmmo > 1);
@@ -327,7 +329,7 @@ test('Abwerfen ist deterministisch', () => {
 // ------------------------------------------------------------------- Fehlerfälle
 
 test('Abwerfen im falschen Zustand wird abgelehnt', () => {
-  const match = new MatchController({ seed: 1, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 1, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
   match.start();
   const spieler = match.activePlayerId;
   const waffe = WEAPONS.find(w => w.damage > 0);
@@ -349,7 +351,7 @@ test('Abwerfen im falschen Zustand wird abgelehnt', () => {
 });
 
 test('Die Reserve ist auch über den Match nicht abwerfbar', () => {
-  const match = new MatchController({ seed: 88, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 88, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
   match.start();
   const spieler = match.activePlayerId;
 
@@ -362,7 +364,7 @@ test('Die Reserve ist auch über den Match nicht abwerfbar', () => {
 
 test('Bei vollem Vorrat wird eine Waffenkiste nicht aufgenommen', () => {
   // Automatisches Überschreiben wäre Datenverlust ohne Rückfrage.
-  const match = new MatchController({ seed: 1212, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 1212, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
   match.start();
   const spieler = match.activePlayerId;
 
@@ -407,7 +409,7 @@ test('Bei vollem Vorrat wird eine Waffenkiste nicht aufgenommen', () => {
 
 test('Nach einem Abwurf ist wieder Platz für eine neue Waffe', () => {
   // Der vollständige Ablauf: voll → abwerfen → aufnehmen.
-  const match = new MatchController({ seed: 31415, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+  const match = new MatchController({ kit: 4, seed: 31415, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
   match.start();
   const spieler = match.activePlayerId;
 
@@ -444,7 +446,7 @@ test('Die Reservewaffe steht in der Anzeige zuletzt — bei jeder Klasse', () =>
    * Deshalb jetzt die Regel: Reserve immer zuletzt, bei JEDER Klasse.
    */
   for (const teams of [2, 3]) {
-    const match = new MatchController({ seed: 4242, teams, playersPerTeam: 3 });
+    const match = new MatchController({ kit: 4, seed: 4242, teams, playersPerTeam: 3 });
     match.start();
     const gesehen = new Set();
 
@@ -480,7 +482,7 @@ test('Der Abwurf über die Anzeigeposition trifft eine abwerfbare Waffe', () => 
   // wird er für alle Klassen — je Klasse ein frisches Match, damit der Abwurf
   // sauber bleibt.
   for (const klasse of CLASS_IDS) {
-    const frisch = new MatchController({ seed: 4242, teams: 3, playersPerTeam: 1 });
+    const frisch = new MatchController({ kit: 4, seed: 4242, teams: 3, playersPerTeam: 1 });
     frisch.start();
     const spieler = frisch.players.find(p => CLASS_IDS[p.classId] === klasse);
     const inventar = frisch.inventory.getWeapons(spieler.entityId);
@@ -511,7 +513,7 @@ test('Die angezeigten Nummern steigen von oben nach unten', () => {
    * Reihenfolge stehen, die ihre Nummern behaupten.
    */
   for (const teams of [2, 3]) {
-    const match = new MatchController({ seed: 4242, teams, playersPerTeam: 3 });
+    const match = new MatchController({ kit: 4, seed: 4242, teams, playersPerTeam: 3 });
     match.start();
 
     for (const spieler of match.players) {
@@ -547,7 +549,7 @@ test('Die angezeigten Nummern steigen von oben nach unten', () => {
 test('Die Reservewaffe steht in der Anzeigeordnung ganz hinten', () => {
   // Zusammen mit dem Test darüber ergibt das die Aussage: Sie ist die LETZTE
   // Nummer, und weil die Anzeige der Reihenfolge folgt, steht sie auch unten.
-  const match = new MatchController({ seed: 4242, teams: 3, playersPerTeam: 3 });
+  const match = new MatchController({ kit: 4, seed: 4242, teams: 3, playersPerTeam: 3 });
   match.start();
 
   for (const spieler of match.players) {
@@ -591,7 +593,7 @@ test('Jede Waffe hat eine Anzeigegruppe, die Reserve eine eigene', () => {
 
 test('Die Anzeigeordnung ist für alle Klassen deterministisch', () => {
   for (const seed of [1, 4242, 99]) {
-    const match = new MatchController({ seed, teams: 3, playersPerTeam: 3 });
+    const match = new MatchController({ kit: 4, seed, teams: 3, playersPerTeam: 3 });
     match.start();
     for (const spieler of match.players) {
       const inventar = match.inventory.getWeapons(spieler.entityId);

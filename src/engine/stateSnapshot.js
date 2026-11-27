@@ -89,6 +89,8 @@ export function baueAnsichtszustand(quelle) {
        * `classId`/`archetypeId` stehen aus demselben Grund hier.
        */
       sidegradeId: entry.sidegradeId ?? null,
+      // Kit-Fassung 5 (TODO 2.17): Fraktion und Figur aus der Engine; die Anzeige zeigt damit dieselbe Figur, deren Spezialwaffe gilt.
+      ...(entry.fraktionId !== undefined ? { fraktionId: entry.fraktionId, charakterId: entry.charakterId } : {}),
       label: entry.label,
       alive,
       x: alive ? quelle.world.getComponent(entry.entityId, 'Position', 'x') : 0,
