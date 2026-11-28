@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 
 import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
-import { EREIGNISSE, EREIGNISSE_ALT, EREIGNISSE_START, EREIGNISSE_STANDARD, normalisiereEreignisse } from '../src/shared/config/ereignisse.js';
+import { EREIGNISSE, EREIGNISSE_ALT, EREIGNISSE_START, EREIGNISSE_FEUER_RISSE, EREIGNISSE_STANDARD, normalisiereEreignisse } from '../src/shared/config/ereignisse.js';
 import { MENUE_FASSUNGEN } from '../src/shared/config/menueStart.js';
 
 function spiele(seed, ereignisse, maxRounds = 8) {
@@ -23,9 +23,10 @@ function spiele(seed, ereignisse, maxRounds = 8) {
   return { m, liste };
 }
 
-test('Fassung 2 ist der Standard und steht im Menü; Unbekanntes schaltet nichts ein', () => {
-  assert.equal(EREIGNISSE_STANDARD, EREIGNISSE_START);
-  assert.equal(MENUE_FASSUNGEN.ereignisse, EREIGNISSE_START);
+test('Die neueste Fassung (3) ist der Standard und steht im Menü; Unbekanntes schaltet nichts ein', () => {
+  assert.equal(EREIGNISSE_STANDARD, EREIGNISSE_FEUER_RISSE);
+  assert.equal(MENUE_FASSUNGEN.ereignisse, EREIGNISSE_STANDARD);
+  assert.equal(normalisiereEreignisse(EREIGNISSE_START), EREIGNISSE_START);
   assert.equal(normalisiereEreignisse(99), EREIGNISSE_ALT);
   assert.equal(normalisiereEreignisse(undefined), EREIGNISSE_ALT);
 });
@@ -95,4 +96,30 @@ test('Replay: Kopf trägt Fassung 2, die Wiedergabe ergibt denselben Hash', () =
   assert.equal(recorder.toJSON().config.ereignisse, EREIGNISSE_START);
   const { match } = playReplay(ReplayRecorder.fromJSON(recorder.serialize()));
   assert.equal(match.stateHash(), live.stateHash());
+});
+
+test('Fassung 3: Blitze entzünden Brennbares, Erdbeben reißen Risse; Fassung 2 tut beides nicht', () => {
+  const lauf = (fassung) => {
+    let feuer = 0;
+    let risse = 0;
+    for (let seed = 1; seed <= 12; seed += 1) {
+      const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', ereignisse: fassung, maxRounds: 8, turnDurationMs: 300, feuer: 2, kartentyp: 'autonom', biom: 'dschungel' });
+      m.start();
+      let n = 0;
+      while (m.status === 'playing' && n < 40_000) {
+        m.step();
+        for (const e of m.consumeEvents()) {
+          if (e.type === 'feuer_schritt') feuer += 1;
+          if (e.type === 'ereignis' && e.payload.art === 'erdbeben') risse += e.payload.risse.length;
+        }
+        n += 1;
+      }
+    }
+    return { feuer, risse };
+  };
+  const alt = lauf(EREIGNISSE_START);
+  const neu = lauf(EREIGNISSE_FEUER_RISSE);
+  assert.equal(alt.risse, 0);
+  assert.ok(neu.risse > 0, 'Fassung 3 reißt Risse');
+  assert.ok(neu.feuer > alt.feuer, `Fassung 3 entzündet (${neu.feuer} gegen ${alt.feuer} Feuerschritte)`);
 });

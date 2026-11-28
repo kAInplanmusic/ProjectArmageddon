@@ -596,7 +596,7 @@ export class MatchController {
     if (this.hagel >= HAGEL_KOERNER) this.#hagel = new HagelSystem(this, { lage: this.#seedManager.getSubRng('HAGEL'), korn: this.#seedManager.getSubRng('HAGEL_KORN') });
     this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
     this.#feuerwesen = this.waffen >= WAFFEN_FEUERWESEN ? new FeuerwesenSystem(this, () => this.#schussQuelle()) : null;
-    this.ereignisse = normalisiereEreignisse(ereignisse); this.ereignisSystem = this.ereignisse >= EREIGNISSE_START ? new EreignisSystem(this, this.#seedManager.getSubRng('EREIGNISSE')) : null; // TODO 2.13
+    this.ereignisse = normalisiereEreignisse(ereignisse); this.ereignisSystem = this.ereignisse >= EREIGNISSE_START ? new EreignisSystem(this, this.#seedManager.getSubRng('EREIGNISSE'), undefined, this.ereignisse) : null; // TODO 2.13
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
     this.biomregeln = normalisiereBiomregeln(biomregeln); // Fassung 1: keine Regel, kein Eingriff
     this.stroemung = stroemungFuer(this.sonderbiom, this.biomregeln, this.#seedManager.baseSeed, MAX_WIND); // Baustein A, oder null

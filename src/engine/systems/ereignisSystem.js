@@ -8,7 +8,7 @@
  * @module systems/ereignisSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { EREIGNISSE } from '../../shared/config/ereignisse.js';
+import { EREIGNISSE, EREIGNISSE_FEUER_RISSE } from '../../shared/config/ereignisse.js';
 
 export class EreignisSystem {
   #match;
@@ -20,7 +20,10 @@ export class EreignisSystem {
    * @param {{next: () => number}} rng - Zweig `EREIGNISSE`
    * @param {object} [regeln] - Werte (Vorgabe `EREIGNISSE`)
    */
-  constructor(match, rng, regeln = EREIGNISSE) {
+  #fassung;
+
+  constructor(match, rng, regeln = EREIGNISSE, fassung = EREIGNISSE_FEUER_RISSE) {
+    this.#fassung = fassung;
     this.#match = match;
     this.#rng = rng;
     this.#regeln = regeln;
@@ -96,6 +99,7 @@ export class EreignisSystem {
         getroffen.push({ playerId: f.id, betrag: this.#nichtToedlich(h, f.id, schaden) });
       }
       h.krater(x, y, r.blitzKrater, 100);
+      if (this.#fassung >= EREIGNISSE_FEUER_RISSE) this.#match.feuerSystem?.einschlag(x, y, r.blitzKrater, 'hitze'); // Fassung 3: Blitz entzündet
       blitze.push({ x, y, getroffen });
     }
     this.#match.events.emit('ereignis', { art: 'gewitter', blitze });
@@ -108,6 +112,17 @@ export class EreignisSystem {
       getroffen.push({ playerId: f.id, betrag: this.#nichtToedlich(h, f.id, r.bebenSchaden) });
       h.stosse(f.id, (this.#rng.next() * 2 - 1) * r.bebenStoss, -r.bebenStoss * 0.6);
     }
-    this.#match.events.emit('ereignis', { art: 'erdbeben', getroffen });
+    const risse = [];
+    if (this.#fassung >= EREIGNISSE_FEUER_RISSE) {
+      // Fassung 3: kleine Risse in der Oberfläche; trennt einer einen Überhang ab, bricht er (Inselsuche der Zerstörung).
+      for (let i = 0; i < r.bebenRisse; i += 1) {
+        const x = Math.round(20 + this.#rng.next() * (this.#match.width - 40));
+        const y = h.surfaceYAt(x);
+        if (!Number.isFinite(y) || y >= this.#match.height - 2) continue;
+        h.krater(x, y + r.bebenRissRadius * 0.5, r.bebenRissRadius, 100);
+        risse.push({ x, y });
+      }
+    }
+    this.#match.events.emit('ereignis', { art: 'erdbeben', getroffen, risse });
   }
 }

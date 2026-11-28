@@ -26,7 +26,13 @@
 
 export const EREIGNISSE_ALT = 1;
 export const EREIGNISSE_START = 2;
-export const EREIGNISSE_STANDARD = EREIGNISSE_START;
+/**
+ * Fassung 3 (2026-11-28): Ein Blitz entzündet Brennbares an der Einschlagstelle (Feuersystem, Gruppe „hitze“), und das
+ * Erdbeben reißt `bebenRisse` kleine Risse in die Oberfläche; wo ein Riss einen Überhang abtrennt, bricht er ab und fällt
+ * (Inselsuche der Zerstörung). Fassung 2 bleibt bitgleich.
+ */
+export const EREIGNISSE_FEUER_RISSE = 3;
+export const EREIGNISSE_STANDARD = EREIGNISSE_FEUER_RISSE;
 
 export const EREIGNISSE = Object.freeze({
   abRunde: 2,
@@ -44,9 +50,11 @@ export const EREIGNISSE = Object.freeze({
   blitzSchadenMax: 25,
   bebenSchaden: 5,
   bebenStoss: 2.5,
+  bebenRisse: 6,
+  bebenRissRadius: 9,
 });
 
 /** Unbekannte Werte fallen auf die alte Fassung (keine Ereignisse), damit eine fremde Angabe nichts einschaltet. */
 export function normalisiereEreignisse(fassung) {
-  return fassung === EREIGNISSE_START ? fassung : EREIGNISSE_ALT;
+  return fassung === EREIGNISSE_START || fassung === EREIGNISSE_FEUER_RISSE ? fassung : EREIGNISSE_ALT;
 }

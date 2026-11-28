@@ -34,7 +34,7 @@ sind aber keine Listen.
 
 | Bereich | Stand |
 |---|---|
-| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Ereignisse 2 (`EREIGNISSE_START`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
+| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Ereignisse 3 (`EREIGNISSE_FEUER_RISSE`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
 | Zeilenbudgets | `src/engine/match.js` ≤ 2790 Zeilen (`tests/zeilenbudget.test.js`) |
 | Tests | `npm test` 2026-11-28: 3215 grün, 0 rot |
 | Wunschbild | `docs/SSOT.md`, Teil D (verbindliche Fassung); die Lücken stehen hier unter 2.12 und 2.13 |
@@ -165,9 +165,10 @@ nie (wie Hagel), die Blondine darf. Anzeige bisher nur als Protokollzeile (`clie
 Heilung und Krater zeigen ihre eigenen Ereignisse. Test `tests/ereignisse-fassung2.test.js`. **Anzeige (2026-11-28):** die
 Kamera schwenkt kurz hin (`AUFTRITTE` in `src/client/tierBuehne.js`), Blondine mit Sprechblase „Mwah! 💋“ und Herzen oder
 „HAHAHA! 😂“, Blitzstrahl (Strahloptik des Tesla-Turms) mit Einschlagfunken und Donner, Erdbeben als Bildschirmbeben mit
-Grollen; Klänge aus dem vorhandenen Mischpult. **Offen für diese drei:** eine gezeichnete Blondine (Figur, braucht Bildmaterial), Abbruch
-loser Überhänge beim Beben (`src/engine/zerstoerung.js`), Holz entzündet sich beim Blitz (`feuerSystem.js`), Bot-Messung
-(`scripts/bot-partien.mjs`: Partiedauer, Schaden). Jedes weitere Ereignis wird eine neue Art in `ereignisSystem.js` und
+Grollen; Klänge aus dem vorhandenen Mischpult. **Fassung 3 (2026-11-28, Standard):** Blitz entzündet Brennbares (`feuerSystem.einschlag`, Gruppe „hitze“), Erdbeben
+reißt 6 kleine Risse in die Oberfläche, abgetrennte Überhänge brechen ab (Inselsuche der Zerstörung). **Bot-Messung**
+(24 Seeds, 2 × 2, `scripts/bot-partien.mjs`): 2,5 Ereignisse je Partie, Dauer unverändert 6,0 min, Schaden 214 statt 206
+(+4 %), Siegverteilung unverändert. **Offen:** eine gezeichnete Blondine (Figur, braucht Bildmaterial, Abschnitt 9). Jedes weitere Ereignis wird eine neue Art in `ereignisSystem.js` und
 damit eine neue Ereignisfassung (3, 4, …).
 
 **Naturereignisse und Unglücke:**

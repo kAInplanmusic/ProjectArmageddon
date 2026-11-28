@@ -28,7 +28,7 @@ Punkt mit Verweis auf die Aufgabe in `docs/TODO.md`.
 | Seed, neue Karte je Partie, Revanche | `src/client/revanche.js`, `#seedFuerRevanche` in `src/client/main.js`, Seed-Feld `#cfg-seed` in `index.html` | Revanche zieht eine neue Karte (TODO 2.12c) |
 | Schwerkraft | `src/shared/config/biomregeln.js` (`schwerkraftFuer`), Physik `src/engine/systems/physicsSystem.js`, `characterSystem.js`, `src/engine/physics/ballistics.js` | Heute nur Betrag nach unten; Richtung je Kartenart geplant (TODO 2.12a, Entscheidung 2026-11-28) |
 | Wetter | Bild: `src/client/wetterZustand.js` (`WETTER_ACHSEN`); Wirkung: `src/shared/config/wind.js`, `src/shared/config/hagel.js`, `src/engine/hagel.js` | Wirkung weiterer Wetter geplant (TODO 2.13) |
-| Besucher und Ereignisse | `src/shared/config/guenther.js`, `src/engine/guentherRad.js`, `src/shared/config/cookie.js`, `src/shared/config/ereignisse.js` (Fassung 2: Blondine, Gewitter, Erdbeben), `src/engine/systems/ereignisSystem.js` | TODO 2.13 |
+| Besucher und Ereignisse | `src/shared/config/guenther.js`, `src/engine/guentherRad.js`, `src/shared/config/cookie.js`, `src/shared/config/ereignisse.js` (Fassung 2: Blondine, Gewitter, Erdbeben; Fassung 3: Blitz entzündet, Beben reißt Risse), `src/engine/systems/ereignisSystem.js` | TODO 2.13 |
 | Feuer, Lava, Stoffreaktionen | `src/engine/systems/feuerSystem.js`, `src/shared/config/feuer.js`, Stoffe `src/shared/config/stoffe.js` | Gefrieren/Schmelzen geplant (TODO 2.12e) |
 | Kisten, Minen, Fässer, Biomobjekte | `src/shared/config/bodenobjekte.js`, `src/engine/systems/bodenobjektSystem.js` | Mehr Biomobjekte geplant (TODO 2.12d) |
 | Portal | `src/engine/portal.js`, Spezifikation `docs/auftraege/portal.md` | |
