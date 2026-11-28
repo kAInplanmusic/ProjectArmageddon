@@ -108,3 +108,5 @@ integration/ereignisse-wirkung
 integration/ereignis-heiler
 integration/ereignis-regen
 integration/regen-sichtbar
+integration/regen-dichter
+integration/ereignis-strickoma
