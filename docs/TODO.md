@@ -141,6 +141,40 @@ Ereignisse, Teleport-Auslöser; keine Karte zweimal; Biom nur auf Wunsch wählba
 | 2.12f STRUKTUREN | Brücken, Boote, Geheimtunnel, Ereignisse, Teleport-Auslöser, getrennte Inseln | Brücken zwischen Landmassen (Geländefassung 11), getrennte Inseln (Archipel, Inselgruppe), Kartenportal (Bodenobjektfassung 8, 20 % der Partien), Ereignisse (Günther, Cookie, Hagel, Mahlstrom). **Fehlt:** Boote, Geheimtunnel, Auslöser-Felder | Boot: schwimmendes Objekt auf der Wasseroberfläche (Treiben aus Biomregel 6), Figur kann darauf stehen. Geheimtunnel: in `terrainKomposition.js` ein schmaler Gang hinter dünner Wand zwischen zwei Zonen. Auslöser: Bodenobjekt `ausloeser` (Druckplatte), das Portal, Falle oder Ereignis startet (`src/engine/portal.js` als Muster) |
 | 2.12g HINTERGRÜNDE | Die hochgeladenen Hintergründe je Biom, verbessert, mit Effekten | 81 Kulissen unter `src/client/assets/backdrops*`; ob jede auf eine hochgeladene Vorlage zurückgeht, ist nicht belegt (siehe 4.5) | Tabelle Biom → Kulissen → Herkunft (Upload/erzeugt) in `docs/biome/kulissen.md` anlegen; fehlende Uploads einsetzen (4.5) |
 
+### 2.13 EREIGNISSE-UND-BESUCHER (Wunsch Auftraggeber 2026-11-28)
+**Grundlage für alle:** Ein neues Ereignissystem `src/engine/systems/ereignisSystem.js` nach dem Muster von Günther
+(`src/shared/config/guenther.js`, `src/engine/guentherRad.js`): Zu Rundenbeginn zieht der Seed-Unter-RNG `ereignisse`
+höchstens **ein** Ereignis (Grundchance je Runde z. B. 25 %, Gewichte je Biom: Vulkanausbruch nur in Vulkan-Biomen,
+U-Boot nur mit Wasser, Blizzard nur in kalten Biomen). Neue Regelfassung `src/shared/config/ereignisse.js`
+(`EREIGNISSE_STANDARD`, Replay-Kopf, AGENTS.md §2), Ereignisse über den Ereigniskanal an die Clients
+(`src/shared/ereigniskatalog.js`, `src/shared/protocol.js`), Hinweiszeile im HUD (`src/client/hud.js`), Bild und Klang
+im Client (`src/client/effects.js`, `sound.js`). Jedes Ereignis: Unit-Test (Wirkung, Replay-Hash gleich), Bot-Messung
+(`scripts/bot-partien.mjs`: Partiedauer, Schaden je Partie), Sichtabnahme (Abschnitt 8).
+
+**Naturereignisse und Unglücke:**
+
+| ID | Ereignis | Wirkung im Spiel | Wo / Wie |
+|---|---|---|---|
+| 2.13a SCHNEE/BLIZZARD | Schneefall, als Blizzard mit Sturm | Schnee legt eine dünne Schicht auf den Boden (glatter, Gehen langsamer); Blizzard: starker Wind, Sicht kurz eingeschränkt, Wasser gefriert an der Oberfläche (braucht 2.12e) | Wetter heute nur Bild (`src/client/wetterZustand.js`); Wirkung in `ereignisSystem.js`, Schneeschicht als Stoff `schnee` (Zerstörung wie Erde), Wind über `src/shared/config/wind.js` |
+| 2.13b REGEN | Starkregen | füllt Mulden mit Wasser, löscht Feuer, macht Hänge rutschig | Wasser in `src/engine/waterField.js` zugeben (Wasserlauf aus Biomregel 5 verteilt es), Löschen über `feuerSystem.js` |
+| 2.13c TSUNAMI/HURRIKAN | Welle von einem Kartenrand, Wirbelsturm | Tsunami: Wasserspiegel steigt für 2 Züge, eine Welle schiebt Figuren und lose Objekte; Hurrikan: Windstärke auf Höchstwert, lose Objekte (Kisten, Fässer, Minen) fliegen mit | Wasserspiegel in `waterField.js`, Schub wie Strömung (Biomregel 1); Wind in `wind.js` |
+| 2.13d GEWITTER | Blitze | 1–3 Blitze je Runde schlagen am höchsten Punkt oder in Metall ein: 15–25 Schaden im kleinen Radius, Holz entzündet sich | Einschlag wie eine Waffe (`src/engine/explosion.js`), Ziel aus dem Gelände (höchste Stelle) per Seed |
+| 2.13e ERDBEBEN | Beben | Kamera wackelt, lose Überhänge brechen ab und fallen, Figuren rutschen ein Stück, 5 Schaden für alle am Boden | Abbruch über `src/engine/zerstoerung.js` (freischwebende Inseln fallen), Kamera `src/client/kameraEffekte.js` |
+| 2.13f VULKANAUSBRUCH | Ausbruch (Vulkan-Biome und Karten mit Lava) | Lavabomben aus dem Krater oder vom oberen Rand, Lava fließt und erstarrt später | Geschosse wie eine Waffe, Lava über `src/engine/systems/feuerSystem.js` (`feuer_lava`) |
+| 2.13g RATTENPLAGE | Schwarm Ratten | 6–10 Ratten laufen über die Karte, je Berührung 2–5 Schaden, fressen eine Kiste an | Tiere-System als Muster (`src/engine/tierZustand.js`, `tierWirkung.js`) |
+| 2.13h FLUGZEUGABSTURZ | Flugzeug stürzt ab | Flugzeug kreuzt die Karte, stürzt an zufälliger Stelle: große Explosion, Trümmer, 1–2 Kisten fallen heraus | Explosion `explosion.js`, Kisten `src/shared/config/kisten.js` |
+| 2.13i UFO / UFO-ABSTURZ | UFO erscheint oder stürzt ab | UFO: entführt eine zufällige Figur und setzt sie woanders ab (wie Portal); Absturz: Krater und eine Kiste mit seltener Waffe | Versetzen wie `src/engine/portal.js` |
+| 2.13j U-BOOT-UNFALL | U-Boot (nur Karten mit Wasser) | taucht auf, feuert einen Torpedo oder explodiert; Ölteppich auf dem Wasser (brennbar) | Geschoss im Wasser, Ölteppich als brennbare Wasserschicht (`feuerSystem.js`) |
+
+**Besucher (Figuren ohne Team, wie Günther):**
+
+| ID | Besucher | Wirkung | Wo / Wie |
+|---|---|---|---|
+| 2.13k HEILER | Fröhlicher Waldmann (Name siehe Abschnitt 9) | erscheint, singt, heilt alle Figuren im Umkreis um +15 bis +30 und geht wieder | Besucher-Entität wie Günther (`guenther.js`), Heilung über die Lebenspunkte im Motor |
+| 2.13l STRICKOMA | Alte, verwirrte Landstreicherin, strickt und isst Gummibärchen | wandert ziellos; wer ihr nahe kommt, bekommt ein Gummibärchen (+5) oder wird von ihr „eingestrickt“ (ein Zug ohne Bewegung); ihr Geruch: Figuren direkt neben ihr husten (−2 je Zug) | Besucher mit Laufweg, Wirkung bei Nähe; Bild und Sprüche im Client |
+| 2.13m DEALER | Dünner, verpeilter Händler | tauscht mit der Figur am Zug: Leben gegen Waffe, Waffe gegen andere Waffe, eine Zugrunde aussetzen gegen eine starke Waffe | Handelsangebot als Servernachricht, Wahl des Spielers als neue Eingabe (`src/shared/protocol.js`, Server prüft alles, AGENTS.md §6); Angebote aus dem Seed; Handelsfenster `src/client/` (neues Modul) |
+| 2.13n BLONDINE | Süße Blondine | trifft die Figur am Zug: 8 von 9 Fällen Kuss (+10 bis +50 Leben, aus dem Seed), 1 von 9 lacht sie aus (−69 Leben) | Ziehung über den Seed-RNG, Wirkung im Motor, Sprechblase und Klang im Client. Kein anzüglicher Inhalt: Comic-Kuss mit Herzchen |
+
 ## 3. Balance (immer: messen, dann ändern, Freigabe)
 
 | ID | Arbeit | Wo / Wie |
@@ -228,6 +262,8 @@ am Telefon, Biome 15–20 · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkug
 |---|---|
 | Darf neues Bildmaterial (Figuren, Geländetexturen, Teilsprites für 2.10) aus dem Bildbudget (+10 €) erzeugt werden? | Rückmeldung „Figuren sehen schlecht aus“; Glättung und Farbänderung allein brachten keine sichtbare Besserung (gemessen 2026-11-27) |
 | Rückmeldung zu Portal Stufe 1 (2.7) | Stufe 2 wartet darauf |
+| Name des Heilers (2.13k): „Tam Bombidil“ ist fast gleich wie Tom Bombadil aus „Der Herr der Ringe“ (geschützte Figur). Ein eigener Name, z. B. „Onkel Moosbart“? | Eine erkennbar übernommene Figur kann rechtlich Ärger bringen |
+| Runde Karten (2.12a): Planet mit Anziehung zur Mitte und Schwebewelt schwerelos, oder überall eins davon? | Bestimmt den Umbau der Physik |
 
 ## 10. Branches
 
