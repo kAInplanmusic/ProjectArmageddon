@@ -49,7 +49,7 @@ Nichts offen.
 **Reihenfolge ab 2026-11-28 (Vorschlag des Agenten, nach Spaß und Aufwand):**
 1. 2.12c Revanche auf neuer Karte (steht, 2026-11-28).
 2. 2.12b Kartengröße aus Spielerzahl plus Zufall (steht für „Spielen“, 2026-11-28; Menü-Vorgabe offen).
-3. 2.13 Ereignissystem: steht mit Blondine, Gewitter, Erdbeben (Fassung 2, 2026-11-28); als Nächstes Bild und Klang dieser drei, dann die übrigen Ereignisse und Besucher.
+3. 2.13 Ereignissystem: steht bis Fassung 5 (Blondine, Gewitter, Erdbeben, Heiler Dr. Stilzchen-Rumpel, Starkregen, je mit Anzeige und Klang). Als Nächstes: Regenbild sichtbarer (2.13b), dann Strickoma (2.13l), Schnee/Blizzard (2.13a), Vulkanausbruch (2.13f), Rattenplage (2.13g), Unglücke (2.13h–j), zuletzt Dealer (2.13m, braucht Tauschfenster und Serverprüfung).
 4. 2.12d Biomelemente und 2.12e Gefrieren/Schmelzen (viel Spielspaß, mittlerer Aufwand).
 5. 2.4 Landhöhe variieren (Geländefassung 20).
 6. 2.12f Boote, Geheimtunnel, Auslöser.
@@ -158,7 +158,7 @@ U-Boot nur mit Wasser, Blizzard nur in kalten Biomen). Neue Regelfassung `src/sh
 im Client (`src/client/effects.js`, `sound.js`). Jedes Ereignis: Unit-Test (Wirkung, Replay-Hash gleich), Bot-Messung
 (`scripts/bot-partien.mjs`: Partiedauer, Schaden je Partie), Sichtabnahme (Abschnitt 8).
 
-**Stand 2026-11-28: Ereignisfassung 2 steht** (`src/shared/config/ereignisse.js`, `src/engine/systems/ereignisSystem.js`,
+**Stand 2026-11-28: Ereignisfassung 5 ist Standard** (2: Blondine, Gewitter, Erdbeben; 3: Blitz entzündet, Beben reißt Risse; 4: Heiler; 5: Starkregen). Grundlage seit Fassung 2 (`src/shared/config/ereignisse.js`, `src/engine/systems/ereignisSystem.js`,
 Zweig `EREIGNISSE` in `src/shared/seed.js`, Aufruf in `match.js#onRoundStart`, Replay-Kopf, Server, Sicherung, Menü):
 ab Runde 2 mit 30 % Chance je Runde ein Ereignis, gewichtet Blondine 1, Gewitter 1, Erdbeben 0,8. Gewitter und Erdbeben töten
 nie (wie Hagel), die Blondine darf. Anzeige bisher nur als Protokollzeile (`client/ereignisse.js`, Art `ereignis`); Schaden,
