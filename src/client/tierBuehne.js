@@ -41,6 +41,9 @@ export const AUFTRITTE = Object.freeze({
   cookie_schockwelle: { zoom: 1.0, dauer: 1.8, beben: 1 },
   guenther_auftritt: { zoom: 1.1, dauer: 1.3, beben: 0 },
   chaos: { zoom: 1.0, dauer: 1.2, beben: 0.35 },
+  // Ereignisse (TODO 2.13): Die Kamera schwenkt kurz zum Geschehen, sonst passiert es außerhalb des Bildes.
+  ereignis_blondine: { zoom: 1.15, dauer: 2.4, beben: 0 },
+  ereignis_gewitter: { zoom: 1.0, dauer: 1.6, beben: 0.35 },
 });
 
 export class TierBuehne {
@@ -98,7 +101,7 @@ export class TierBuehne {
   #starteAuftritt(name, x, y) {
     const a = AUFTRITTE[name];
     if (!a || this.#reduziert) return;
-    if (this.#sperre > 0 && name !== 'cookie_schockwelle' && name !== 'cookie_tobt') return;
+    if (this.#sperre > 0 && name !== 'cookie_schockwelle' && name !== 'cookie_tobt' && !name.startsWith('ereignis_')) return;
     this.#auftritt = { name, x, y, zoom: a.zoom, rest: a.dauer, dauer: a.dauer };
     this.#sperre = AUFTRITT_PAUSE;
     if (a.beben > 0) this.#beben = { staerke: a.beben, rest: a.dauer, dauer: a.dauer };
@@ -148,6 +151,23 @@ export class TierBuehne {
         if (n.aktion === 'chaos') this.#starteAuftritt('chaos', x, y);
         break;
       }
+      case 'ereignis': // Ereignisse und Besucher (TODO 2.13): Blondine, Gewitter, Erdbeben
+        if (n.art === 'blondine' && n.ausgang === 'kuss') {
+          this.#blase('Mwah! 💋', 'blondine', x, y - 56, { pegel: 0.6, rest: 2.2, farbe: '#ff5fa2' });
+          this.#teilchenDazu('herz', x, y - 30, 8, { streuX: 16, abnahme: 0.011 });
+          this.#starteAuftritt('ereignis_blondine', x, y);
+        } else if (n.art === 'blondine') {
+          this.#blase('HAHAHA! 😂', 'blondine', x, y - 56, { pegel: 1, rest: 2.4, farbe: '#e5484d' });
+          this.#teilchenDazu('stern', x, y - 24, 4, { streuX: 12, abnahme: 0.03, r: 5 });
+          this.#starteAuftritt('ereignis_blondine', x, y);
+        } else if (n.art === 'erdbeben') {
+          this.#beben = { staerke: Math.max(this.#beben.staerke, 1.4), rest: 1.6, dauer: 1.6 };
+        } else if (n.art === 'gewitter') {
+          this.#beben = { staerke: Math.max(this.#beben.staerke, SCHWACH), rest: 0.4, dauer: 0.4 };
+          for (const b of n.blitze ?? []) this.#teilchenDazu('stern', b.x, b.y - 10, 5, { streuX: 18, abnahme: 0.04, r: 6, farbe: '#cfe8ff' });
+          if (n.blitze?.length) this.#starteAuftritt('ereignis_gewitter', n.blitze[0].x, n.blitze[0].y);
+        }
+        break;
       case 'guenther_aktion_wirkung':
         if (n.aktion === 'kuscheln' || n.aktion === 'kraulen') this.#teilchenDazu('herz', x, y - 28, 5, { streuX: 14, abnahme: 0.012 });
         else if (n.aktion === 'wuehlen') this.#teilchenDazu('kruemel', x, y - 4, 8, { streuX: 10, vy: -1.4, abnahme: 0.035, r: 3, farbe: '#8a6a44' });
@@ -220,7 +240,7 @@ export class TierBuehne {
     if (!ctx) return;
     for (const t of this.#teilchen) zeichneTeilchen(ctx, t);
     for (const b of this.#blasen) {
-      const ort = b.wer === 'guenther' ? this.#guenther : this.#cookie;
+      const ort = b.wer === 'guenther' ? this.#guenther : b.wer === 'cookie' ? this.#cookie : null; // andere Sprecher (Ereignisse) bleiben am Ort
       // Die Blase folgt dem Tier (es läuft weiter), ohne Tier bleibt sie, wo sie entstand.
       zeichneBlase(ctx, b, ort ? ort.x : b.x, ort ? ort.y : b.y + 56);
     }

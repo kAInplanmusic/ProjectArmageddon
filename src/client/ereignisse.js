@@ -976,10 +976,19 @@ export const EREIGNIS_WIRKUNGEN = {
 
   // Ereignisse und Besucher (TODO 2.13, `engine/systems/ereignisSystem.js`): eine Protokollzeile; Schaden, Heilung und
   // Krater zeigt der Client über ihre eigenen Ereignisse.
-  ereignis: beide((k, n) => {
+  ereignis: mitBuehne('ereignis', (k, n) => {
+    if (n.art === 'gewitter') {
+      // Blitzstrahl vom Himmel in die Einschlagstelle: die Strahloptik des Tesla-Turms (pa_129, Familie „blitz“).
+      for (const b of n.blitze ?? []) {
+        k.renderer?.addBeam(b.x, Math.max(0, b.y - 1400), b.x, b.y, { waffeId: 'pa_129', hit: true });
+        k.renderer?.sheetEinschlag(b.x, b.y, 40, 'blitz');
+      }
+      k.sound?.verarbeite({ type: 'schockwelle' });
+    } else if (n.art === 'erdbeben') k.sound?.verarbeite({ type: 'lava_grollen' });
+    else if (n.art === 'blondine' && n.ausgang === 'kuss') k.sound?.verarbeite({ type: 'heilung' });
     if (n.art === 'blondine') {
       k.hud?.log(n.ausgang === 'kuss'
-        ? `💋 Die Blondine küsst ${k.nameOf?.(n.playerId)}: +${n.betrag} Leben`
+        ? `💋 Die Blondine küsst ${k.nameOf?.(n.playerId)}${n.betrag > 0 ? `: +${n.betrag} Leben` : ' (schon kerngesund)'}`
         : `😂 Die Blondine lacht ${k.nameOf?.(n.playerId)} aus: −${n.betrag} Leben`, n.ausgang === 'kuss' ? 'good' : 'bad');
     } else if (n.art === 'gewitter') {
       const treffer = (n.blitze ?? []).reduce((s, b) => s + (b.getroffen?.length ?? 0), 0);

@@ -162,8 +162,10 @@ im Client (`src/client/effects.js`, `sound.js`). Jedes Ereignis: Unit-Test (Wirk
 Zweig `EREIGNISSE` in `src/shared/seed.js`, Aufruf in `match.js#onRoundStart`, Replay-Kopf, Server, Sicherung, Menü):
 ab Runde 2 mit 30 % Chance je Runde ein Ereignis, gewichtet Blondine 1, Gewitter 1, Erdbeben 0,8. Gewitter und Erdbeben töten
 nie (wie Hagel), die Blondine darf. Anzeige bisher nur als Protokollzeile (`client/ereignisse.js`, Art `ereignis`); Schaden,
-Heilung und Krater zeigen ihre eigenen Ereignisse. Test `tests/ereignisse-fassung2.test.js`. **Offen für diese drei:** Bild
-(Blondine als Figur mit Kuss/Lachen, Blitzstrahl, Kamerawackeln beim Beben über `src/client/kameraEffekte.js`), Klang, Abbruch
+Heilung und Krater zeigen ihre eigenen Ereignisse. Test `tests/ereignisse-fassung2.test.js`. **Anzeige (2026-11-28):** die
+Kamera schwenkt kurz hin (`AUFTRITTE` in `src/client/tierBuehne.js`), Blondine mit Sprechblase „Mwah! 💋“ und Herzen oder
+„HAHAHA! 😂“, Blitzstrahl (Strahloptik des Tesla-Turms) mit Einschlagfunken und Donner, Erdbeben als Bildschirmbeben mit
+Grollen; Klänge aus dem vorhandenen Mischpult. **Offen für diese drei:** eine gezeichnete Blondine (Figur, braucht Bildmaterial), Abbruch
 loser Überhänge beim Beben (`src/engine/zerstoerung.js`), Holz entzündet sich beim Blitz (`feuerSystem.js`), Bot-Messung
 (`scripts/bot-partien.mjs`: Partiedauer, Schaden). Jedes weitere Ereignis wird eine neue Art in `ereignisSystem.js` und
 damit eine neue Ereignisfassung (3, 4, …).
