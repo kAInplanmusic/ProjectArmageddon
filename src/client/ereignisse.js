@@ -974,6 +974,21 @@ export const EREIGNIS_WIRKUNGEN = {
     k.hud?.log(`Günther pinkelt ${k.nameOf?.(n.playerId)} an (−${n.amount})`, 'neutral');
   }),
 
+  // Ereignisse und Besucher (TODO 2.13, `engine/systems/ereignisSystem.js`): eine Protokollzeile; Schaden, Heilung und
+  // Krater zeigt der Client über ihre eigenen Ereignisse.
+  ereignis: beide((k, n) => {
+    if (n.art === 'blondine') {
+      k.hud?.log(n.ausgang === 'kuss'
+        ? `💋 Die Blondine küsst ${k.nameOf?.(n.playerId)}: +${n.betrag} Leben`
+        : `😂 Die Blondine lacht ${k.nameOf?.(n.playerId)} aus: −${n.betrag} Leben`, n.ausgang === 'kuss' ? 'good' : 'bad');
+    } else if (n.art === 'gewitter') {
+      const treffer = (n.blitze ?? []).reduce((s, b) => s + (b.getroffen?.length ?? 0), 0);
+      k.hud?.log(`⚡ Gewitter: ${n.blitze?.length ?? 0} Blitz(e)${treffer ? `, ${treffer} Figur(en) getroffen` : ''}`, 'neutral');
+    } else if (n.art === 'erdbeben') {
+      k.hud?.log('🌋 Erdbeben! Alle am Boden nehmen Schaden', 'neutral');
+    }
+  }),
+
   guenther_poop: beide((k) => {
     k.hud?.log('Günther hat ein Häufchen gemacht', 'neutral');
   }),

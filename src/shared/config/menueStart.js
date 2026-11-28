@@ -25,6 +25,7 @@ import { BODENOBJEKTE_STANDARD } from './bodenobjekte.js';
 import { SEIL_STANDARD } from './seil.js';
 import { WIND_STANDARD } from './wind.js';
 import { HAGEL_STANDARD } from './hagel.js';
+import { EREIGNISSE_STANDARD } from './ereignisse.js';
 import { BIOMREGELN_STANDARD } from './biomregeln.js';
 import { KIT_AUSRUESTUNG } from './loadouts.js';
 
@@ -43,5 +44,6 @@ export const MENUE_FASSUNGEN = Object.freeze({
   wind: WIND_STANDARD,
   hagel: HAGEL_STANDARD,
   biomregeln: BIOMREGELN_STANDARD,
+  ereignisse: EREIGNISSE_STANDARD, // Ereignisse und Besucher (TODO 2.13)
   kit: KIT_AUSRUESTUNG, // Startausrüstung je Figur (TODO 2.17)
 });

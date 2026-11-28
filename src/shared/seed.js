@@ -63,6 +63,8 @@ export const SEED_OFFSETS = Object.freeze({
   PORTAL: 15_000_000,
   /** Hagel: die einzelnen Körner (Ort, Flugzeit, Schaden) — getrennt von den Lagen, damit beide unabhängig bleiben. */
   HAGEL_KORN: 14_500_000,
+  /** Ereignisse und Besucher (Ereignisfassung 2, TODO 2.13): eigener Zweig; Fassung 1 holt ihn nie. */
+  EREIGNISSE: 16_000_000,
 });
 
 /**

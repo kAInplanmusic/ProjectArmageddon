@@ -471,6 +471,7 @@ export class GameServer {
               wind: options.wind,
               hagel: options.hagel,
               biomregeln: options.biomregeln,
+              ereignisse: options.ereignisse,
               metrics: this.metrics,
               logger: this.logger,
             });

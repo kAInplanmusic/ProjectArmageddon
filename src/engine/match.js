@@ -49,6 +49,7 @@ import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.j
 import { pickScenery } from '../shared/config/scenery.js';
 import { biomFuerCharakter as biomeKennungFuerCharakter } from '../shared/biomwahl.js';
 import { GuentherSystem } from './systems/guentherSystem.js';
+import { EreignisSystem } from './systems/ereignisSystem.js'; import { EREIGNISSE_ALT, EREIGNISSE_START, normalisiereEreignisse } from '../shared/config/ereignisse.js';
 import { CookieSystem } from './systems/cookieSystem.js';
 import { baueTierKontext } from './tierKontext.js';
 import { GUENTHER_ALT, GUENTHER_AKTIONEN, normalisiereGuenther } from '../shared/config/guenther.js';
@@ -515,7 +516,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT, wind = WIND_ALT, hagel = HAGEL_ALT, biomregeln = BIOMREGELN_ALT, // Biomregeln (`config.biomregeln`, 2 = Strömung in Düne/Riff/Tiefsee, QV-6); Hagel (`config.hagel`, 2 = Hagellagen und Körner, HAGEL-1); Seil (`config.seil`, 2 = Ninja Rope, `engine/seil.js`); Wind (`config.wind`, 2 = je Zug, Waffenfaktor, Wasser still; AERO/ENG-1); Bodenobjektfassung (`config.bodenobjekte`, 2 = Minen); Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT, wind = WIND_ALT, hagel = HAGEL_ALT, biomregeln = BIOMREGELN_ALT, ereignisse = EREIGNISSE_ALT, // Ereignisse (`config.ereignisse`, 2 = Blondine/Gewitter/Erdbeben, TODO 2.13); Biomregeln (`config.biomregeln`, 2 = Strömung in Düne/Riff/Tiefsee, QV-6); Hagel (`config.hagel`, 2 = Hagellagen und Körner, HAGEL-1); Seil (`config.seil`, 2 = Ninja Rope, `engine/seil.js`); Wind (`config.wind`, 2 = je Zug, Waffenfaktor, Wasser still; AERO/ENG-1); Bodenobjektfassung (`config.bodenobjekte`, 2 = Minen); Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
     gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
   } = {}) {
@@ -595,6 +596,7 @@ export class MatchController {
     if (this.hagel >= HAGEL_KOERNER) this.#hagel = new HagelSystem(this, { lage: this.#seedManager.getSubRng('HAGEL'), korn: this.#seedManager.getSubRng('HAGEL_KORN') });
     this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
     this.#feuerwesen = this.waffen >= WAFFEN_FEUERWESEN ? new FeuerwesenSystem(this, () => this.#schussQuelle()) : null;
+    this.ereignisse = normalisiereEreignisse(ereignisse); this.ereignisSystem = this.ereignisse >= EREIGNISSE_START ? new EreignisSystem(this, this.#seedManager.getSubRng('EREIGNISSE')) : null; // TODO 2.13
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
     this.biomregeln = normalisiereBiomregeln(biomregeln); // Fassung 1: keine Regel, kein Eingriff
     this.stroemung = stroemungFuer(this.sonderbiom, this.biomregeln, this.#seedManager.baseSeed, MAX_WIND); // Baustein A, oder null
@@ -2270,6 +2272,7 @@ export class MatchController {
     }
     this.#spawnRoundLoot();
     this.#events.emit('round_start', { round: this.#round, wind: this.#wind });
+    this.ereignisSystem?.rundenbeginn(this.#round); // TODO 2.13: Ereignisse und Besucher
     /*
      * Geschütze feuern am Rundenanfang — nach `round_start`, damit die Anzeige
      * den Rundenwechsel vor den Schüssen sieht.

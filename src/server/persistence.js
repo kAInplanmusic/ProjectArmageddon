@@ -27,6 +27,7 @@ import { BODENOBJEKTE_ALT } from '../shared/config/bodenobjekte.js';
 import { SEIL_ALT } from '../shared/config/seil.js';
 import { WIND_ALT } from '../shared/config/wind.js';
 import { HAGEL_ALT } from '../shared/config/hagel.js';
+import { EREIGNISSE_ALT } from '../shared/config/ereignisse.js';
 import { BIOMREGELN_ALT } from '../shared/config/biomregeln.js';
 import { ZUGREGELN_ALT } from '../shared/config/zugregeln.js';
 import { FEUER_ALT } from '../shared/config/feuer.js';
@@ -310,6 +311,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       hagel: saved.replay.config?.hagel ?? HAGEL_ALT,
       // Alte Sicherungen ohne `biomregeln`: keine Biomregel (QV-6).
       biomregeln: saved.replay.config?.biomregeln ?? BIOMREGELN_ALT,
+      // Alte Sicherungen ohne `ereignisse`: keine Ereignisse (TODO 2.13).
+      ereignisse: saved.replay.config?.ereignisse ?? EREIGNISSE_ALT,
     })
     : null;
 

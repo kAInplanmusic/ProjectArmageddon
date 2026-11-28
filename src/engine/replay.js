@@ -33,6 +33,7 @@ import { BODENOBJEKTE_ALT, normalisiereBodenobjekte } from '../shared/config/bod
 import { SEIL_ALT, normalisiereSeil } from '../shared/config/seil.js';
 import { WIND_ALT, normalisiereWind } from '../shared/config/wind.js';
 import { HAGEL_ALT, normalisiereHagel } from '../shared/config/hagel.js';
+import { EREIGNISSE_ALT, normalisiereEreignisse } from '../shared/config/ereignisse.js';
 import { BIOMREGELN_ALT, normalisiereBiomregeln } from '../shared/config/biomregeln.js';
 import { ZUGREGELN_ALT, normalisiereZugregeln } from '../shared/config/zugregeln.js';
 import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
@@ -85,6 +86,7 @@ export class ReplayRecorder {
     wind = WIND_ALT,
     hagel = HAGEL_ALT,
     biomregeln = BIOMREGELN_ALT,
+    ereignisse = EREIGNISSE_ALT,
     erstelltAm = null,
   } = {}) {
     if (!Number.isInteger(seed)) {
@@ -154,6 +156,8 @@ export class ReplayRecorder {
       hagel: normalisiereHagel(hagel),
       /* Biomregelfassung (`config/biomregeln.js`, QV-6): Strömung in Düne, Riff und Tiefsee. Eine Datei OHNE das Feld ist `BIOMREGELN_ALT` (keine Regel). */
       biomregeln: normalisiereBiomregeln(biomregeln),
+      /* Ereignisfassung (`config/ereignisse.js`, TODO 2.13). Eine Datei OHNE das Feld ist `EREIGNISSE_ALT` (keine Ereignisse). */
+      ereignisse: normalisiereEreignisse(ereignisse),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -366,7 +370,8 @@ export class ReplayRecorder {
       guenther: parsed.config?.guenther ?? GUENTHER_ALT, cookie: parsed.config?.cookie ?? COOKIE_ALT, feuer: parsed.config?.feuer ?? FEUER_ALT,
       bewegung: parsed.config?.bewegung ?? BEWEGUNG_ALT, zugregeln: parsed.config?.zugregeln ?? ZUGREGELN_ALT, klassen: parsed.config?.klassen ?? KLASSEN_ALT,
       bodenobjekte: parsed.config?.bodenobjekte ?? BODENOBJEKTE_ALT, seil: parsed.config?.seil ?? SEIL_ALT,
-      wind: parsed.config?.wind ?? WIND_ALT, hagel: parsed.config?.hagel ?? HAGEL_ALT, biomregeln: parsed.config?.biomregeln ?? BIOMREGELN_ALT });
+      wind: parsed.config?.wind ?? WIND_ALT, hagel: parsed.config?.hagel ?? HAGEL_ALT, biomregeln: parsed.config?.biomregeln ?? BIOMREGELN_ALT,
+      ereignisse: parsed.config?.ereignisse ?? EREIGNISSE_ALT });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -483,6 +488,7 @@ export class ReplayPlayer {
       wind: config.wind,
       hagel: config.hagel,
       biomregeln: config.biomregeln,
+      ereignisse: config.ereignisse,
       ...(turnDurationMs ? { turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),
