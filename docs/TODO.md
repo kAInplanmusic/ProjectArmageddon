@@ -36,7 +36,9 @@ sind aber keine Listen.
 |---|---|
 | Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
 | Zeilenbudgets | `src/engine/match.js` ≤ 2790 Zeilen (`tests/zeilenbudget.test.js`) |
-| Tests | `npm test` 2026-11-27: 3215 grün, 0 rot |
+| Tests | `npm test` 2026-11-28: 3215 grün, 0 rot |
+| Offen auf Branch | `integration/revanche-neue-karte` (2.12c, CI läuft, Abschnitt 10) |
+| Wunschbild | `docs/SSOT.md`, Teil D (verbindliche Fassung); die Lücken stehen hier unter 2.12 und 2.13 |
 | Spieltest mit Menschen (QV-4) | nicht erfolgt |
 
 ## 1. Sofort: Fehler und rote Prüfungen
@@ -44,6 +46,16 @@ sind aber keine Listen.
 Nichts offen.
 
 ## 2. Spiel: nächste Bauschritte (in dieser Reihenfolge)
+
+**Reihenfolge ab 2026-11-28 (Vorschlag des Agenten, nach Spaß und Aufwand):**
+1. 2.12c Revanche auf neuer Karte (gebaut, Merge nach grüner CI).
+2. 2.12b Kartengröße mit Zufall (wartet auf Zustimmung zum Weg, Abschnitt 9).
+3. 2.13 Ereignissystem mit den ersten drei: Blondine (2.13n), Gewitter (2.13d), Erdbeben (2.13e); danach die übrigen.
+4. 2.12d Biomelemente und 2.12e Gefrieren/Schmelzen (viel Spielspaß, mittlerer Aufwand).
+5. 2.4 Landhöhe variieren (Geländefassung 20).
+6. 2.12f Boote, Geheimtunnel, Auslöser.
+7. 2.12a Schwerkraft zur Mitte bzw. schwach (größter Umbau; zuerst Spezifikation).
+Daneben gilt 2.1 (Sichtabnahme am Gerät) weiter mit Vorrang, sobald der Auftraggeber testen kann.
 
 ### 2.1 TOUCH-ZUERST (Vorrang vor allem anderen, Entscheidung 2026-11-25)
 - **Steht:** Seilknöpfe nur am Seil, eine Aktionsreihe am Telefon, Touch-Texte, Kamera hält die Figur über der
@@ -124,17 +136,13 @@ Nichts offen.
   **Wo:** `src/client/figurAnimation.js`, `waffenAnimation.js`, `hud.js`.
 
 ### 2.12 VISION-ABGLEICH (Auftraggeber 2026-11-28): Lücken zwischen Wunschbild und Code
-Der Auftraggeber beschreibt das Spiel so: 20 Biome mit seinen Hintergründen; je Biom eigene Elemente (Bäume, Autos, Pilze …)
-in Varianten (Farbe, Form, Größe) mit Eigenschaften (beweglich, zerstörbar, explosiv oder nichts); Gelände mit eigenen
-Reaktionen (Holz brennt, Wasser gefriert, Eis schmilzt oder zersplittert); Portale; runde Karten ohne Schwerkraft oder mit
-Anziehung zur Mitte; sehr breite/flache und sehr hohe/schmale Karten; getrennte Inseln, Brücken, Boote, Geheimtunnel,
-Ereignisse, Teleport-Auslöser; keine Karte zweimal; Biom nur auf Wunsch wählbar; Kartengröße aus der Spielerzahl plus Zufall
-(−30 % bis +80 %). Befund im Code (2026-11-28), je Lücke ein Paket mit Fassungsmarke (Abschnitt A):
+Das Wunschbild steht verbindlich in `docs/SSOT.md`, Teil D. Hier die Lücken mit Befund im Code (2026-11-28); je Lücke
+ein eigenes Paket mit Fassungsmarke (Abschnitt A):
 
 | ID | Wunsch | Stand im Code | Was fehlt, wo, wie |
 |---|---|---|---|
 | 2.12a SCHWERKRAFT-RUND | Runde Karten: Schwerelosigkeit oder Anziehung zur Kartenmitte | Schwerkraft zeigt überall nach unten, nur der Betrag ändert sich je Biom (`src/shared/config/biomregeln.js`, `schwerkraftFuer`) | Schwerkraft als Vektor statt Zahl: `src/engine/systems/physicsSystem.js`, `characterSystem.js`, `src/engine/physics/ballistics.js` (`integrateStep`), Geschosse in `match.js`. Modus je Kartenart (Entscheidung 2026-11-28): **runde Karten `mitte`** (Vektor zur Kartenmitte, Stärke wie heute), **Schwebekarten (Schwebinseln, surreale Schwebewelt) `schwach`** (keine oder schwache Atmosphäre: Schwerkraft 0 bis 0,3 der normalen, aus dem Seed; Sprünge und Rückstoß tragen weit, Geschosse fliegen fast gerade), alle anderen `unten` (heute). Figuren stehen dann „auf“ dem Planeten: Bodenfindung (`surfaceYAt`) radial, Zielwinkel relativ zur Oberfläche, Kamera dreht nicht. Neue Bewegungsfassung, Planet-Karten zuerst. Groß: eigenes Paket, vorher Spezifikation `docs/auftraege/schwerkraft-rund.md` |
-| 2.12b KARTENGRÖSSE-ZUFALL | Größe aus Spielerzahl, dazu Zufall −30 % bis +80 % | Das Menü schlägt eine feste Stufe aus der Figurenzahl vor (`mapGroesseFuerFiguren` in `src/engine/karte.js`, `src/client/kartenVorschlag.js`); kein Zufall | In `src/engine/karte.js` eine Funktion `kartenMasseFuer(figuren, rng)`: Grundbreite aus der Figurenzahl, Faktor aus dem Seed gleichverteilt in [0,7; 1,8] (nur die Breite oder Breite und Höhe je Format), auf Vielfache von 32 runden, `KOLOSSAL_PIXEL`/iOS-Grenze (`kartenWahl.js`) beachten. Geländefassung mit Marke; Zugzeit (`getTurnDurationForSize`) nach Fläche statt Stufe |
+| 2.12b KARTENGRÖSSE-ZUFALL | Größe aus Spielerzahl, dazu Zufall −30 % bis +80 % | Das Menü schlägt eine feste Stufe aus der Figurenzahl vor (`mapGroesseFuerFiguren` in `src/engine/karte.js`, `src/client/kartenVorschlag.js`); kein Zufall | **Vorgeschlagener Weg (wartet auf Zustimmung):** neue Menüwahl „Größe: automatisch“ als Vorgabe, auch für „Spielen“; eine ausdrücklich gewählte Größe bleibt genau so (dadurch behalten die E2E-Tests ihre Karten, die fast alle eine Größe setzen oder die Vorgabe nutzen: vor dem Bau prüfen, welche Specs die Vorgabe nutzen, und dort `mittel` ausdrücklich setzen). Bau: in `src/engine/karte.js` `kartenMasseFuer(figuren, format, rng)`: Grundbreite aus der Figurenzahl (`mapGroesseFuerFiguren`), Faktor aus dem Seed gleichverteilt in [0,7; 1,8], Breite (und bei 1:1 auch Höhe) auf ein Vielfaches von 32 runden, Grenzen `KOLOSSAL_PIXEL` und iOS (`src/engine/kartenWahl.js`) einhalten; Zugzeit nach Fläche statt Stufe (`getTurnDurationForSize` in `src/engine/systems/turnSystem.js`). Geländefassung mit Marke; Server übernimmt die Maße aus dem Seed (Lobby schickt nur „automatisch“) |
 | 2.12c KEINE-KARTE-ZWEIMAL | Jede Partie eine neue Karte | **Steht (2026-11-28):** Revanche startet mit denselben Teams und Regeln auf einer neuen Karte, das Seed-Feld wird dabei geleert (`src/client/revanche.js`, `#seedFuerRevanche` in `main.js`). Das Seed-Feld bleibt im Menü (Vorgabe leer = neue Karte), weil über 100 E2E-Tests es füllen und Nachspielen damit möglich bleibt | – |
 | 2.12d BIOM-ELEMENTE | Elemente je Biom in Varianten, mit Eigenschaften (beweglich, zerstörbar, explosiv) | Spielwirksame Biomobjekte nur in 7 von 20 Biomen, je eins (`ALLE_BIOMOBJEKTE` in `src/shared/config/bodenobjekte.js`: explodieren); `docs/biome/gesamtliste.md` beschreibt 111 Objekte und 32 Auslöser. Bäume und Pflanzen sind nur Bild (`src/client/pflanzen.js`), nicht zerstörbar, brennen nicht | Je Biom 2–4 Objekte aus der Gesamtliste in den Motor holen: Eigenschaften `beweglich` (Physik wie Fass), `zerstoerbar` (Lebenspunkte), `explosiv` (wie Fass), `brennbar` (Feuersystem). Bäume als Objekt mit Stamm aus Holz (brennt, fällt um). Varianten (Größe/Farbe/Form) aus dem Seed. Bodenobjektfassung 9; Bilder in `src/client/assets/biom-objekte/` (19 vorhanden) |
 | 2.12e STOFF-REAKTIONEN | Wasser gefriert, Eis schmilzt oder zersplittert, Holz brennt | Holz/Pflanzen brennen und werden Asche, Lava erstarrt, Nässe und Kälte löschen (`src/engine/systems/feuerSystem.js`); spröde Stoffe brechen (Biomregel 10). **Fehlt:** Wasser → Eis bei Kälte, Eis → Wasser bei Hitze | Im Feuersystem (oder neuem `kaelteSystem.js`): Kältetreffer wandelt Wasserzellen (`waterField.js`) im Radius in Stoff `eis` (begehbar), Hitze/Feuer schmilzt Eis zu Wasser. Biomregel- oder Feuerfassung mit Marke |
@@ -170,10 +178,10 @@ im Client (`src/client/effects.js`, `sound.js`). Jedes Ereignis: Unit-Test (Wirk
 
 | ID | Besucher | Wirkung | Wo / Wie |
 |---|---|---|---|
-| 2.13k HEILER | Fröhlicher Waldmann (Name siehe Abschnitt 9) | erscheint, singt, heilt alle Figuren im Umkreis um +15 bis +30 und geht wieder | Besucher-Entität wie Günther (`guenther.js`), Heilung über die Lebenspunkte im Motor |
+| 2.13k HEILER | Fröhlicher, singender Waldmann (Arbeitsname „Onkel Moosbart“, endgültiger Name Abschnitt 9) | erscheint, singt, heilt alle Figuren im Umkreis um +15 bis +30 und geht wieder | Besucher-Entität wie Günther (`guenther.js`), Heilung über die Lebenspunkte im Motor |
 | 2.13l STRICKOMA | Alte, verwirrte Landstreicherin, strickt und isst Gummibärchen | wandert ziellos; wer ihr nahe kommt, bekommt ein Gummibärchen (+5) oder wird von ihr „eingestrickt“ (ein Zug ohne Bewegung); ihr Geruch: Figuren direkt neben ihr husten (−2 je Zug) | Besucher mit Laufweg, Wirkung bei Nähe; Bild und Sprüche im Client |
 | 2.13m DEALER | Dünner, verpeilter Händler | tauscht mit der Figur am Zug: Leben gegen Waffe, Waffe gegen andere Waffe, eine Zugrunde aussetzen gegen eine starke Waffe | Handelsangebot als Servernachricht, Wahl des Spielers als neue Eingabe (`src/shared/protocol.js`, Server prüft alles, AGENTS.md §6); Angebote aus dem Seed; Handelsfenster `src/client/` (neues Modul) |
-| 2.13n BLONDINE | Süße Blondine | trifft die Figur am Zug: 8 von 9 Fällen Kuss (+10 bis +50 Leben, aus dem Seed), 1 von 9 lacht sie aus (−69 Leben) | Ziehung über den Seed-RNG, Wirkung im Motor, Sprechblase und Klang im Client. Kein anzüglicher Inhalt: Comic-Kuss mit Herzchen |
+| 2.13n BLONDINE | Süße Blondine | trifft die Figur am Zug: Verhältnis 8 : 1, also in 8 von 9 Fällen Kuss (+10 bis +50 Leben, gleichverteilt aus dem Seed, nicht über die Höchstlebenspunkte), in 1 von 9 lacht sie aus (−69 Leben, kann töten) | Ziehung über den Seed-RNG, Wirkung im Motor, Sprechblase und Klang im Client. Kein anzüglicher Inhalt: Comic-Kuss mit Herzchen |
 
 ## 3. Balance (immer: messen, dann ändern, Freigabe)
 
@@ -246,7 +254,7 @@ im Client (`src/client/effects.js`, `sound.js`). Jedes Ereignis: Unit-Test (Wirk
 | 2026-11-25 | Startausrüstung (ersetzt EXKL-1): jede Figur trägt 5 feste Startwaffen mit unbegrenzter Munition (Auswahl durch den Agenten, gemessen), 2 Gimmicks (Seil 5×, Gleitschirm pa_114 5×; das Seil ist eine der 150 Waffen) und eine Spezialwaffe aus den übrigen 143: legendär 1 Schuss, stark 2, normal 3. Stufen nach Seltenheit (legendary; epic/rare; common/uncommon). Je Fraktion (9 Figuren): 1 legendär, 2 stark, 6 normal. TURRET-1: 2 bis 3 vorhandene, selten genutzte Waffen bekommen die Turm-Mechanik (Waffenfassung mit Marke, gemessen) |
 | 2026-11-25 | Das Seil (Ninjaseil) ist der Enterhaken pa_111. Bedienung: Handy und iPad zuerst, Tastatur an zweiter Stelle |
 | 2026-11-27 | Mindestens zehn legendäre Waffen: 11 (die 3 legendären und die 8 bisher epischen), jede Fraktion eine eigene. Gelände: Mittelweg zwischen „düsterer“ (2026-10-27) und hell — Tiefe halb so dunkel, Gestein je Bodenart |
-| 2026-11-28 | Runde Karten: Schwerkraft zur Kartenmitte. Schwebekarten: keine oder schwache Atmosphäre (sehr schwache Schwerkraft). Neue Ereignisse und Besucher (TODO 2.13); Wunschbild 2.12 |
+| 2026-11-28 | Wunschbild des Spiels festgehalten (`docs/SSOT.md`, Teil D). Runde Karten: Schwerkraft zur Kartenmitte; Schwebekarten: keine oder schwache Atmosphäre. Keine Karte zweimal: die Revanche zieht eine neue Karte (das Seed-Feld bleibt für Tests und Nachspielen, Vorgabe leer). Kartengröße aus Spielerzahl plus Zufall −30 % bis +80 %. Neue Ereignisse und Besucher wie in TODO 2.13 beschrieben; Blondine Kuss : Auslachen = 8 : 1 |
 | 2026-11-24 | Zugtempo (Agent nach TODO 2.8, vom Auftraggeber bestätigt: „make it as you think“): Zugpause 3 → 1,5 s (ändert die Entscheidung vom 13.10.), Schusswiederholung online 2 → 1,5 s, Rückzugsfrist 5 → 3 s (Zugregelfassung 3). Gemessen: Warten je Zug 8 → 4,5 s |
 | 2026-11-23 | Registrierung mit E-Mail (eindeutige Namen und Adressen, Anmeldung mit Name oder E-Mail); Web-Zugang mit schwächerem Hash (PBKDF2, 20 000 Runden) statt bezahltem Cloudflare-Tarif |
 
@@ -255,7 +263,7 @@ im Client (`src/client/effects.js`, `sound.js`). Jedes Ereignis: Unit-Test (Wirk
 Spieltest mit Menschen (QV-4: Wasserlauf, Sturzflut/Dammbruch, Treibsand, Treiben, Strömung, Lesbarkeit der Hinweise, Windpfeil) · Sicht: Figuren
 (Randlicht, Hocke, 8-Bit-pixel, Angst, Tod-Epilog-Sprüche), Waffenoptik im Flug und im Nahkampf (N-09, N-10, N-14,
 N-15, GP-8), Wetter und Hagel, Kameraeffekte, Spielgefühl (Trefferstopp, gestaffelte Schadenszahlen, Kill-Kamera, Kettenzähler), Mine und Fass (MINEN-1/2), Biomobjekte (Druckkessel, Giftblüte, Sporenbovist, Runenstein), Kartenportal (Ring, Sprung), Einstieg der ersten Partie (Texte, Lage), Grabstein, Seil am Touch-Gerät, Menü `kolossal`
-am Telefon, Biome 15–20 · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkugel, Mine, Hagel, Titellied.
+am Telefon, Biome 15–20, später jedes Ereignis und jeder Besucher aus 2.13 (Bild, Häufigkeit, Spaß) · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkugel, Mine, Hagel, Titellied.
 
 ## 9. Fragen an den Auftraggeber
 
@@ -264,10 +272,11 @@ am Telefon, Biome 15–20 · Hören: alle Klänge (K4, AUDIO-2, QA-2), Funkenkug
 | Darf neues Bildmaterial (Figuren, Geländetexturen, Teilsprites für 2.10) aus dem Bildbudget (+10 €) erzeugt werden? | Rückmeldung „Figuren sehen schlecht aus“; Glättung und Farbänderung allein brachten keine sichtbare Besserung (gemessen 2026-11-27) |
 | Rückmeldung zu Portal Stufe 1 (2.7) | Stufe 2 wartet darauf |
 | Name des Heilers (2.13k): „Tam Bombidil“ ist fast gleich wie Tom Bombadil aus „Der Herr der Ringe“ (geschützte Figur). Ein eigener Name, z. B. „Onkel Moosbart“? | Eine erkennbar übernommene Figur kann rechtlich Ärger bringen |
+| Weg für 2.12b: Zufallsgröße nur bei „Größe: automatisch“ (Vorgabe, auch „Spielen“), ausdrücklich gewählte Größe bleibt fest? | Hält die Browser-Tests stabil; sonst müssten viele Specs einzeln angepasst werden |
 
 ## 10. Branches
 
-Ziel: nur `main`. Stand 2026-11-28: Jeder Branch auf GitHub ist entweder vollständig in `main` enthalten oder sein
+Ziel: nur `main`. Offen: **`integration/revanche-neue-karte`** (TODO 2.12c; Unit-Tests 3215 grün, `sieg-dialog.spec` grün, CI läuft; nach grüner CI Fast-Forward nach `main` und über den Workflow löschen). Sonst gilt (Stand 2026-11-28): Jeder Branch auf GitHub ist entweder vollständig in `main` enthalten oder sein
 Inhalt steckt in anderer Form in `main` (geprüft mit `git cherry` und je Änderung im Code). Gelöscht wird über den
 Workflow **„Branches aufräumen“** (`.github/workflows/branch-aufraeumen.yml`; Listen `.github/branch-loeschliste.txt`
 für vollständig enthaltene, `.github/branch-verworfen.txt` für geprüfte, überholte), weil das direkte Löschen per

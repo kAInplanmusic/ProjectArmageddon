@@ -37,7 +37,7 @@ Spieler erstellt die Lobby, die anderen treten mit der angezeigten Lobby-ID bei.
 |---|---|
 | `README.md` | Diese Übersicht |
 | [`docs/TODO.md`](docs/TODO.md) | **Die einzige Aufgabenliste.** Alles Offene, jede Entscheidung des Auftraggebers, offene Branches, was als Nächstes wo zu bauen ist |
-| [`docs/SSOT.md`](docs/SSOT.md) | **SSOT = „Single Source of Truth“, die eine maßgebliche Quelle.** Sagt für jedes Thema, welche Datei verbindlich ist, wenn zwei Stellen sich widersprechen |
+| [`docs/SSOT.md`](docs/SSOT.md) | **SSOT = „Single Source of Truth“, die eine maßgebliche Quelle.** Sagt für jedes Thema, welche Datei verbindlich ist, wenn zwei Stellen sich widersprechen; Teil D ist das Wunschbild des Spiels |
 | [`AGENTS.md`](AGENTS.md) | Arbeitsregeln für alle, die am Projekt arbeiten (auch KI-Agenten): Prüfen, Mergen, nichts mieten |
 | [`docs/entwicklung.md`](docs/entwicklung.md) | Handbuch für Entwickler: alle Befehle, Steuerung im Detail, Architektur, Protokoll, Spielregeln, Waffenkatalog |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md), [`CONTRIBUTING.md`](CONTRIBUTING.md) | Aufbau des Codes und Ablauf für Beiträge |
