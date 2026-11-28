@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 
 import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
-import { EREIGNISSE, EREIGNISSE_ALT, EREIGNISSE_START, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER, EREIGNISSE_STANDARD, normalisiereEreignisse } from '../src/shared/config/ereignisse.js';
+import { EREIGNISSE, EREIGNISSE_ALT, EREIGNISSE_START, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER, EREIGNISSE_REGEN, EREIGNISSE_STANDARD, normalisiereEreignisse } from '../src/shared/config/ereignisse.js';
 import { MENUE_FASSUNGEN } from '../src/shared/config/menueStart.js';
 
 function spiele(seed, ereignisse, maxRounds = 8) {
@@ -23,8 +23,9 @@ function spiele(seed, ereignisse, maxRounds = 8) {
   return { m, liste };
 }
 
-test('Die neueste Fassung (4) ist der Standard und steht im Menü; Unbekanntes schaltet nichts ein', () => {
-  assert.equal(EREIGNISSE_STANDARD, EREIGNISSE_HEILER);
+test('Die neueste Fassung (5) ist der Standard und steht im Menü; Unbekanntes schaltet nichts ein', () => {
+  assert.equal(EREIGNISSE_STANDARD, EREIGNISSE_REGEN);
+  assert.equal(normalisiereEreignisse(EREIGNISSE_HEILER), EREIGNISSE_HEILER);
   assert.equal(normalisiereEreignisse(EREIGNISSE_FEUER_RISSE), EREIGNISSE_FEUER_RISSE);
   assert.equal(MENUE_FASSUNGEN.ereignisse, EREIGNISSE_STANDARD);
   assert.equal(normalisiereEreignisse(EREIGNISSE_START), EREIGNISSE_START);
@@ -142,4 +143,24 @@ test('Fassung 4: Dr. Stilzchen-Rumpel heilt Figuren im Umkreis, nie über die H�
   const sys = new (m.ereignisSystem.constructor)(m, { next: () => 0 }, { ...EREIGNISSE, abRunde: 1, chance: 1, gewichte4: { heiler: 1 } }, EREIGNISSE_HEILER);
   assert.equal(sys.rundenbeginn(3), 'heiler');
   assert.ok(m.world.getComponent(id, 'Health', 'current') >= 10 + EREIGNISSE.heilerMin);
+});
+
+test('Fassung 5: Starkregen löscht Brände und lässt Wasser fallen; Fassung 4 kennt keinen Regen', () => {
+  for (let seed = 1; seed <= 10; seed += 1) assert.ok(!spiele(seed, EREIGNISSE_HEILER).liste.some(e => e.art === 'regen'));
+  const m = new MatchController({ seed: 11, teams: 2, playersPerTeam: 1, preset: 'hills', ereignisse: EREIGNISSE_REGEN, feuer: 2, kartentyp: 'autonom', biom: 'dschungel' });
+  m.start();
+  const x = Math.round(m.width / 2);
+  const y = m.surfaceYAt(x);
+  m.feuerSystem.einschlag(x, y, 60, 'hitze');
+  for (let i = 0; i < 30; i += 1) m.step();
+  const brannteVorher = m.feuerSystem.brennendeZellen;
+  assert.ok(brannteVorher > 0, 'Testaufbau: es brennt');
+  const volumen = m.water.totalVolume();
+  const sys = new (m.ereignisSystem.constructor)(m, { next: () => 0.37 }, { ...EREIGNISSE, abRunde: 1, chance: 1, gewichte5: { regen: 1 } }, EREIGNISSE_REGEN);
+  assert.equal(sys.rundenbeginn(3), 'regen');
+  assert.ok(m.water.totalVolume() > volumen, 'es regnet Wasser');
+  assert.ok(m.feuerSystem.brennendeZellen < brannteVorher, `der Regen löscht (${m.feuerSystem.brennendeZellen} von ${brannteVorher} brennen noch)`);
+  const ereignisse = m.consumeEvents();
+  const regen = ereignisse.find(e => e.type === 'ereignis' && e.payload.art === 'regen');
+  assert.ok(regen && regen.payload.tropfen > 0);
 });

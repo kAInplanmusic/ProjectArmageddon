@@ -977,6 +977,7 @@ export const EREIGNIS_WIRKUNGEN = {
   // Ereignisse und Besucher (TODO 2.13, `engine/systems/ereignisSystem.js`): eine Protokollzeile; Schaden, Heilung und
   // Krater zeigt der Client über ihre eigenen Ereignisse.
   ereignis: mitBuehne('ereignis', (k, n) => {
+    if ((n.art === 'regen' || n.art === 'gewitter') && k.renderer) k.renderer.ereignisWetter = { art: n.art, bis: (k.renderer.time ?? 0) + (n.art === 'regen' ? 720 : 480) };
     if (n.art === 'gewitter') {
       // Blitzstrahl vom Himmel in die Einschlagstelle: die Strahloptik des Tesla-Turms (pa_129, Familie „blitz“).
       for (const b of n.blitze ?? []) {
@@ -993,6 +994,8 @@ export const EREIGNIS_WIRKUNGEN = {
     } else if (n.art === 'gewitter') {
       const treffer = (n.blitze ?? []).reduce((s, b) => s + (b.getroffen?.length ?? 0), 0);
       k.hud?.log(`⚡ Gewitter: ${n.blitze?.length ?? 0} Blitz(e)${treffer ? `, ${treffer} Figur(en) getroffen` : ''}`, 'neutral');
+    } else if (n.art === 'regen') {
+      k.hud?.log('🌧️ Starkregen! Alle Brände erlöschen, in den Mulden sammelt sich Wasser', 'neutral');
     } else if (n.art === 'heiler') {
       const summe = (n.geheilt ?? []).reduce((s, g) => s + g.betrag, 0);
       k.hud?.log(`🧙 Dr. Stilzchen-Rumpel kommt vorbei und heilt ${(n.geheilt ?? []).length} Figur(en)${summe ? ` (+${summe} Leben)` : ''}`, 'good');

@@ -157,6 +157,9 @@ function zustand(r) {
   const z = r.wetterStand;
   const zeit = r.time ?? 0;
   const ziel = bindeHagelZiel(zielAus(z.wetter, zeit / 60, z.saat), r.hagel, zeit, Boolean(r.backdrop && OHNE_WETTER.test(r.backdrop.biomeId ?? String(r.backdrop.key ?? '').split('/')[0])));
+  // Ereignisse (TODO 2.13): Starkregen bzw. Gewitter überlagern das Wetter für kurze Zeit (`ereignisse.js` setzt `ereignisWetter`).
+  const ew = r.ereignisWetter;
+  if (ew && ew.bis > zeit) { if (ew.art === 'regen') ziel.regen = 1; if (ew.art === 'gewitter') { ziel.sturm = 1; ziel.regen = Math.max(ziel.regen, 0.6); } }
   const { richtung, spielStaerke } = windRichtung(r.sichtWind, z.saat);
   if (!z.stand) { z.stand = neuerZustand(ziel, zeit); z.stand.richtung = richtung; }
   schreiteFort(z.stand, ziel, zeit, Boolean(r.reducedMotion), richtung);

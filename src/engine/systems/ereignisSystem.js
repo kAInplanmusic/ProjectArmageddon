@@ -8,7 +8,7 @@
  * @module systems/ereignisSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { EREIGNISSE, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER } from '../../shared/config/ereignisse.js';
+import { EREIGNISSE, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER, EREIGNISSE_REGEN } from '../../shared/config/ereignisse.js';
 
 export class EreignisSystem {
   #match;
@@ -51,7 +51,8 @@ export class EreignisSystem {
     const r = this.#regeln;
     if (runde < r.abRunde || this.#match.status !== 'playing') return null;
     if (this.#rng.next() >= r.chance) return null;
-    const gewichte = this.#fassung >= EREIGNISSE_HEILER && r.gewichte4 ? r.gewichte4 : r.gewichte;
+    const gewichte = this.#fassung >= EREIGNISSE_REGEN && r.gewichte5 ? r.gewichte5
+      : this.#fassung >= EREIGNISSE_HEILER && r.gewichte4 ? r.gewichte4 : r.gewichte;
     const arten = Object.keys(gewichte);
     const summe = arten.reduce((s, a) => s + gewichte[a], 0);
     let rest = this.#rng.next() * summe;
@@ -63,6 +64,7 @@ export class EreignisSystem {
     if (art === 'blondine') this.#blondine(h, figuren);
     else if (art === 'gewitter') this.#gewitter(h, figuren);
     else if (art === 'heiler') this.#heiler(h, figuren);
+    else if (art === 'regen') this.#regen(h);
     else this.#erdbeben(h, figuren);
     return art;
   }
@@ -121,6 +123,30 @@ export class EreignisSystem {
       geheilt.push({ playerId: f.id, betrag: h.leben(f.id) - vorher });
     }
     this.#match.events.emit('ereignis', { art: 'heiler', x, y, geheilt });
+  }
+
+  /** Fassung 5: Starkregen löscht jeden Brand und lässt Wasser auf den Boden fallen, das in Mulden zusammenläuft. */
+  #regen(h) {
+    const r = this.#regeln;
+    const breite = this.#match.width;
+    const feuer = this.#match.feuerSystem;
+    if (feuer) for (let x = 40; x < breite; x += 80) feuer.einschlag(x, h.surfaceYAt(x), 90, 'nass');
+    const wasser = this.#match.water;
+    let tropfen = 0;
+    if (wasser) {
+      const s = wasser.worldScale;
+      for (let i = 0; i < r.regenTropfen; i += 1) {
+        const x = Math.round(20 + this.#rng.next() * (breite - 40));
+        const y = h.surfaceYAt(x);
+        if (!Number.isFinite(y) || y >= this.#match.height - 2) continue;
+        const gx = Math.floor(x / s);
+        const gy = Math.floor(y / s);
+        for (let k = 1; k <= r.regenHoehe; k += 1) wasser.setLevel(gx, gy - k, 1);
+        wasser.wecke(x, y, s * (r.regenHoehe + 2));
+        tropfen += 1;
+      }
+    }
+    this.#match.events.emit('ereignis', { art: 'regen', tropfen });
   }
 
   #erdbeben(h, figuren) {

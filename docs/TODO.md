@@ -34,7 +34,7 @@ sind aber keine Listen.
 
 | Bereich | Stand |
 |---|---|
-| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Ereignisse 4 (`EREIGNISSE_HEILER`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
+| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Ereignisse 5 (`EREIGNISSE_REGEN`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
 | Zeilenbudgets | `src/engine/match.js` ≤ 2790 Zeilen (`tests/zeilenbudget.test.js`) |
 | Tests | `npm test` 2026-11-28: 3215 grün, 0 rot |
 | Wunschbild | `docs/SSOT.md`, Teil D (verbindliche Fassung); die Lücken stehen hier unter 2.12 und 2.13 |
@@ -176,7 +176,7 @@ damit eine neue Ereignisfassung (3, 4, …).
 | ID | Ereignis | Wirkung im Spiel | Wo / Wie |
 |---|---|---|---|
 | 2.13a SCHNEE/BLIZZARD | Schneefall, als Blizzard mit Sturm | Schnee legt eine dünne Schicht auf den Boden (glatter, Gehen langsamer); Blizzard: starker Wind, Sicht kurz eingeschränkt, Wasser gefriert an der Oberfläche (braucht 2.12e) | Wetter heute nur Bild (`src/client/wetterZustand.js`); Wirkung in `ereignisSystem.js`, Schneeschicht als Stoff `schnee` (Zerstörung wie Erde), Wind über `src/shared/config/wind.js` |
-| 2.13b REGEN | Starkregen | füllt Mulden mit Wasser, löscht Feuer, macht Hänge rutschig | Wasser in `src/engine/waterField.js` zugeben (Wasserlauf aus Biomregel 5 verteilt es), Löschen über `feuerSystem.js` |
+| 2.13b REGEN | Starkregen | **Steht (Ereignisfassung 5, 2026-11-28):** löscht jeden Brand (Feuersystem „nass“ entlang der Oberfläche) und lässt an 40 Stellen Wasser auf den Boden fallen, das in Mulden zusammenläuft; im Client 12 s Starkregen über das Wetterbild (`ereignisWetter` in `src/client/wetterLicht.js`), beim Gewitter 8 s Sturm. **Offen:** (1) das Regenbild ist auf manchen Kulissen kaum zu sehen (Überblendung zu langsam, `schreiteFort` in `src/client/wetterZustand.js`: für Ereignisse sofort auf Ziel springen); (2) **online** zeichnet der Client das Wasserfeld nicht (`water: null` in `main.js`), Regenwasser ist dort unsichtbar, ebenso der Wasserlauf aus Biomregel 5: Wasserfeld gedrosselt mitsenden (Snapshot-Streifen) oder im Client aus Ereignissen nachrechnen | `src/engine/systems/ereignisSystem.js` (`#regen`) |
 | 2.13c TSUNAMI/HURRIKAN | Welle von einem Kartenrand, Wirbelsturm | Tsunami: Wasserspiegel steigt für 2 Züge, eine Welle schiebt Figuren und lose Objekte; Hurrikan: Windstärke auf Höchstwert, lose Objekte (Kisten, Fässer, Minen) fliegen mit | Wasserspiegel in `waterField.js`, Schub wie Strömung (Biomregel 1); Wind in `wind.js` |
 | 2.13d GEWITTER | Blitze | 1–3 Blitze je Runde schlagen am höchsten Punkt oder in Metall ein: 15–25 Schaden im kleinen Radius, Holz entzündet sich | Einschlag wie eine Waffe (`src/engine/explosion.js`), Ziel aus dem Gelände (höchste Stelle) per Seed |
 | 2.13e ERDBEBEN | Beben | Kamera wackelt, lose Überhänge brechen ab und fallen, Figuren rutschen ein Stück, 5 Schaden für alle am Boden | Abbruch über `src/engine/zerstoerung.js` (freischwebende Inseln fallen), Kamera `src/client/kameraEffekte.js` |

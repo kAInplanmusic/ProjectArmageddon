@@ -37,7 +37,12 @@ export const EREIGNISSE_FEUER_RISSE = 3;
  * am Boden und heilt alle Figuren im Umkreis `heilerRadius` um `heilerMin`–`heilerMax` (nicht über die Höchstlebenspunkte).
  */
 export const EREIGNISSE_HEILER = 4;
-export const EREIGNISSE_STANDARD = EREIGNISSE_HEILER;
+/**
+ * Fassung 5 (2026-11-28): **Starkregen.** Löscht jeden Brand (Feuersystem, Gruppe „nass“, entlang der Oberfläche) und
+ * lässt an `regenTropfen` Stellen etwas Wasser auf den Boden fallen; es läuft in Mulden zusammen (Wasserfeld).
+ */
+export const EREIGNISSE_REGEN = 5;
+export const EREIGNISSE_STANDARD = EREIGNISSE_REGEN;
 
 export const EREIGNISSE = Object.freeze({
   abRunde: 2,
@@ -45,6 +50,10 @@ export const EREIGNISSE = Object.freeze({
   gewichte: Object.freeze({ blondine: 1, gewitter: 1, erdbeben: 0.8 }),
   /** Ab Fassung 4 kommt der Heiler dazu (eigene Tabelle, damit Fassung 2/3 ihre Ziehung behalten). */
   gewichte4: Object.freeze({ blondine: 1, gewitter: 1, erdbeben: 0.8, heiler: 0.9 }),
+  /** Ab Fassung 5 kommt der Regen dazu. */
+  gewichte5: Object.freeze({ blondine: 1, gewitter: 1, erdbeben: 0.8, heiler: 0.9, regen: 1 }),
+  regenTropfen: 40,
+  regenHoehe: 3,
   heilerRadius: 260,
   heilerMin: 15,
   heilerMax: 30,
@@ -66,5 +75,5 @@ export const EREIGNISSE = Object.freeze({
 
 /** Unbekannte Werte fallen auf die alte Fassung (keine Ereignisse), damit eine fremde Angabe nichts einschaltet. */
 export function normalisiereEreignisse(fassung) {
-  return fassung === EREIGNISSE_START || fassung === EREIGNISSE_FEUER_RISSE || fassung === EREIGNISSE_HEILER ? fassung : EREIGNISSE_ALT;
+  return fassung === EREIGNISSE_START || fassung === EREIGNISSE_FEUER_RISSE || fassung === EREIGNISSE_HEILER || fassung === EREIGNISSE_REGEN ? fassung : EREIGNISSE_ALT;
 }
