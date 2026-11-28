@@ -34,7 +34,7 @@ sind aber keine Listen.
 
 | Bereich | Stand |
 |---|---|
-| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Ereignisse 3 (`EREIGNISSE_FEUER_RISSE`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
+| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Ereignisse 4 (`EREIGNISSE_HEILER`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
 | Zeilenbudgets | `src/engine/match.js` ≤ 2790 Zeilen (`tests/zeilenbudget.test.js`) |
 | Tests | `npm test` 2026-11-28: 3215 grün, 0 rot |
 | Wunschbild | `docs/SSOT.md`, Teil D (verbindliche Fassung); die Lücken stehen hier unter 2.12 und 2.13 |
@@ -190,7 +190,7 @@ damit eine neue Ereignisfassung (3, 4, …).
 
 | ID | Besucher | Wirkung | Wo / Wie |
 |---|---|---|---|
-| 2.13k HEILER | **Dr. Stilzchen-Rumpel** (Name entschieden 2026-11-28; Anspielung auf das Grimm-Märchen, frei nutzbar): kleiner, schrulliger Wunderdoktor | erscheint, singt, heilt alle Figuren im Umkreis um +15 bis +30 und geht wieder | Besucher-Entität wie Günther (`guenther.js`), Heilung über die Lebenspunkte im Motor |
+| 2.13k HEILER | **Dr. Stilzchen-Rumpel** (Name entschieden 2026-11-28; Anspielung auf das Grimm-Märchen, frei nutzbar) | **Steht (Ereignisfassung 4, 2026-11-28):** erscheint am Boden nahe einer zufälligen Figur und heilt alle im Umkreis 260 px um +15 bis +30 (nie über das Maximum); Sprechblase „Rumpel-di-pumpel, heil ist der Kumpel!“, grüne Herzen, Heilklang, Kamera schwenkt hin. Test in `tests/ereignisse-fassung2.test.js`. Offen: gezeichnete Figur (Bildmaterial, Abschnitt 9) |
 | 2.13l STRICKOMA | Alte, verwirrte Landstreicherin, strickt und isst Gummibärchen | wandert ziellos; wer ihr nahe kommt, bekommt ein Gummibärchen (+5) oder wird von ihr „eingestrickt“ (ein Zug ohne Bewegung); ihr Geruch: Figuren direkt neben ihr husten (−2 je Zug) | Besucher mit Laufweg, Wirkung bei Nähe; Bild und Sprüche im Client |
 | 2.13m DEALER | Dünner, verpeilter Händler | tauscht mit der Figur am Zug: Leben gegen Waffe, Waffe gegen andere Waffe, eine Zugrunde aussetzen gegen eine starke Waffe | Handelsangebot als Servernachricht, Wahl des Spielers als neue Eingabe (`src/shared/protocol.js`, Server prüft alles, AGENTS.md §6); Angebote aus dem Seed; Handelsfenster `src/client/` (neues Modul) |
 | 2.13n BLONDINE | Süße Blondine | trifft die Figur am Zug: Verhältnis 8 : 1, also in 8 von 9 Fällen Kuss (+10 bis +50 Leben, gleichverteilt aus dem Seed, nicht über die Höchstlebenspunkte), in 1 von 9 lacht sie aus (−69 Leben, kann töten) | Ziehung über den Seed-RNG, Wirkung im Motor, Sprechblase und Klang im Client. Kein anzüglicher Inhalt: Comic-Kuss mit Herzchen |

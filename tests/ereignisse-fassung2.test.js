@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 
 import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
-import { EREIGNISSE, EREIGNISSE_ALT, EREIGNISSE_START, EREIGNISSE_FEUER_RISSE, EREIGNISSE_STANDARD, normalisiereEreignisse } from '../src/shared/config/ereignisse.js';
+import { EREIGNISSE, EREIGNISSE_ALT, EREIGNISSE_START, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER, EREIGNISSE_STANDARD, normalisiereEreignisse } from '../src/shared/config/ereignisse.js';
 import { MENUE_FASSUNGEN } from '../src/shared/config/menueStart.js';
 
 function spiele(seed, ereignisse, maxRounds = 8) {
@@ -23,8 +23,9 @@ function spiele(seed, ereignisse, maxRounds = 8) {
   return { m, liste };
 }
 
-test('Die neueste Fassung (3) ist der Standard und steht im Menü; Unbekanntes schaltet nichts ein', () => {
-  assert.equal(EREIGNISSE_STANDARD, EREIGNISSE_FEUER_RISSE);
+test('Die neueste Fassung (4) ist der Standard und steht im Menü; Unbekanntes schaltet nichts ein', () => {
+  assert.equal(EREIGNISSE_STANDARD, EREIGNISSE_HEILER);
+  assert.equal(normalisiereEreignisse(EREIGNISSE_FEUER_RISSE), EREIGNISSE_FEUER_RISSE);
   assert.equal(MENUE_FASSUNGEN.ereignisse, EREIGNISSE_STANDARD);
   assert.equal(normalisiereEreignisse(EREIGNISSE_START), EREIGNISSE_START);
   assert.equal(normalisiereEreignisse(99), EREIGNISSE_ALT);
@@ -122,4 +123,23 @@ test('Fassung 3: Blitze entzünden Brennbares, Erdbeben reißen Risse; Fassung 2
   assert.equal(alt.risse, 0);
   assert.ok(neu.risse > 0, 'Fassung 3 reißt Risse');
   assert.ok(neu.feuer > alt.feuer, `Fassung 3 entzündet (${neu.feuer} gegen ${alt.feuer} Feuerschritte)`);
+});
+
+test('Fassung 4: Dr. Stilzchen-Rumpel heilt Figuren im Umkreis, nie über die Höchstlebenspunkte; Fassung 3 kennt ihn nicht', () => {
+  let besuche = 0;
+  for (let seed = 1; seed <= 20; seed += 1) {
+    assert.ok(!spiele(seed, EREIGNISSE_FEUER_RISSE).liste.some(e => e.art === 'heiler'));
+    for (const e of spiele(seed, EREIGNISSE_HEILER).liste.filter(x => x.art === 'heiler')) {
+      besuche += 1;
+      for (const g of e.geheilt) assert.ok(g.betrag >= 0 && g.betrag <= EREIGNISSE.heilerMax);
+    }
+  }
+  assert.ok(besuche > 0, 'der Heiler kommt vor');
+  const m = new MatchController({ seed: 3, teams: 2, playersPerTeam: 1, preset: 'hills', ereignisse: EREIGNISSE_HEILER });
+  m.start();
+  const id = m.players[0].entityId ?? m.players[0].id;
+  m.world.setComponent(id, 'Health', 'current', 10);
+  const sys = new (m.ereignisSystem.constructor)(m, { next: () => 0 }, { ...EREIGNISSE, abRunde: 1, chance: 1, gewichte4: { heiler: 1 } }, EREIGNISSE_HEILER);
+  assert.equal(sys.rundenbeginn(3), 'heiler');
+  assert.ok(m.world.getComponent(id, 'Health', 'current') >= 10 + EREIGNISSE.heilerMin);
 });

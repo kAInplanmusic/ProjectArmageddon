@@ -32,12 +32,22 @@ export const EREIGNISSE_START = 2;
  * (Inselsuche der Zerstörung). Fassung 2 bleibt bitgleich.
  */
 export const EREIGNISSE_FEUER_RISSE = 3;
-export const EREIGNISSE_STANDARD = EREIGNISSE_FEUER_RISSE;
+/**
+ * Fassung 4 (2026-11-28): Der Heiler **Dr. Stilzchen-Rumpel** (Name: Auftraggeber) erscheint an einer zufälligen Stelle
+ * am Boden und heilt alle Figuren im Umkreis `heilerRadius` um `heilerMin`–`heilerMax` (nicht über die Höchstlebenspunkte).
+ */
+export const EREIGNISSE_HEILER = 4;
+export const EREIGNISSE_STANDARD = EREIGNISSE_HEILER;
 
 export const EREIGNISSE = Object.freeze({
   abRunde: 2,
   chance: 0.3,
   gewichte: Object.freeze({ blondine: 1, gewitter: 1, erdbeben: 0.8 }),
+  /** Ab Fassung 4 kommt der Heiler dazu (eigene Tabelle, damit Fassung 2/3 ihre Ziehung behalten). */
+  gewichte4: Object.freeze({ blondine: 1, gewitter: 1, erdbeben: 0.8, heiler: 0.9 }),
+  heilerRadius: 260,
+  heilerMin: 15,
+  heilerMax: 30,
   kussZuAuslachen: Object.freeze([8, 1]),
   kussMin: 10,
   kussMax: 50,
@@ -56,5 +66,5 @@ export const EREIGNISSE = Object.freeze({
 
 /** Unbekannte Werte fallen auf die alte Fassung (keine Ereignisse), damit eine fremde Angabe nichts einschaltet. */
 export function normalisiereEreignisse(fassung) {
-  return fassung === EREIGNISSE_START || fassung === EREIGNISSE_FEUER_RISSE ? fassung : EREIGNISSE_ALT;
+  return fassung === EREIGNISSE_START || fassung === EREIGNISSE_FEUER_RISSE || fassung === EREIGNISSE_HEILER ? fassung : EREIGNISSE_ALT;
 }

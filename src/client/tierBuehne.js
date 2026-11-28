@@ -160,6 +160,10 @@ export class TierBuehne {
           this.#blase('HAHAHA! 😂', 'blondine', x, y - 56, { pegel: 1, rest: 2.4, farbe: '#e5484d' });
           this.#teilchenDazu('stern', x, y - 24, 4, { streuX: 12, abnahme: 0.03, r: 5 });
           this.#starteAuftritt('ereignis_blondine', x, y);
+        } else if (n.art === 'heiler') {
+          this.#blase('Rumpel-di-pumpel, heil ist der Kumpel!', 'heiler', x, y - 60, { pegel: 0.7, rest: 3, farbe: '#3fbf6a' });
+          this.#teilchenDazu('herz', x, y - 30, 10, { streuX: 40, abnahme: 0.01, farbe: '#3fbf6a' });
+          this.#starteAuftritt('ereignis_blondine', x, y);
         } else if (n.art === 'erdbeben') {
           this.#beben = { staerke: Math.max(this.#beben.staerke, 1.4), rest: 1.6, dauer: 1.6 };
         } else if (n.art === 'gewitter') {

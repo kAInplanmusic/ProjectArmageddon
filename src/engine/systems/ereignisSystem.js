@@ -8,7 +8,7 @@
  * @module systems/ereignisSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { EREIGNISSE, EREIGNISSE_FEUER_RISSE } from '../../shared/config/ereignisse.js';
+import { EREIGNISSE, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER } from '../../shared/config/ereignisse.js';
 
 export class EreignisSystem {
   #match;
@@ -51,16 +51,18 @@ export class EreignisSystem {
     const r = this.#regeln;
     if (runde < r.abRunde || this.#match.status !== 'playing') return null;
     if (this.#rng.next() >= r.chance) return null;
-    const arten = Object.keys(r.gewichte);
-    const summe = arten.reduce((s, a) => s + r.gewichte[a], 0);
+    const gewichte = this.#fassung >= EREIGNISSE_HEILER && r.gewichte4 ? r.gewichte4 : r.gewichte;
+    const arten = Object.keys(gewichte);
+    const summe = arten.reduce((s, a) => s + gewichte[a], 0);
     let rest = this.#rng.next() * summe;
     let art = arten[arten.length - 1];
-    for (const a of arten) { rest -= r.gewichte[a]; if (rest < 0) { art = a; break; } }
+    for (const a of arten) { rest -= gewichte[a]; if (rest < 0) { art = a; break; } }
     const figuren = this.#figuren();
     if (figuren.length === 0) return null;
     const h = this.#match.tierKontext;
     if (art === 'blondine') this.#blondine(h, figuren);
     else if (art === 'gewitter') this.#gewitter(h, figuren);
+    else if (art === 'heiler') this.#heiler(h, figuren);
     else this.#erdbeben(h, figuren);
     return art;
   }
@@ -103,6 +105,22 @@ export class EreignisSystem {
       blitze.push({ x, y, getroffen });
     }
     this.#match.events.emit('ereignis', { art: 'gewitter', blitze });
+  }
+
+  /** Fassung 4: Dr. Stilzchen-Rumpel heilt alle im Umkreis eines zufälligen Bodenpunkts (nahe einer Figur, sonst sinnlos). */
+  #heiler(h, figuren) {
+    const r = this.#regeln;
+    const nahe = figuren[Math.floor(this.#rng.next() * figuren.length)];
+    const x = Math.round(Math.max(20, Math.min(this.#match.width - 20, nahe.x + (this.#rng.next() * 2 - 1) * r.heilerRadius * 0.6)));
+    const y = h.surfaceYAt(x);
+    const geheilt = [];
+    for (const f of figuren) {
+      if (Math.hypot(f.x - x, f.y - y) > r.heilerRadius) continue;
+      const vorher = h.leben(f.id);
+      h.heile(f.id, this.#zahl(r.heilerMin, r.heilerMax));
+      geheilt.push({ playerId: f.id, betrag: h.leben(f.id) - vorher });
+    }
+    this.#match.events.emit('ereignis', { art: 'heiler', x, y, geheilt });
   }
 
   #erdbeben(h, figuren) {

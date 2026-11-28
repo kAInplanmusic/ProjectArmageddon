@@ -985,7 +985,7 @@ export const EREIGNIS_WIRKUNGEN = {
       }
       k.sound?.verarbeite({ type: 'schockwelle' });
     } else if (n.art === 'erdbeben') k.sound?.verarbeite({ type: 'lava_grollen' });
-    else if (n.art === 'blondine' && n.ausgang === 'kuss') k.sound?.verarbeite({ type: 'heilung' });
+    else if ((n.art === 'blondine' && n.ausgang === 'kuss') || n.art === 'heiler') k.sound?.verarbeite({ type: 'heilung' });
     if (n.art === 'blondine') {
       k.hud?.log(n.ausgang === 'kuss'
         ? `💋 Die Blondine küsst ${k.nameOf?.(n.playerId)}${n.betrag > 0 ? `: +${n.betrag} Leben` : ' (schon kerngesund)'}`
@@ -993,6 +993,9 @@ export const EREIGNIS_WIRKUNGEN = {
     } else if (n.art === 'gewitter') {
       const treffer = (n.blitze ?? []).reduce((s, b) => s + (b.getroffen?.length ?? 0), 0);
       k.hud?.log(`⚡ Gewitter: ${n.blitze?.length ?? 0} Blitz(e)${treffer ? `, ${treffer} Figur(en) getroffen` : ''}`, 'neutral');
+    } else if (n.art === 'heiler') {
+      const summe = (n.geheilt ?? []).reduce((s, g) => s + g.betrag, 0);
+      k.hud?.log(`🧙 Dr. Stilzchen-Rumpel kommt vorbei und heilt ${(n.geheilt ?? []).length} Figur(en)${summe ? ` (+${summe} Leben)` : ''}`, 'good');
     } else if (n.art === 'erdbeben') {
       k.hud?.log('🌋 Erdbeben! Alle am Boden nehmen Schaden', 'neutral');
     }
