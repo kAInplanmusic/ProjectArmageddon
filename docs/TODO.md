@@ -37,7 +37,6 @@ sind aber keine Listen.
 | Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
 | Zeilenbudgets | `src/engine/match.js` ≤ 2790 Zeilen (`tests/zeilenbudget.test.js`) |
 | Tests | `npm test` 2026-11-28: 3215 grün, 0 rot |
-| Offen auf Branch | `integration/revanche-neue-karte` (2.12c, CI läuft, Abschnitt 10) |
 | Wunschbild | `docs/SSOT.md`, Teil D (verbindliche Fassung); die Lücken stehen hier unter 2.12 und 2.13 |
 | Spieltest mit Menschen (QV-4) | nicht erfolgt |
 
@@ -48,7 +47,7 @@ Nichts offen.
 ## 2. Spiel: nächste Bauschritte (in dieser Reihenfolge)
 
 **Reihenfolge ab 2026-11-28 (Vorschlag des Agenten, nach Spaß und Aufwand):**
-1. 2.12c Revanche auf neuer Karte (gebaut, Merge nach grüner CI).
+1. 2.12c Revanche auf neuer Karte (steht, 2026-11-28).
 2. 2.12b Kartengröße aus Spielerzahl plus Zufall (entschieden 2026-11-28).
 3. 2.13 Ereignissystem mit den ersten drei: Blondine (2.13n), Gewitter (2.13d), Erdbeben (2.13e); danach die übrigen.
 4. 2.12d Biomelemente und 2.12e Gefrieren/Schmelzen (viel Spielspaß, mittlerer Aufwand).
@@ -276,7 +275,7 @@ am Telefon, Biome 15–20, später jedes Ereignis und jeder Besucher aus 2.13 (B
 
 ## 10. Branches
 
-Ziel: nur `main`. Offen: **`integration/revanche-neue-karte`** (TODO 2.12c; Unit-Tests 3215 grün, `sieg-dialog.spec` grün, CI läuft; nach grüner CI Fast-Forward nach `main` und über den Workflow löschen). Sonst gilt (Stand 2026-11-28): Jeder Branch auf GitHub ist entweder vollständig in `main` enthalten oder sein
+Ziel: nur `main`. Stand 2026-11-28: Jeder Branch auf GitHub ist entweder vollständig in `main` enthalten oder sein
 Inhalt steckt in anderer Form in `main` (geprüft mit `git cherry` und je Änderung im Code). Gelöscht wird über den
 Workflow **„Branches aufräumen“** (`.github/workflows/branch-aufraeumen.yml`; Listen `.github/branch-loeschliste.txt`
 für vollständig enthaltene, `.github/branch-verworfen.txt` für geprüfte, überholte), weil das direkte Löschen per
