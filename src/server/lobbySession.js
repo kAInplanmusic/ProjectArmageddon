@@ -50,6 +50,7 @@ import { BODENOBJEKTE_STANDARD } from '../shared/config/bodenobjekte.js';
 import { SEIL_STANDARD, SEIL } from '../shared/config/seil.js';
 import { WIND_STANDARD } from '../shared/config/wind.js';
 import { HAGEL_STANDARD } from '../shared/config/hagel.js';
+import { EREIGNISSE_STANDARD } from '../shared/config/ereignisse.js';
 import { BIOMREGELN_STANDARD } from '../shared/config/biomregeln.js';
 import { ZUGREGELN_STANDARD, ZUGREGELN } from '../shared/config/zugregeln.js';
 
@@ -118,7 +119,7 @@ export class LobbySession {
    */
   constructor(lobby, {
     onEmpty, onMatchEnd = null, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD, klassen = KLASSEN_STANDARD, bodenobjekte = BODENOBJEKTE_STANDARD, seil = SEIL_STANDARD, wind = WIND_STANDARD, hagel = HAGEL_STANDARD, biomregeln = BIOMREGELN_STANDARD,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD, klassen = KLASSEN_STANDARD, bodenobjekte = BODENOBJEKTE_STANDARD, seil = SEIL_STANDARD, wind = WIND_STANDARD, hagel = HAGEL_STANDARD, ereignisse = EREIGNISSE_STANDARD, biomregeln = BIOMREGELN_STANDARD,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -182,6 +183,7 @@ export class LobbySession {
       wind,
       hagel,
       biomregeln,
+      ereignisse,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -260,6 +262,7 @@ export class LobbySession {
       seil: this.match.seil,
       wind: this.match.windFassung,
       hagel: this.match.hagel,
+      ereignisse: this.match.ereignisse,
       biomregeln: this.match.biomregeln,
     });
 

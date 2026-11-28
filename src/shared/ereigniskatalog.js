@@ -64,6 +64,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   guenther_pee: { klasse: 'anzeige' },
   guenther_poop: { klasse: 'anzeige' },
   guenther_poop_hit: { klasse: 'anzeige' },
+  ereignis: { klasse: 'anzeige' }, // Ereignisse und Besucher (TODO 2.13): Blondine, Gewitter, Erdbeben
   guenther_aktion: { klasse: 'anzeige', klang: ['fressen', 'bellen', 'winseln'] },
   guenther_aktion_wirkung: { klasse: 'anzeige', klang: ['kiste', 'bellen', 'schnurren'] },
   guenther_perk: { klasse: 'anzeige' },

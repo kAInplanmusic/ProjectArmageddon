@@ -34,7 +34,7 @@ sind aber keine Listen.
 
 | Bereich | Stand |
 |---|---|
-| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
+| Fassungen (Standard neuer Partien) | Gelände 19 (`GELAENDE_GEWICHTE`), Ereignisse 2 (`EREIGNISSE_START`), Waffen 23 (`WAFFEN_TURM`), Kit 5 (`KIT_AUSRUESTUNG`), Klassen `KLASSEN_NEU`, Seil 3, Biomregeln 10, Bodenobjekte 8, Zugregeln 3 |
 | Zeilenbudgets | `src/engine/match.js` ≤ 2790 Zeilen (`tests/zeilenbudget.test.js`) |
 | Tests | `npm test` 2026-11-28: 3215 grün, 0 rot |
 | Wunschbild | `docs/SSOT.md`, Teil D (verbindliche Fassung); die Lücken stehen hier unter 2.12 und 2.13 |
@@ -49,7 +49,7 @@ Nichts offen.
 **Reihenfolge ab 2026-11-28 (Vorschlag des Agenten, nach Spaß und Aufwand):**
 1. 2.12c Revanche auf neuer Karte (steht, 2026-11-28).
 2. 2.12b Kartengröße aus Spielerzahl plus Zufall (steht für „Spielen“, 2026-11-28; Menü-Vorgabe offen).
-3. 2.13 Ereignissystem mit den ersten drei: Blondine (2.13n), Gewitter (2.13d), Erdbeben (2.13e); danach die übrigen.
+3. 2.13 Ereignissystem: steht mit Blondine, Gewitter, Erdbeben (Fassung 2, 2026-11-28); als Nächstes Bild und Klang dieser drei, dann die übrigen Ereignisse und Besucher.
 4. 2.12d Biomelemente und 2.12e Gefrieren/Schmelzen (viel Spielspaß, mittlerer Aufwand).
 5. 2.4 Landhöhe variieren (Geländefassung 20).
 6. 2.12f Boote, Geheimtunnel, Auslöser.
@@ -157,6 +157,16 @@ U-Boot nur mit Wasser, Blizzard nur in kalten Biomen). Neue Regelfassung `src/sh
 (`src/shared/ereigniskatalog.js`, `src/shared/protocol.js`), Hinweiszeile im HUD (`src/client/hud.js`), Bild und Klang
 im Client (`src/client/effects.js`, `sound.js`). Jedes Ereignis: Unit-Test (Wirkung, Replay-Hash gleich), Bot-Messung
 (`scripts/bot-partien.mjs`: Partiedauer, Schaden je Partie), Sichtabnahme (Abschnitt 8).
+
+**Stand 2026-11-28: Ereignisfassung 2 steht** (`src/shared/config/ereignisse.js`, `src/engine/systems/ereignisSystem.js`,
+Zweig `EREIGNISSE` in `src/shared/seed.js`, Aufruf in `match.js#onRoundStart`, Replay-Kopf, Server, Sicherung, Menü):
+ab Runde 2 mit 30 % Chance je Runde ein Ereignis, gewichtet Blondine 1, Gewitter 1, Erdbeben 0,8. Gewitter und Erdbeben töten
+nie (wie Hagel), die Blondine darf. Anzeige bisher nur als Protokollzeile (`client/ereignisse.js`, Art `ereignis`); Schaden,
+Heilung und Krater zeigen ihre eigenen Ereignisse. Test `tests/ereignisse-fassung2.test.js`. **Offen für diese drei:** Bild
+(Blondine als Figur mit Kuss/Lachen, Blitzstrahl, Kamerawackeln beim Beben über `src/client/kameraEffekte.js`), Klang, Abbruch
+loser Überhänge beim Beben (`src/engine/zerstoerung.js`), Holz entzündet sich beim Blitz (`feuerSystem.js`), Bot-Messung
+(`scripts/bot-partien.mjs`: Partiedauer, Schaden). Jedes weitere Ereignis wird eine neue Art in `ereignisSystem.js` und
+damit eine neue Ereignisfassung (3, 4, …).
 
 **Naturereignisse und Unglücke:**
 
