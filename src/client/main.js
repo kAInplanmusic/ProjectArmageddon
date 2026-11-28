@@ -1064,6 +1064,9 @@ class Game {
       if (f) f.value = wahl(FACTIONS).id;
     }
     teile.push('Fraktionen gemischt');
+    // Größe nach Spielerzahl mit Zufall (TODO 2.12b, Entscheidung 2026-11-28): „Spielen“ und „Überrasch mich“ nehmen „automatisch“.
+    const groesse = document.getElementById('cfg-kartengroesse');
+    if (groesse && [...groesse.options].some(o => o.value === 'automatisch')) { groesse.value = 'automatisch'; teile.push('Größe nach Spielerzahl'); }
     const status = document.getElementById('ueberrasch-status');
     if (status) status.textContent = `Gewürfelt: ${teile.join(' · ')}`;
     return teile;

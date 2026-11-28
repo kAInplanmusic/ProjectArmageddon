@@ -520,6 +520,8 @@ export class NetworkClient {
             // der Server z. B. 4:3 spielt — zwei verschiedene Karten.
             mapFormat: message.mapFormat,
             mapSize: message.mapSize,
+            mapWidth: message.mapWidth, // „automatisch“ (TODO 2.12b): Maße vom Server
+            mapHeight: message.mapHeight,
             gelaende: message.gelaende,
             biom: message.biom,
             kartenart: message.kartenart,

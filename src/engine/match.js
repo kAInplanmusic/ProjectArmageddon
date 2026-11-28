@@ -57,7 +57,7 @@ import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/c
 import { BEWEGUNG, BEWEGUNG_ALT, BEWEGUNG_GEHEN, normalisiereBewegung } from '../shared/config/bewegung.js';
 import { BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, BODENOBJEKTE_FAESSER, BODENOBJEKTE_ABWURF, BODENOBJEKTE_BIOM, BODENOBJEKTE_BREIT, BODENOBJEKTE_PORTAL, biomobjekteFuer, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
 import { BodenobjektSystem } from './systems/bodenobjektSystem.js';
-import { MAP_GROESSE_VORGABE, mapSizeFor, normalisiereFormat, normalisiereGroesse, ausrichtungFuerFormat } from './karte.js';
+import { MAP_GROESSE_VORGABE, MAP_GROESSE_AUTO, kartenMasseFuer, mapSizeFor, normalisiereFormat, normalisiereGroesse, ausrichtungFuerFormat } from './karte.js';
 import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js'; import { waehlePortal } from './portal.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
@@ -530,6 +530,7 @@ export class MatchController {
      */
     this.mapFormat = normalisiereFormat(format, orientation);
     this.groesse = normalisiereGroesse(groesse);
+    this.kartenAuto = this.groesse === MAP_GROESSE_AUTO ? kartenMasseFuer(teams, this.mapFormat, this.#seedManager.baseSeed) : null; // TODO 2.12b
     this.orientation = ausrichtungFuerFormat(this.mapFormat);
     /*
      * Valhalla: RUNDE einmal aus dem Seed gezogen (Entscheidung 2026-10-25:
@@ -541,7 +542,7 @@ export class MatchController {
     const valhallaRng = this.#seedManager.getSubRng('VALHALLA');
     const spielerzahl = Math.max(2, teams * playersPerTeam);
     const ticksJeZug = Math.max(1, Math.round(
-      (turnDurationMs ?? getTurnDurationForSize(this.groesse)) / 1000 * SIMULATION_HZ,
+      (turnDurationMs ?? getTurnDurationForSize(this.kartenAuto?.stufe ?? this.groesse)) / 1000 * SIMULATION_HZ,
     ));
     this.#valhallaRound = Number.isFinite(valhallaRound) && valhallaRound >= 1
       ? Math.floor(valhallaRound)
@@ -550,7 +551,7 @@ export class MatchController {
     // Das Vorzeichen (zwei Raben im Blitz) kommt zufällig 1–60 s vorher — aus demselben Zweig,
     // NACH der ersten Ziehung, damit der Beginn unverändert bleibt.
     this.#valhallaOmen = drawValhallaOmen(valhallaRng, this.#valhallaTick);
-    this.#turnDurationMs = turnDurationMs ?? getTurnDurationForSize(this.groesse);
+    this.#turnDurationMs = turnDurationMs ?? getTurnDurationForSize(this.kartenAuto?.stufe ?? this.groesse);
     this.maxRounds = maxRounds;
     this.#turnPauseTicksConfigured = Math.max(0, Math.floor(Number(turnPauseTicks) || 0));
     this.#turnReplayTicksConfigured = Math.max(0, Math.floor(Number(turnReplayTicks) || 0));
@@ -601,7 +602,7 @@ export class MatchController {
 
     // Kartenmaße als Instanzwerte: Form und Stufe unterscheiden sich nur hier.
     // Alles andere im Motor rechnet mit `this.width`/`this.height`.
-    const masse = mapSizeFor(this.mapFormat, this.groesse);
+    const masse = this.kartenAuto ?? mapSizeFor(this.mapFormat, this.groesse);
     this.width = masse.width;
     this.height = masse.height;
 

@@ -160,6 +160,7 @@ export const MAP_HEIGHT = MAP_SIZES['16:9'].mittel.height;
  * eine Einstellung aus einer älteren Fassung soll spielbar bleiben.
  */
 export function mapSizeFor(orientation, groesse = MAP_GROESSE_VORGABE) {
+  // `automatisch` braucht Spielerzahl und Seed: Wer sie hat, ruft `kartenMasseFuer`; hier gilt die Vorgabe.
   const schluessel = MAP_FORMAT_ALIASE[orientation] ?? orientation;
   const seite = MAP_SIZES[schluessel] ?? MAP_SIZES[MAP_FORMAT_VORGABE];
   if (groesse === MAP_GROESSE_KOLOSSAL) return MAP_SIZES_KOLOSSAL[schluessel] ?? seite.riesig;
@@ -178,7 +179,73 @@ export function normalisiereFormat(format, orientation = MAP_FORMAT_VORGABE) {
   return MAP_FORMATS.includes(alt) ? alt : MAP_FORMAT_VORGABE;
 }
 
-/** Prüft eine Größenstufe tolerant (auch `kolossal`); Unbekanntes wird zur Vorgabe `mittel`. */
+/** Prüft eine Größenstufe tolerant (auch `kolossal` und `automatisch`); Unbekanntes wird zur Vorgabe `mittel`. */
 export function normalisiereGroesse(groesse) {
-  return MAP_GROESSEN_ALLE.includes(groesse) || groesse === MAP_GROESSE_KOLOSSAL ? groesse : MAP_GROESSE_VORGABE;
+  return MAP_GROESSEN_ALLE.includes(groesse) || groesse === MAP_GROESSE_KOLOSSAL || groesse === MAP_GROESSE_AUTO ? groesse : MAP_GROESSE_VORGABE;
+}
+
+/**
+ * „Größe: automatisch“ (TODO 2.12b, Entscheidung 2026-11-28): Die Spielerzahl (Teams) gibt den Bereich vor, der Zufall
+ * verändert das Ergebnis um −25 % bis +50 %. Alte Aufzeichnungen kennen den Wert nicht und spielen bitgleich; ändert
+ * sich diese Rechnung später, braucht sie eine Fassungsmarke (AGENTS.md §2).
+ */
+export const MAP_GROESSE_AUTO = 'automatisch';
+/** Bereich je Spielerzahl: [untere Stufe, obere Stufe]. Ab 6 Spielern riesig. */
+export const GROESSE_NACH_SPIELERN = Object.freeze({
+  2: Object.freeze(['klein', 'mittel']), 3: Object.freeze(['mittel', 'gross']), 4: Object.freeze(['gross', 'gross']),
+  5: Object.freeze(['gross', 'riesig']), 6: Object.freeze(['riesig', 'riesig']),
+});
+/** Zufallsfaktor auf die lange Seite (bei 1:1 auf beide): −25 % bis +50 %. */
+export const AUTO_FAKTOR = Object.freeze({ min: 0.75, max: 1.5 });
+/**
+ * Obergrenze der Fläche: die Canvas-Grenze von iPhone/iPad (`IOS_CANVAS_MAX_PIXEL` in `kartenWahl.js`, 16,8 Mio. px).
+ * Größer bliebe die Anzeige dort leer; bis zur Kachelung (TODO 4.2) deckelt sie das Wachstum von `riesig`.
+ */
+export const AUTO_MAX_PIXEL = 16_777_216;
+const AUTO_RASTER = 32;
+
+/** Kleiner, eigener Zufallsstrom aus dem Seed (mulberry32), damit die übrigen Ziehungen der Partie unverändert bleiben. */
+function autoZahlen(seed) {
+  let a = ((Number(seed) >>> 0) ^ 0x6b617274) >>> 0; // „kart“
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Kartenmaße für „automatisch“.
+ *
+ * @param {number} spieler - Zahl der Teams (je Team ein Mensch)
+ * @param {string} format - Kartenformat (`24:9` …)
+ * @param {number} seed - Grund-Seed der Partie
+ * @returns {{width:number, height:number, stufe:string, faktor:number}} `stufe` = Stufe mit der nächsten Fläche (für die Zugzeit)
+ */
+export function kartenMasseFuer(spieler, format, seed) {
+  const n = Math.max(2, Math.min(6, Math.round(Number(spieler) || 2)));
+  const [von, bis] = GROESSE_NACH_SPIELERN[n];
+  const seite = MAP_SIZES[MAP_FORMAT_ALIASE[format] ?? format] ?? MAP_SIZES[MAP_FORMAT_VORGABE];
+  const zufall = autoZahlen(seed);
+  const t = zufall();
+  const faktor = AUTO_FAKTOR.min + zufall() * (AUTO_FAKTOR.max - AUTO_FAKTOR.min);
+  let w = seite[von].width + (seite[bis].width - seite[von].width) * t;
+  let h = seite[von].height + (seite[bis].height - seite[von].height) * t;
+  if (w === h) { w *= faktor; h *= faktor; } else if (w > h) w *= faktor; else h *= faktor;
+  const flaeche = w * h;
+  if (flaeche > AUTO_MAX_PIXEL) {
+    const k = AUTO_MAX_PIXEL / flaeche;
+    if (w === h) { w *= Math.sqrt(k); h *= Math.sqrt(k); } else if (w > h) w *= k; else h *= k;
+  }
+  const width = Math.max(AUTO_RASTER, Math.floor(w / AUTO_RASTER) * AUTO_RASTER);
+  const height = Math.max(AUTO_RASTER, Math.floor(h / AUTO_RASTER) * AUTO_RASTER);
+  let stufe = MAP_GROESSE_VORGABE;
+  let abstand = Infinity;
+  for (const g of MAP_GROESSEN) {
+    const d = Math.abs(seite[g].width * seite[g].height - width * height);
+    if (d < abstand) { abstand = d; stufe = g; }
+  }
+  return { width, height, stufe, faktor };
 }

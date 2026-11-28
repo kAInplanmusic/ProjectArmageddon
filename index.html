@@ -317,7 +317,7 @@
           </div>
           <div class="home-aktionen">
             <!-- TODO 2.7 (Ein-Klick-Start): „Spielen“ würfelt Biom, Kulisse und Fraktionen und startet sofort; „Anpassen“ öffnet das Menü. -->
-            <button id="home-start" type="button" class="pa-btn pa-btn--primaer pa-btn--fadenkreuz" title="Würfelt Biom, Kulisse und Fraktionen und startet sofort">Spielen</button>
+            <button id="home-start" type="button" class="pa-btn pa-btn--primaer pa-btn--fadenkreuz" title="Würfelt Biom, Kulisse, Fraktionen und die Kartengröße nach Spielerzahl und startet sofort">Spielen</button>
             <button id="home-anpassen" type="button" class="secondary" title="Biom, Kartengröße, Teams und mehr selbst wählen">Anpassen</button>
           </div>
           <p class="home-hinweis">Drücke eine Taste oder klicke irgendwo, um fortzufahren.</p>
@@ -474,6 +474,8 @@
             <!-- Wetterwahl entfällt (Entscheidung des Auftraggebers 2026-11-12: Wetter immer zufällig, wie die Kulisse). -->
             <label>Kartengröße
               <select id="cfg-kartengroesse">
+                <!-- TODO 2.12b: Spielerzahl gibt den Bereich, Zufall −25 % bis +50 % (engine/karte.js, kartenMasseFuer). „Spielen“ wählt das. -->
+                <option value="automatisch">Automatisch · nach Spielerzahl, mit Zufall</option>
                 <option value="klein">Klein · 30 s</option>
                 <option value="kompakt">Kompakt · 35 s</option>
                 <option value="mittel">Mittel · 40 s</option>

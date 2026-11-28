@@ -758,6 +758,11 @@ export class LobbySession {
   }
 
   /** Geländefassung, aufgelöstes Biom und Zerstörungsfassung: Der Client baut Karte und Stoffkarte damit nach. */
+  /** Bei „Größe: automatisch“ (TODO 2.12b) die gerechneten Maße, damit jeder Client dieselbe Karte nachbaut. */
+  #kartenMasse() {
+    return this.match?.kartenAuto ? { mapWidth: this.match.width, mapHeight: this.match.height } : {};
+  }
+
   gelaendeFelder() {
     return { gelaende: this.match.gelaende, biom: this.match.sonderbiom ?? this.match.biomWahl, kartenart: this.match.kartenart, zerstoerung: this.match.zerstoerung, klassen: this.match.klassen, windFassung: this.match.windFassung, hagel: this.match.hagel, biomregeln: this.match.biomregeln };
   }
@@ -779,6 +784,7 @@ export class LobbySession {
       kartentyp: this.lobby.kartentyp ?? null,
       ...kartenFelder(this.lobby),
       ...this.gelaendeFelder(),
+      ...this.#kartenMasse(),
       entityId: this.lobby.seats.find(seat => seat.token === token)?.entityId ?? null,
       // Alle Figuren dieses Beitrags (Matcharten: ein ganzes Team).
       entityIds: this.lobby.seats
@@ -830,6 +836,7 @@ export class LobbySession {
       kartentyp: this.lobby.kartentyp ?? null,
       ...kartenFelder(this.lobby),
       ...this.gelaendeFelder(),
+      ...this.#kartenMasse(),
       laeuft: this.laeuft,
       teams: this.lobby.teams,
       besetzteTeams: new Set(

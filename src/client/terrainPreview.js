@@ -54,6 +54,9 @@ export function terrainQuelleFuer(payload = {}, rueckfall = {}) {
     // Form und Stufe seit 2026-11-05 — fehlen sie (älterer Server), gelten 16:9/mittel.
     mapFormat: payload.mapFormat ?? null,
     mapSize: payload.mapSize ?? null,
+    // „Größe: automatisch“ (TODO 2.12b): Der Server schickt die gerechneten Maße mit.
+    mapWidth: Number.isFinite(payload.mapWidth) ? payload.mapWidth : null,
+    mapHeight: Number.isFinite(payload.mapHeight) ? payload.mapHeight : null,
     kartentyp: payload.kartentyp ?? kartentypRueckfall,
     gelaende: payload.gelaende ?? GELAENDE_ALT,
     biom: payload.biom ?? null,
@@ -71,7 +74,9 @@ export function terrainQuelleFuer(payload = {}, rueckfall = {}) {
  */
 export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'landscape', kartentyp = null, fassung = {}) {
   // Form und Stufe des Servers (2026-11-05) schlagen die alte Ausrichtung.
-  const masse = mapSizeFor(fassung.mapFormat ?? orientation, fassung.mapSize ?? 'mittel');
+  const masse = fassung.mapWidth > 0 && fassung.mapHeight > 0
+    ? { width: fassung.mapWidth, height: fassung.mapHeight }
+    : mapSizeFor(fassung.mapFormat ?? orientation, fassung.mapSize ?? 'mittel');
   const manager = new MatchSeedManager(seed);
   /*
    * DERSELBE GENERATOR WIE DER SERVER, wenn eine autonome Karte verlangt ist.
