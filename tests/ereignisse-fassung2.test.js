@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 
 import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
-import { EREIGNISSE, EREIGNISSE_ALT, EREIGNISSE_START, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER, EREIGNISSE_REGEN, EREIGNISSE_STANDARD, normalisiereEreignisse } from '../src/shared/config/ereignisse.js';
+import { EREIGNISSE, EREIGNISSE_ALT, EREIGNISSE_START, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER, EREIGNISSE_REGEN, EREIGNISSE_STRICKOMA, EREIGNISSE_STANDARD, normalisiereEreignisse } from '../src/shared/config/ereignisse.js';
 import { MENUE_FASSUNGEN } from '../src/shared/config/menueStart.js';
 
 function spiele(seed, ereignisse, maxRounds = 8) {
@@ -23,8 +23,9 @@ function spiele(seed, ereignisse, maxRounds = 8) {
   return { m, liste };
 }
 
-test('Die neueste Fassung (5) ist der Standard und steht im Menü; Unbekanntes schaltet nichts ein', () => {
-  assert.equal(EREIGNISSE_STANDARD, EREIGNISSE_REGEN);
+test('Die neueste Fassung (6) ist der Standard und steht im Menü; Unbekanntes schaltet nichts ein', () => {
+  assert.equal(EREIGNISSE_STANDARD, EREIGNISSE_STRICKOMA);
+  assert.equal(normalisiereEreignisse(EREIGNISSE_REGEN), EREIGNISSE_REGEN);
   assert.equal(normalisiereEreignisse(EREIGNISSE_HEILER), EREIGNISSE_HEILER);
   assert.equal(normalisiereEreignisse(EREIGNISSE_FEUER_RISSE), EREIGNISSE_FEUER_RISSE);
   assert.equal(MENUE_FASSUNGEN.ereignisse, EREIGNISSE_STANDARD);
@@ -163,4 +164,26 @@ test('Fassung 5: Starkregen löscht Brände und lässt Wasser fallen; Fassung 4 
   const ereignisse = m.consumeEvents();
   const regen = ereignisse.find(e => e.type === 'ereignis' && e.payload.art === 'regen');
   assert.ok(regen && regen.payload.tropfen > 0);
+});
+
+test('Fassung 6: Strickoma verteilt Gummibärchen (+5), strickt ein (Einfrieren 1 Zug) oder lässt husten; Fassung 5 kennt sie nicht', () => {
+  for (let seed = 1; seed <= 10; seed += 1) assert.ok(!spiele(seed, EREIGNISSE_REGEN).liste.some(e => e.art === 'strickoma'));
+  const was = new Set();
+  for (const [z, erwartet] of [[0.1, 'gummibaer'], [0.7, 'eingestrickt'], [0.95, 'husten']]) {
+    const m = new MatchController({ seed: 3, teams: 2, playersPerTeam: 1, preset: 'hills', ereignisse: EREIGNISSE_STRICKOMA });
+    m.start();
+    const id = m.players[0].entityId ?? m.players[0].id;
+    m.world.setComponent(id, 'Health', 'current', 40);
+    let n = 0;
+    const folge = [0, 0, 0, 0.5, z];
+    const sys = new (m.ereignisSystem.constructor)(m, { next: () => folge[Math.min(n++, folge.length - 1)] }, { ...EREIGNISSE, abRunde: 1, chance: 1, omaRadius: 5000, gewichte6: { strickoma: 1 } }, EREIGNISSE_STRICKOMA);
+    assert.equal(sys.rundenbeginn(3), 'strickoma');
+    const e = m.consumeEvents().find(x => x.type === 'ereignis');
+    const w = e.payload.wirkung.find(x => x.playerId === id);
+    assert.equal(w.was, erwartet);
+    was.add(w.was);
+    if (erwartet === 'gummibaer') assert.equal(m.world.getComponent(id, 'Health', 'current'), 40 + EREIGNISSE.omaGummibaer);
+    if (erwartet === 'eingestrickt') assert.equal(m.statuses.isFrozen(id), true);
+  }
+  assert.equal(was.size, 3);
 });

@@ -986,7 +986,7 @@ export const EREIGNIS_WIRKUNGEN = {
       }
       k.sound?.verarbeite({ type: 'schockwelle' });
     } else if (n.art === 'erdbeben') k.sound?.verarbeite({ type: 'lava_grollen' });
-    else if ((n.art === 'blondine' && n.ausgang === 'kuss') || n.art === 'heiler') k.sound?.verarbeite({ type: 'heilung' });
+    else if ((n.art === 'blondine' && n.ausgang === 'kuss') || n.art === 'heiler' || n.art === 'strickoma') k.sound?.verarbeite({ type: 'heilung' });
     if (n.art === 'blondine') {
       k.hud?.log(n.ausgang === 'kuss'
         ? `💋 Die Blondine küsst ${k.nameOf?.(n.playerId)}${n.betrag > 0 ? `: +${n.betrag} Leben` : ' (schon kerngesund)'}`
@@ -994,6 +994,9 @@ export const EREIGNIS_WIRKUNGEN = {
     } else if (n.art === 'gewitter') {
       const treffer = (n.blitze ?? []).reduce((s, b) => s + (b.getroffen?.length ?? 0), 0);
       k.hud?.log(`⚡ Gewitter: ${n.blitze?.length ?? 0} Blitz(e)${treffer ? `, ${treffer} Figur(en) getroffen` : ''}`, 'neutral');
+    } else if (n.art === 'strickoma') {
+      const teile = (n.wirkung ?? []).map(w => `${k.nameOf?.(w.playerId)} ${w.was === 'gummibaer' ? `kriegt ein Gummibärchen${w.betrag > 0 ? ` (+${w.betrag})` : ''}` : w.was === 'eingestrickt' ? 'wird eingestrickt (1 Zug)' : 'hustet vom Mief'}`);
+      k.hud?.log(`🧶 Die Strickoma schlurft vorbei${teile.length ? `: ${teile.join(', ')}` : ' und murmelt vor sich hin'}`, 'neutral');
     } else if (n.art === 'regen') {
       k.hud?.log('🌧️ Starkregen! Alle Brände erlöschen, in den Mulden sammelt sich Wasser', 'neutral');
     } else if (n.art === 'heiler') {

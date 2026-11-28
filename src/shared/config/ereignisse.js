@@ -42,7 +42,14 @@ export const EREIGNISSE_HEILER = 4;
  * lässt an `regenTropfen` Stellen etwas Wasser auf den Boden fallen; es läuft in Mulden zusammen (Wasserfeld).
  */
 export const EREIGNISSE_REGEN = 5;
-export const EREIGNISSE_STANDARD = EREIGNISSE_REGEN;
+/**
+ * Fassung 6 (2026-11-28): **Strickoma.** Eine alte, verwirrte Landstreicherin mit Strickzeug und Gummibärchentüte taucht
+ * neben einer zufälligen Figur auf. Jede Figur im Umkreis `omaRadius` bekommt eins von dreien: ein Gummibärchen
+ * (+`omaGummibaer` Leben, Anteil `omaAnteile[0]`), wird eingestrickt (`omaStrickZuege` Zug ohne Bewegung, Einfrieren) oder
+ * riecht ihren Mief und hustet (`omaHusten` Schaden je Zug für `omaHustenZuege` Züge).
+ */
+export const EREIGNISSE_STRICKOMA = 6;
+export const EREIGNISSE_STANDARD = EREIGNISSE_STRICKOMA;
 
 export const EREIGNISSE = Object.freeze({
   abRunde: 2,
@@ -52,6 +59,14 @@ export const EREIGNISSE = Object.freeze({
   gewichte4: Object.freeze({ blondine: 1, gewitter: 1, erdbeben: 0.8, heiler: 0.9 }),
   /** Ab Fassung 5 kommt der Regen dazu. */
   gewichte5: Object.freeze({ blondine: 1, gewitter: 1, erdbeben: 0.8, heiler: 0.9, regen: 1 }),
+  /** Ab Fassung 6 kommt die Strickoma dazu. */
+  gewichte6: Object.freeze({ blondine: 1, gewitter: 1, erdbeben: 0.8, heiler: 0.9, regen: 1, strickoma: 1 }),
+  omaRadius: 140,
+  omaAnteile: Object.freeze([0.55, 0.3, 0.15]),
+  omaGummibaer: 5,
+  omaStrickZuege: 1,
+  omaHusten: 2,
+  omaHustenZuege: 2,
   regenTropfen: 40,
   regenHoehe: 3,
   heilerRadius: 260,
@@ -75,5 +90,5 @@ export const EREIGNISSE = Object.freeze({
 
 /** Unbekannte Werte fallen auf die alte Fassung (keine Ereignisse), damit eine fremde Angabe nichts einschaltet. */
 export function normalisiereEreignisse(fassung) {
-  return fassung === EREIGNISSE_START || fassung === EREIGNISSE_FEUER_RISSE || fassung === EREIGNISSE_HEILER || fassung === EREIGNISSE_REGEN ? fassung : EREIGNISSE_ALT;
+  return fassung === EREIGNISSE_START || fassung === EREIGNISSE_FEUER_RISSE || fassung === EREIGNISSE_HEILER || fassung === EREIGNISSE_REGEN || fassung === EREIGNISSE_STRICKOMA ? fassung : EREIGNISSE_ALT;
 }

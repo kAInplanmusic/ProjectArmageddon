@@ -8,7 +8,7 @@
  * @module systems/ereignisSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { EREIGNISSE, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER, EREIGNISSE_REGEN } from '../../shared/config/ereignisse.js';
+import { EREIGNISSE, EREIGNISSE_FEUER_RISSE, EREIGNISSE_HEILER, EREIGNISSE_REGEN, EREIGNISSE_STRICKOMA } from '../../shared/config/ereignisse.js';
 
 export class EreignisSystem {
   #match;
@@ -51,7 +51,8 @@ export class EreignisSystem {
     const r = this.#regeln;
     if (runde < r.abRunde || this.#match.status !== 'playing') return null;
     if (this.#rng.next() >= r.chance) return null;
-    const gewichte = this.#fassung >= EREIGNISSE_REGEN && r.gewichte5 ? r.gewichte5
+    const gewichte = this.#fassung >= EREIGNISSE_STRICKOMA && r.gewichte6 ? r.gewichte6
+      : this.#fassung >= EREIGNISSE_REGEN && r.gewichte5 ? r.gewichte5
       : this.#fassung >= EREIGNISSE_HEILER && r.gewichte4 ? r.gewichte4 : r.gewichte;
     const arten = Object.keys(gewichte);
     const summe = arten.reduce((s, a) => s + gewichte[a], 0);
@@ -65,6 +66,7 @@ export class EreignisSystem {
     else if (art === 'gewitter') this.#gewitter(h, figuren);
     else if (art === 'heiler') this.#heiler(h, figuren);
     else if (art === 'regen') this.#regen(h);
+    else if (art === 'strickoma') this.#strickoma(h, figuren);
     else this.#erdbeben(h, figuren);
     return art;
   }
@@ -147,6 +149,32 @@ export class EreignisSystem {
       }
     }
     this.#match.events.emit('ereignis', { art: 'regen', tropfen });
+  }
+
+  /** Fassung 6: Die Strickoma verteilt Gummibärchen, strickt Figuren ein oder lässt sie husten. */
+  #strickoma(h, figuren) {
+    const r = this.#regeln;
+    const nahe = figuren[Math.floor(this.#rng.next() * figuren.length)];
+    const x = Math.round(Math.max(20, Math.min(this.#match.width - 20, nahe.x + (this.#rng.next() * 2 - 1) * r.omaRadius * 0.5)));
+    const y = h.surfaceYAt(x);
+    const statuses = this.#match.statuses;
+    const wirkung = [];
+    for (const f of figuren) {
+      if (Math.hypot(f.x - x, f.y - y) > r.omaRadius) continue;
+      const z = this.#rng.next();
+      if (z < r.omaAnteile[0]) {
+        const vorher = h.leben(f.id);
+        h.heile(f.id, r.omaGummibaer);
+        wirkung.push({ playerId: f.id, was: 'gummibaer', betrag: h.leben(f.id) - vorher });
+      } else if (z < r.omaAnteile[0] + r.omaAnteile[1]) {
+        statuses?.freeze(f.id, r.omaStrickZuege);
+        wirkung.push({ playerId: f.id, was: 'eingestrickt', betrag: r.omaStrickZuege });
+      } else {
+        statuses?.addDot(f.id, { damagePerTurn: r.omaHusten, turns: r.omaHustenZuege, element: 'neutral' });
+        wirkung.push({ playerId: f.id, was: 'husten', betrag: r.omaHusten });
+      }
+    }
+    this.#match.events.emit('ereignis', { art: 'strickoma', x, y, wirkung });
   }
 
   #erdbeben(h, figuren) {

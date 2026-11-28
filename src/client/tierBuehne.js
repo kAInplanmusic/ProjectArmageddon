@@ -160,6 +160,12 @@ export class TierBuehne {
           this.#blase('HAHAHA! 😂', 'blondine', x, y - 56, { pegel: 1, rest: 2.4, farbe: '#e5484d' });
           this.#teilchenDazu('stern', x, y - 24, 4, { streuX: 12, abnahme: 0.03, r: 5 });
           this.#starteAuftritt('ereignis_blondine', x, y);
+        } else if (n.art === 'strickoma') {
+          const spruch = ['Gummibärchen, Schätzchen?', 'Zwei rechts, zwei links …', 'Wo ist mein Wollknäuel?', 'Früher war hier alles Wiese!'];
+          this.#blase(spruch[Math.abs(Math.round(x)) % spruch.length], 'strickoma', x, y - 60, { pegel: 0.6, rest: 3, farbe: '#b07cc6' });
+          this.#teilchenDazu('herz', x, y - 26, 4, { streuX: 30, abnahme: 0.015, farbe: '#ff9fd0' });
+          this.#teilchenDazu('staub', x, y - 10, 6, { streuX: 36, abnahme: 0.02, r: 8, farbe: '#9aa86a' });
+          this.#starteAuftritt('ereignis_blondine', x, y);
         } else if (n.art === 'regen') {
           this.#beben = { staerke: Math.max(this.#beben.staerke, 0.1), rest: 0.3, dauer: 0.3 };
         } else if (n.art === 'heiler') {
