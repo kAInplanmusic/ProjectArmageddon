@@ -8,8 +8,9 @@
  *
  * ## Die Entscheidung (docs/TODO.md Abschnitt 7)
  *
- * Echter Neustart auf derselben Karte: Zustand leeren, dann sofort ein neues
- * Match mit dem Seed aus `#seedFuerRevanche`.
+ * Echter Neustart: Zustand leeren, dann sofort ein neues Match mit denselben Teams
+ * und Regeln. Seit 2026-11-28 („Keine Map gibt es zweimal“) auf einer NEUEN Karte:
+ * `seed` ist `undefined`, der Motor zieht einen neuen.
  *
  * ## Was hier geprüft wird
  *
@@ -58,7 +59,7 @@ test('Der Ablauf liest den Seed, räumt auf und startet — in dieser Reihenfolg
   assert.deepEqual(reihenfolge, ['seed', 'aufraeumen', 'starten'],
     'der Seed muss VOR dem Aufräumen gelesen werden — danach ist `match` weg');
   assert.equal(ergebnis.ok, true);
-  assert.equal(gestartet.seed, 4, 'das neue Match spielt dieselbe Karte');
+  assert.equal(gestartet.seed, undefined, 'das neue Match spielt eine neue Karte (neuer Zufalls-Seed), nicht Seed 4');
   assert.equal(gestartet.teams, 2, 'die Konfiguration der Vorpartie bleibt');
   assert.equal(gestartet.playersPerTeam, 3);
 });

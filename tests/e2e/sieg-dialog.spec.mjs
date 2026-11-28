@@ -2,7 +2,7 @@ import { test, expect } from './helfer/test-basis.mjs';
 
 /*
  * Sieg-Dialog (Redesign 2026-10-14): Siegerzeichen, Siegerzeile in der Teamfarbe, Kennzahlen, zwei Knöpfe —
- * „Revanche“ startet seit UI-4 ein NEUES Match auf derselben Karte (nicht mehr nur das Menü),
+ * „Revanche“ startet seit UI-4 ein NEUES Match (nicht mehr nur das Menü), seit 2026-11-28 auf einer NEUEN Karte,
  * „Zum Menü“ führt zurück ins Hauptmenü.
  */
 async function bisSieg(page) {
@@ -29,7 +29,7 @@ test('Der Sieg-Dialog zeigt Sieger, Zeichen und beide Knöpfe; „Zum Menü“ f
   await expect(page.locator('#menu-overlay')).toBeVisible();
 });
 
-test('„Revanche“ startet ein neues Match auf derselben Karte', async ({ page }) => {
+test('„Revanche“ startet ein neues Match auf einer neuen Karte', async ({ page }) => {
   await bisSieg(page);
   await page.click('#rematch-button');
 
@@ -38,8 +38,9 @@ test('„Revanche“ startet ein neues Match auf derselben Karte', async ({ page
   await expect(page.locator('#menu-overlay')).toBeHidden();
   await page.waitForFunction(() => window.__PA__?.game?.match?.status === 'playing', { timeout: 15_000 });
 
-  // Dieselbe Karte: der Seed der Vorpartie steckt im neuen Match.
-  expect(await page.evaluate(() => window.__PA__.game.match.seedManager.baseSeed)).toBe(4);
+  // Neue Karte (2026-11-28, „Keine Map gibt es zweimal“): der Seed der Vorpartie (4) ist es nicht mehr, das Feld ist leer.
+  expect(await page.evaluate(() => window.__PA__.game.match.seedManager.baseSeed)).not.toBe(4);
+  expect(await page.locator('#cfg-seed').inputValue()).toBe('');
   // Und der Zustand ist sauber: Modus lokal, R fragt nicht ins Leere, der Abbruchknopf ist da.
   expect(await page.evaluate(() => window.__PA__.game.mode)).toBe('local');
   // Der Abbruchknopf liegt seit 2026-11-04 im Einstellungs-Dropdown der Kopfzeile (nicht mehr offen im HUD).

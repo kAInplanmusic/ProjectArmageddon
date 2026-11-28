@@ -40,15 +40,18 @@ export async function revancheAblauf({
   aufraeumen?.();
 
   if (nurMenue) {
-    log('Revanche: neue Partie über das Menü — Seed bleibt eingetragen', 'notice');
+    log('Revanche: neue Partie über das Menü', 'notice');
     return { ok: true, mode: 'menu' };
   }
   if (!konfiguration) {
     log('Revanche ohne bekannte Match-Konfiguration — bitte im Menü starten', 'notice');
     return { ok: false, errors: ['Keine Match-Konfiguration'] };
   }
-  // Frischer Lauf: neuer `MatchController`, neuer Zugzustand, dieselbe Karte.
-  return await (starten?.({ ...konfiguration, seed: seed ?? undefined })
+  // Frischer Lauf: neuer `MatchController`, neuer Zugzustand, dieselben Teams und Regeln — aber eine NEUE Karte
+  // (Auftraggeber 2026-11-28: „Keine Map gibt es zweimal“). `seed: undefined` zieht einen neuen Zufalls-Seed; der
+  // gelesene Seed der Vorpartie dient nur der Meldung.
+  void seed;
+  return await (starten?.({ ...konfiguration, seed: undefined })
     ?? Promise.resolve({ ok: false, errors: ['Kein Start'] }));
 }
 

@@ -610,7 +610,7 @@ class Game {
      *
      * FUND (belegt, UX-Abnahme): Der Knopf öffnete nur das Menü — die Partie
      * lief weiter, `match`/`mode` blieben stehen, und R fragte im Menü nach.
-     * Jetzt räumt `revanche()` auf und startet sofort neu (Seed der Vorpartie).
+     * Jetzt räumt `revanche()` auf und startet sofort neu (neue Karte, Entscheidung 2026-11-28).
      * Online entscheidet der Server: dort bleibt der Weg über das Menü richtig.
      */
     document.getElementById('rematch-button')?.addEventListener('click', () => this.revanche());
@@ -718,7 +718,7 @@ class Game {
   }
 
   /**
-   * Trägt den Seed der letzten Partie ins Menü ein — für die Revanche.
+   * Liest den Seed der letzten Partie (nur für die Meldung) und leert das Seed-Feld: Die Revanche spielt eine neue Karte.
    *
    * Der Wert kommt aus DER Quelle, die ihn geführt hat: lokal aus dem
    * MatchController (`seedManager.baseSeed` — bei leerem Feld ein gezogener
@@ -732,15 +732,16 @@ class Game {
     const seed = this.mode === 'online'
       ? (this.network?.worldSeed ?? null)
       : (this.match?.seedManager?.baseSeed ?? null);
+    // Keine Karte zweimal (2026-11-28): das Seed-Feld wird geleert, damit auch ein Start über das Menü neu würfelt.
     const feld = document.getElementById('cfg-seed');
-    if (seed === null || seed === undefined || !feld) return null;
-    feld.value = String(seed);
-    this.hud.log(`Revanche auf derselben Karte — Seed ${seed}`, 'accent');
+    if (feld) feld.value = '';
+    if (seed === null || seed === undefined) return null;
+    this.hud.log(`Revanche auf einer neuen Karte (Vorpartie: Seed ${seed})`, 'accent');
     return seed;
   }
 
   /**
-   * Revanche: alte Partie aufräumen, sofort ein NEUES Match auf derselben Karte
+   * Revanche: alte Partie aufräumen, sofort ein NEUES Match auf einer NEUEN Karte
    * starten (UI-4). Die Reihenfolge (Seed lesen → aufräumen → starten) steht in
    * `revanche.js`; hier werden nur die Zugänge übergeben.
    *
