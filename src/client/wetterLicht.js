@@ -163,6 +163,8 @@ function zustand(r) {
   const { richtung, spielStaerke } = windRichtung(r.sichtWind, z.saat);
   if (!z.stand) { z.stand = neuerZustand(ziel, zeit); z.stand.richtung = richtung; }
   schreiteFort(z.stand, ziel, zeit, Boolean(r.reducedMotion), richtung);
+  // Ereigniswetter setzt sofort voll ein (die übliche Überblendung brauchte Sekunden, der Regen war kaum zu sehen).
+  if (ew && ew.bis > zeit) { z.stand.regen = Math.max(z.stand.regen, ziel.regen); z.stand.sturm = Math.max(z.stand.sturm, ziel.sturm); }
   z.spielStaerke = spielStaerke;
   // Die Lichter stammen aus dem fertig zugeschnittenen Kulissenbild (`kulissenCache`), nicht aus der Rohdatei: Zuschnitt und
   // Verschiebung (Pan) der Stimmungsbilder gelten dann für Bild und Licht gleich. Neu gelesen wird bei jedem neuen Zuschnitt.
