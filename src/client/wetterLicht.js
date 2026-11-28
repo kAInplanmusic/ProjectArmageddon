@@ -261,7 +261,9 @@ export function zeichneWetterVorn(r, dichte = 1) {
     const p = werte(r, z);
     zeichneSturmHimmel(p, s.sturm);
     zeichneNebelVorn(p, s.nebel);
-    zeichneRegen(p, s.regen, dichte);
+    const starkregen = r.ereignisWetter?.art === 'regen' && r.ereignisWetter.bis > (r.time ?? 0); // TODO 2.13b
+    if (starkregen) zeichneSturmHimmel(p, 0.45); // Starkregen: dunkler Himmel
+    zeichneRegen(p, s.regen, dichte, starkregen ? 3 : 1);
     zeichneSchnee(p, s.schnee, dichte);
     zeichneHagelLuft(p, s.hagel, dichte, Boolean(r.hagel?.gebunden));
     zeichneWind(p, Math.max(s.wind, 0.8 * s.sturm), z.wetter.windTon ?? 'staub', dichte);

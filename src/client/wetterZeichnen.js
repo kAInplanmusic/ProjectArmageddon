@@ -249,8 +249,11 @@ export function zeichneSturmHimmel(p, st) {
   ctx.restore();
 }
 
-/** Regen in zwei Tiefen: viele feine ferne Striche, weniger nahe, längere. Dichte skaliert beide. */
-export function zeichneRegen(p, st, dichte = 1) {
+/**
+ * Regen in zwei Tiefen: viele feine ferne Striche, weniger nahe, längere. Dichte skaliert beide.
+ * `stark` (Starkregen-Ereignis, TODO 2.13b): mehr, dickere und deckendere Striche; 1 = normales Wetter.
+ */
+export function zeichneRegen(p, st, dichte = 1, stark = 1) {
   if (!(st > 0.01) || p.still) return;
   const { ctx, b, h, t, m, schraeg } = p;
   ctx.save();
@@ -260,10 +263,10 @@ export function zeichneRegen(p, st, dichte = 1) {
     { n: 80, tempo: 1.5, laenge: 26, breite: 2.0, alpha: 0.24, salz: 5 },
   ];
   for (const lage of lagen) {
-    const n = Math.round(lage.n * st * dichte);
+    const n = Math.round(lage.n * st * dichte * stark);
     if (n <= 0) continue;
-    ctx.strokeStyle = `rgba(196, 210, 230, ${lage.alpha + 0.12 * st})`;
-    ctx.lineWidth = lage.breite * m;
+    ctx.strokeStyle = `rgba(196, 210, 230, ${Math.min(0.85, (lage.alpha + 0.12 * st) * (1 + 0.6 * (stark - 1)))})`;
+    ctx.lineWidth = lage.breite * m * (1 + 0.25 * (stark - 1));
     ctx.beginPath();
     for (let i = 0; i < n; i += 1) {
       const lauf = 0.7 + hash2(i, 1, lage.salz) * 0.3;
