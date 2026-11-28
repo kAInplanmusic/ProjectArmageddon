@@ -24,7 +24,7 @@ Punkt mit Verweis auf die Aufgabe in `docs/TODO.md`.
 | Server-Betrieb und Kosten | `docs/betrieb-INSTANZ.md` | Ohne Eintrag dort wird nichts gemietet (`AGENTS.md` §5, §7) |
 | Arsenalwert (AAB) | Teil B unten, Code `src/engine/aab.js` | |
 | Wunschbild des Spiels (Ziel) | Teil D unten | Aussagen des Auftraggebers; Änderungen nur durch ihn |
-| Kartengröße | `src/engine/karte.js` (`MAP_SIZES`, `MAP_GROESSEN`, `mapGroesseFuerFiguren`), Menüvorschlag `src/client/kartenVorschlag.js` | Zufallsspanne geplant (TODO 2.12b) |
+| Kartengröße | `src/engine/karte.js` (`MAP_SIZES`, `MAP_GROESSEN`, `mapGroesseFuerFiguren`), Menüvorschlag `src/client/kartenVorschlag.js` | Regel nach Spielerzahl mit Zufall geplant (TODO 2.12b) |
 | Seed, neue Karte je Partie, Revanche | `src/client/revanche.js`, `#seedFuerRevanche` in `src/client/main.js`, Seed-Feld `#cfg-seed` in `index.html` | Revanche zieht eine neue Karte (TODO 2.12c) |
 | Schwerkraft | `src/shared/config/biomregeln.js` (`schwerkraftFuer`), Physik `src/engine/systems/physicsSystem.js`, `characterSystem.js`, `src/engine/physics/ballistics.js` | Heute nur Betrag nach unten; Richtung je Kartenart geplant (TODO 2.12a, Entscheidung 2026-11-28) |
 | Wetter | Bild: `src/client/wetterZustand.js` (`WETTER_ACHSEN`); Wirkung: `src/shared/config/wind.js`, `src/shared/config/hagel.js`, `src/engine/hagel.js` | Wirkung weiterer Wetter geplant (TODO 2.13) |
@@ -236,7 +236,7 @@ So soll das Spiel werden (Aussagen des Auftraggebers, geordnet). Die rechte Spal
 | Ereignisse | Schnee und Blizzard, Regen, Tsunami bzw. Hurrikan, Gewitter mit Blitz, Erdbeben, Vulkanausbruch, Rattenplage, Flugzeugabsturz, UFO, UFO-Absturz, U-Boot-Unfall | Wetter heute nur Bild (außer Wind, Hagel) → TODO 2.13a–j |
 | Besucher | Heiler **Dr. Stilzchen-Rumpel**; alte, verwirrte, strickende Landstreicherin, die Gummibärchen isst; dünner, verpeilter Dealer (tauscht Waffen gegen Leben, andere Waffen oder Züge); süße Blondine: küsst und heilt (+10 bis +50) oder lacht aus (−69), Verhältnis 8 : 1 | Günther und Cookie sind gebaut; diese Besucher fehlen → TODO 2.13k–n |
 | Karte je Partie | Keine Karte gibt es zweimal, kein Neu-Erzeugen: gespielt wird, die nächste Karte wird neu erzeugt. Das Biom nur auf Wunsch wählbar | „Spielen“ würfelt alles, Biom optional: gebaut; Revanche auf neuer Karte → TODO 2.12c (Paket offen, Abschnitt 10) |
-| Kartengröße | Richtet sich nach der Spielerzahl, dazu Zufall: bis 80 % größer, bis 30 % kleiner | Feste Stufe nach Figurenzahl → TODO 2.12b |
+| Kartengröße | Richtet sich nach der Spielerzahl: 2 → klein bis mittel, 3 → mittel bis groß, 4 → groß, 5 → groß bis riesig, 6 → riesig; dazu Zufall von −25 % bis +50 % (Entscheidung 2026-11-28) | Feste Stufe nach Figurenzahl → TODO 2.12b |
 | Bedienung | Handy und iPad zuerst, Tastatur an zweiter Stelle; nur Querformat | gebaut, Sichtabnahme am Gerät offen → TODO 2.1 |
 | Stil | Alles Comic; Spaß und Action zuerst, viel Zufall mit Absicht | Leitlinie für alle Entscheidungen |
 
