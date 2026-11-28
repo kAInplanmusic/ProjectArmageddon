@@ -178,7 +178,7 @@ im Client (`src/client/effects.js`, `sound.js`). Jedes Ereignis: Unit-Test (Wirk
 
 | ID | Besucher | Wirkung | Wo / Wie |
 |---|---|---|---|
-| 2.13k HEILER | Fröhlicher, singender Waldmann (Arbeitsname „Onkel Moosbart“, endgültiger Name Abschnitt 9) | erscheint, singt, heilt alle Figuren im Umkreis um +15 bis +30 und geht wieder | Besucher-Entität wie Günther (`guenther.js`), Heilung über die Lebenspunkte im Motor |
+| 2.13k HEILER | **Dr. Stilzchen-Rumpel** (Name entschieden 2026-11-28; Anspielung auf das Grimm-Märchen, frei nutzbar): kleiner, schrulliger Wunderdoktor | erscheint, singt, heilt alle Figuren im Umkreis um +15 bis +30 und geht wieder | Besucher-Entität wie Günther (`guenther.js`), Heilung über die Lebenspunkte im Motor |
 | 2.13l STRICKOMA | Alte, verwirrte Landstreicherin, strickt und isst Gummibärchen | wandert ziellos; wer ihr nahe kommt, bekommt ein Gummibärchen (+5) oder wird von ihr „eingestrickt“ (ein Zug ohne Bewegung); ihr Geruch: Figuren direkt neben ihr husten (−2 je Zug) | Besucher mit Laufweg, Wirkung bei Nähe; Bild und Sprüche im Client |
 | 2.13m DEALER | Dünner, verpeilter Händler | tauscht mit der Figur am Zug: Leben gegen Waffe, Waffe gegen andere Waffe, eine Zugrunde aussetzen gegen eine starke Waffe | Handelsangebot als Servernachricht, Wahl des Spielers als neue Eingabe (`src/shared/protocol.js`, Server prüft alles, AGENTS.md §6); Angebote aus dem Seed; Handelsfenster `src/client/` (neues Modul) |
 | 2.13n BLONDINE | Süße Blondine | trifft die Figur am Zug: Verhältnis 8 : 1, also in 8 von 9 Fällen Kuss (+10 bis +50 Leben, gleichverteilt aus dem Seed, nicht über die Höchstlebenspunkte), in 1 von 9 lacht sie aus (−69 Leben, kann töten) | Ziehung über den Seed-RNG, Wirkung im Motor, Sprechblase und Klang im Client. Kein anzüglicher Inhalt: Comic-Kuss mit Herzchen |
@@ -255,6 +255,7 @@ im Client (`src/client/effects.js`, `sound.js`). Jedes Ereignis: Unit-Test (Wirk
 | 2026-11-25 | Das Seil (Ninjaseil) ist der Enterhaken pa_111. Bedienung: Handy und iPad zuerst, Tastatur an zweiter Stelle |
 | 2026-11-27 | Mindestens zehn legendäre Waffen: 11 (die 3 legendären und die 8 bisher epischen), jede Fraktion eine eigene. Gelände: Mittelweg zwischen „düsterer“ (2026-10-27) und hell — Tiefe halb so dunkel, Gestein je Bodenart |
 | 2026-11-28 | Wunschbild des Spiels festgehalten (`docs/SSOT.md`, Teil D). Runde Karten: Schwerkraft zur Kartenmitte; Schwebekarten: keine oder schwache Atmosphäre. Keine Karte zweimal: die Revanche zieht eine neue Karte (das Seed-Feld bleibt für Tests und Nachspielen, Vorgabe leer). Kartengröße aus Spielerzahl plus Zufall −30 % bis +80 %. Neue Ereignisse und Besucher wie in TODO 2.13 beschrieben; Blondine Kuss : Auslachen = 8 : 1 |
+| 2026-11-28 | Der Heiler (TODO 2.13k) heißt **Dr. Stilzchen-Rumpel** |
 | 2026-11-24 | Zugtempo (Agent nach TODO 2.8, vom Auftraggeber bestätigt: „make it as you think“): Zugpause 3 → 1,5 s (ändert die Entscheidung vom 13.10.), Schusswiederholung online 2 → 1,5 s, Rückzugsfrist 5 → 3 s (Zugregelfassung 3). Gemessen: Warten je Zug 8 → 4,5 s |
 | 2026-11-23 | Registrierung mit E-Mail (eindeutige Namen und Adressen, Anmeldung mit Name oder E-Mail); Web-Zugang mit schwächerem Hash (PBKDF2, 20 000 Runden) statt bezahltem Cloudflare-Tarif |
 
@@ -271,7 +272,6 @@ am Telefon, Biome 15–20, später jedes Ereignis und jeder Besucher aus 2.13 (B
 |---|---|
 | Darf neues Bildmaterial (Figuren, Geländetexturen, Teilsprites für 2.10) aus dem Bildbudget (+10 €) erzeugt werden? | Rückmeldung „Figuren sehen schlecht aus“; Glättung und Farbänderung allein brachten keine sichtbare Besserung (gemessen 2026-11-27) |
 | Rückmeldung zu Portal Stufe 1 (2.7) | Stufe 2 wartet darauf |
-| Name des Heilers (2.13k): „Tam Bombidil“ ist fast gleich wie Tom Bombadil aus „Der Herr der Ringe“ (geschützte Figur). Ein eigener Name, z. B. „Onkel Moosbart“? | Eine erkennbar übernommene Figur kann rechtlich Ärger bringen |
 | Weg für 2.12b: Zufallsgröße nur bei „Größe: automatisch“ (Vorgabe, auch „Spielen“), ausdrücklich gewählte Größe bleibt fest? | Hält die Browser-Tests stabil; sonst müssten viele Specs einzeln angepasst werden |
 
 ## 10. Branches
