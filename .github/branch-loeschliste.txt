@@ -104,3 +104,5 @@ integration/revanche-neue-karte
 integration/kartengroesse-auto
 integration/ereignisse-start
 integration/ereignisse-bild
+integration/ereignisse-wirkung
+integration/ereignis-heiler
