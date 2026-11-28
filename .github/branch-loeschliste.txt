@@ -106,3 +106,4 @@ integration/ereignisse-start
 integration/ereignisse-bild
 integration/ereignisse-wirkung
 integration/ereignis-heiler
+integration/ereignis-regen
