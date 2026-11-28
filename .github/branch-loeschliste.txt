@@ -102,3 +102,5 @@ integration/aufraeumen-abschluss
 integration/zonen-gewichte
 integration/revanche-neue-karte
 integration/kartengroesse-auto
+integration/ereignisse-start
+integration/ereignisse-bild
