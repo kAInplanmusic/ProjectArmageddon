@@ -27,6 +27,38 @@ const aktiv = page => page.evaluate(() => {
   return { id: s.activePlayerId, x: e.x, y: e.y, phase: z?.phase ?? 0, modi: z?.modi ?? 0, rolle: z?.rolle ?? null, hatBlatt: Boolean(z?.fig?.blatt) };
 });
 
+/**
+ * Stellt die Figur am Zug auf eine freie, ebene Fläche (200 px Luft darüber, 80 px zu beiden Seiten, kein Wasser).
+ * Geprüft wird die Sprung- und Saltomechanik, nicht der Startplatz: Seit Geländefassung 19 stand die Figur auf
+ * Seed 20260921 unter einem Überhang, der Salto prallte sofort ab (Hub 0). Danach laufen nur echte Eingaben.
+ */
+async function stelleFrei(page) {
+  const ort = await page.evaluate(() => {
+    const m = window.__PA__.game.match;
+    const id = m.activePlayerId;
+    const fest = (x, y) => y >= 0 && m.terrain.isSolid(Math.round(x), Math.round(y));
+    const x0 = m.world.getComponent(id, 'Position', 'x');
+    const versatz = m.world.getComponent(id, 'Position', 'y') - m.surfaceYAt(x0);
+    for (let x = 160; x < m.width - 160; x += 8) {
+      const y = m.surfaceYAt(x);
+      if (!Number.isFinite(y) || y < 210) continue;
+      if ([-80, 0, 80].some(dx => (m.waterLevelAt(x + dx, y) ?? 0) > 0)) continue;
+      if ([-80, -40, 40, 80].some(dx => Math.abs(m.surfaceYAt(x + dx) - y) > 20)) continue; // eben
+      let frei = true;
+      for (let dy = 2; dy <= 200 && frei; dy += 4) for (const dx of [-80, -40, 0, 40, 80]) if (fest(x + dx, y - dy)) frei = false;
+      if (!frei) continue;
+      m.world.setComponent(id, 'Position', 'x', x);
+      m.world.setComponent(id, 'Position', 'y', y + versatz);
+      m.world.setComponent(id, 'Velocity', 'x', 0);
+      m.world.setComponent(id, 'Velocity', 'y', 0);
+      return { x, y };
+    }
+    return null;
+  });
+  expect(ort, 'Testaufbau: es gibt eine freie, ebene Fläche').not.toBeNull();
+  await expect.poll(() => page.evaluate(() => window.__PA__.isGrounded()), { timeout: 15000 }).toBe(true);
+}
+
 async function geheTaste(page, taste, richtung) {
   const vorher = await aktiv(page);
   await page.keyboard.down(taste);
@@ -119,6 +151,7 @@ test('Gehen: Leertaste ODER Shift gehalten lädt auf, erst das Loslassen feuert;
   }
 
   // Sprung (Enter, mit D seitlich) und Rückwärtssalto (Rück): Höhe und Weite am echten Spiel gemessen.
+  await stelleFrei(page);
   const messe = async (druck) => {
     const vor = await aktiv(page);
     await page.evaluate(() => {

@@ -12,7 +12,8 @@ test('Feuerwesen: abfeuern, laufen, springen, zerbersten — ohne Seitenfehler',
   const fehler = [];
   page.on('pageerror', e => fehler.push(String(e)));
   await page.goto('/');
-  await page.fill('#cfg-seed', '4');
+  // Seed 5: Mit Geländefassung 19 fiel der Gnom auf Seed 4 sofort ins Wasser (4 Bilder im Zustand); Seed 5 hat Boden in Schussrichtung.
+  await page.fill('#cfg-seed', '5');
   await page.click('#start-button');
   await expect(page.locator('#menu-overlay')).toBeHidden();
   await expect(page.locator('#weapon-list .weapon-item').first()).toBeVisible();

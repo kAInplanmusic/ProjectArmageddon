@@ -19,6 +19,12 @@ async function matchStarten(page, seed = '4') {
   return fehler;
 }
 
+/**
+ * Seed für die Schusstests mit der Fernbüchse `pa_055`: Sie verlangt freie Sicht zum Ziel. Mit Geländefassung 19 ist die
+ * Sichtlinie auf Seed 4 versperrt (fire liefert „Sichtlinie ist versperrt“); Seed 5 hat freie Sicht.
+ */
+const SEED_FREIE_SICHT = '5';
+
 /** Gibt der Figur am Zug eine Waffe (über die Debug-Schnittstelle) und wählt sie. */
 async function waffeWaehlen(page, waffeId) {
   return page.evaluate((id) => {
@@ -100,7 +106,7 @@ test.describe('Waffen-Animation', () => {
   });
 
   test('Schuss: Rückstoß und Mündungsblitz, danach Ruhe', async ({ page }) => {
-    const fehler = await matchStarten(page);
+    const fehler = await matchStarten(page, SEED_FREIE_SICHT);
     const spieler = await waffeWaehlen(page, 'pa_055');
     await page.waitForFunction(
       id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_055', spieler, { timeout: 15000 });
@@ -142,7 +148,7 @@ test.describe('Waffen-Animation', () => {
 
   test('Reduzierte Bewegung: der Blitz bleibt, die Bewegung entfällt', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    const fehler = await matchStarten(page);
+    const fehler = await matchStarten(page, SEED_FREIE_SICHT);
     const spieler = await waffeWaehlen(page, 'pa_055');
     await page.waitForFunction(
       id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_055', spieler, { timeout: 15000 });
